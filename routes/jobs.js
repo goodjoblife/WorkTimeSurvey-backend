@@ -1,12 +1,9 @@
 var express = require('express');
 var router = express.Router();
 var request = require('request');
-var MongoClient = require('mongodb').MongoClient;
-var ObjectId = require('mongodb').ObjectId;
 var cors = require('./cors');
 var HttpError = require('./errors').HttpError;
 var promiseit = require('../libs/promiseit'),
-    mongoConnect = promiseit.mongoConnect,
     collectionAggregate = promiseit.collectionAggregate;
 var db = require('../libs/db');
 
