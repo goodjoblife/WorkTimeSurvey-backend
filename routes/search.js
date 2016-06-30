@@ -3,6 +3,7 @@ var router = express.Router();
 var MongoClient = require('mongodb').MongoClient;
 var cors = require('./cors');
 var HttpError = require('./errors').HttpError;
+var db = require('../libs/db');
 
 router.use(cors);
 
@@ -17,22 +18,12 @@ router.get('/', function(req, res, next) {
         q = {name: new RegExp("^" + search)};
     }
 
-    MongoClient.connect(process.env.MONGODB_URI, function(err, db) {
-        if (err) {
-            next(new HttpError("Internal Server Error", 500));
-            return;
-        }
-        var collection = db.collection('companies');
+    var collection = db.get().collection('companies');
 
-        collection.find(q).skip(25 * page).limit(25).toArray(function(err, docs) {
-            if (err) {
-                next(new HttpError("Internal Server Error", 500));
-                return;
-            }
-            db.close();
-
-            res.send(docs);
-        });
+    collection.find(q).skip(25 * page).limit(25).toArray().then(function(results) {
+        res.send(results);
+    }).catch(function(err) {
+        next(new HttpError("Internal Server Error", 500));
     });
 });
 
