@@ -125,12 +125,48 @@ router.post('/', function(req, res, next) {
     }
 
     var collection = db.get().collection("workings");
+    var companyCollection = db.get().collection("companies");
 
-    collection.insert(data).then(function(result) {
+    function searchCompanyById(id) {
+        return companyCollection.find({
+            $or: [
+                {company_id: id},
+                {business_id: id},
+            ]
+        }).toArray();
+    }
+    function searchCompanyByName(name) {
+        return companyCollection.find({
+            name: name,
+        }).toArray();
+    }
+
+    Promise.resolve(data).then(function(data) {
+        console.log("autocompletion company");
+        if (data.company.id) {
+            return searchCompanyById(data.company.id).then(function(results) {
+                if (results.length === 0) {
+                    throw new HttpError("company_id is invalid", 429);
+                }
+
+                data.company.name = results[0].name;
+                return data;
+            });
+        } else {
+            return searchCompanyByName(data.company.name).then(function(results) {
+                if (results.length === 1) {
+                    data.company.id = results[0].company_id || result[0].business_id;
+                    return data;
+                } else {
+                    return data;
+                }
+            });
+        }
+    }).then(function(data) {
+        return collection.insert(data);
+    }).then(function(result) {
         res.send(data);
-    }).catch(function(err) {
-        next(new HttpError("Internal Server Error", 500));
-    });
+    }).catch(next);
 });
 
 module.exports = router;
