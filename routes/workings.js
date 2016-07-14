@@ -280,12 +280,12 @@ function checkQuota(db, author) {
         }
     ).then(function(result) {
         if (result.value.queries_count > 5) {
-            throw new HttpError(`您已經上傳${quota}次，已達最高上限`,, 429);
+            throw new HttpError(`您已經上傳${quota}次，已達最高上限`, 429);
         }
 
         return result.value.queries_count;
     }).catch(function(err) {
-        throw new HttpError(`您已經上傳${quota}次，已達最高上限`,, 429);
+        throw new HttpError(`您已經上傳${quota}次，已達最高上限`, 429);
     });
 
 }
