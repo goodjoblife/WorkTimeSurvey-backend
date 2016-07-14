@@ -279,7 +279,7 @@ function checkQuota(db, author) {
             new: true,
         }
     ).then(function(result) {
-        if (result.value.queries_count > 5) {
+        if (result.value.queries_count > quota) {
             throw new HttpError(`您已經上傳${quota}次，已達最高上限`, 429);
         }
 
