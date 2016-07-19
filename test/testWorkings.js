@@ -500,6 +500,13 @@ function generatePayload(opt) {
             payload[key] = valid[key];
         }
     }
+    for (let key in opt) {
+        if (opt[key] === -1) {
+            continue;
+        } else {
+            payload[key] = opt[key];
+        }
+    }
 
     return payload;
 }
