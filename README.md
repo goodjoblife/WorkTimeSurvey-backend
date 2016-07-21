@@ -6,6 +6,10 @@ WorkTimeSurvey Backend
 * Environment: nodejs 6
 * DB: mongo
 
+## Contirbution
+
+See our [Contribution Guide](CONTRIBUTING.md)
+
 ## Install and Run
 
 ### Use docker-compose
