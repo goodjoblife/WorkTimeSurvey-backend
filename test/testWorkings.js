@@ -188,6 +188,112 @@ describe('Workings 工時資訊', function() {
             });
         });
 
+        describe('area', function() {
+            it('can be inserted', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        company_id: '00000001',
+                        area: 'Hello world',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.propertyVal(res.body.working, 'area', 'Hello world');
+                    })
+                    .end(done);
+            });
+        });
+
+        describe('sector', function() {
+            it('can be inserted', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        company_id: '00000001',
+                        sector: 'Hello world',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.propertyVal(res.body.working, 'sector', 'Hello world');
+                    })
+                    .end(done);
+            });
+        });
+
+        describe('has_overtime_salary', function() {
+            it('should be false if request 0', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        company_id: '00000001',
+                        has_overtime_salary: '0',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.propertyVal(res.body.working, 'has_overtime_salary', false);
+                    })
+                    .end(done);
+            });
+
+            it('should be true if request 1', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        company_id: '00000001',
+                        has_overtime_salary: '1',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.propertyVal(res.body.working, 'has_overtime_salary', true);
+                    })
+                    .end(done);
+            });
+
+            it('should be error if request others', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        company_id: '00000001',
+                        has_overtime_salary: '-1',
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+        });
+
+        describe('has_compensatory_dayoff', function() {
+            it('should be false if request 0', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        company_id: '00000001',
+                        has_compensatory_dayoff: '0',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.propertyVal(res.body.working, 'has_compensatory_dayoff', false);
+                    })
+                    .end(done);
+            });
+
+            it('should be true if request 1', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        company_id: '00000001',
+                        has_compensatory_dayoff: '1',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.propertyVal(res.body.working, 'has_compensatory_dayoff', true);
+                    })
+                    .end(done);
+            });
+
+            it('should be error if request others', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        company_id: '00000001',
+                        has_compensatory_dayoff: '-1',
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+        });
+
         describe('company', function() {
             it('只給 company_id 成功新增', function(done) {
                 request(app).post('/workings')
