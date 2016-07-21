@@ -112,6 +112,10 @@ router.post('/', function(req, res, next) {
         "job_title", "week_work_time",
         "overtime_frequency",
         "day_promised_work_time", "day_real_work_time",
+        "area",
+        "sector",
+        "has_overtime_salary",
+        "has_compensatory_dayoff",
     ].forEach(function(field, i) {
         if (req.body[field] && (typeof req.body[field] === "string") && req.body[field] !== "") {
             working[field] = req.body[field];
@@ -266,6 +270,26 @@ function validateWorking(data) {
     if (! data.company.id) {
         if (! data.query) {
             throw new HttpError("公司/單位名稱必填", 422);
+        }
+    }
+
+    if (data.has_overtime_salary) {
+        if (data.has_overtime_salary === '0') {
+            data.has_overtime_salary = false;
+        } else if (data.has_overtime_salary === '1') {
+            data.has_overtime_salary = true;
+        } else {
+            throw new HttpError('has_overtime_salary should be 0 or 1', 422);
+        }
+    }
+
+    if (data.has_compensatory_dayoff) {
+        if (data.has_compensatory_dayoff === '0') {
+            data.has_compensatory_dayoff = false;
+        } else if (data.has_compensatory_dayoff === '1') {
+            data.has_compensatory_dayoff = true;
+        } else {
+            throw new HttpError('has_compensatory_dayoff should be 0 or 1', 422);
         }
     }
 }
