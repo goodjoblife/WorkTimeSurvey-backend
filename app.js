@@ -40,6 +40,12 @@ app.use(cors({
         'https://worktime.goodjob.life',
         'http://localhost:8080',
         'http://localhost:8000',
+        new RegExp(".*://www.104.com.tw/job/.*"),
+        new RegExp(".*://104.com.tw/job/.*"),
+        new RegExp("http://www.1111.com.tw/job-bank/job-description.*"),
+        new RegExp("http://www.518.com.tw/.*-job-.*.html"),
+        new RegExp(".*://www.yes123.com.tw/admin/job_refer_comp_job_detail2.asp.*"),
+        new RegExp("http://www.1111.com.tw//job-bank/job-description.*"),
     ],
 }));
 
