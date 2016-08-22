@@ -4,11 +4,13 @@ const HttpError = require('../libs/errors').HttpError;
 const lodash = require('lodash');
 const winston = require('winston');
 
-/*
- * GET /
- * [page = 0]
- * [key = ""]: on empty, it will search all company
- * Show 25 results per page
+/**
+ * @api {get} /companies/search Search Company
+ * @apiName SearchCompany
+ * @apiGroup Company
+ * @apiParam {String} key
+ * @apiParam {Number} [page=0]
+ * @apiSuccess {Object[]} . Companies
  */
 router.get('/search', function(req, res, next) {
     winston.info("/workings/search", {query: req.query, ip: req.ip, ips: req.ips});

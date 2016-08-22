@@ -5,10 +5,13 @@ const facebook = require('../libs/facebook');
 const winston = require('winston');
 const lodash = require('lodash');
 
-/*
- * Show the newest company, week_work_time, job_title
- * GET /
- * [page = 0]
+/**
+ * @api {get} /workings/latest 最新工時資訊
+ * @apiGroup Workings
+ * @apiParam {Number} [page=0] 頁碼，從 0 開始
+ * @apiParam {Number} [limit=25] 每頁數量，最大值 50
+ * @apiSuccess {Number} total 總計數量
+ * @apiSuccess {Object[]} workings 資料集
  */
 router.get('/latest', function(req, res, next) {
     winston.info("/workings/latest", {query: req.query, ip: req.ip, ips: req.ips});
@@ -67,16 +70,19 @@ router.post('/', function(req, res, next) {
 
 }
 
-/*
- * POST /
- * company_id | company_name
- * job_title: string
- * week_work_time: integer
- * [salary_min]
- * [salary_max]
- * [salary_type]: suggest "hour", "month", "year"
- * [work_year]
- * [review]
+/**
+ * @api {post} /workings 新增工時資訊
+ * @apiGroup Workings
+ * @apiParam {String} access_token FB client auth token
+ * @apiParam {String} job_title 職稱
+ * @apiParam {Number{0-168}} week_work_time 最近一週總工時
+ * @apiParam {Number=1,2,3,4} overtime_frequency 加班頻率
+ * @apiParam {Number} day_promised_work_time 工作日表訂工時
+ * @apiParam {Number} day_real_work_time 工作日實際平均工時
+ * @apiParam {String} [company_id]
+ * @apiParam {String} [company] 須跟 company_id 至少有一個
+ * @apiParam {String} [email] Email
+ * @apiSuccess {Object} .
  */
 router.post('/', function(req, res, next) {
     /*
@@ -316,6 +322,12 @@ function checkQuota(db, author) {
 
 }
 
+/**
+ * @api {get} /workings/statistics/by-company Statistics by given company
+ * @apiGroup Workings
+ * @apiParam {String} company
+ * @apiSuccess {Object[]} .
+ */
 router.get('/statistics/by-company', function(req, res, next) {
     winston.info("/statistics/by-company", {company: req.query.company, ip: req.ip, ips: req.ips});
 
@@ -367,6 +379,15 @@ router.get('/statistics/by-company', function(req, res, next) {
     });
 });
 
+/**
+ * @api {get} /workings/companies/search 搜尋工時資訊中的公司
+ * @apiGroup Workings
+ * @apiParam {String} key 搜尋關鍵字
+ * @apiSuccess {Object[]} .
+ * @apiSuccess {Object} ._id
+ * @apiSuccess {String} ._id.id 公司統編 (有可能沒有)
+ * @apiSuccess {String} ._id.name 公司名稱 (有可能是 Array)
+ */
 router.get('/companies/search', function(req, res, next) {
     winston.info("/workings/companies/search", {query: req.query, ip: req.ip, ips: req.ips});
 
