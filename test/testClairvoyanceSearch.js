@@ -96,7 +96,7 @@ describe('Clairvoyance 天眼通 API', function() {
         });
 
         it('error 422 if no company provided', function(done) {
-            request(app).get('/workings/statistics/by-company')
+            request(app).get('/clairvoyance/search/by-company')
                 .expect(422)
                 .end(done);
         });
