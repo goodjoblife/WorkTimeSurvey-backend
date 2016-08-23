@@ -15,11 +15,9 @@ router.get('/by-job', function(req, res, next) {
     if(!job || job === '')
         throw new HttpError("job is required", 422);
 
-	//mongodb query
+    //mongodb query
     const db_query = {
-        $or: [
-            {des: new RegExp(lodash.escapeRegExp(job.toUpperCase() ) ) },
-        ]
+        des: new RegExp(lodash.escapeRegExp(job.toUpperCase() ) ),
     };
 	
     //sorted order
