@@ -52,7 +52,6 @@ router.get('/by-job', function(req, res, next) {
 	}).catch(function(err){
 		new HttpError("Internal Server Error", 500);
 	});
-});
 
     next();
 });
