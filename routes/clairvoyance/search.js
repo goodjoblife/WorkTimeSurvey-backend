@@ -51,7 +51,7 @@ router.get('/by-company', function(req, res, next) {
     }
 
     //mongodb query
-    var q = {
+    const q = {
             $or: [
                 {'company.name': new RegExp(lodash.escapeRegExp(company.toUpperCase()))},
                 {'company.id': company},
@@ -59,17 +59,17 @@ router.get('/by-company', function(req, res, next) {
     };
 
     //sort field
-    var s = {
-        created_at: -1
+    const s = {
+        created_at: -1,
     };
 
     //displayed fields
-    var opt = {
+    const opt = {
         _id: 0,
-        job_title:1,
+        job_title: 1,
         company: 1, 
-        created_at:1,
-        week_work_time: 1
+        created_at: 1,
+        week_work_time: 1,
     };
 
     const data = {};
@@ -84,7 +84,6 @@ router.get('/by-company', function(req, res, next) {
 
         res.send(data);
     }).catch(function(err) {
-        console.log(err);
         next(new HttpError("Internal Server Error", 500));
     });
 });
