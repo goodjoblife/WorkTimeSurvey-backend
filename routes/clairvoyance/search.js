@@ -5,7 +5,6 @@ const lodash = require('lodash');
 const winston = require('winston');
 
 router.get('/by-job', function(req, res, next) {
-	next();
 	winstom.info('/clairvoyance/search/by-job', {job: req.query.job, ip: req.ip, ips: req.ips});
 	
 	const job = req.query.job;
