@@ -2,7 +2,6 @@ const assert = require('chai').assert;
 const request = require('supertest');
 const app = require('../app');
 const MongoClient = require('mongodb').MongoClient;
-const nock = require('nock');
 
 describe('CORS', function() {
     const client_origins = [
