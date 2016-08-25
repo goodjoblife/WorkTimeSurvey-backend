@@ -13,7 +13,6 @@ describe('Clairvoyance 天眼通 API', function() {
     });
 
     before('Seeding some workings', function() {
-        console.log(new Date("2016-08-01 00:00"));
         return db.collection('workings').insertMany([
             {
                 job_title: 'TEST PM',
