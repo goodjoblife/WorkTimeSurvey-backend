@@ -5,21 +5,20 @@ const lodash = require('lodash');
 const winston = require('winston');
 
 router.get('/by-job', function(req, res, next) {
-    winstom.info('/clairvoyance/search/by-job', {job: req.query.job, ip: req.ip, ips: req.ips});
-	
-    const job = req.query.job;
+    winston.info('/clairvoyance/search/by-job', {job_title: req.query.job_title, ip: req.ip, ips: req.ips});
+    const job_title = req.query.job_title;
     const page = req.query.page || 0;
 
     const collection = req.db.collection('workings');
     
-    if(!job || job === ''){
-        next(new HttpError("job is required", 422));
+    if(!job_title || job_title === ''){
+        next(new HttpError("job_title is required", 422));
         return;
     }
     
     //mongodb query
     const db_query = {
-        job_title: new RegExp(lodash.escapeRegExp(job.toUpperCase() ) ),
+        job_title: new RegExp(lodash.escapeRegExp(job_title.toUpperCase() ) ),
     };
 	
     //sorted order
