@@ -8,35 +8,6 @@ router.get('/by-job', function(req, res, next) {
     next();
 });
 
-
-/*
-@param keyword string
-@param [page=0] int (begin from 0)
-@return 200 (每頁有 25 筆的資料)
-{
-  "page": ,// 目前的頁碼
-  "total_page": ,// 總共有幾頁
-  "total_count": ,// 全部頁面有多少的 working 符合搜尋
-  "workings": [
-    {
-      job_title: xx,
-      company: xx,
-      created_at: xx,
-      week_work_time: xx,
-    }
-  ] // Working[]
-}
-@return 422 (如果 keyword 沒有，或是 === "")
-{
-  "error": {},
-  "message": "keyword is required"
-}
-@return 500 (如果內部資料庫連線問題)
-{
-  "error": {},
-  "message": "Internal Server Error"
-}
-*/
 router.get('/by-company', function(req, res, next) {
     winston.info("/clairvoyance/search/by-company", {company: req.query.company, ip: req.ip, ips: req.ips});
 
