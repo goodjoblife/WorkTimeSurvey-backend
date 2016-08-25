@@ -54,47 +54,6 @@ describe('Clairvoyance 天眼通 API', function() {
     });
 
     describe('根據公司搜尋', function() {
-        before('Seeding some workings', function() {
-            return db.collection('workings').insertMany([
-                {
-                    job_title: 'TEST1',
-                    company: {
-                        id: '00000001',
-                        name: 'MY GOODJOB LIFE',
-                    },
-                    week_work_time: 40,
-                    created_at: new Date("2016-08-22 17:00"),
-                },
-                {
-                    job_title: 'TEST1',
-                    company: {
-                        id: '00000001',
-                        name: 'MY GOODJOB LIFE',
-                    },
-                    week_work_time: 20,
-                    created_at: new Date("2016-08-22 17:01"),
-                },
-                {
-                    job_title: 'TEST2',
-                    company: {
-                        id: '00000001',
-                        name: 'MY GOODJOB LIFE',
-                    },
-                    week_work_time: 30,
-                    created_at: new Date("2016-08-22 17:02"),
-                },
-                {
-                    job_title: 'TEST3',
-                    company: {
-                        id: '00000002',
-                        name: 'YOUR GOODJOB LIFE',
-                    },
-                    week_work_time: 50,
-                    created_at: new Date("2016-08-22 17:03"),
-                },
-            ]);
-        });
-
         it('error 422 if no company provided', function(done) {
             request(app).get('/clairvoyance/search/by-company')
                 .expect(422)
