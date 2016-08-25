@@ -11,18 +11,18 @@ router.get('/by-job', function(req, res, next) {
     const page = req.query.page || 0;
 
     const collection = req.db.collection('workings');
-	
+    
     if(!job || job === '')
-        throw new HttpError("job is required", 422);
-
+        next(new HttpError("job is required", 422));
+    
     //mongodb query
     const db_query = {
-        des: new RegExp(lodash.escapeRegExp(job.toUpperCase() ) ),
+        job_title: new RegExp(lodash.escapeRegExp(job.toUpperCase() ) ),
     };
 	
     //sorted order
     const db_sort = {
-        created_at: -1	
+        created_at: -1,	
     };
 	
     //display fields
@@ -40,14 +40,14 @@ router.get('/by-job', function(req, res, next) {
         data.total_count = count;
         data.total_page = Math.ceil(count / 25);
 		
-        return collection.find(db_query, opt).sort(db_sort).skip(25 * page).limit.toArray();
+        return collection.find(db_query, opt).sort(db_sort).skip(25 * page).limit(25).toArray();
     }).then(function(workings){
         data.page = page;
         data.workings = workings;
 	
         res.send(data);
     }).catch(function(err){
-        new HttpError("Internal Server Error", 500);
+        next(new HttpError("Internal Server Error", 500));
     });
 
 });

@@ -68,11 +68,23 @@ describe('Clairvoyance 天眼通 API', function() {
     });
 
     describe('根據職稱搜尋', function() {
-        it('error 422 if no job_title provided');
+        it('error 422 if no job_title provided', function(done){
+            request(app).get('/clairvoyance/search/by-job')
+                .expect(422)
+                .end(done);
+        });
 
         it('Search and return the pagination results');
 
-        it('小寫 job_title 轉換成大寫');
+        it('小寫 job_title 轉換成大寫', function(done){
+            request(app).get('/clairvoyance/search/by-job')
+                .query({job_title: "pm"})
+                .expect(200)
+                .expect(function(res) {
+                    assert.property(res.body, 'workings');
+                })
+                .end(done);
+        });
 
         it('job_title match any substring in workings.job_title');
 
