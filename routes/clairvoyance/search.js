@@ -12,8 +12,10 @@ router.get('/by-job', function(req, res, next) {
 
     const collection = req.db.collection('workings');
     
-    if(!job || job === '')
+    if(!job || job === ''){
         next(new HttpError("job is required", 422));
+        return;
+    }
     
     //mongodb query
     const db_query = {
