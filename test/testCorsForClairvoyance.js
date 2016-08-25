@@ -19,7 +19,7 @@ describe('CORS for clairvoyance API', function() {
         const api_path = "/clairvoyance/search/" + by ;
 
         describe('CORS while in ' + api_path, function() {
-            for (let origin of allow_origins) {
+            for (let origin of allowed_origins) {
                 it(origin + ' is in cors list', function(done) {
                     request(app).get(api_path)
                         .set('origin', origin)
