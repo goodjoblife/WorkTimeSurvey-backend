@@ -202,7 +202,7 @@ describe('Clairvoyance 天眼通 API', function() {
             "https://www.yes123.com.tw",
         ];
 
-        for(let by of ["by-job", "by-company"]) {
+        for (let by of ["by-job", "by-company"]) {
             const api_path = "/clairvoyance/search/" + by ;
 
             describe('CORS while in ' + api_path, function() {
@@ -218,6 +218,7 @@ describe('Clairvoyance 天眼通 API', function() {
                     });
                 }
             });
+
             it('reject other origin', function(done) {
                 request(app).get(api_path)
                     .set('origin', 'http://www.google.com.tw')
