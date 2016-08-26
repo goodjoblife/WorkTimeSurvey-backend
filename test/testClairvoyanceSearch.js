@@ -221,7 +221,7 @@ describe('Clairvoyance 天眼通 API', function() {
             it('reject other origin', function(done) {
                 request(app).get(api_path)
                     .set('origin', 'http://www.google.com.tw')
-                    .expect(404)
+                    .expect(422)
                     .expect(function(res) {
                         assert.notProperty(res.header, 'access-control-allow-origin');
                     })
