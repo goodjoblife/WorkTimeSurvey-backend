@@ -324,9 +324,38 @@ function checkQuota(db, author) {
 
 /**
  * @api {get} /workings/statistics/by-company Statistics by given company
+ * @apiDescription 根據 company 關鍵字，傳回符合關鍵字的公司相關統計資訊
  * @apiGroup Workings
  * @apiParam {String} company
  * @apiSuccess {Object[]} .
+ * @apiSuccess {Object} ._id 公司
+ * @apiSuccess {String} ._id.id 統一編號（可能沒有）
+ * @apiSuccess {String} ._id.name 公司名稱（也可能是 String[]）
+ * @apiSuccess {Object[]} .job_titles 以職稱做子分類的資訊
+ * @apiSuccess {String} .job_titles._id 職稱名稱
+ * @apiSuccess {Number} .job_titles.average_week_work_time 子分類的最近一週工時平均
+ * @apiSuccess {Number} .job_titles.count 子分類的資料比數
+ *
+ * @apiSampleRequest /workings/statistics/by-company?company=YAHOO
+ * @apiSuccessExample {json} Success-Response:
+ * HTTP/1.1 200 OK
+ * {
+ *   [
+ *     {
+ *       "_id": {
+ *         "id": "00000000",
+ *         "name": "YAHOO!"
+ *       },
+ *       "job_titles": [
+ *         {
+ *           "_id": "TEST",
+ *           "average_week_work_time": 40,
+ *           "count": 1
+ *         }
+ *       ]
+ *     }
+ *   ]
+ * }
  */
 router.get('/statistics/by-company', function(req, res, next) {
     winston.info("/statistics/by-company", {company: req.query.company, ip: req.ip, ips: req.ips});
