@@ -383,6 +383,7 @@ router.get('/statistics/by-company', function(req, res, next) {
  * @api {get} /workings/companies/search 搜尋工時資訊中的公司
  * @apiGroup Workings
  * @apiParam {String} key 搜尋關鍵字
+ * @apiParam {Number} [page=0] 顯示第幾頁
  * @apiSuccess {Object[]} .
  * @apiSuccess {Object} ._id
  * @apiSuccess {String} ._id.id 公司統編 (有可能沒有)
@@ -432,6 +433,14 @@ router.get('/companies/search', function(req, res, next) {
     });
 });
 
+/**
+ * @api {get} /workings/jobs/search 搜尋工時資訊中的職稱
+ * @apiGroup Workings
+ * @apiParam {String} key 搜尋關鍵字
+ * @apiParam {Number} [page=0] 顯示第幾頁
+ * @apiSuccess {Object[]} .
+ * @apiSuccess {String} ._id 職稱
+ */
 router.get('/jobs/search', function(req, res, next) {
     winston.info("/workings/jobs/search", {query: req.query, ip: req.ip, ips: req.ips});
 
