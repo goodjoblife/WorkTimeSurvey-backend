@@ -379,6 +379,63 @@ router.get('/statistics/by-company', function(req, res, next) {
     });
 });
 
+
+/**
+ * @api {get} /workings/statistics/by-job Statistics by given job_title
+ * @apiGroup Workings
+ * @apiParam {String} job_title
+ * @apiSuccess {Object[]} .
+ */
+router.get('/statistics/by-job', function(req, res, next) {
+    winston.info("/statistics/by-job", {job_title: req.query.job_title, ip: req.ip, ips: req.ips});
+
+    const job_title = req.query.job_title;
+    const collection = req.db.collection('workings');
+
+    if (! job_title || job_title === '') {
+        next(new HttpError("job_title is required", 422));
+        return;
+    }
+
+    collection.aggregate([
+        {
+            $match: {
+                job_title: new RegExp(lodash.escapeRegExp(job_title.toUpperCase() ) ),
+            }
+        },
+        {
+            $group: {
+                _id: {company: "$company.name", job_title: "$job_title"},
+                week_work_times: {$push: "$week_work_time"},
+                average_week_work_time: {$avg: "$week_work_time"},
+                count: {$sum: 1},
+            }
+        },
+        {
+            $sort: {
+                average_week_work_time: -1,
+            }
+        },
+        {
+            $group: {
+                _id: "$_id.job_title",
+                companies: {$push: {
+                    _id: "$_id.company",
+                    week_work_times: "$week_work_times",
+                    average_week_work_time: "$average_week_work_time",
+                    count: "$count",
+                }},
+            }
+        },
+    ]).toArray().then(function(results) {
+        res.send(results);
+    }).catch(function(err) {
+        next(new HttpError("Internal Server Error", 500));
+    });
+});
+
+
+
 /**
  * @api {get} /workings/companies/search 搜尋工時資訊中的公司
  * @apiGroup Workings
