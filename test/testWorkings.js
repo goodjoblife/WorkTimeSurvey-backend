@@ -588,6 +588,121 @@ describe('Workings 工時資訊', function() {
         });
     });
 
+    describe('GET /statistics/by-job', function() {
+        before('Seeding some workings', function() {
+            return db.collection('workings').insertMany([
+                {
+                    job_title: 'ABC',
+                    company: {
+                        name: 'DD',
+                    },
+                    week_work_time: 40,
+                },
+                {
+                    job_title: 'BC',
+                    company: {
+                        name: 'DD',
+                    },
+                    week_work_time: 50,
+                },
+                {
+                    job_title: 'ABC',
+                    company: {
+                        name: 'DD',
+                    },
+                    week_work_time: 60,
+                },
+                {
+                    job_title: 'ABC',
+                    company: {
+                        name: 'EE',
+                    },
+                    week_work_time: 40,
+                },
+                {
+                    job_title: 'BC',
+                    company: {
+                        name: 'EE',
+                    },
+                    week_work_time: 60,
+                },
+                {
+                    job_title: 'ABC',
+                    company: {
+                        name: 'EE',
+                    },
+                    week_work_time: 50,
+                },
+            ]);
+        });
+
+        it('error 422 if no job_title provided', function(done) {
+            request(app).get('/workings/statistics/by-job')
+                .expect(422)
+                .end(done);
+        });
+
+        it('依照 company, job_title 來分群資料，結構正確', function(done) {
+            request(app).get('/workings/statistics/by-job')
+                .query({job_title: 'ABC'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.isArray(res.body);
+                    assert.deepProperty(res.body, '0._id');
+                    assert.deepProperty(res.body, '0.companies');
+                    assert.isArray(res.body[0].companies);
+                    assert.deepProperty(res.body, '0.companies.0._id');
+                    assert.deepProperty(res.body, '0.companies.0.average_week_work_time');
+                    assert.deepProperty(res.body, '0.companies.0.count');
+                })
+                .end(done);
+        });
+
+        it('小寫 job_title 轉換成大寫', function(done) {
+            request(app).get('/workings/statistics/by-job')
+                .query({job_title: 'ABC'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.lengthOf(res.body, 1);
+                    assert.deepPropertyVal(res.body, '0._id', 'ABC');
+                })
+                .end(done);
+        });
+
+        it('job_title match any substring in workings.job_title', function(done) {
+            request(app).get('/workings/statistics/by-job')
+                .query({job_title: 'BC'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.lengthOf(res.body, 2);
+                    assert.deepPropertyVal(res.body, '0._id', 'ABC');
+                    assert.deepPropertyVal(res.body, '1._id', 'BC');
+                })
+                .end(done);
+        });
+
+        it('sort company by average_week_work_time for every job_title', function(done) {
+            request(app).get('/workings/statistics/by-job')
+                .query({job_title: 'ABC'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.lengthOf(res.body, 1);
+                    assert.deepPropertyVal(res.body, '0._id', 'ABC');
+                    assert.deepPropertyVal(res.body, '0.companies.0._id', 'DD');
+                    assert.deepPropertyVal(res.body, '0.companies.0.average_week_work_time', 50);
+                    assert.deepPropertyVal(res.body, '0.companies.1._id', 'EE');
+                    assert.deepPropertyVal(res.body, '0.companies.1.average_week_work_time', 45);
+                })
+                .end(done);
+        });
+
+
+        after(function() {
+            return db.collection('workings').remove({});
+        });
+    });
+
+
     describe('GET /workings/companies/search', function() {
         before('Seeding some workings', function() {
             return db.collection('workings').insertMany([
