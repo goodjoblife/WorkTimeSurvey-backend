@@ -47,7 +47,17 @@ app.use('/', routes);
 app.use('/companies', require('./routes/companies'));
 app.use('/workings', require('./routes/workings'));
 app.use('/jobs', require('./routes/jobs'));
-app.use('/clairvoyance/search', require('./routes/clairvoyance/search'));
+
+const corsOption = {
+    origin: [
+        new RegExp(".*://www.104.com.tw"),
+        new RegExp(".*://104.com.tw"),
+        new RegExp("http://www.1111.com.tw"),
+        new RegExp("http://www.518.com.tw"),
+        new RegExp(".*://www.yes123.com.tw"),
+    ],
+};
+app.use('/clairvoyance/search', cors(corsOption), require('./routes/clairvoyance/search'));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
