@@ -112,9 +112,9 @@ router.post('/', function(req, res, next) {
         "job_title", "week_work_time",
         "overtime_frequency",
         "day_promised_work_time", "day_real_work_time",
-        "area",
         "sector",
         "has_overtime_salary",
+        "overtime_salary_is_legal",
         "has_compensatory_dayoff",
     ].forEach(function(field, i) {
         if (req.body[field] && (typeof req.body[field] === "string") && req.body[field] !== "") {
@@ -274,22 +274,25 @@ function validateWorking(data) {
     }
 
     if (data.has_overtime_salary) {
-        if (data.has_overtime_salary === '0') {
-            data.has_overtime_salary = false;
-        } else if (data.has_overtime_salary === '1') {
-            data.has_overtime_salary = true;
-        } else {
-            throw new HttpError('has_overtime_salary should be 0 or 1', 422);
+        if(["yes", "no", "don't know"].indexOf(data.has_overtime_salary) === -1){
+            throw new HttpError('加班是否有加班費應為是/否/不知道', 422);
+        }      
+    }
+
+    if(data.overtime_salary_is_legal && data.has_overtime_salary){
+        if(data.has_overtime_salary !== "yes"){
+            throw new HttpError('加班應有加班費，本欄位才有意義', 422);
+        }
+        else{
+            if(["yes", "no", "don't know"].indexOf(data.overtime_salary_is_legal) === -1){
+                throw new HttpError('加班費是否合法應為是/否/不知道', 422);
+            }
         }
     }
 
     if (data.has_compensatory_dayoff) {
-        if (data.has_compensatory_dayoff === '0') {
-            data.has_compensatory_dayoff = false;
-        } else if (data.has_compensatory_dayoff === '1') {
-            data.has_compensatory_dayoff = true;
-        } else {
-            throw new HttpError('has_compensatory_dayoff should be 0 or 1', 422);
+        if(["yes", "no", "don't know"].indexOf(data.has_overtime_salary) <= -1){
+            throw new HttpError('加班是否有補修應為是/否/不知道', 422);
         }
     }
 }
