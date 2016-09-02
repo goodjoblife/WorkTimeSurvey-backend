@@ -188,21 +188,6 @@ describe('Workings 工時資訊', function() {
             });
         });
 
-        describe('area', function() {
-            it('can be inserted', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        company_id: '00000001',
-                        area: 'Hello world',
-                    }))
-                    .expect(200)
-                    .expect(function(res) {
-                        assert.propertyVal(res.body.working, 'area', 'Hello world');
-                    })
-                    .end(done);
-            });
-        });
-
         describe('sector', function() {
             it('can be inserted', function(done) {
                 request(app).post('/workings')
@@ -219,32 +204,20 @@ describe('Workings 工時資訊', function() {
         });
 
         describe('has_overtime_salary', function() {
-            it('should be false if request 0', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        company_id: '00000001',
-                        has_overtime_salary: '0',
-                    }))
-                    .expect(200)
-                    .expect(function(res) {
-                        assert.propertyVal(res.body.working, 'has_overtime_salary', false);
-                    })
-                    .end(done);
-            });
-
-            it('should be true if request 1', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        company_id: '00000001',
-                        has_overtime_salary: '1',
-                    }))
-                    .expect(200)
-                    .expect(function(res) {
-                        assert.propertyVal(res.body.working, 'has_overtime_salary', true);
-                    })
-                    .end(done);
-            });
-
+            for (let case of ['yes', 'no', 'don\'t know']) { 
+                it('should be ' + case, function(done) {
+                    request(app).post('/workings')
+                        .send(generatePayload({
+                            company_id: '00000001',
+                            has_overtime_salary: case,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.propertyVal(res.body.working, 'has_overtime_salary', case);
+                        })
+                        .end(done);
+                });
+            }
             it('should be error if request others', function(done) {
                 request(app).post('/workings')
                     .send(generatePayload({
@@ -256,33 +229,63 @@ describe('Workings 工時資訊', function() {
             });
         });
 
+        describe('overtime_salary_is_legal', function(){
+            for (let case of ['yes', 'no', 'don\'t know']) { 
+                it('should be ' + case, function(done) {
+                    request(app).post('/workings')
+                        .send(generatePayload({
+                            company_id: '00000001',
+                            has_overtime_salary: 'yes',
+                            overtime_salary_is_legal: case,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.propertyVal(res.body.working, 'overtime_salary_is_legal', case);
+                        })
+                        .end(done);
+                });
+            }
+            for (let preCase of ['no', 'don\'t know', '-1', '']){
+                it('should be error if has_overtime_salary is not yes', function(done) {
+                    request(app).post('/workings')
+                        .send(generatePayload({
+                            company_id: '00000001',
+                            has_overtime_salary: preCase,
+                            overtime_salary_is_legal: 'yes',
+                        }))
+                        .expect(422)
+                        .end(done);
+                });    
+            }
+            
+            it('should be error if request others', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        company_id: '00000001',
+                        has_overtime_salary: 'yes',
+                        overtime_salary_is_legal: '-1',
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+        });
+
         describe('has_compensatory_dayoff', function() {
-            it('should be false if request 0', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        company_id: '00000001',
-                        has_compensatory_dayoff: '0',
-                    }))
-                    .expect(200)
-                    .expect(function(res) {
-                        assert.propertyVal(res.body.working, 'has_compensatory_dayoff', false);
-                    })
-                    .end(done);
-            });
-
-            it('should be true if request 1', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        company_id: '00000001',
-                        has_compensatory_dayoff: '1',
-                    }))
-                    .expect(200)
-                    .expect(function(res) {
-                        assert.propertyVal(res.body.working, 'has_compensatory_dayoff', true);
-                    })
-                    .end(done);
-            });
-
+            for (let case of ['yes', 'no', 'don\'t know']) { 
+                it('should be ' + case, function(done) {
+                    request(app).post('/workings')
+                        .send(generatePayload({
+                            company_id: '00000001',
+                            has_compensatory_dayoff: case,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.propertyVal(res.body.working, 'has_compensatory_dayoff', case);
+                        })
+                        .end(done);
+                });
+            }
+            
             it('should be error if request others', function(done) {
                 request(app).post('/workings')
                     .send(generatePayload({
