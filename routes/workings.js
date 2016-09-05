@@ -279,18 +279,23 @@ function validateWorking(data) {
         }      
     }
 
-    if(data.overtime_salary_is_legal && data.has_overtime_salary) {
-        if(data.has_overtime_salary !== "yes") {
+    if(data.overtime_salary_is_legal) {
+        if(data.has_overtime_salary){
+            if(data.has_overtime_salary !== "yes") {
+                throw new HttpError('加班應有加班費，本欄位才有意義', 422);
+            } else {
+                if(["yes", "no", "don't know"].indexOf(data.overtime_salary_is_legal) === -1) {
+                    throw new HttpError('加班費是否合法應為是/否/不知道', 422);
+                }
+            }    
+        }
+        else {
             throw new HttpError('加班應有加班費，本欄位才有意義', 422);
-        } else {
-            if(["yes", "no", "don't know"].indexOf(data.overtime_salary_is_legal) === -1) {
-                throw new HttpError('加班費是否合法應為是/否/不知道', 422);
-            }
         }
     }
 
     if (data.has_compensatory_dayoff) {
-        if(["yes", "no", "don't know"].indexOf(data.has_overtime_salary) === -1) {
+        if(["yes", "no", "don't know"].indexOf(data.has_compensatory_dayoff) === -1) {
             throw new HttpError('加班是否有補修應為是/否/不知道', 422);
         }
     }
