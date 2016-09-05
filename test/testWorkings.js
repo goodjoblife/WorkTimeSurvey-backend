@@ -629,7 +629,7 @@ describe('Workings 工時資訊', function() {
                 {
                     job_title: 'ABC',
                     company: {
-                        name: 'EE',
+                        name: 'FF',
                     },
                     week_work_time: 50,
                 },
@@ -651,7 +651,7 @@ describe('Workings 工時資訊', function() {
                     assert.deepProperty(res.body, '0._id');
                     assert.deepProperty(res.body, '0.companies');
                     assert.isArray(res.body[0].companies);
-                    assert.deepProperty(res.body, '0.companies.0._id');
+                    assert.deepProperty(res.body, '0.companies.0._id.name');
                     assert.deepProperty(res.body, '0.companies.0.average_week_work_time');
                     assert.deepProperty(res.body, '0.companies.0.count');
                 })
@@ -675,23 +675,25 @@ describe('Workings 工時資訊', function() {
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 2);
-                    assert.deepPropertyVal(res.body, '0._id', 'ABC');
-                    assert.deepPropertyVal(res.body, '1._id', 'BC');
+                    assert.deepPropertyVal(res.body, '0._id', 'BC');
+                    assert.deepPropertyVal(res.body, '1._id', 'ABC');
                 })
                 .end(done);
         });
 
-        it('sort company by average_week_work_time for every job_title', function(done) {
+        it('sort company by count for every job_title', function(done) {
             request(app).get('/workings/statistics/by-job')
                 .query({job_title: 'ABC'})
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 1);
                     assert.deepPropertyVal(res.body, '0._id', 'ABC');
-                    assert.deepPropertyVal(res.body, '0.companies.0._id', 'DD');
+                    assert.deepPropertyVal(res.body, '0.companies.0._id.name', 'DD');
                     assert.deepPropertyVal(res.body, '0.companies.0.average_week_work_time', 50);
-                    assert.deepPropertyVal(res.body, '0.companies.1._id', 'EE');
-                    assert.deepPropertyVal(res.body, '0.companies.1.average_week_work_time', 45);
+                    assert.deepPropertyVal(res.body, '0.companies.1._id.name', 'FF');
+                    assert.deepPropertyVal(res.body, '0.companies.1.average_week_work_time', 50);
+                    assert.deepPropertyVal(res.body, '0.companies.2._id.name', 'EE');
+                    assert.deepPropertyVal(res.body, '0.companies.2.average_week_work_time', 40);
                 })
                 .end(done);
         });

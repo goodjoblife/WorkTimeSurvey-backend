@@ -405,7 +405,7 @@ router.get('/statistics/by-job', function(req, res, next) {
         },
         {
             $group: {
-                _id: {company: "$company.name", job_title: "$job_title"},
+                _id: {company: "$company", job_title: "$job_title"},
                 week_work_times: {$push: "$week_work_time"},
                 average_week_work_time: {$avg: "$week_work_time"},
                 count: {$sum: 1},
@@ -413,7 +413,7 @@ router.get('/statistics/by-job', function(req, res, next) {
         },
         {
             $sort: {
-                average_week_work_time: -1,
+                count: -1,
             }
         },
         {
@@ -433,8 +433,6 @@ router.get('/statistics/by-job', function(req, res, next) {
         next(new HttpError("Internal Server Error", 500));
     });
 });
-
-
 
 /**
  * @api {get} /workings/companies/search 搜尋工時資訊中的公司
