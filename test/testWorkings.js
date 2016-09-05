@@ -218,6 +218,20 @@ describe('Workings 工時資訊', function() {
                         .end(done);
                 });
             }
+            for (let input of ['', undefined]) { 
+                it('should not be uploaded to database if it is "' + input + '"', function(done) {
+                    request(app).post('/workings')
+                        .send(generatePayload({
+                            company_id: '00000001',
+                            has_overtime_salary: input,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.notProperty(res.body.working, 'has_overtime_salary');
+                        })
+                        .end(done);
+                });
+            }
             it('should be error if request others', function(done) {
                 request(app).post('/workings')
                     .send(generatePayload({
@@ -245,7 +259,7 @@ describe('Workings 工時資訊', function() {
                         .end(done);
                 });
             }
-            for (let preInput of ['no', 'don\'t know', '-1', '']){
+            for (let preInput of ['no', 'don\'t know', '-1', '', undefined]){
                 it('should be error if has_overtime_salary is not yes', function(done) {
                     request(app).post('/workings')
                         .send(generatePayload({
@@ -258,6 +272,22 @@ describe('Workings 工時資訊', function() {
                 });    
             }
             
+            for (let input of ['', undefined]) { 
+                it('should not be uploaded to database if it is "' + input + '"', function(done) {
+                    request(app).post('/workings')
+                        .send(generatePayload({
+                            company_id: '00000001',
+                            has_overtime_salary: 'yes',
+                            overtime_salary_is_legal: input,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.notProperty(res.body.working, 'overtime_salary_is_legal');
+                        })
+                        .end(done);
+                });
+            }
+
             it('should be error if request others', function(done) {
                 request(app).post('/workings')
                     .send(generatePayload({
@@ -285,7 +315,21 @@ describe('Workings 工時資訊', function() {
                         .end(done);
                 });
             }
-            
+            for (let input of ['', undefined]) { 
+                it('should not be uploaded to database if it is "' + input + '"', function(done) {
+                    request(app).post('/workings')
+                        .send(generatePayload({
+                            company_id: '00000001',
+                            has_compensatory_dayoff: input,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.notProperty(res.body.working, 'has_compensatory_dayoff');
+                        })
+                        .end(done);
+                });
+            }
+
             it('should be error if request others', function(done) {
                 request(app).post('/workings')
                     .send(generatePayload({
