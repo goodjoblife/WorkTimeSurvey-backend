@@ -232,6 +232,19 @@ describe('Workings 工時資訊', function() {
                         .end(done);
                 });
             }
+
+            it('wouldn\'t be returned if there is no such field in payload', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        company_id: '00000001',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.notProperty(res.body.working, 'has_overtime_salary');
+                    })
+                    .end(done);
+            });
+
             it('should be error if request others', function(done) {
                 request(app).post('/workings')
                     .send(generatePayload({
@@ -288,6 +301,18 @@ describe('Workings 工時資訊', function() {
                 });
             }
 
+            it('wouldn\'t be returned if there is no such field in payload', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        company_id: '00000001',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.notProperty(res.body.working, 'overtime_salary_is_legal');
+                    })
+                    .end(done);
+            });
+
             it('should be error if request others', function(done) {
                 request(app).post('/workings')
                     .send(generatePayload({
@@ -329,6 +354,18 @@ describe('Workings 工時資訊', function() {
                         .end(done);
                 });
             }
+
+            it('wouldn\'t be returned if there is no such field in payload', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        company_id: '00000001',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.notProperty(res.body.working, 'has_compensatory_dayoff');
+                    })
+                    .end(done);
+            });
 
             it('should be error if request others', function(done) {
                 request(app).post('/workings')
