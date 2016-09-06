@@ -114,7 +114,7 @@ router.post('/', function(req, res, next) {
         "day_promised_work_time", "day_real_work_time",
         "sector",
         "has_overtime_salary",
-        "overtime_salary_is_legal",
+        "is_overtime_salary_legal",
         "has_compensatory_dayoff",
     ].forEach(function(field, i) {
         if (req.body[field] && (typeof req.body[field] === "string") && req.body[field] !== "") {
@@ -279,12 +279,12 @@ function validateWorking(data) {
         }      
     }
 
-    if(data.overtime_salary_is_legal) {
+    if(data.is_overtime_salary_legal) {
         if(data.has_overtime_salary){
             if(data.has_overtime_salary !== "yes") {
                 throw new HttpError('加班應有加班費，本欄位才有意義', 422);
             } else {
-                if(["yes", "no", "don't know"].indexOf(data.overtime_salary_is_legal) === -1) {
+                if(["yes", "no", "don't know"].indexOf(data.is_overtime_salary_legal) === -1) {
                     throw new HttpError('加班費是否合法應為是/否/不知道', 422);
                 }
             }    
