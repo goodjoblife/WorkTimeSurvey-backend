@@ -17,16 +17,20 @@ describe('Workings 工時資訊', function() {
         before('Seeding some workings', function() {
             return db.collection('workings').insertMany([
                 {
-                    created_at: new Date(),
+                    overtime_frequency: 1,
+                    created_at: new Date("2016-09-06 08:00"),
                 },
                 {
-                    created_at: new Date(),
+                    overtime_frequency: 2,
+                    created_at: new Date("2016-09-06 09:00"),
                 },
                 {
-                    created_at: new Date(),
+                    overtime_frequency: 1,
+                    created_at: new Date("2016-09-06 09:03"),
                 },
                 {
-                    created_at: new Date(),
+                    overtime_frequency: 4,
+                    created_at: new Date("2016-09-06 09:04"),
                 },
             ]);
         });
@@ -38,6 +42,16 @@ describe('Workings 工時資訊', function() {
                     assert.propertyVal(res.body, 'total', 4);
                     assert.property(res.body, 'workings');
                     assert.lengthOf(res.body.workings, 4);
+                })
+                .end(done);
+        });
+
+        it('return the correct field', function(done) {
+            request(app).get('/workings/latest')
+                .expect(200)
+                .expect(function(res) {
+                    assert.deepPropertyVal(res.body.workings, '0.overtime_frequency', 4);
+                    assert.notDeepProperty(res.body.workings, '0.author');
                 })
                 .end(done);
         });
