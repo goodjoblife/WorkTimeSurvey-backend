@@ -219,7 +219,7 @@ describe('Workings 工時資訊', function() {
                 });
             }
             for (let input of ['', undefined]) { 
-                it('should not be uploaded to database if it is "' + input + '"', function(done) {
+                it('wouldn\'t be returned if it is "' + input + '"', function(done) {
                     request(app).post('/workings')
                         .send(generatePayload({
                             company_id: '00000001',
@@ -273,7 +273,7 @@ describe('Workings 工時資訊', function() {
             }
             
             for (let input of ['', undefined]) { 
-                it('should not be uploaded to database if it is "' + input + '"', function(done) {
+                it('wouldn\'t be returned if it is "' + input + '"', function(done) {
                     request(app).post('/workings')
                         .send(generatePayload({
                             company_id: '00000001',
@@ -316,7 +316,7 @@ describe('Workings 工時資訊', function() {
                 });
             }
             for (let input of ['', undefined]) { 
-                it('should not be uploaded to database if it is "' + input + '"', function(done) {
+                it('wouldn\'t be returned if it is "' + input + '"', function(done) {
                     request(app).post('/workings')
                         .send(generatePayload({
                             company_id: '00000001',
