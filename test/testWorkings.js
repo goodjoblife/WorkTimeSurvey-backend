@@ -256,18 +256,18 @@ describe('Workings 工時資訊', function() {
             });
         });
 
-        describe('overtime_salary_is_legal', function(){
+        describe('is_overtime_salary_legal', function(){
             for (let input of ['yes', 'no', 'don\'t know']) { 
                 it('should be ' + input, function(done) {
                     request(app).post('/workings')
                         .send(generatePayload({
                             company_id: '00000001',
                             has_overtime_salary: 'yes',
-                            overtime_salary_is_legal: input,
+                            is_overtime_salary_legal: input,
                         }))
                         .expect(200)
                         .expect(function(res) {
-                            assert.propertyVal(res.body.working, 'overtime_salary_is_legal', input);
+                            assert.propertyVal(res.body.working, 'is_overtime_salary_legal', input);
                         })
                         .end(done);
                 });
@@ -278,7 +278,7 @@ describe('Workings 工時資訊', function() {
                         .send(generatePayload({
                             company_id: '00000001',
                             has_overtime_salary: preInput,
-                            overtime_salary_is_legal: 'yes',
+                            is_overtime_salary_legal: 'yes',
                         }))
                         .expect(422)
                         .end(done);
@@ -291,11 +291,11 @@ describe('Workings 工時資訊', function() {
                         .send(generatePayload({
                             company_id: '00000001',
                             has_overtime_salary: 'yes',
-                            overtime_salary_is_legal: input,
+                            is_overtime_salary_legal: input,
                         }))
                         .expect(200)
                         .expect(function(res) {
-                            assert.notProperty(res.body.working, 'overtime_salary_is_legal');
+                            assert.notProperty(res.body.working, 'is_overtime_salary_legal');
                         })
                         .end(done);
                 });
@@ -308,7 +308,7 @@ describe('Workings 工時資訊', function() {
                     }))
                     .expect(200)
                     .expect(function(res) {
-                        assert.notProperty(res.body.working, 'overtime_salary_is_legal');
+                        assert.notProperty(res.body.working, 'is_overtime_salary_legal');
                     })
                     .end(done);
             });
@@ -318,7 +318,7 @@ describe('Workings 工時資訊', function() {
                     .send(generatePayload({
                         company_id: '00000001',
                         has_overtime_salary: 'yes',
-                        overtime_salary_is_legal: '-1',
+                        is_overtime_salary_legal: '-1',
                     }))
                     .expect(422)
                     .end(done);
