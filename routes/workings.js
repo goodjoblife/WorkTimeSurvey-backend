@@ -381,13 +381,13 @@ router.get('/statistics/by-company', function(req, res, next) {
 
 
 /**
- * @api {get} /workings/statistics/by-job Statistics by given job_title
+ * @api {get} /workings/search-and-group/by-job-title search by given job_title
  * @apiGroup Workings
  * @apiParam {String} job_title
  * @apiSuccess {Object[]} .
  */
-router.get('/statistics/by-job', function(req, res, next) {
-    winston.info("/statistics/by-job", {job_title: req.query.job_title, ip: req.ip, ips: req.ips});
+router.get('/search-and-group/by-job-title', function(req, res, next) {
+    winston.info("/workings/search-and-group/by-job-title", {job_title: req.query.job_title, ip: req.ip, ips: req.ips});
 
     const job_title = req.query.job_title;
     const collection = req.db.collection('workings');
@@ -404,27 +404,29 @@ router.get('/statistics/by-job', function(req, res, next) {
             }
         },
         {
+            $sort: {
+                created_at: -1,
+            }
+        },
+        {
             $group: {
-                _id: {company: "$company", job_title: "$job_title"},
-                week_work_times: {$push: "$week_work_time"},
-                average_week_work_time: {$avg: "$week_work_time"},
+                _id: "$job_title",
+                workings: {$push: {
+                    company: "$company",
+                    week_work_time: "$week_work_time",
+                    overtime_frequency: "$overtime_frequency",
+                    day_promised_work_time: "$day_promised_work_time",
+                    day_real_work_time: "$day_real_work_time",
+                    created_at: "$created_at",
+                    sector: "$sector",
+                    }
+                },
                 count: {$sum: 1},
             }
         },
         {
             $sort: {
                 count: -1,
-            }
-        },
-        {
-            $group: {
-                _id: "$_id.job_title",
-                companies: {$push: {
-                    _id: "$_id.company",
-                    week_work_times: "$week_work_times",
-                    average_week_work_time: "$average_week_work_time",
-                    count: "$count",
-                }},
             }
         },
     ]).toArray().then(function(results) {

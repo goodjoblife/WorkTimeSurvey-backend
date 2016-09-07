@@ -1,4 +1,6 @@
-const assert = require('chai').assert;
+const chai = require('chai');
+chai.use(require('chai-datetime'));
+const assert = chai.assert;
 const request = require('supertest');
 const app = require('../app');
 const MongoClient = require('mongodb').MongoClient;
@@ -588,112 +590,129 @@ describe('Workings 工時資訊', function() {
         });
     });
 
-    describe('GET /statistics/by-job', function() {
+    describe('GET /search-and-group/by-job-title', function() {
         before('Seeding some workings', function() {
             return db.collection('workings').insertMany([
                 {
-                    job_title: 'ABC',
-                    company: {
-                        name: 'DD',
-                    },
+                    job_title: "ENGINEER1" , 
+                    company: { id: "84149961", name: "COMPANY1" }, 
                     week_work_time: 40,
-                },
+                    overtime_frequency: 0,
+                    day_promised_work_time: 8,
+                    day_real_work_time: 8,
+                    created_at: new Date("2016-07-21T14:15:44.929Z"),
+                    sector: "TAIPEI",
+                }, 
                 {
-                    job_title: 'BC',
-                    company: {
-                        name: 'DD',
-                    },
-                    week_work_time: 50,
-                },
-                {
-                    job_title: 'ABC',
-                    company: {
-                        name: 'DD',
-                    },
-                    week_work_time: 60,
-                },
-                {
-                    job_title: 'ABC',
-                    company: {
-                        name: 'EE',
-                    },
+                    job_title: "ENGINEER1" , 
+                    company: { id: "84149961", name: "COMPANY1"}, 
                     week_work_time: 40,
+                    overtime_frequency: 2,
+                    day_promised_work_time: 8,
+                    day_real_work_time: 10,
+                    created_at: new Date("2016-07-20T14:15:44.929Z"),
+                    sector: "TAIPEI",
                 },
                 {
-                    job_title: 'BC',
-                    company: {
-                        name: 'EE',
-                    },
+                    job_title: "ENGINEER2" , 
+                    company:{ "name": "COMPANY"},
                     week_work_time: 60,
-                },
-                {
-                    job_title: 'ABC',
-                    company: {
-                        name: 'FF',
-                    },
-                    week_work_time: 50,
+                    overtime_frequency: 3,
+                    day_promised_work_time: 8,
+                    day_real_work_time: 10,
+                    created_at: new Date("2016-07-20T14:15:44.929Z"),
+                    sector: "TAIPEI",
                 },
             ]);
         });
 
         it('error 422 if no job_title provided', function(done) {
-            request(app).get('/workings/statistics/by-job')
+            request(app).get('/workings/search-and-group/by-job-title')
                 .expect(422)
                 .end(done);
         });
 
-        it('依照 company, job_title 來分群資料，結構正確', function(done) {
-            request(app).get('/workings/statistics/by-job')
-                .query({job_title: 'ABC'})
+        it('依照 job_title 來分群資料，結構正確', function(done) {
+            request(app).get('/workings/search-and-group/by-job-title')
+                .query({job_title: 'ENGINEER1'})
                 .expect(200)
                 .expect(function(res) {
                     assert.isArray(res.body);
                     assert.deepProperty(res.body, '0._id');
-                    assert.deepProperty(res.body, '0.companies');
-                    assert.isArray(res.body[0].companies);
-                    assert.deepProperty(res.body, '0.companies.0._id.name');
-                    assert.deepProperty(res.body, '0.companies.0.average_week_work_time');
-                    assert.deepProperty(res.body, '0.companies.0.count');
+                    assert.deepProperty(res.body, '0.workings');
+                    assert.isArray(res.body[0].workings);
+                    assert.deepProperty(res.body, '0.workings.0.company.name');
+                    assert.deepProperty(res.body, '0.workings.0.week_work_time');
+                    assert.deepProperty(res.body, '0.workings.0.overtime_frequency');
+                    assert.deepProperty(res.body, '0.workings.0.day_promised_work_time');
+                    assert.deepProperty(res.body, '0.workings.0.day_real_work_time');
+                    assert.deepProperty(res.body, '0.workings.0.created_at');
+                    assert.deepProperty(res.body, '0.workings.0.sector');
                 })
                 .end(done);
         });
 
         it('小寫 job_title 轉換成大寫', function(done) {
-            request(app).get('/workings/statistics/by-job')
-                .query({job_title: 'ABC'})
+            request(app).get('/workings/search-and-group/by-job-title')
+                .query({job_title: 'engineer1'})
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 1);
-                    assert.deepPropertyVal(res.body, '0._id', 'ABC');
+                    assert.deepPropertyVal(res.body, '0._id', 'ENGINEER1');
                 })
                 .end(done);
         });
 
         it('job_title match any substring in workings.job_title', function(done) {
-            request(app).get('/workings/statistics/by-job')
-                .query({job_title: 'BC'})
+            request(app).get('/workings/search-and-group/by-job-title')
+                .query({job_title: 'ENGINEER'})
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 2);
-                    assert.deepPropertyVal(res.body, '0._id', 'BC');
-                    assert.deepPropertyVal(res.body, '1._id', 'ABC');
+                    assert.deepPropertyVal(res.body, '0._id', 'ENGINEER1');
+                    assert.deepPropertyVal(res.body, '1._id', 'ENGINEER2');
                 })
                 .end(done);
         });
 
-        it('sort company by count for every job_title', function(done) {
-            request(app).get('/workings/statistics/by-job')
-                .query({job_title: 'ABC'})
+        it('依照 created_at 由新到舊排序 group data', function(done) {
+            request(app).get('/workings/search-and-group/by-job-title')
+                .query({job_title: 'ENGINEER1'})
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 1);
-                    assert.deepPropertyVal(res.body, '0._id', 'ABC');
-                    assert.deepPropertyVal(res.body, '0.companies.0._id.name', 'DD');
-                    assert.deepPropertyVal(res.body, '0.companies.0.average_week_work_time', 50);
-                    assert.deepPropertyVal(res.body, '0.companies.1._id.name', 'FF');
-                    assert.deepPropertyVal(res.body, '0.companies.1.average_week_work_time', 50);
-                    assert.deepPropertyVal(res.body, '0.companies.2._id.name', 'EE');
-                    assert.deepPropertyVal(res.body, '0.companies.2.average_week_work_time', 40);
+                    assert.deepPropertyVal(res.body, '0._id', 'ENGINEER1');
+                    assert.deepPropertyVal(res.body, '0.workings.0.company.name', 'COMPANY1');
+                    assert.deepPropertyVal(res.body, '0.workings.0.week_work_time', 40);
+                    assert.deepPropertyVal(res.body, '0.workings.0.overtime_frequency', 0);
+                    assert.deepPropertyVal(res.body, '0.workings.0.day_promised_work_time', 8);
+                    assert.deepPropertyVal(res.body, '0.workings.0.day_real_work_time', 8);
+                    assert.equalDate(new Date(res.body[0].workings[0].created_at), new Date("2016-07-21T14:15:44.929Z"));
+                    assert.deepPropertyVal(res.body, '0.workings.0.sector', "TAIPEI");
+                    assert.deepPropertyVal(res.body, '0.workings.1.company.name', 'COMPANY1');
+                    assert.deepPropertyVal(res.body, '0.workings.1.week_work_time', 40);
+                    assert.deepPropertyVal(res.body, '0.workings.1.overtime_frequency', 2);
+                    assert.deepPropertyVal(res.body, '0.workings.1.day_promised_work_time', 8);
+                    assert.deepPropertyVal(res.body, '0.workings.1.day_real_work_time', 10);
+                    assert.equalDate(new Date(res.body[0].workings[1].created_at), new Date("2016-07-20T14:15:44.929Z"));
+                    assert.deepPropertyVal(res.body, '0.workings.1.sector', "TAIPEI");
+                    let workings = res.body[0].workings;
+                    for(let idx=0; idx < workings.length-1; ++idx) {
+                        assert.afterDate(new Date(workings[idx].created_at), new Date(workings[idx+1].created_at)); 
+                    }
+                })
+                .end(done);
+        });
+
+        it('依照 group data 數量由大到小排序 job_title', function(done) {
+            request(app).get('/workings/search-and-group/by-job-title')
+                .query({job_title: 'ENGINEER'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.lengthOf(res.body, 2);
+                    for(let idx=0; idx < res.body.length-1; ++idx) {
+                        assert.isAtLeast(res.body[idx]['count'], res.body[idx+1]['count']);
+                    }
                 })
                 .end(done);
         });
