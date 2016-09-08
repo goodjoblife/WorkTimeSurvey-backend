@@ -711,7 +711,7 @@ describe('Workings 工時資訊', function() {
                 .expect(function(res) {
                     assert.lengthOf(res.body, 2);
                     for(let idx=0; idx < res.body.length-1; ++idx) {
-                        assert.isAtLeast(res.body[idx]['count'], res.body[idx+1]['count']);
+                        assert(res.body[idx].workings.length >= res.body[idx+1].workings.length);
                     }
                 })
                 .end(done);
