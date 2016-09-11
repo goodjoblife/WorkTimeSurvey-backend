@@ -672,6 +672,128 @@ describe('Workings 工時資訊', function() {
         });
     });
 
+    describe('GET /statistics/by-company', function() {
+        before('Seeding some workings', function() {
+            return db.collection('workings').insertMany([
+                {
+                    company: {
+                        id: '00000001',
+                        name: 'MY GOODJOB COMPANY',
+                    },
+                    job_title: 'JOB1',
+                    week_work_time: 10,
+                },
+                {
+                    company: {
+                        id: '00000001',
+                        name: 'MY GOODJOB COMPANY',
+                    },
+                    job_title: 'JOB1',
+                    week_work_time: 20,
+                },
+                {
+                    company: {
+                        id: '00000001',
+                        name: 'MY GOODJOB COMPANY',
+                    },
+                    job_title: 'JOB2',
+                    week_work_time: 20,
+                },
+                {
+                    company: {
+                        name: 'YOUR GOODJOB COMPANY',
+                    },
+                    job_title: 'JOB1',
+                    week_work_time: 25,
+                },
+                {
+                    company: {
+                        name: 'OTHER BADJOB COMPANY',
+                    },
+                    job_title: 'JOB1',
+                    week_work_time: 40,
+                },
+            ]);
+        });
+
+        it('error 422 if no company provided', function(done) {
+            request(app).get('/workings/statistics/by-company')
+                .expect(422)
+                .end(done);
+        });
+
+        it('依照 company, job_title 來分群資料，結構正確', function(done) {
+            request(app).get('/workings/statistics/by-company')
+                .query({company: 'MY GOODJOB COMPANY'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.isArray(res.body);
+                    assert.deepProperty(res.body, '0._id.name');
+                    assert.deepProperty(res.body, '0.job_titles');
+                    assert.isArray(res.body[0].job_titles);
+                    assert.deepProperty(res.body, '0.job_titles.0._id');
+                    assert.deepProperty(res.body, '0.job_titles.0.average_week_work_time');
+                    assert.deepProperty(res.body, '0.job_titles.0.count');
+                })
+                .end(done);
+        });
+
+        it('小寫 company 轉換成大寫', function(done) {
+            request(app).get('/workings/statistics/by-company')
+                .query({company: 'my goodjob Company'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.lengthOf(res.body, 1);
+                    assert.deepPropertyVal(res.body, '0._id.name', 'MY GOODJOB COMPANY');
+                })
+                .end(done);
+        });
+
+        it('company match any substring in workings.company.name', function(done) {
+            request(app).get('/workings/statistics/by-company')
+                .query({company: 'GOODJOB'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.lengthOf(res.body, 2);
+                    assert.deepPropertyVal(res.body, '0._id.name', 'MY GOODJOB COMPANY');
+                    assert.deepPropertyVal(res.body, '1._id.name', 'YOUR GOODJOB COMPANY');
+                })
+                .end(done);
+        });
+
+        it('sort job by average_week_work_time for every company', function(done) {
+            request(app).get('/workings/statistics/by-company')
+                .query({company: 'MY GOODJOB COMPANY'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.lengthOf(res.body, 1);
+                    assert.deepPropertyVal(res.body, '0._id.name', 'MY GOODJOB COMPANY');
+                    assert.deepPropertyVal(res.body, '0.job_titles.0._id', 'JOB2');
+                    assert.deepPropertyVal(res.body, '0.job_titles.0.average_week_work_time', 20);
+                    assert.deepPropertyVal(res.body, '0.job_titles.1._id', 'JOB1');
+                    assert.deepPropertyVal(res.body, '0.job_titles.1.average_week_work_time', 15);
+                })
+                .end(done);
+        });
+
+        it('根據統編搜尋', function(done) {
+            request(app).get('/workings/statistics/by-company')
+                .query({company: '00000001'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.lengthOf(res.body, 1);
+                    assert.deepPropertyVal(res.body, '0._id.name', 'MY GOODJOB COMPANY');
+                    assert.deepPropertyVal(res.body, '0.job_titles.0._id', 'JOB2');
+                    assert.deepPropertyVal(res.body, '0.job_titles.1._id', 'JOB1');
+                })
+                .end(done);
+        });
+
+        after(function() {
+            return db.collection('workings').remove({});
+        });
+    });
+
     describe('GET /search-and-group/by-company', function() {
         before('Seeding some workings', function() {
             return db.collection('workings').insertMany([

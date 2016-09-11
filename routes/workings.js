@@ -355,6 +355,93 @@ function checkQuota(db, author) {
 }
 
 /**
+ * @api {get} /workings/statistics/by-company Statistics by given company
+ * @apiDescription 根據 company 關鍵字，傳回符合關鍵字的公司相關統計資訊
+ * @apiGroup Workings
+ * @apiParam {String} company
+ * @apiSuccess {Object[]} .
+ * @apiSuccess {Object} ._id 公司
+ * @apiSuccess {String} ._id.id 統一編號（可能沒有）
+ * @apiSuccess {String} ._id.name 公司名稱（也可能是 String[]）
+ * @apiSuccess {Object[]} .job_titles 以職稱做子分類的資訊
+ * @apiSuccess {String} .job_titles._id 職稱名稱
+ * @apiSuccess {Number} .job_titles.average_week_work_time 子分類的最近一週工時平均
+ * @apiSuccess {Number} .job_titles.count 子分類的資料比數
+ *
+ * @apiSampleRequest /workings/statistics/by-company?company=YAHOO
+ * @apiSuccessExample {json} Success-Response:
+ * HTTP/1.1 200 OK
+ * {
+ *   [
+ *     {
+ *       "_id": {
+ *         "id": "00000000",
+ *         "name": "YAHOO!"
+ *       },
+ *       "job_titles": [
+ *         {
+ *           "_id": "TEST",
+ *           "average_week_work_time": 40,
+ *           "count": 1
+ *         }
+ *       ]
+ *     }
+ *   ]
+ * }
+ */
+router.get('/statistics/by-company', function(req, res, next) {
+    winston.info("/statistics/by-company", {company: req.query.company, ip: req.ip, ips: req.ips});
+
+    const company = req.query.company;
+    const collection = req.db.collection('workings');
+
+    if (! company || company === '') {
+        next(new HttpError("company is required", 422));
+        return;
+    }
+
+    collection.aggregate([
+        {
+            $match: {
+                $or: [
+                    {'company.name': new RegExp(lodash.escapeRegExp(company.toUpperCase()))},
+                    {'company.id': company},
+                ],
+            }
+        },
+        {
+            $group: {
+                _id: {company: "$company", job_title: "$job_title"},
+                week_work_times: {$push: "$week_work_time"},
+                average_week_work_time: {$avg: "$week_work_time"},
+                count: {$sum: 1},
+            }
+        },
+        {
+            $sort: {
+                average_week_work_time: -1,
+            }
+        },
+        {
+            $group: {
+                _id: "$_id.company",
+                job_titles: {$push: {
+                    _id: "$_id.job_title",
+                    week_work_times: "$week_work_times",
+                    average_week_work_time: "$average_week_work_time",
+                    count: "$count",
+                }},
+            }
+        },
+    ]).toArray().then(function(results) {
+        res.send(results);
+    }).catch(function(err) {
+        next(new HttpError("Internal Server Error", 500));
+    });
+});
+
+
+/**
  * @api {get} /workings/search-and-group/by-company search by given company
  * @apiDescription 根據 company 關鍵字，傳回符合關鍵字的公司相關統計資訊
  * @apiGroup Workings
