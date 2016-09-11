@@ -389,8 +389,8 @@ function checkQuota(db, author) {
  *   ]
  * }
  */
-router.get('/statistics/by-company', function(req, res, next) {
-    winston.info("/statistics/by-company", {company: req.query.company, ip: req.ip, ips: req.ips});
+router.get('/search-and-group/by-company', function(req, res, next) {
+    winston.info("/workings/search-and-group/by-company", {company: req.query.company, ip: req.ip, ips: req.ips});
 
     const company = req.query.company;
     const collection = req.db.collection('workings');
@@ -410,29 +410,91 @@ router.get('/statistics/by-company', function(req, res, next) {
             }
         },
         {
-            $group: {
-                _id: {company: "$company", job_title: "$job_title"},
-                week_work_times: {$push: "$week_work_time"},
-                average_week_work_time: {$avg: "$week_work_time"},
-                count: {$sum: 1},
+            $sort: {
+                created_at: -1,
             }
+        },
+        {
+            $group: {
+                _id: "$company",
+                has_overtime_salary_yes: {$sum:
+                    { $cond: [ {$eq: ["$has_overtime_salary", "yes"] }, 1, 0] }
+                },
+                has_overtime_salary_no: {$sum:
+                    { $cond: [ {$eq: ["$has_overtime_salary", "no"] }, 1, 0] }
+                },
+                has_overtime_salary_dont: {$sum:
+                    { $cond: [ {$eq: ["$has_overtime_salary", "don't know"] }, 1, 0] }
+                },
+                is_overtime_salary_legal_yes: {$sum:
+                    { $cond: [ {$eq: ["$is_overtime_salary_legal", "yes"] }, 1, 0] }
+                },
+                is_overtime_salary_legal_no: {$sum:
+                    { $cond: [ {$eq: ["$is_overtime_salary_legal", "no"] }, 1, 0] }
+                },
+                is_overtime_salary_legal_dont: {$sum:
+                    { $cond: [ {$eq: ["$is_overtime_salary_legal", "don't know"] }, 1, 0] }
+                },
+                has_compensatory_dayoff_yes: {$sum:
+                    { $cond: [ {$eq: ["$has_compensatory_dayoff", "yes"] }, 1, 0] }
+                },
+                has_compensatory_dayoff_no: {$sum:
+                    { $cond: [ {$eq: ["$has_compensatory_dayoff", "no"] }, 1, 0] }
+                },
+                has_compensatory_dayoff_dont: {$sum:
+                    { $cond: [ {$eq: ["$has_compensatory_dayoff", "don't know"] }, 1, 0] }
+                },
+                workings: {$push: {
+                    job_title: "$job_title",
+                    week_work_time: "$week_work_time",
+                    overtime_frequency: "$overtime_frequency",
+                    day_promised_work_time: "$day_promised_work_time",
+                    day_real_work_time: "$day_real_work_time",
+                    created_at: "$created_at",
+                    sector: "$sector",
+                    }
+                },
+                count: {$sum: 1},
+            },
+        },
+        {
+            $project: {
+                _id: "$_id",
+                overtime: {
+                    $cond: [
+                        {$gte: [ {$size: "$workings"}, 5] }, 
+                        {
+                            has_overtime_salary: {
+                                yes: "$has_overtime_salary_yes",
+                                no: "$has_overtime_salary_no",
+                                dont_know: "$has_overtime_salary_dont",
+                            },
+                            
+                            is_overtime_salary_legal: {
+                                yes: "$is_overtime_salary_legal_yes",
+                                no: "$is_overtime_salary_legal_no",
+                                dont_know: "$is_overtime_salary_legal_dont",
+                            },
+                            has_compensatory_dayoff: {
+                                yes: "$has_compensatory_dayoff_yes",
+                                no: "$has_compensatory_dayoff_no",
+                                dont_know: "$has_compensatory_dayoff_dont",
+                            },
+                        },
+                        {}
+                    ]
+                },
+                workings: "$workings",
+                count: "$count",
+            },
+            
         },
         {
             $sort: {
-                average_week_work_time: -1,
+                count: -1,
             }
         },
-        {
-            $group: {
-                _id: "$_id.company",
-                job_titles: {$push: {
-                    _id: "$_id.job_title",
-                    week_work_times: "$week_work_times",
-                    average_week_work_time: "$average_week_work_time",
-                    count: "$count",
-                }},
-            }
-        },
+        
     ]).toArray().then(function(results) {
         res.send(results);
     }).catch(function(err) {
