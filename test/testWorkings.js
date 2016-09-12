@@ -602,6 +602,9 @@ describe('Workings 工時資訊', function() {
                     day_real_work_time: 8,
                     created_at: new Date("2016-07-21T14:15:44.929Z"),
                     sector: "TAIPEI",
+                    has_overtime_salary: "yes",
+                    is_overtime_salary_legal: "yes",
+                    has_compensatory_dayoff: "yes",
                 }, 
                 {
                     job_title: "ENGINEER1" , 
@@ -612,16 +615,61 @@ describe('Workings 工時資訊', function() {
                     day_real_work_time: 10,
                     created_at: new Date("2016-07-20T14:15:44.929Z"),
                     sector: "TAIPEI",
+                    has_overtime_salary: "yes",
+                    is_overtime_salary_legal: "no",
+                    has_compensatory_dayoff: "no",
+                },
+                {
+                    job_title: "ENGINEER1" , 
+                    company: { id: "84149961", name: "COMPANY1"}, 
+                    week_work_time: 55,
+                    overtime_frequency: 3,
+                    day_promised_work_time: 8,
+                    day_real_work_time: 11,
+                    created_at: new Date("2016-07-22T14:15:44.929Z"),
+                    sector: "TAINAN",
+                    has_overtime_salary: "yes",
+                    is_overtime_salary_legal: "don't know",
+                    has_compensatory_dayoff: "no",
                 },
                 {
                     job_title: "ENGINEER2" , 
-                    company:{ "name": "COMPANY"},
+                    company: { id: "84149961", name: "COMPANY1"}, 
+                    week_work_time: 45,
+                    overtime_frequency: 1,
+                    day_promised_work_time: 9,
+                    day_real_work_time: 10,
+                    created_at: new Date("2016-07-23T14:15:44.929Z"),
+                    sector: "TAIPEI",
+                    has_overtime_salary: "no",
+                    is_overtime_salary_legal: "",
+                    has_compensatory_dayoff: "yes",
+                },
+                {
+                    job_title: "ENGINEER2" , 
+                    company: { id: "84149961", name: "COMPANY1"}, 
+                    week_work_time: 47,
+                    overtime_frequency: 3,
+                    day_promised_work_time: 7,
+                    day_real_work_time: 10,
+                    created_at: new Date("2016-07-20T14:15:44.929Z"),
+                    sector: "TAICHUNG",
+                    has_overtime_salary: "don't know",
+                    is_overtime_salary_legal: "",
+                    has_compensatory_dayoff: "don't know",
+                },
+                {
+                    job_title: "ENGINEER2" , 
+                    company:{ name: "COMPANY"},
                     week_work_time: 60,
                     overtime_frequency: 3,
                     day_promised_work_time: 8,
                     day_real_work_time: 10,
                     created_at: new Date("2016-07-20T14:15:44.929Z"),
                     sector: "TAIPEI",
+                    has_overtime_salary: "no",
+                    is_overtime_salary_legal: "",
+                    has_compensatory_dayoff: "don't know",
                 },
             ]);
         });
@@ -657,20 +705,21 @@ describe('Workings 工時資訊', function() {
                 .query({job_title: 'engineer1'})
                 .expect(200)
                 .expect(function(res) {
-                    assert.lengthOf(res.body, 1);
-                    assert.deepPropertyVal(res.body, '0._id', 'ENGINEER1');
+                    for(let idx in res.body) {
+                        assert.match(res.body[0]._id, /ENGINEER1/);
+                    }
                 })
                 .end(done);
         });
 
-        it('job_title match any substring in workings.job_title', function(done) {
+        it('job_title match any substring in _id', function(done) {
             request(app).get('/workings/search-and-group/by-job-title')
                 .query({job_title: 'ENGINEER'})
                 .expect(200)
                 .expect(function(res) {
-                    assert.lengthOf(res.body, 2);
-                    assert.deepPropertyVal(res.body, '0._id', 'ENGINEER1');
-                    assert.deepPropertyVal(res.body, '1._id', 'ENGINEER2');
+                    for(let idx in res.body) {
+                        assert.match(res.body[idx]._id, /ENGINEER/);
+                    }
                 })
                 .end(done);
         });
@@ -680,25 +729,11 @@ describe('Workings 工時資訊', function() {
                 .query({job_title: 'ENGINEER1'})
                 .expect(200)
                 .expect(function(res) {
-                    assert.lengthOf(res.body, 1);
-                    assert.deepPropertyVal(res.body, '0._id', 'ENGINEER1');
-                    assert.deepPropertyVal(res.body, '0.workings.0.company.name', 'COMPANY1');
-                    assert.deepPropertyVal(res.body, '0.workings.0.week_work_time', 40);
-                    assert.deepPropertyVal(res.body, '0.workings.0.overtime_frequency', 0);
-                    assert.deepPropertyVal(res.body, '0.workings.0.day_promised_work_time', 8);
-                    assert.deepPropertyVal(res.body, '0.workings.0.day_real_work_time', 8);
-                    assert.equalDate(new Date(res.body[0].workings[0].created_at), new Date("2016-07-21T14:15:44.929Z"));
-                    assert.deepPropertyVal(res.body, '0.workings.0.sector', "TAIPEI");
-                    assert.deepPropertyVal(res.body, '0.workings.1.company.name', 'COMPANY1');
-                    assert.deepPropertyVal(res.body, '0.workings.1.week_work_time', 40);
-                    assert.deepPropertyVal(res.body, '0.workings.1.overtime_frequency', 2);
-                    assert.deepPropertyVal(res.body, '0.workings.1.day_promised_work_time', 8);
-                    assert.deepPropertyVal(res.body, '0.workings.1.day_real_work_time', 10);
-                    assert.equalDate(new Date(res.body[0].workings[1].created_at), new Date("2016-07-20T14:15:44.929Z"));
-                    assert.deepPropertyVal(res.body, '0.workings.1.sector', "TAIPEI");
-                    let workings = res.body[0].workings;
-                    for(let idx=0; idx < workings.length-1; ++idx) {
-                        assert.afterDate(new Date(workings[idx].created_at), new Date(workings[idx+1].created_at)); 
+                    for(let idx in res.body) {
+                        let workings = res.body[idx].workings;
+                        for(let work_idx=0; work_idx < workings.length-1; ++work_idx) {
+                            assert.notBeforeDate(new Date(workings[work_idx].created_at), new Date(workings[work_idx+1].created_at)); 
+                        }
                     }
                 })
                 .end(done);
@@ -709,7 +744,6 @@ describe('Workings 工時資訊', function() {
                 .query({job_title: 'ENGINEER'})
                 .expect(200)
                 .expect(function(res) {
-                    assert.lengthOf(res.body, 2);
                     for(let idx=0; idx < res.body.length-1; ++idx) {
                         assert(res.body[idx].workings.length >= res.body[idx+1].workings.length);
                     }
@@ -717,12 +751,10 @@ describe('Workings 工時資訊', function() {
                 .end(done);
         });
 
-
         after(function() {
             return db.collection('workings').remove({});
         });
     });
-
 
     describe('GET /workings/companies/search', function() {
         before('Seeding some workings', function() {
