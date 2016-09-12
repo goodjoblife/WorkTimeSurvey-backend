@@ -446,6 +446,16 @@ router.get('/statistics/by-company', function(req, res, next) {
  * @apiGroup Workings
  * @apiParam {String} job_title
  * @apiSuccess {Object[]} .
+ * @apiSuccess {Object} ._id 職稱名稱
+ * @apiSuccess {Number} .count 工時數量
+ * @apiSuccess {Object[]} .workings[] 工時資料
+ * @apiSuccess {Object} .workings.company 公司
+ * @apiSuccess {Number} .workings.week_work_time
+ * @apiSuccess {Number} .workings.overtime_frequency
+ * @apiSuccess {Number} .workings.day_promised_work_time
+ * @apiSuccess {Number} .workings.day_real_work_time
+ * @apiSuccess {String} .workings.created_at
+ * @apiSuccess {String} .workings.sector
  */
 router.get('/search-and-group/by-job-title', function(req, res, next) {
     winston.info("/workings/search-and-group/by-job-title", {job_title: req.query.job_title, ip: req.ip, ips: req.ips});
@@ -461,7 +471,7 @@ router.get('/search-and-group/by-job-title', function(req, res, next) {
     collection.aggregate([
         {
             $match: {
-                job_title: new RegExp(lodash.escapeRegExp(job_title.toUpperCase() ) ),
+                job_title: new RegExp(lodash.escapeRegExp(job_title.toUpperCase())),
             }
         },
         {
@@ -472,17 +482,20 @@ router.get('/search-and-group/by-job-title', function(req, res, next) {
         {
             $group: {
                 _id: "$job_title",
-                workings: {$push: {
-                    company: "$company",
-                    week_work_time: "$week_work_time",
-                    overtime_frequency: "$overtime_frequency",
-                    day_promised_work_time: "$day_promised_work_time",
-                    day_real_work_time: "$day_real_work_time",
-                    created_at: "$created_at",
-                    sector: "$sector",
+                workings: {
+                    $push: {
+                        company: "$company",
+                        week_work_time: "$week_work_time",
+                        overtime_frequency: "$overtime_frequency",
+                        day_promised_work_time: "$day_promised_work_time",
+                        day_real_work_time: "$day_real_work_time",
+                        created_at: "$created_at",
+                        sector: "$sector",
                     }
                 },
-                count: {$sum: 1},
+                count: {
+                    $sum: 1,
+                },
             }
         },
         {
