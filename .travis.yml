@@ -29,6 +29,6 @@ install:
     - npm install
 
 script:
-    - npm test
+    - npm test -- --timeout 30s
 
 after_success: ".travis/after_success.sh"
