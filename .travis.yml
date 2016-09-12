@@ -5,7 +5,7 @@ node_js:
 
 services:
     - mongodb
-    
+
 addons:
   apt:
     sources:
@@ -14,6 +14,7 @@ addons:
     packages:
       - mongodb-org-server
       - mongodb-org-shell
+
 branches:
     except:
         - gh-pages
