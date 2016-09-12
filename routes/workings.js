@@ -596,7 +596,6 @@ router.get('/search-and-group/by-company', function(req, res, next) {
                 count: -1,
             }
         },
-        
     ]).toArray().then(function(results) {
         res.send(results);
     }).catch(function(err) {

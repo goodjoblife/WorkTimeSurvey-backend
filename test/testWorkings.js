@@ -1008,6 +1008,7 @@ describe('Workings 工時資訊', function() {
                 })
                 .end(done);
         });
+
         it('當 workings.length >= 5, overtime.has_overtime_salary values 加總會等於 overtime.has_compensatory_dayoff values 加總'
             , function(done) { 
             request(app).get('/workings/search-and-group/by-company')
