@@ -26,7 +26,7 @@ describe('jobs', function() {
                 {
                     des: 'YAHO',
                     isFinal: true,
-                }
+                },
             ]);
         });
 

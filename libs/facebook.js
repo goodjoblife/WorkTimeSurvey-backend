@@ -16,7 +16,7 @@ function access_token_auth(access_token) {
         if (! access_token) {
             throw new Error("access_token is required");
         }
-        
+
         if (access_token === "") {
             throw new Error("access_token is required");
         }
@@ -27,7 +27,7 @@ function access_token_auth(access_token) {
                 access_token: access_token,
                 fields: "id,name",
                 format: "json",
-            }
+            },
         }, function(error, response, body) {
             if (error) {
                 reject(new Error("access_token is invalid"));
@@ -47,4 +47,4 @@ function access_token_auth(access_token) {
 module.exports = {
     access_token_auth: access_token_auth,
     access_token_auth_middleware: access_token_auth_middleware,
-}
+};

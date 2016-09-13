@@ -174,7 +174,7 @@ describe('Clairvoyance 天眼通 API', function() {
                 })
                 .end(done);
         });
-    
+
         it('sort workings by created_at desc', function(done) {
             request(app).get('/clairvoyance/search/by-job')
                 .query({job_title: "TEST"})
