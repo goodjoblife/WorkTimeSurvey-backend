@@ -893,6 +893,18 @@ describe('Workings 工時資訊', function() {
                     has_overtime_salary: "no",
                     has_compensatory_dayoff: "don't know",
                 },
+                {
+                    job_title: "ENGINEER3", 
+                    company:{name: "COM_PANY"},
+                    week_work_time: 66,
+                    overtime_frequency: 3,
+                    day_promised_work_time: 8,
+                    day_real_work_time: 12,
+                    created_at: new Date("2016-07-30T14:15:44.929Z"),
+                    sector: "TAIPEI",
+                    has_overtime_salary: "no",
+                    has_compensatory_dayoff: "yes",
+                },
             ]);
         });
 
@@ -904,42 +916,43 @@ describe('Workings 工時資訊', function() {
 
         it('依照 company 來分群資料，結構正確', function(done) {
             request(app).get('/workings/search-and-group/by-company')
-                .query({company: 'COMPANY1'})
+                .query({company: 'COMPANY'})
                 .expect(200)
                 .expect(function(res) {
-                    assert.isArray(res.body);
-                    assert.deepProperty(res.body, '0._id');
-                    assert.deepProperty(res.body, '0._id.name');
-                    assert.deepProperty(res.body, '0._id.id');
-                    assert.deepProperty(res.body, '0.workings');
-                    assert.isArray(res.body[0].workings);
-                    assert.deepProperty(res.body, '0.workings.0.job_title');
-                    assert.deepProperty(res.body, '0.workings.0.week_work_time');
-                    assert.deepProperty(res.body, '0.workings.0.overtime_frequency');
-                    assert.deepProperty(res.body, '0.workings.0.day_promised_work_time');
-                    assert.deepProperty(res.body, '0.workings.0.day_real_work_time');
-                    assert.deepProperty(res.body, '0.workings.0.created_at');
-                    assert.deepProperty(res.body, '0.workings.0.sector');
-                    assert.deepProperty(res.body, '0.count');
-                    if(res.body[0].count >= 5) {
-                        assert.deepProperty(res.body, '0.has_overtime_salary_count');
-                        assert.deepProperty(res.body, '0.has_overtime_salary_count.yes');
-                        assert.deepProperty(res.body, '0.has_overtime_salary_count.no');
-                        assert.deepProperty(res.body, '0.has_overtime_salary_count.dont_know');
-                        assert.deepProperty(res.body, '0.is_overtime_salary_legal_count');
-                        assert.deepProperty(res.body, '0.is_overtime_salary_legal_count.yes');
-                        assert.deepProperty(res.body, '0.is_overtime_salary_legal_count.no');
-                        assert.deepProperty(res.body, '0.is_overtime_salary_legal_count.dont_know');
-                        assert.deepProperty(res.body, '0.has_compensatory_dayoff_count');
-                        assert.deepProperty(res.body, '0.has_compensatory_dayoff_count.yes');
-                        assert.deepProperty(res.body, '0.has_compensatory_dayoff_count.no');
-                        assert.deepProperty(res.body, '0.has_compensatory_dayoff_count.dont_know');
+                    for(let idx in res.body) {
+                        assert.isArray(res.body);
+                        assert.deepProperty(res.body[idx], '_id');
+                        assert.deepProperty(res.body[idx], '_id.name');
+                        assert.deepProperty(res.body[idx], 'workings');
+                        assert.isArray(res.body[idx].workings);
+                        assert.deepProperty(res.body[idx], 'workings.0.job_title');
+                        assert.deepProperty(res.body[idx], 'workings.0.week_work_time');
+                        assert.deepProperty(res.body[idx], 'workings.0.overtime_frequency');
+                        assert.deepProperty(res.body[idx], 'workings.0.day_promised_work_time');
+                        assert.deepProperty(res.body[idx], 'workings.0.day_real_work_time');
+                        assert.deepProperty(res.body[idx], 'workings.0.created_at');
+                        assert.deepProperty(res.body[idx], 'workings.0.sector');
+                        assert.deepProperty(res.body[idx], 'count');
+                        if(res.body[idx].count >= 5) {
+                            assert.deepProperty(res.body[idx], 'has_overtime_salary_count');
+                            assert.deepProperty(res.body[idx], 'has_overtime_salary_count.yes');
+                            assert.deepProperty(res.body[idx], 'has_overtime_salary_count.no');
+                            assert.deepProperty(res.body[idx], 'has_overtime_salary_count.dont_know');
+                            assert.deepProperty(res.body[idx], 'is_overtime_salary_legal_count');
+                            assert.deepProperty(res.body[idx], 'is_overtime_salary_legal_count.yes');
+                            assert.deepProperty(res.body[idx], 'is_overtime_salary_legal_count.no');
+                            assert.deepProperty(res.body[idx], 'is_overtime_salary_legal_count.dont_know');
+                            assert.deepProperty(res.body[idx], 'has_compensatory_dayoff_count');
+                            assert.deepProperty(res.body[idx], 'has_compensatory_dayoff_count.yes');
+                            assert.deepProperty(res.body[idx], 'has_compensatory_dayoff_count.no');
+                            assert.deepProperty(res.body[idx], 'has_compensatory_dayoff_count.dont_know');
+                        }
                     }
                 })
                 .end(done);
         });
 
-        it('小寫 company 轉換成大寫', function(done) {
+        it('小寫 company query 轉換成大寫', function(done) {
             request(app).get('/workings/search-and-group/by-company')
                 .query({company: 'company1'})
                 .expect(200)
@@ -950,7 +963,7 @@ describe('Workings 工時資訊', function() {
                 .end(done);
         });
 
-        it('company match any substring in workings.company.name', function(done) {
+        it('company match any substring in _id.name', function(done) {
             request(app).get('/workings/search-and-group/by-company')
                 .query({company: 'COMPANY'})
                 .expect(200)
@@ -996,7 +1009,7 @@ describe('Workings 工時資訊', function() {
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 1);
-                    assert.deepPropertyVal(res.body, '0._id.name', 'COMPANY1');
+                    assert.deepPropertyVal(res.body, '0._id.id', '84149961');
                 })
                 .end(done);
         });

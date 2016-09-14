@@ -458,38 +458,37 @@ router.get('/statistics/by-company', function(req, res, next) {
  * @apiSuccess {Number} .workings.day_real_work_time 該比資料工作日實際工時
  * @apiSuccess {Date} .workings.created_at 該比資料填寫完成時間
  * @apiSuccess {String} .workings.sector 該比資料廠區/門市/分公司
- * @apiSuccess {Object[]} .overtime 統計該公司是否有加班費、加班費是否合法、是否有補休
- * @apiSuccess {Object[]} .overtime.has_overtime_salary 統計該公司是否有加班費
- * @apiSuccess {Object[]} .overtime.is_overtime_salary_legal 統計該公司加班費是否合法
- * @apiSuccess {Object[]} .overtime.has_compensatory_dayoff 統計該公司是否有補休
+ * @apiSuccess {Object[]} has_overtime_salary_count 統計該公司是否有加班費
+ * @apiSuccess {Object[]} is_overtime_salary_legal_count 統計該公司加班費是否合法
+ * @apiSuccess {Object[]} has_compensatory_dayoff_count 統計該公司是否有補休
  * @apiSuccess {Number} .count workings 的資料比數
  *
  * @apiSampleRequest /workings/search-and-group/by-company?company=COMPANY1
  * @apiSuccessExample {json} Success-Response:
  * HTTP/1.1 200 OK
- * [
- *   {
+ * {
+ *   [
+ *     {
  *       _id: { id: '84149961', name: 'COMPANY1' },
  *       workings: [
- *           {
- *               job_title: 'ENGINEER2',
- *               week_work_time: 45,
- *               overtime_frequency: 1,
- *               day_promised_work_time: 9,
- *               day_real_work_time: 10,
- *               created_at: '2016-07-23T14:15:44.929Z',
- *               sector: 'TAIPEI'
- *           },
- *           ...
+ *         {
+ *           job_title: 'ENGINEER2',
+ *           week_work_time: 45,
+ *           overtime_frequency: 1,
+ *           day_promised_work_time: 9,
+ *           day_real_work_time: 10,
+ *           created_at: '2016-07-23T14:15:44.929Z',
+ *           sector: 'TAIPEI'
+ *         },
+ *         ...
  *       ],
- *       overtime: {
- *           has_overtime_salary: { yes: 3, no: 1, dont_know: 1 },
- *           is_overtime_salary_legal: { yes: 1, no: 1, dont_know: 1 },
- *           has_compensatory_dayoff: { yes: 2, no: 2, dont_know: 1 }
- *       }
+ *       has_overtime_salary: { yes: 3, no: 1, dont_know: 1 },
+ *       is_overtime_salary_legal: { yes: 1, no: 1, dont_know: 1 },
+ *       has_compensatory_dayoff: { yes: 2, no: 2, dont_know: 1 },
  *       count: 5,
- *   }
- * ]
+ *     }
+ *   ]
+ * }
  */
 router.get('/search-and-group/by-company', function(req, res, next) {
     winston.info("/workings/search-and-group/by-company", {company: req.query.company, ip: req.ip, ips: req.ips});
@@ -610,7 +609,6 @@ router.get('/search-and-group/by-company', function(req, res, next) {
         next(new HttpError("Internal Server Error", 500));
     });
 });
-
 
 /**
  * @api {get} /workings/search-and-group/by-job-title search by given job_title
