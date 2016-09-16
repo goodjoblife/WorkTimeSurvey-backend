@@ -456,11 +456,11 @@ router.get('/statistics/by-company', function(req, res, next) {
  * @apiSuccess {Number} .workings.overtime_frequency 該比資料加班頻率
  * @apiSuccess {Number} .workings.day_promised_work_time 該比資料工作日表訂工時
  * @apiSuccess {Number} .workings.day_real_work_time 該比資料工作日實際工時
- * @apiSuccess {Date} .workings.created_at 該比資料填寫完成時間
+ * @apiSuccess {String} .workings.created_at 該比資料填寫完成時間 it is a String with date format
  * @apiSuccess {String} .workings.sector 該比資料廠區/門市/分公司
- * @apiSuccess {Object[]} has_overtime_salary_count 統計該公司是否有加班費
- * @apiSuccess {Object[]} is_overtime_salary_legal_count 統計該公司加班費是否合法
- * @apiSuccess {Object[]} has_compensatory_dayoff_count 統計該公司是否有補休
+ * @apiSuccess {Object[]} has_overtime_salary_count 統計該公司是否有加班費 (may be undefined)
+ * @apiSuccess {Object[]} is_overtime_salary_legal_count 統計該公司加班費是否合法 (may be undefined)
+ * @apiSuccess {Object[]} has_compensatory_dayoff_count 統計該公司是否有補休 (may be undefined)
  * @apiSuccess {Number} .count workings 的資料比數
  *
  * @apiSampleRequest /workings/search-and-group/by-company?company=COMPANY1
@@ -567,7 +567,7 @@ router.get('/search-and-group/by-company', function(req, res, next) {
                         {
                             yes: "$has_overtime_salary_yes",
                             no: "$has_overtime_salary_no",
-                            dont_know: "$has_overtime_salary_dont",
+                            "don't know": "$has_overtime_salary_dont",
                         },
                        "$skip"
                     ]
@@ -578,7 +578,7 @@ router.get('/search-and-group/by-company', function(req, res, next) {
                         {
                             yes: "$is_overtime_salary_legal_yes",
                             no: "$is_overtime_salary_legal_no",
-                            dont_know: "$is_overtime_salary_legal_dont",
+                            "don't know": "$is_overtime_salary_legal_dont",
                         },
                         "$skip"
                     ]
@@ -589,7 +589,7 @@ router.get('/search-and-group/by-company', function(req, res, next) {
                         {
                             yes: "$has_compensatory_dayoff_yes",
                             no: "$has_compensatory_dayoff_no",
-                            dont_know: "$has_compensatory_dayoff_dont",
+                            "don't know": "$has_compensatory_dayoff_dont",
                         },
                         "$skip"
                     ]

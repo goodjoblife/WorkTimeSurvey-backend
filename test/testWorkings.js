@@ -883,7 +883,7 @@ describe('Workings 工時資訊', function() {
                 },
                 {
                     job_title: "ENGINEER2", 
-                    company:{name: "COMPANY"},
+                    company:{name: "COMPANY2"},
                     week_work_time: 60,
                     overtime_frequency: 3,
                     day_promised_work_time: 8,
@@ -914,44 +914,66 @@ describe('Workings 工時資訊', function() {
                 .end(done);
         });
 
-        it('依照 company 來分群資料，結構正確', function(done) {
+        it('依照 company 來分群資料，結構正確 (workings.length >= 5)', function(done) {
             request(app).get('/workings/search-and-group/by-company')
-                .query({company: 'COMPANY'})
+                .query({company: 'COMPANY1'})
                 .expect(200)
                 .expect(function(res) {
-                    for(let idx in res.body) {
-                        assert.isArray(res.body);
-                        assert.deepProperty(res.body[idx], '_id');
-                        assert.deepProperty(res.body[idx], '_id.name');
-                        assert.deepProperty(res.body[idx], 'workings');
-                        assert.isArray(res.body[idx].workings);
-                        assert.deepProperty(res.body[idx], 'workings.0.job_title');
-                        assert.deepProperty(res.body[idx], 'workings.0.week_work_time');
-                        assert.deepProperty(res.body[idx], 'workings.0.overtime_frequency');
-                        assert.deepProperty(res.body[idx], 'workings.0.day_promised_work_time');
-                        assert.deepProperty(res.body[idx], 'workings.0.day_real_work_time');
-                        assert.deepProperty(res.body[idx], 'workings.0.created_at');
-                        assert.deepProperty(res.body[idx], 'workings.0.sector');
-                        assert.deepProperty(res.body[idx], 'count');
-                        if(res.body[idx].count >= 5) {
-                            assert.deepProperty(res.body[idx], 'has_overtime_salary_count');
-                            assert.deepProperty(res.body[idx], 'has_overtime_salary_count.yes');
-                            assert.deepProperty(res.body[idx], 'has_overtime_salary_count.no');
-                            assert.deepProperty(res.body[idx], 'has_overtime_salary_count.dont_know');
-                            assert.deepProperty(res.body[idx], 'is_overtime_salary_legal_count');
-                            assert.deepProperty(res.body[idx], 'is_overtime_salary_legal_count.yes');
-                            assert.deepProperty(res.body[idx], 'is_overtime_salary_legal_count.no');
-                            assert.deepProperty(res.body[idx], 'is_overtime_salary_legal_count.dont_know');
-                            assert.deepProperty(res.body[idx], 'has_compensatory_dayoff_count');
-                            assert.deepProperty(res.body[idx], 'has_compensatory_dayoff_count.yes');
-                            assert.deepProperty(res.body[idx], 'has_compensatory_dayoff_count.no');
-                            assert.deepProperty(res.body[idx], 'has_compensatory_dayoff_count.dont_know');
-                        }
-                    }
+                    assert.isArray(res.body);
+                    assert.deepProperty(res.body[0], '_id');
+                    assert.deepProperty(res.body[0], '_id.name');
+                    assert.deepProperty(res.body[0], 'workings');
+                    assert.isArray(res.body[0].workings);
+                    assert(res.body[0].workings.length >= 5);
+                    assert.deepProperty(res.body[0], 'workings.0.job_title');
+                    assert.deepProperty(res.body[0], 'workings.0.week_work_time');
+                    assert.deepProperty(res.body[0], 'workings.0.overtime_frequency');
+                    assert.deepProperty(res.body[0], 'workings.0.day_promised_work_time');
+                    assert.deepProperty(res.body[0], 'workings.0.day_real_work_time');
+                    assert.deepProperty(res.body[0], 'workings.0.created_at');
+                    assert.deepProperty(res.body[0], 'workings.0.sector');
+                    assert.deepProperty(res.body[0], 'count');
+                    assert.deepProperty(res.body[0], 'has_overtime_salary_count');
+                    assert.deepProperty(res.body[0], 'has_overtime_salary_count.yes');
+                    assert.deepProperty(res.body[0], 'has_overtime_salary_count.no');
+                    assert.deepProperty(res.body[0], "has_overtime_salary_count.don't know");
+                    assert.deepProperty(res.body[0], 'is_overtime_salary_legal_count');
+                    assert.deepProperty(res.body[0], 'is_overtime_salary_legal_count.yes');
+                    assert.deepProperty(res.body[0], 'is_overtime_salary_legal_count.no');
+                    assert.deepProperty(res.body[0], "is_overtime_salary_legal_count.don't know");
+                    assert.deepProperty(res.body[0], 'has_compensatory_dayoff_count');
+                    assert.deepProperty(res.body[0], 'has_compensatory_dayoff_count.yes');
+                    assert.deepProperty(res.body[0], 'has_compensatory_dayoff_count.no');
+                    assert.deepProperty(res.body[0], "has_compensatory_dayoff_count.don't know");
                 })
                 .end(done);
         });
 
+        it('依照 company 來分群資料，結構正確 (workings.length < 5)', function(done) {
+            request(app).get('/workings/search-and-group/by-company')
+                .query({company: 'COMPANY2'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.isArray(res.body);
+                    assert.deepProperty(res.body[0], '_id');
+                    assert.deepProperty(res.body[0], '_id.name');
+                    assert.deepProperty(res.body[0], 'workings');
+                    assert.isArray(res.body[0].workings);
+                    assert(res.body[0].workings.length < 5);
+                    assert.deepProperty(res.body[0], 'workings.0.job_title');
+                    assert.deepProperty(res.body[0], 'workings.0.week_work_time');
+                    assert.deepProperty(res.body[0], 'workings.0.overtime_frequency');
+                    assert.deepProperty(res.body[0], 'workings.0.day_promised_work_time');
+                    assert.deepProperty(res.body[0], 'workings.0.day_real_work_time');
+                    assert.deepProperty(res.body[0], 'workings.0.created_at');
+                    assert.deepProperty(res.body[0], 'workings.0.sector');
+                    assert.deepProperty(res.body[0], 'count');
+                    assert.notDeepProperty(res.body[0], 'has_overtime_salary_count');
+                    assert.notDeepProperty(res.body[0], 'is_overtime_salary_legal_count');
+                    assert.notDeepProperty(res.body[0], 'has_compensatory_dayoff_count');
+                })
+                .end(done);
+        });
         it('小寫 company query 轉換成大寫', function(done) {
             request(app).get('/workings/search-and-group/by-company')
                 .query({company: 'company1'})
@@ -970,7 +992,7 @@ describe('Workings 工時資訊', function() {
                 .expect(function(res) {
                     assert.lengthOf(res.body, 2);
                     assert.deepPropertyVal(res.body, '0._id.name', 'COMPANY1');
-                    assert.deepPropertyVal(res.body, '1._id.name', 'COMPANY');
+                    assert.deepPropertyVal(res.body, '1._id.name', 'COMPANY2');
                 })
                 .end(done);
         });
@@ -1016,18 +1038,15 @@ describe('Workings 工時資訊', function() {
 
         it('當 workings.length >= 5, has_overtime_salary_count values 加總會小於等於 workings.length', function(done) {
             request(app).get('/workings/search-and-group/by-company')
-                .query({company: 'COMPANY'})
+                .query({company: 'COMPANY1'})
                 .expect(200)
                 .expect(function(res) {
-                    for(let idx in res.body) {
-                        if(res.body[idx].workings.length >= 5) {
-                            let total = 0;
-                            total += res.body[idx].has_overtime_salary_count.yes;
-                            total += res.body[idx].has_overtime_salary_count.no;
-                            total += res.body[idx].has_overtime_salary_count.dont_know;
-                            assert(total <= res.body[idx].workings.length);
-                        }
-                    }
+                    assert.lengthOf(res.body, 1);
+                    let total = 0;
+                    total += res.body[0].has_overtime_salary_count.yes;
+                    total += res.body[0].has_overtime_salary_count.no;
+                    total += res.body[0].has_overtime_salary_count["don't know"];
+                    assert(total <= res.body[0].workings.length);
 
                 })
                 .end(done);
@@ -1036,18 +1055,15 @@ describe('Workings 工時資訊', function() {
         it('當 workings.length >= 5, has_overtime_salary_count.yes 會大於等於 is_overtime_salary_legal_count values 加總'
            , function(done) {
             request(app).get('/workings/search-and-group/by-company')
-                .query({company: 'COMPANY'})
+                .query({company: 'COMPANY1'})
                 .expect(200)
                 .expect(function(res) {
-                    for(let idx in res.body) {
-                        if(res.body[idx].workings.length >= 5) {
-                            let total = 0;
-                            total += res.body[idx].is_overtime_salary_legal_count.yes;
-                            total += res.body[idx].is_overtime_salary_legal_count.no;
-                            total += res.body[idx].is_overtime_salary_legal_count.dont_know;
-                            assert(res.body[idx].has_overtime_salary_count.yes >= total);
-                        }
-                    }
+                    assert.lengthOf(res.body, 1);
+                    let total = 0;
+                    total += res.body[0].is_overtime_salary_legal_count.yes;
+                    total += res.body[0].is_overtime_salary_legal_count.no;
+                    total += res.body[0].is_overtime_salary_legal_count["don't know"];
+                    assert(res.body[0].has_overtime_salary_count.yes >= total);
                 })
                 .end(done);
         });
