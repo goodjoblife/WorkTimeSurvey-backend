@@ -507,100 +507,101 @@ router.get('/search-and-group/by-company', function(req, res, next) {
                     {'company.name': new RegExp(lodash.escapeRegExp(company.toUpperCase()))},
                     {'company.id': company},
                 ],
-            }
+            },
         },
         {
             $sort: {
                 created_at: -1,
-            }
+            },
         },
         {
             $group: {
                 _id: "$company",
                 has_overtime_salary_yes: {$sum:
-                    {$cond: [ {$eq: ["$has_overtime_salary", "yes"] }, 1, 0] }
+                    {$cond: [{$eq: ["$has_overtime_salary", "yes"] }, 1, 0] },
                 },
                 has_overtime_salary_no: {$sum:
-                    {$cond: [ {$eq: ["$has_overtime_salary", "no"] }, 1, 0] }
+                    {$cond: [{$eq: ["$has_overtime_salary", "no"] }, 1, 0] },
                 },
                 has_overtime_salary_dont: {$sum:
-                    {$cond: [ {$eq: ["$has_overtime_salary", "don't know"] }, 1, 0] }
+                    {$cond: [{$eq: ["$has_overtime_salary", "don't know"] }, 1, 0] },
                 },
                 is_overtime_salary_legal_yes: {$sum:
-                    {$cond: [ {$eq: ["$is_overtime_salary_legal", "yes"] }, 1, 0] }
+                    {$cond: [{$eq: ["$is_overtime_salary_legal", "yes"] }, 1, 0] },
                 },
                 is_overtime_salary_legal_no: {$sum:
-                    {$cond: [ {$eq: ["$is_overtime_salary_legal", "no"] }, 1, 0] }
+                    {$cond: [{$eq: ["$is_overtime_salary_legal", "no"] }, 1, 0] },
                 },
                 is_overtime_salary_legal_dont: {$sum:
-                    {$cond: [ {$eq: ["$is_overtime_salary_legal", "don't know"] }, 1, 0] }
+                    {$cond: [{$eq: ["$is_overtime_salary_legal", "don't know"] }, 1, 0] },
                 },
                 has_compensatory_dayoff_yes: {$sum:
-                    {$cond: [ {$eq: ["$has_compensatory_dayoff", "yes"] }, 1, 0] }
+                    {$cond: [{$eq: ["$has_compensatory_dayoff", "yes"] }, 1, 0] },
                 },
                 has_compensatory_dayoff_no: {$sum:
-                    {$cond: [ {$eq: ["$has_compensatory_dayoff", "no"] }, 1, 0] }
+                    {$cond: [{$eq: ["$has_compensatory_dayoff", "no"] }, 1, 0] },
                 },
                 has_compensatory_dayoff_dont: {$sum:
-                    {$cond: [ {$eq: ["$has_compensatory_dayoff", "don't know"] }, 1, 0] }
+                    {$cond: [{$eq: ["$has_compensatory_dayoff", "don't know"] }, 1, 0] },
                 },
-                workings: {$push: {
-                    job_title: "$job_title",
-                    week_work_time: "$week_work_time",
-                    overtime_frequency: "$overtime_frequency",
-                    day_promised_work_time: "$day_promised_work_time",
-                    day_real_work_time: "$day_real_work_time",
-                    created_at: "$created_at",
-                    sector: "$sector",
-                    }
+                workings: {
+                    $push: {
+                        job_title: "$job_title",
+                        week_work_time: "$week_work_time",
+                        overtime_frequency: "$overtime_frequency",
+                        day_promised_work_time: "$day_promised_work_time",
+                        day_real_work_time: "$day_real_work_time",
+                        created_at: "$created_at",
+                        sector: "$sector",
+                    },
                 },
                 count: {$sum: 1},
-            }
+            },
         },
         {
             $project: {
                 _id: 1,
                 has_overtime_salary_count: {
                     $cond: [
-                        {$gte: [ "$count", 5]}, 
+                        {$gte: ["$count", 5]},
                         {
                             yes: "$has_overtime_salary_yes",
                             no: "$has_overtime_salary_no",
                             "don't know": "$has_overtime_salary_dont",
                         },
-                       "$skip"
-                    ]
+                        "$skip",
+                    ],
                 },
                 is_overtime_salary_legal_count: {
                     $cond: [
-                        {$gte: [ "$count", 5]}, 
+                        {$gte: ["$count", 5]},
                         {
                             yes: "$is_overtime_salary_legal_yes",
                             no: "$is_overtime_salary_legal_no",
                             "don't know": "$is_overtime_salary_legal_dont",
                         },
-                        "$skip"
-                    ]
+                        "$skip",
+                    ],
                 },
                 has_compensatory_dayoff_count: {
                     $cond: [
-                        {$gte: [ "$count", 5]}, 
+                        {$gte: ["$count", 5]},
                         {
                             yes: "$has_compensatory_dayoff_yes",
                             no: "$has_compensatory_dayoff_no",
                             "don't know": "$has_compensatory_dayoff_dont",
                         },
-                        "$skip"
-                    ]
+                        "$skip",
+                    ],
                 },
                 workings: 1,
                 count: 1,
-            }
+            },
         },
         {
             $sort: {
                 count: -1,
-            }
+            },
         },
     ]).toArray().then(function(results) {
         res.send(results);
