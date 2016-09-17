@@ -26,7 +26,7 @@ router.get('/search', function(req, res, next) {
             $or: [
                 {name: new RegExp("^" + lodash.escapeRegExp(search.toUpperCase()))},
                 {id: search},
-            ]
+            ],
         };
     }
 

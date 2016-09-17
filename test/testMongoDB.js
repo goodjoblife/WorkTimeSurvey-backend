@@ -1,4 +1,4 @@
-const MongoClient = require('mongodb').MongoClient
+const MongoClient = require('mongodb').MongoClient;
 const assert = require('chai').assert;
 
 describe('MongoDB version', function() {

@@ -4,7 +4,8 @@
   "description": "GoodJob",
   "scripts": {
     "start": "node ./bin/www",
-    "test": "mocha"
+    "test": "npm run lint && mocha",
+    "lint": "eslint libs/ routes/ test/"
   },
   "repository": {
     "type": "git",
@@ -31,6 +32,7 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-datetime": "^1.4.1",
+    "eslint": "^3.5.0",
     "mocha": "^2.5.3",
     "nock": "^8.0.0",
     "supertest": "^1.2.0"

@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const request = require('request');
 const HttpError = require('../libs/errors').HttpError;
 const lodash = require('lodash');
 const winston = require('winston');
@@ -54,7 +53,7 @@ router.get('/:job_title/statistics', function(req, res, next) {
         {
             $match: {
                 job_title: job_title,
-            }
+            },
         },
         {
             $group: {
@@ -62,12 +61,12 @@ router.get('/:job_title/statistics', function(req, res, next) {
                 week_work_times: {$push: "$week_work_time"},
                 average_week_work_time: {$avg: "$week_work_time"},
                 count: {$sum: 1},
-            }
+            },
         },
         {
             $sort: {
                 average_week_work_time: -1,
-            }
+            },
         },
         {
             $limit: page * 10 + 10,

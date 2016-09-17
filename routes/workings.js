@@ -27,12 +27,12 @@ router.get('/latest', function(req, res, next) {
     var collection = req.db.collection('workings');
     var q = {};
     var opt = {
-            company: 1,
-            week_work_time: 1,
-            job_title: 1,
-            overtime_frequency: 1,
-            created_at: 1,
-        };
+        company: 1,
+        week_work_time: 1,
+        job_title: 1,
+        overtime_frequency: 1,
+        created_at: 1,
+    };
 
     const data = {};
 
@@ -54,20 +54,20 @@ router.get('/latest', function(req, res, next) {
  */
 if (! process.env.SKIP_FACEBOOK_AUTH) {
 
-router.post('/', function(req, res, next) {
-    var access_token = req.body.access_token;
+    router.post('/', function(req, res, next) {
+        var access_token = req.body.access_token;
 
-    facebook.access_token_auth(access_token).then(function(facebook) {
-        winston.info("facebook auth success", {access_token: access_token, ip: req.ip, ips: req.ips});
+        facebook.access_token_auth(access_token).then(function(facebook) {
+            winston.info("facebook auth success", {access_token: access_token, ip: req.ip, ips: req.ips});
 
-        req.facebook = facebook;
-        next();
-    }).catch(function(err) {
-        winston.info("facebook auth fail", {access_token: access_token, ip: req.ip, ips: req.ips});
+            req.facebook = facebook;
+            next();
+        }).catch(function(err) {
+            winston.info("facebook auth fail", {access_token: access_token, ip: req.ip, ips: req.ips});
 
-        next(new HttpError("Unauthorized", 401));
+            next(new HttpError("Unauthorized", 401));
+        });
     });
-});
 
 }
 
@@ -287,28 +287,27 @@ function validateWorking(data) {
     }
 
     if (data.has_overtime_salary) {
-        if(["yes", "no", "don't know"].indexOf(data.has_overtime_salary) === -1) {
+        if (["yes", "no", "don't know"].indexOf(data.has_overtime_salary) === -1) {
             throw new HttpError('加班是否有加班費應為是/否/不知道', 422);
-        }      
+        }
     }
 
-    if(data.is_overtime_salary_legal) {
-        if(data.has_overtime_salary){
-            if(data.has_overtime_salary !== "yes") {
+    if (data.is_overtime_salary_legal) {
+        if (data.has_overtime_salary) {
+            if (data.has_overtime_salary !== "yes") {
                 throw new HttpError('加班應有加班費，本欄位才有意義', 422);
             } else {
-                if(["yes", "no", "don't know"].indexOf(data.is_overtime_salary_legal) === -1) {
+                if (["yes", "no", "don't know"].indexOf(data.is_overtime_salary_legal) === -1) {
                     throw new HttpError('加班費是否合法應為是/否/不知道', 422);
                 }
-            }    
-        }
-        else {
+            }
+        } else {
             throw new HttpError('加班應有加班費，本欄位才有意義', 422);
         }
     }
 
     if (data.has_compensatory_dayoff) {
-        if(["yes", "no", "don't know"].indexOf(data.has_compensatory_dayoff) === -1) {
+        if (["yes", "no", "don't know"].indexOf(data.has_compensatory_dayoff) === -1) {
             throw new HttpError('加班是否有補修應為是/否/不知道', 422);
         }
     }
@@ -407,7 +406,7 @@ router.get('/statistics/by-company', function(req, res, next) {
                     {'company.name': new RegExp(lodash.escapeRegExp(company.toUpperCase()))},
                     {'company.id': company},
                 ],
-            }
+            },
         },
         {
             $group: {
@@ -415,12 +414,12 @@ router.get('/statistics/by-company', function(req, res, next) {
                 week_work_times: {$push: "$week_work_time"},
                 average_week_work_time: {$avg: "$week_work_time"},
                 count: {$sum: 1},
-            }
+            },
         },
         {
             $sort: {
                 average_week_work_time: -1,
-            }
+            },
         },
         {
             $group: {
@@ -431,7 +430,7 @@ router.get('/statistics/by-company', function(req, res, next) {
                     average_week_work_time: "$average_week_work_time",
                     count: "$count",
                 }},
-            }
+            },
         },
     ]).toArray().then(function(results) {
         res.send(results);
@@ -508,100 +507,101 @@ router.get('/search-and-group/by-company', function(req, res, next) {
                     {'company.name': new RegExp(lodash.escapeRegExp(company.toUpperCase()))},
                     {'company.id': company},
                 ],
-            }
+            },
         },
         {
             $sort: {
                 created_at: -1,
-            }
+            },
         },
         {
             $group: {
                 _id: "$company",
                 has_overtime_salary_yes: {$sum:
-                    {$cond: [ {$eq: ["$has_overtime_salary", "yes"] }, 1, 0] }
+                    {$cond: [{$eq: ["$has_overtime_salary", "yes"] }, 1, 0] },
                 },
                 has_overtime_salary_no: {$sum:
-                    {$cond: [ {$eq: ["$has_overtime_salary", "no"] }, 1, 0] }
+                    {$cond: [{$eq: ["$has_overtime_salary", "no"] }, 1, 0] },
                 },
                 has_overtime_salary_dont: {$sum:
-                    {$cond: [ {$eq: ["$has_overtime_salary", "don't know"] }, 1, 0] }
+                    {$cond: [{$eq: ["$has_overtime_salary", "don't know"] }, 1, 0] },
                 },
                 is_overtime_salary_legal_yes: {$sum:
-                    {$cond: [ {$eq: ["$is_overtime_salary_legal", "yes"] }, 1, 0] }
+                    {$cond: [{$eq: ["$is_overtime_salary_legal", "yes"] }, 1, 0] },
                 },
                 is_overtime_salary_legal_no: {$sum:
-                    {$cond: [ {$eq: ["$is_overtime_salary_legal", "no"] }, 1, 0] }
+                    {$cond: [{$eq: ["$is_overtime_salary_legal", "no"] }, 1, 0] },
                 },
                 is_overtime_salary_legal_dont: {$sum:
-                    {$cond: [ {$eq: ["$is_overtime_salary_legal", "don't know"] }, 1, 0] }
+                    {$cond: [{$eq: ["$is_overtime_salary_legal", "don't know"] }, 1, 0] },
                 },
                 has_compensatory_dayoff_yes: {$sum:
-                    {$cond: [ {$eq: ["$has_compensatory_dayoff", "yes"] }, 1, 0] }
+                    {$cond: [{$eq: ["$has_compensatory_dayoff", "yes"] }, 1, 0] },
                 },
                 has_compensatory_dayoff_no: {$sum:
-                    {$cond: [ {$eq: ["$has_compensatory_dayoff", "no"] }, 1, 0] }
+                    {$cond: [{$eq: ["$has_compensatory_dayoff", "no"] }, 1, 0] },
                 },
                 has_compensatory_dayoff_dont: {$sum:
-                    {$cond: [ {$eq: ["$has_compensatory_dayoff", "don't know"] }, 1, 0] }
+                    {$cond: [{$eq: ["$has_compensatory_dayoff", "don't know"] }, 1, 0] },
                 },
-                workings: {$push: {
-                    job_title: "$job_title",
-                    week_work_time: "$week_work_time",
-                    overtime_frequency: "$overtime_frequency",
-                    day_promised_work_time: "$day_promised_work_time",
-                    day_real_work_time: "$day_real_work_time",
-                    created_at: "$created_at",
-                    sector: "$sector",
-                    }
+                workings: {
+                    $push: {
+                        job_title: "$job_title",
+                        week_work_time: "$week_work_time",
+                        overtime_frequency: "$overtime_frequency",
+                        day_promised_work_time: "$day_promised_work_time",
+                        day_real_work_time: "$day_real_work_time",
+                        created_at: "$created_at",
+                        sector: "$sector",
+                    },
                 },
                 count: {$sum: 1},
-            }
+            },
         },
         {
             $project: {
                 _id: 1,
                 has_overtime_salary_count: {
                     $cond: [
-                        {$gte: [ "$count", 5]}, 
+                        {$gte: ["$count", 5]},
                         {
                             yes: "$has_overtime_salary_yes",
                             no: "$has_overtime_salary_no",
                             "don't know": "$has_overtime_salary_dont",
                         },
-                       "$skip"
-                    ]
+                        "$skip",
+                    ],
                 },
                 is_overtime_salary_legal_count: {
                     $cond: [
-                        {$gte: [ "$count", 5]}, 
+                        {$gte: ["$count", 5]},
                         {
                             yes: "$is_overtime_salary_legal_yes",
                             no: "$is_overtime_salary_legal_no",
                             "don't know": "$is_overtime_salary_legal_dont",
                         },
-                        "$skip"
-                    ]
+                        "$skip",
+                    ],
                 },
                 has_compensatory_dayoff_count: {
                     $cond: [
-                        {$gte: [ "$count", 5]}, 
+                        {$gte: ["$count", 5]},
                         {
                             yes: "$has_compensatory_dayoff_yes",
                             no: "$has_compensatory_dayoff_no",
                             "don't know": "$has_compensatory_dayoff_dont",
                         },
-                        "$skip"
-                    ]
+                        "$skip",
+                    ],
                 },
                 workings: 1,
                 count: 1,
-            }
+            },
         },
         {
             $sort: {
                 count: -1,
-            }
+            },
         },
     ]).toArray().then(function(results) {
         res.send(results);
@@ -641,12 +641,12 @@ router.get('/search-and-group/by-job-title', function(req, res, next) {
         {
             $match: {
                 job_title: new RegExp(lodash.escapeRegExp(job_title.toUpperCase())),
-            }
+            },
         },
         {
             $sort: {
                 created_at: -1,
-            }
+            },
         },
         {
             $group: {
@@ -660,17 +660,17 @@ router.get('/search-and-group/by-job-title', function(req, res, next) {
                         day_real_work_time: "$day_real_work_time",
                         created_at: "$created_at",
                         sector: "$sector",
-                    }
+                    },
                 },
                 count: {
                     $sum: 1,
                 },
-            }
+            },
         },
         {
             $sort: {
                 count: -1,
-            }
+            },
         },
     ]).toArray().then(function(results) {
         res.send(results);
@@ -705,7 +705,7 @@ router.get('/companies/search', function(req, res, next) {
         {
             $sort: {
                 company: 1,
-            }
+            },
         },
         {
             $match: {
@@ -713,12 +713,12 @@ router.get('/companies/search', function(req, res, next) {
                     {'company.name': new RegExp(lodash.escapeRegExp(search.toUpperCase()))},
                     {'company.id': search},
                 ],
-            }
+            },
         },
         {
             $group: {
                 _id: "$company",
-            }
+            },
         },
         {
             $limit: 25 * page + 25,
@@ -757,17 +757,17 @@ router.get('/jobs/search', function(req, res, next) {
         {
             $sort: {
                 job_title: 1,
-            }
+            },
         },
         {
             $match: {
                 job_title: new RegExp(lodash.escapeRegExp(search.toUpperCase())),
-            }
+            },
         },
         {
             $group: {
                 _id: "$job_title",
-            }
+            },
         },
         {
             $limit: 25 * page + 25,
