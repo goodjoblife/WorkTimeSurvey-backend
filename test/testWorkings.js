@@ -20,6 +20,7 @@ describe('Workings 工時資訊', function() {
             return db.collection('workings').insertMany([
                 {
                     overtime_frequency: 1,
+                    sector: "AAA",
                     created_at: new Date("2016-09-06 08:00"),
                 },
                 {
@@ -28,6 +29,7 @@ describe('Workings 工時資訊', function() {
                 },
                 {
                     overtime_frequency: 1,
+                    sector: "CCC",
                     created_at: new Date("2016-09-06 09:03"),
                 },
                 {
@@ -53,7 +55,12 @@ describe('Workings 工時資訊', function() {
                 .expect(200)
                 .expect(function(res) {
                     assert.deepPropertyVal(res.body.workings, '0.overtime_frequency', 4);
+                    assert.notDeepProperty(res.body.workings, '0.sector');
                     assert.notDeepProperty(res.body.workings, '0.author');
+                    assert.deepPropertyVal(res.body.workings, '1.sector', 'CCC');
+                    assert.notDeepProperty(res.body.workings, '2.author');
+                    assert.deepPropertyVal(res.body.workings, '3.sector', 'AAA');
+
                 })
                 .end(done);
         });
