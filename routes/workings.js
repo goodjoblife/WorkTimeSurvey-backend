@@ -31,6 +31,7 @@ router.get('/latest', function(req, res, next) {
             week_work_time: 1,
             job_title: 1,
             overtime_frequency: 1,
+            sector: 1, 
             created_at: 1,
         };
 
