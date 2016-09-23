@@ -602,6 +602,7 @@ router.get('/search-and-group/by-company', function(req, res, next) {
         {
             $sort: {
                 count: -1,
+                _id: 1,
             }
         },
     ]).toArray().then(function(results) {
@@ -671,6 +672,7 @@ router.get('/search-and-group/by-job-title', function(req, res, next) {
         {
             $sort: {
                 count: -1,
+                _id: 1, 
             }
         },
     ]).toArray().then(function(results) {
