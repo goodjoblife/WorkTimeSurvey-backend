@@ -55,12 +55,11 @@ describe('Workings 工時資訊', function() {
                 .expect(200)
                 .expect(function(res) {
                     assert.deepPropertyVal(res.body.workings, '0.overtime_frequency', 4);
-                    assert.notDeepProperty(res.body.workings, '0.sector');
                     assert.notDeepProperty(res.body.workings, '0.author');
+                    assert.notDeepProperty(res.body.workings, '0.sector');
                     assert.deepPropertyVal(res.body.workings, '1.sector', 'CCC');
-                    assert.notDeepProperty(res.body.workings, '2.author');
+                    assert.notDeepProperty(res.body.workings, '2.sector');
                     assert.deepPropertyVal(res.body.workings, '3.sector', 'AAA');
-
                 })
                 .end(done);
         });
