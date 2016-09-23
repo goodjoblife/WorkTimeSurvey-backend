@@ -37,7 +37,7 @@ app.use(expressMongoDb(process.env.MONGODB_URI));
 
 app.use(cors({
     origin: [
-        'https://worktime.goodjob.life',
+        /\.goodjob\.life$/,
         'http://localhost:8080',
         'http://localhost:8000',
     ],

@@ -8,6 +8,7 @@ describe('CORS', function() {
         'http://localhost:8080',
         'http://localhost:8000',
         'https://worktime.goodjob.life',
+        'http://hello.goodjob.life',
     ];
 
     for (let origin of client_origins) {
