@@ -512,7 +512,7 @@ router.get('/search-and-group/by-company', function(req, res, next) {
         },
         {
             $sort: {
-                created_at: -1,
+                job_title: 1,
             },
         },
         {
@@ -647,7 +647,7 @@ router.get('/search-and-group/by-job-title', function(req, res, next) {
         },
         {
             $sort: {
-                created_at: -1,
+                company: -1,
             },
         },
         {
