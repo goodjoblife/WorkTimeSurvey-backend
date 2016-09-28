@@ -1004,17 +1004,17 @@ describe('Workings 工時資訊', function() {
                 .end(done);
         });
 
-        it('依照 created_at 由新到舊排序 group data', function(done) {
+        it('依照 job_title 排序 group data', function(done) {
             request(app).get('/workings/search-and-group/by-company')
                 .query({company: 'COMPANY1'})
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 1);
                     assert.deepPropertyVal(res.body, '0._id.name', 'COMPANY1');
+
                     let workings = res.body[0].workings;
-                    for (let idx=0; idx < workings.length-1; ++idx) {
-                        assert.notBeforeDate(new Date(workings[idx].created_at), new Date(workings[idx+1].created_at));
-                    }
+                    assert.deepPropertyVal(workings, '2.job_title', 'ENGINEER1');
+                    assert.deepPropertyVal(workings, '3.job_title', 'ENGINEER2');
                 })
                 .end(done);
         });
@@ -1236,17 +1236,15 @@ describe('Workings 工時資訊', function() {
                 .end(done);
         });
 
-        it('依照 created_at 由新到舊排序 group data', function(done) {
+        it('依照 company 排序 group data', function(done) {
             request(app).get('/workings/search-and-group/by-job-title')
-                .query({job_title: 'ENGINEER1'})
+                .query({job_title: 'ENGINEER2'})
                 .expect(200)
                 .expect(function(res) {
-                    for (let job_group of res.body) {
-                        let workings = job_group.workings;
-                        for (let work_idx = 0; work_idx < workings.length - 1; work_idx++) {
-                            assert.notBeforeDate(new Date(workings[work_idx].created_at), new Date(workings[work_idx + 1].created_at));
-                        }
-                    }
+                    const workings = res.body[0].workings;
+                    assert.deepPropertyVal(workings, '0.company.name', 'COMPANY');
+                    assert.deepPropertyVal(workings, '1.company.name', 'COMPANY1');
+                    assert.deepPropertyVal(workings, '2.company.name', 'COMPANY1');
                 })
                 .end(done);
         });
