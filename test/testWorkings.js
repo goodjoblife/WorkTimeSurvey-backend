@@ -1242,9 +1242,9 @@ describe('Workings 工時資訊', function() {
                 .expect(200)
                 .expect(function(res) {
                     const workings = res.body[0].workings;
-                    assert.deepPropertyVal(workings, '0.company.name', 'COMPANY');
+                    assert.deepPropertyVal(workings, '0.company.name', 'COMPANY1');
                     assert.deepPropertyVal(workings, '1.company.name', 'COMPANY1');
-                    assert.deepPropertyVal(workings, '2.company.name', 'COMPANY1');
+                    assert.deepPropertyVal(workings, '2.company.name', 'COMPANY');
                 })
                 .end(done);
         });
