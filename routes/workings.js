@@ -647,7 +647,7 @@ router.get('/search-and-group/by-job-title', function(req, res, next) {
         },
         {
             $sort: {
-                company: -1,
+                company: 1,
             },
         },
         {
