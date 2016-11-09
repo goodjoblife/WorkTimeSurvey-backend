@@ -125,6 +125,12 @@ router.post('/', function(req, res, next) {
         "has_overtime_salary",
         "is_overtime_salary_legal",
         "has_compensatory_dayoff",
+        "is_currently_employed",
+        "job_ending_time",
+        "employment_type",
+        "gender",
+        "salary",
+        "experience_in_year",
     ].forEach(function(field, i) {
         if (req.body[field] && (typeof req.body[field] === "string") && req.body[field] !== "") {
             working[field] = req.body[field];
@@ -236,10 +242,82 @@ router.post('/', function(req, res, next) {
 });
 
 function validateWorking(data) {
+    validateCommonData(data);
+    if(data.week_work_time || data.overtime_frequency || data.day_promised_work_time ||
+        data.day_real_work_time || data.has_overtime_salary || data.is_overtime_salary_legal ||
+        data.has_compensatory_dayoff){
+        validateWorkingTimeData(data);
+    }
+    if(data.salary || data.experience_in_year){
+        validateSalaryData(data);
+    }
+}
+
+function validateCommonData(data){
+    if (! data.company.id) {
+        if (! data.query) {
+            throw new HttpError("公司/單位名稱必填", 422);
+        }
+    }
+
+    if(data.is_currently_employed === 'yes'){
+        if(data.job_ending_time){
+            throw new HttpError('若在職，則離職時間這個欄位才有意義', 422);
+        }
+    }
+    if(data.is_currently_employed === 'no'){
+        if(! data.job_ending_time){
+            throw new HttpError('若已離職，則離職時間必填', 422);
+        } else {
+            if(! data.job_ending_time.year){
+                throw new HttpError('離職時間年份必填', 422);
+            } else {
+                data.job_ending_time.year = parseInt(data.job_ending_time.year);
+                if(data.job_ending_time.year <= new Date().getFullYear() - 10){
+                    throw new HttpError('離職時間年份需在10年內', 422);
+                }
+            }
+            if(! data.job_ending_time.month){
+                throw new HttpError('離職時間月份必填', 422);
+            } else {
+                data.job_ending_time.month = parseInt(data.job_ending_time.month);
+                if(data.job_ending_time.month < 1 || data.job_ending_time.month > 12){
+                    throw new HttpError('離職時間月份需在1~12月', 422);
+                }
+            }
+        }
+    }
+
     if (! data.job_title) {
         throw new HttpError("職稱未填", 422);
     }
 
+
+    if(! data.is_currently_employed){
+        throw new HttpError('是否在職必填', 422);
+    } else {
+        if(["yes", "no"].indexOf(data.is_currently_employed) === -1){
+            throw new HttpError('是否在職應為是/否', 422);
+        }
+    }
+
+    if(! data.employment_type){
+        throw new HttpError('職務型態必填', 422);
+    } else {
+        const types = ["full-time", "part-time", "intern", "temporary", "contract", "dispatched-labor"];
+        if(types.indexOf(data) === -1){
+            throw new HttpError("職務型態需為全職/兼職/實習/臨時工/約聘雇/派遣", 422);
+        }
+    }
+
+    if(data.gender){
+        if(["male", "female", "other"].indexOf(data.gender) === -1){
+            throw new HttpError("若性別有填寫，需為男/女/其他", 422);
+        }
+    }
+}
+
+function validateWorkingTimeData(data){
     if (! data.week_work_time) {
         throw new HttpError("最近一週實際工時未填", 422);
     }
@@ -281,12 +359,6 @@ function validateWorking(data) {
         throw new HttpError("工作日實際工時必須在0~24之間", 422);
     }
 
-    if (! data.company.id) {
-        if (! data.query) {
-            throw new HttpError("公司/單位名稱必填", 422);
-        }
-    }
-
     if (data.has_overtime_salary) {
         if (["yes", "no", "don't know"].indexOf(data.has_overtime_salary) === -1) {
             throw new HttpError('加班是否有加班費應為是/否/不知道', 422);
@@ -313,6 +385,39 @@ function validateWorking(data) {
         }
     }
 }
+
+function validateSalaryData(data){
+    data.salary = parseInt(data.salary);
+    if(! data.salary){
+        throw new HttpError('薪資必填', 422);
+    } else {
+        if(! data.salary.type){
+            throw new HttpError('薪資種類必填', 422);
+        } else {
+            if(["year", "month", "day", "hour"].indexOf(data.salary.type) === -1){
+                throw new HttpError('薪資種類需為年薪/月薪/日薪/時薪', 422);
+            }
+        }
+        if(! data.salary.amount){
+            throw new HttpError('薪資多寡必填', 422);
+        } else {
+            if(data.salary.amount < 0) {
+                throw new HttpError('薪資不小於0', 422);
+            }
+        }
+    }
+
+    data.experience_in_year = parseInt(data.experience_in_year)
+    if(! data.experience_in_year){
+        throw new HttpError('相關職務工作經驗必填', 422);
+    } else {
+        if(data.experience_in_year < 0 || data.experience_in_year > 100){
+            throw new HttpError('相關職務工作經驗需大於等於0，小於100', 422);
+        }
+    }
+}
+
+
 
 /*
  * Check the quota, limit queries <= 10
