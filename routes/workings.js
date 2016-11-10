@@ -243,13 +243,31 @@ router.post('/', function(req, res, next) {
 
 function validateWorking(data) {
     validateCommonData(data);
+    var workingTimeOk = false, salaryOk = false;
     if(data.week_work_time || data.overtime_frequency || data.day_promised_work_time ||
         data.day_real_work_time || data.has_overtime_salary || data.is_overtime_salary_legal ||
         data.has_compensatory_dayoff){
-        validateWorkingTimeData(data);
+        workingTimeOk = true;
+        try {
+            validateWorkingTimeData(data);
+        } catch (err) {
+            workingTimeOk = false;
+            throw err;
+        }
+
     }
     if(data.salary || data.experience_in_year){
-        validateSalaryData(data);
+        salaryOk = true;
+        try{
+            validateSalaryData(data);
+        } catch (err) {
+            salaryOk = false;
+            throw err;
+        }
+    }
+
+    if ( !workingTimeOk && !salaryOk){
+        throw new HttpError("薪資或工時欄位擇一必填", 422);
     }
 }
 
