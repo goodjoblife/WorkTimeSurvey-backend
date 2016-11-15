@@ -742,7 +742,7 @@ describe('Workings 工時資訊', function() {
         });
 
         describe('employment_type', function() {
-            for(let type of ["full-time", "part-time", "intern", "temporary", "contract", "dispatched-labor"]) {
+            for (let type of ["full-time", "part-time", "intern", "temporary", "contract", "dispatched-labor"]) {
                 it('should be ' + type, function(done) {
                     request(app).post('/workings')
                         .send(generatePayload({
@@ -769,23 +769,20 @@ describe('Workings 工時資訊', function() {
         });
 
         describe('gender', function() {
-            it('is required', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        is_currently_employed: -1,
-                    }))
-                    .expect(422)
-                    .end(done);
-            });
-            it('should be yes or no', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        company_id: '00000001',
-                        is_currently_employed: 'other',
-                    }))
-                    .expect(422)
-                    .end(done);
-            });
+            for (let type of ["male", "female", "other"]) {
+                it('should be ' + type, function(done) {
+                    request(app).post('/workings')
+                        .send(generatePayload({
+                            company_id: '00000001',
+                            gender: type,
+                        }))
+                        .expect(422)
+                        .expect(function(res) {
+                            assert.propertyVal(res.body.working, 'gender', type);
+                        })
+                        .end(done);
+                });
+            }
         });
 
         afterEach(function() {
