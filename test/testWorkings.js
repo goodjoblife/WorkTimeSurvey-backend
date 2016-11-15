@@ -661,6 +661,133 @@ describe('Workings 工時資訊', function() {
             });
         });
 
+        describe('is_currently_employed', function() {
+            it('is required', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        is_currently_employed: -1,
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+            it('should be yes or no', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        company_id: '00000001',
+                        is_currently_employed: 'other',
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+        });
+
+        describe('job_ending_time', function() {
+            it('would be created_at\'s year and month if is_currently_employed is yes', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        company_id: '0000001',
+                        created_at: new Date(),
+                        is_currently_employed: 'yes',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        const today = res.body.working.created_at;
+                        const this_year = today.getFullYear();
+                        const this_month = today.getMonth()+1;
+                        const year = res.body.working.is_currently_employed.year;
+                        const month = res.body.working.is_currently_employed.month;
+
+                        assert.strictEqual(year, this_year);
+                        assert.strictEqual(month, this_month);
+                    })
+                    .end(done);
+            });
+
+            it('is required if is_currently_employed is no', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        company_id: '0000001',
+                        is_currently_employed: 'no',
+                        job_ending_time: -1,
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.property(res.body.working, 'job_ending_time');
+                    })
+                    .end(done);
+            });
+
+            it('should\'t be later than today', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        company_id: '0000001',
+                        is_currently_employed: 'no',
+                    }))
+                    .expect(422)
+                    .expect(function(res) {
+                        const today = new Date();
+                        const this_year = today.getFullYear();
+                        const year = res.body.working.is_currently_employed.year;
+
+                        assert.isAtMost(year, this_year);
+                        if (year === this_year) {
+                            const this_month = today.getMonth()+1;
+                            const month = res.body.working.is_currently_employed.month;
+
+                            assert.isAtMost(month, this_month);
+                        }
+                    })
+                    .end(done);
+            });
+        });
+
+        describe('employment_type', function() {
+            for(let type of ["full-time", "part-time", "intern", "temporary", "contract", "dispatched-labor"]) {
+                it('should be ' + type, function(done) {
+                    request(app).post('/workings')
+                        .send(generatePayload({
+                            company_id: '00000001',
+                            employment_type: type,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.propertyVal(res.body.working, 'employment_type', type);
+                        })
+                        .end(done);
+                });
+            }
+
+            it('should be error if request others', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        company_id: '00000001',
+                        employment_type: 'show-time',
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+        });
+
+        describe('gender', function() {
+            it('is required', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        is_currently_employed: -1,
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+            it('should be yes or no', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        company_id: '00000001',
+                        is_currently_employed: 'other',
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+        });
+
         afterEach(function() {
             nock.cleanAll();
         });
