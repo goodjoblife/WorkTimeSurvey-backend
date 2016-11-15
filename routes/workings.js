@@ -126,10 +126,12 @@ router.post('/', function(req, res, next) {
         "is_overtime_salary_legal",
         "has_compensatory_dayoff",
         "is_currently_employed",
-        "job_ending_time",
+        "job_ending_time_year",
+        "job_ending_time_month",
         "employment_type",
         "gender",
-        "salary",
+        "salary_type",
+        "salary_amount",
         "experience_in_year",
     ].forEach(function(field, i) {
         if (req.body[field] && (typeof req.body[field] === "string") && req.body[field] !== "") {
@@ -159,6 +161,18 @@ router.post('/', function(req, res, next) {
      * Normalize the data
      */
     working.job_title = working.job_title.toUpperCase();
+
+    if(working.job_ending_time_year && working.job_ending_time_month){
+        working.job_ending_time = { year: working.job_ending_time_year, month: working.job_ending_time_month };
+        delete working.job_ending_time_year;
+        delete working.job_ending_time_month;
+    }
+
+    if(working.salary_type && working.salary_amount){
+        working.salary = { type: working.salary_type, amount: working.salary_amount };
+        delete working.salary_type;
+        delete working.salary_amount;
+    }
 
     /*
      * So, here, the data are well-down
@@ -284,24 +298,20 @@ function validateCommonData(data){
         }
     }
     if(data.is_currently_employed === 'no'){
-        if(! data.job_ending_time){
-            throw new HttpError('若已離職，則離職時間必填', 422);
+        if(! data.job_ending_time_year){
+            throw new HttpError('離職年份必填', 422);
         } else {
-            if(! data.job_ending_time.year){
-                throw new HttpError('離職時間年份必填', 422);
-            } else {
-                data.job_ending_time.year = parseInt(data.job_ending_time.year);
-                if(data.job_ending_time.year <= new Date().getFullYear() - 10){
-                    throw new HttpError('離職時間年份需在10年內', 422);
-                }
+            data.job_ending_time_year = parseInt(data.job_ending_time_year);
+            if(data.job_ending_time_year <= new Date().getFullYear() - 10){
+                throw new HttpError('離職年份需在10年內', 422);
             }
-            if(! data.job_ending_time.month){
-                throw new HttpError('離職時間月份必填', 422);
-            } else {
-                data.job_ending_time.month = parseInt(data.job_ending_time.month);
-                if(data.job_ending_time.month < 1 || data.job_ending_time.month > 12){
-                    throw new HttpError('離職時間月份需在1~12月', 422);
-                }
+        }
+        if(! data.job_ending_time_month){
+            throw new HttpError('離職月份必填', 422);
+        } else {
+            data.job_ending_time_month = parseInt(data.job_ending_time_month);
+            if(data.job_ending_time_month < 1 || data.job_ending_time_month > 12){
+                throw new HttpError('離職月份需在1~12月', 422);
             }
         }
     }
@@ -406,22 +416,18 @@ function validateWorkingTimeData(data){
 
 function validateSalaryData(data){
     data.salary = parseInt(data.salary);
-    if(! data.salary){
-        throw new HttpError('薪資必填', 422);
+    if(! data.salary_type){
+        throw new HttpError('薪資種類必填', 422);
     } else {
-        if(! data.salary.type){
-            throw new HttpError('薪資種類必填', 422);
-        } else {
-            if(["year", "month", "day", "hour"].indexOf(data.salary.type) === -1){
-                throw new HttpError('薪資種類需為年薪/月薪/日薪/時薪', 422);
-            }
+        if(["year", "month", "day", "hour"].indexOf(data.salary_type) === -1){
+            throw new HttpError('薪資種類需為年薪/月薪/日薪/時薪', 422);
         }
-        if(! data.salary.amount){
-            throw new HttpError('薪資多寡必填', 422);
-        } else {
-            if(data.salary.amount < 0) {
-                throw new HttpError('薪資不小於0', 422);
-            }
+    }
+    if(! data.salary_amount){
+        throw new HttpError('薪資多寡必填', 422);
+    } else {
+        if(data.salary_amount < 0) {
+            throw new HttpError('薪資不小於0', 422);
         }
     }
 
