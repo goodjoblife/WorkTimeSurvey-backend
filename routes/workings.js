@@ -306,15 +306,20 @@ function validateCommonData(data){
         }
         data.job_ending_time_year = parseInt(data.job_ending_time_year);
         data.job_ending_time_month = parseInt(data.job_ending_time_month);
+        const now = new Date();
         if(isNaN(data.job_ending_time_year)){
             throw new HttpError('離職年份需為數字', 422);
-        } else if (data.job_ending_time_year <= (new Date()).getFullYear() - 10){
+        } else if (data.job_ending_time_year <= now.getFullYear() - 10){
             throw new HttpError('離職年份需在10年內', 422);
         }
         if(isNaN(data.job_ending_time_month)){
             throw new HttpError('離職月份需為數字', 422);
         } else if (data.job_ending_time_month < 1 || data.job_ending_time_month > 12){
             throw new HttpError('離職月份需在1~12月', 422);
+        }
+        if((data.job_ending_time_year == now.getFullYear() && data.job_ending_time_month > (now.getMonth() + 1)) ||
+            data.job_ending_time_year > now.getFullYear()){
+            throw new HttpError('離職月份不能比現在時間晚', 422);
         }
     }
 
