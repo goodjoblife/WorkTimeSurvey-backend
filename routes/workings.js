@@ -270,7 +270,7 @@ function validateWorking(data) {
         }
 
     }
-    if(data.salary || data.experience_in_year){
+    if(data.salary_type || data.salary_amount || data.experience_in_year){
         salaryOk = true;
         try{
             validateSalaryData(data);
@@ -332,8 +332,8 @@ function validateCommonData(data){
     if(! data.employment_type){
         throw new HttpError('職務型態必填', 422);
     } else {
-        const types = ["full-time", "part-time", "intern", "temporary", "contract", "dispatched-labor"];
-        if(types.indexOf(data) === -1){
+        const employment_types = ["full-time", "part-time", "intern", "temporary", "contract", "dispatched-labor"];
+        if(employment_types.indexOf(data.employment_type) === -1){
             throw new HttpError("職務型態需為全職/兼職/實習/臨時工/約聘雇/派遣", 422);
         }
     }
@@ -415,7 +415,7 @@ function validateWorkingTimeData(data){
 }
 
 function validateSalaryData(data){
-    data.salary = parseInt(data.salary);
+    data.salary_amount = parseInt(data.salary_amount);
     if(! data.salary_type){
         throw new HttpError('薪資種類必填', 422);
     } else {
