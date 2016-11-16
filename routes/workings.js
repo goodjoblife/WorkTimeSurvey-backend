@@ -300,19 +300,21 @@ function validateCommonData(data){
     if(data.is_currently_employed === 'no'){
         if(! data.job_ending_time_year){
             throw new HttpError('離職年份必填', 422);
-        } else {
-            data.job_ending_time_year = parseInt(data.job_ending_time_year);
-            if(data.job_ending_time_year <= new Date().getFullYear() - 10){
-                throw new HttpError('離職年份需在10年內', 422);
-            }
         }
         if(! data.job_ending_time_month){
             throw new HttpError('離職月份必填', 422);
-        } else {
-            data.job_ending_time_month = parseInt(data.job_ending_time_month);
-            if(data.job_ending_time_month < 1 || data.job_ending_time_month > 12){
-                throw new HttpError('離職月份需在1~12月', 422);
-            }
+        }
+        data.job_ending_time_year = parseInt(data.job_ending_time_year);
+        data.job_ending_time_month = parseInt(data.job_ending_time_month);
+        if(isNaN(data.job_ending_time_year)){
+            throw new HttpError('離職年份需為數字', 422);
+        } else if (data.job_ending_time_year <= (new Date()).getFullYear() - 10){
+            throw new HttpError('離職年份需在10年內', 422);
+        }
+        if(isNaN(data.job_ending_time_month)){
+            throw new HttpError('離職月份需為數字', 422);
+        } else if (data.job_ending_time_month < 1 || data.job_ending_time_month > 12){
+            throw new HttpError('離職月份需在1~12月', 422);
         }
     }
 
@@ -415,7 +417,6 @@ function validateWorkingTimeData(data){
 }
 
 function validateSalaryData(data){
-    data.salary_amount = parseInt(data.salary_amount);
     if(! data.salary_type){
         throw new HttpError('薪資種類必填', 422);
     } else {
@@ -425,19 +426,23 @@ function validateSalaryData(data){
     }
     if(! data.salary_amount){
         throw new HttpError('薪資多寡必填', 422);
-    } else {
-        if(data.salary_amount < 0) {
-            throw new HttpError('薪資不小於0', 422);
-        }
+    }
+    data.salary_amount = parseInt(data.salary_amount);
+    if(isNaN(data.salary_amount)){
+        throw new HttpError('薪資需為整數', 422);
+    } else if (data.salary_amount < 0) {
+        throw new HttpError('薪資不小於0', 422);
     }
 
-    data.experience_in_year = parseInt(data.experience_in_year)
+
     if(! data.experience_in_year){
         throw new HttpError('相關職務工作經驗必填', 422);
-    } else {
-        if(data.experience_in_year < 0 || data.experience_in_year > 100){
-            throw new HttpError('相關職務工作經驗需大於等於0，小於100', 422);
-        }
+    }
+    data.experience_in_year = parseInt(data.experience_in_year)
+    if(isNaN(data.experience_in_year)){
+        throw new HttpError('相關職務工作經驗需為整數', 422);
+    } else if(data.experience_in_year < 0 || data.experience_in_year > 100){
+        throw new HttpError('相關職務工作經驗需大於等於0，小於100', 422);
     }
 }
 
