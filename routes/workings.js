@@ -33,6 +33,9 @@ router.get('/latest', function(req, res, next) {
         overtime_frequency: 1,
         sector: 1,
         created_at: 1,
+        salary: 1,
+        job_ending_time: 1,
+        is_currently_employed: 1,
     };
 
     const data = {};
@@ -42,6 +45,21 @@ router.get('/latest', function(req, res, next) {
 
         return collection.find(q, opt).sort({created_at: -1}).skip(limit * page).limit(limit).toArray();
     }).then(function(results) {
+        for (let each of results) {
+            each.data_time = {};
+            if (each.is_currently_employed === 'no') {
+                each.data_time.year = each.job_ending_time.year;
+                each.data_time.month = each.job_ending_time.month;
+            } else {
+                const date = new Date(each.created_at);
+                each.data_time.year = date.getFullYear();
+                each.data_time.month = date.getMonth()+1;
+            }
+
+            delete each.is_currently_employed;
+            delete each.job_ending_time;
+        }
+
         data.workings = results;
 
         res.send(data);

@@ -22,19 +22,28 @@ describe('Workings 工時資訊', function() {
                     overtime_frequency: 1,
                     sector: "AAA",
                     created_at: new Date("2016-09-06 08:00"),
+                    salary: {type: "year", amount: 220000},
                 },
                 {
                     overtime_frequency: 2,
                     created_at: new Date("2016-09-06 09:00"),
+                    salary: {type: "year", amount: 220000},
+                    is_currently_employed: "yes",
                 },
                 {
                     overtime_frequency: 1,
                     sector: "CCC",
                     created_at: new Date("2016-09-06 09:03"),
+                    salary: {type: "year", amount: 220000},
+                    is_currently_employed: "no",
+                    job_ending_time: {year: 2014, month: 5},
                 },
                 {
                     overtime_frequency: 4,
                     created_at: new Date("2016-09-06 09:04"),
+                    salary: {type: "year", amount: 220000},
+                    is_currently_employed: "no",
+                    job_ending_time: {year: 2015, month: 5},
                 },
             ]);
         });
@@ -60,6 +69,11 @@ describe('Workings 工時資訊', function() {
                     assert.deepPropertyVal(res.body.workings, '1.sector', 'CCC');
                     assert.notDeepProperty(res.body.workings, '2.sector');
                     assert.deepPropertyVal(res.body.workings, '3.sector', 'AAA');
+                    assert.deepPropertyVal(res.body.workings, '0.salary.type', "year");
+                    assert.deepPropertyVal(res.body.workings, '0.data_time.year', 2015);
+                    assert.deepPropertyVal(res.body.workings, '1.data_time.year', 2014);
+                    assert.deepPropertyVal(res.body.workings, '2.data_time.year', 2016);
+                    assert.deepPropertyVal(res.body.workings, '3.data_time.year', 2016);
                 })
                 .end(done);
         });
