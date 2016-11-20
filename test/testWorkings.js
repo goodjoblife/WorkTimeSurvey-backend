@@ -898,6 +898,23 @@ describe('Workings 工時資訊', function() {
             }
         });
 
+        describe('salary or work time', function() {
+            it('should be error if both of them aren\'t filled ', function(done) {
+                    request(app).post('/workings')
+                        .send(generatePayload({
+                            day_promised_work_time: -1,
+                            day_real_work_time: -1,
+                            week_work_time: -1,
+                            overtime_frequency: -1,
+                            salary_type: -1,
+                            salary_amount: -1,
+                            experience_in_year: -1,
+                        }))
+                        .expect(422)
+                        .end(done);
+            });
+        });
+
         afterEach(function() {
             nock.cleanAll();
         });
