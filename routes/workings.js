@@ -91,7 +91,6 @@ router.post('/', function(req, res, next) {
      * Prepare and collect the data from request
      */
     var author = {};
-
     if (req.body.email && (typeof req.body.email === "string") && req.body.email !== "") {
         author.email = req.body.email;
     }
@@ -268,7 +267,6 @@ function validateWorking(data) {
             workingTimeOk = false;
             throw err;
         }
-
     }
     if (data.salary_type || data.salary_amount || data.experience_in_year) {
         salaryOk = true;
@@ -432,22 +430,23 @@ function validateSalaryData(data) {
     if (! data.salary_amount) {
         throw new HttpError('薪資多寡必填', 422);
     }
+    const amount = parseFloat(data.salary_amount);
     data.salary_amount = parseInt(data.salary_amount);
-    if (isNaN(data.salary_amount)) {
+    if (isNaN(data.salary_amount) || amount != data.salary_amount) {
         throw new HttpError('薪資需為整數', 422);
     } else if (data.salary_amount < 0) {
         throw new HttpError('薪資不小於0', 422);
     }
 
-
     if (! data.experience_in_year) {
         throw new HttpError('相關職務工作經驗必填', 422);
     }
+    const year = parseFloat(data.experience_in_year);
     data.experience_in_year = parseInt(data.experience_in_year);
-    if (isNaN(data.experience_in_year)) {
+    if (isNaN(data.experience_in_year) || year != data.experience_in_year) {
         throw new HttpError('相關職務工作經驗需為整數', 422);
-    } else if (data.experience_in_year < 0 || data.experience_in_year > 100) {
-        throw new HttpError('相關職務工作經驗需大於等於0，小於100', 422);
+    } else if (data.experience_in_year < 0 || data.experience_in_year > 50) {
+        throw new HttpError('相關職務工作經驗需大於等於0，小於等於50', 422);
     }
 }
 

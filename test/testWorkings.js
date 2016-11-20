@@ -713,12 +713,43 @@ describe('Workings 工時資訊', function() {
                     .end(done);
             });
 
-            it('should\'t be later than today', function(done) {
+            it('year should\'t be later than this year', function(done) {
                 request(app).post('/workings')
                     .send(generatePayload({
                         is_currently_employed: 'no',
-                        job_ending_time_year: '2017',
-                        job_ending_time_month: '11',
+                        job_ending_time_year: ((new Date()).getFullYear()+1).toString(),
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            it('month should\'t be later than this month', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        is_currently_employed: 'no',
+                        job_ending_time_month: ((new Date()).getMonth()+2).toString(),
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            for (let month of ['0', '13']) {
+                it('month should\'t be ' + month, function(done) {
+                    request(app).post('/workings')
+                        .send(generatePayload({
+                            is_currently_employed: 'no',
+                            job_ending_time_month: month,
+                        }))
+                        .expect(422)
+                        .end(done);
+                });
+            }
+
+            it('should\'t be earlier than ten year before today', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        is_currently_employed: 'no',
+                        job_ending_time_year: ((new Date()).getFullYear()-11).toString(),
                     }))
                     .expect(422)
                     .end(done);
@@ -761,6 +792,107 @@ describe('Workings 工時資訊', function() {
                         .expect(function(res) {
                             assert.propertyVal(res.body.working, 'gender', type);
                         })
+                        .end(done);
+                });
+            }
+
+            it('should be error if request others', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        employment_type: 'othermale',
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            it('wouldn\'t be returned if there is no such field in payload', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        has_compensatory_dayoff: -1,
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.notProperty(res.body.working, 'gender');
+                    })
+                    .end(done);
+            });
+        });
+
+        describe('salary', function() {
+            for (let type of ['year', 'month', 'day', 'hour']) {
+                it('type should be ' + type, function(done) {
+                    request(app).post('/workings')
+                        .send(generatePayload({
+                            salary_type: type,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.deepPropertyVal(res.body.working, 'salary.type', type);
+                        })
+                        .end(done);
+                });
+            }
+
+            it('type should be error if request others', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        salary_type: 'minute',
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            it('amount should be int', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        salary_amount: '666',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.deepPropertyVal(res.body.working, 'salary.amount', 666);
+                    })
+                    .end(done);
+            });
+
+            it('amount should\'t be float', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        salary_amount: '666.666',
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            it('amount should\'t be smaller than 0', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        salary_amount: '-1',
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+        });
+
+        describe('experience_in_year', function() {
+            it('should be int', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        experience_in_year: '12',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.propertyVal(res.body.working, 'experience_in_year', 12);
+                    })
+                    .end(done);
+            });
+
+            for (let year of ['-1', '51']) {
+                it('is ' + year + ' and is bigger than 50 or smaller than 0', function(done) {
+                    request(app).post('/workings')
+                        .send(generatePayload({
+                            experience_in_year: year,
+                        }))
+                        .expect(422)
                         .end(done);
                 });
             }
