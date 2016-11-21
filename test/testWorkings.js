@@ -815,9 +815,15 @@ describe('Workings 工時資訊', function() {
                     has_overtime_salary: "yes",
                     is_overtime_salary_legal: "yes",
                     has_compensatory_dayoff: "yes",
+                    is_currently_employed: "no",
+                    job_ending_time: { year: 2015, month: 3 },
+                    employment_type: "full-time",
+                    gender: "male",
+                    salary: { type: "month", amount: 22000 },
+                    experience_in_year: 0,
                 },
                 {
-                    job_title: "ENGINEER1",
+                    job_title: "ENGINEER2",
                     company: {id: "84149961", name: "COMPANY1"},
                     week_work_time: 40,
                     overtime_frequency: 2,
@@ -828,22 +834,20 @@ describe('Workings 工時資訊', function() {
                     has_overtime_salary: "yes",
                     is_overtime_salary_legal: "no",
                     has_compensatory_dayoff: "no",
+                    is_currently_employed: "yes",
+                    employment_type: "part-time",
                 },
                 {
-                    job_title: "ENGINEER1",
+                    job_title: "ENGINEER3",
                     company: {id: "84149961", name: "COMPANY1"},
-                    week_work_time: 55,
-                    overtime_frequency: 3,
-                    day_promised_work_time: 8,
-                    day_real_work_time: 11,
-                    created_at: new Date("2016-07-22T14:15:44.929Z"),
+                    created_at: new Date("2011-05-22T14:15:44.929Z"),
                     sector: "TAINAN",
-                    has_overtime_salary: "yes",
-                    is_overtime_salary_legal: "don't know",
-                    has_compensatory_dayoff: "no",
+                    employment_type: "part-time",
+                    salary: { type: "day", amount: 1000 },
+                    experience_in_year: 1,
                 },
                 {
-                    job_title: "ENGINEER2",
+                    job_title: "ENGINEER4",
                     company: {id: "84149961", name: "COMPANY1"},
                     week_work_time: 45,
                     overtime_frequency: 1,
@@ -855,7 +859,7 @@ describe('Workings 工時資訊', function() {
                     has_compensatory_dayoff: "yes",
                 },
                 {
-                    job_title: "ENGINEER2",
+                    job_title: "ENGINEER5",
                     company: {id: "84149961", name: "COMPANY1"},
                     week_work_time: 47,
                     overtime_frequency: 3,
@@ -867,7 +871,7 @@ describe('Workings 工時資訊', function() {
                     has_compensatory_dayoff: "don't know",
                 },
                 {
-                    job_title: "ENGINEER2",
+                    job_title: "ENGINEER6",
                     company: {id: "84149961", name: "COMPANY1"},
                     week_work_time: 38,
                     overtime_frequency: 0,
@@ -877,7 +881,7 @@ describe('Workings 工時資訊', function() {
                     sector: "TAICHUNG",
                 },
                 {
-                    job_title: "ENGINEER2",
+                    job_title: "ENGINEER7",
                     company: {id: "84149961", name: "COMPANY1"},
                     week_work_time: 44,
                     overtime_frequency: 1,
@@ -888,16 +892,48 @@ describe('Workings 工時資訊', function() {
                     has_overtime_salary: "yes",
                 },
                 {
+                    job_title: "ENGINEER1",
+                    company: { name: "COMPANY2" },
+                    week_work_time: 40,
+                    overtime_frequency: 0,
+                    day_promised_work_time: 8,
+                    day_real_work_time: 8,
+                    created_at: new Date("2016-07-21T14:15:44.929Z"),
+                    sector: "TAIPEI",
+                    has_overtime_salary: "yes",
+                    is_overtime_salary_legal: "yes",
+                    has_compensatory_dayoff: "yes",
+                    is_currently_employed: "no",
+                    job_ending_time: { year: 2016, month: 11 },
+                    employment_type: "full-time",
+                    gender: "male",
+                    salary: { type: "month", amount: 22000 },
+                    experience_in_year: 0,
+                },
+                {
                     job_title: "ENGINEER2",
-                    company: {name: "COMPANY2"},
-                    week_work_time: 60,
-                    overtime_frequency: 3,
+                    company: { name: "COMPANY2" },
+                    week_work_time: 40,
+                    overtime_frequency: 2,
                     day_promised_work_time: 8,
                     day_real_work_time: 10,
                     created_at: new Date("2016-07-20T14:15:44.929Z"),
                     sector: "TAIPEI",
-                    has_overtime_salary: "no",
-                    has_compensatory_dayoff: "don't know",
+                    has_overtime_salary: "yes",
+                    is_overtime_salary_legal: "no",
+                    has_compensatory_dayoff: "no",
+                    is_currently_employed: "yes",
+                    employment_type: "part-time",
+                },
+                {
+                    job_title: "ENGINEER3",
+                    company: { name: "COMPANY2" },
+                    created_at: new Date("2016-07-22T14:15:44.929Z"),
+                    sector: "TAINAN",
+                    is_currently_employed: "yes",
+                    employment_type: "part-time",
+                    salary: { type: "day", amount: 1000 },
+                    experience_in_year: 1,
                 },
                 {
                     job_title: "ENGINEER3",
@@ -931,6 +967,7 @@ describe('Workings 工時資訊', function() {
                     assert.deepProperty(res.body[0], 'workings');
                     assert.isArray(res.body[0].workings);
                     assert(res.body[0].workings.length >= 5);
+                    //COMPANY1 ENGINEER1
                     assert.deepProperty(res.body[0], 'workings.0.job_title');
                     assert.deepProperty(res.body[0], 'workings.0.week_work_time');
                     assert.deepProperty(res.body[0], 'workings.0.overtime_frequency');
@@ -938,6 +975,47 @@ describe('Workings 工時資訊', function() {
                     assert.deepProperty(res.body[0], 'workings.0.day_real_work_time');
                     assert.deepProperty(res.body[0], 'workings.0.created_at');
                     assert.deepProperty(res.body[0], 'workings.0.sector');
+                    assert.notDeepProperty(res.body[0], 'workings.0.is_currently_employed');
+                    assert.deepProperty(res.body[0], 'workings.0.data_time.year');
+                    assert.deepProperty(res.body[0], 'workings.0.data_time.month');
+                    assert.deepProperty(res.body[0], 'workings.0.employment_type');
+                    assert.notDeepProperty(res.body[0], 'workings.0.gender');
+                    assert.deepProperty(res.body[0], 'workings.0.salary.type');
+                    assert.deepProperty(res.body[0], 'workings.0.salary.amount');
+                    assert.deepProperty(res.body[0], 'workings.0.experience_in_year');
+                    //COMPANY1 ENGINEER2
+                    assert.deepProperty(res.body[0], 'workings.1.job_title');
+                    assert.deepProperty(res.body[0], 'workings.1.week_work_time');
+                    assert.deepProperty(res.body[0], 'workings.1.overtime_frequency');
+                    assert.deepProperty(res.body[0], 'workings.1.day_promised_work_time');
+                    assert.deepProperty(res.body[0], 'workings.1.day_real_work_time');
+                    assert.deepProperty(res.body[0], 'workings.1.created_at');
+                    assert.deepProperty(res.body[0], 'workings.1.sector');
+                    assert.notDeepProperty(res.body[0], 'workings.1.is_currently_employed');
+                    assert.deepProperty(res.body[0], 'workings.1.data_time.year');
+                    assert.deepProperty(res.body[0], 'workings.1.data_time.month');
+                    assert.deepProperty(res.body[0], 'workings.1.employment_type');
+                    assert.notDeepProperty(res.body[0], 'workings.1.gender');
+                    assert.notDeepProperty(res.body[0], 'workings.1.salary.type');
+                    assert.notDeepProperty(res.body[0], 'workings.1.salary.amount');
+                    assert.notDeepProperty(res.body[0], 'workings.1.experience_in_year');
+                    //COMPANY1 ENGINEER3
+                    assert.deepProperty(res.body[0], 'workings.2.job_title');
+                    assert.notDeepProperty(res.body[0], 'workings.2.week_work_time');
+                    assert.notDeepProperty(res.body[0], 'workings.2.overtime_frequency');
+                    assert.notDeepProperty(res.body[0], 'workings.2.day_promised_work_time');
+                    assert.notDeepProperty(res.body[0], 'workings.2.day_real_work_time');
+                    assert.deepProperty(res.body[0], 'workings.2.created_at');
+                    assert.deepProperty(res.body[0], 'workings.2.sector');
+                    assert.notDeepProperty(res.body[0], 'workings.2.is_currently_employed');
+                    assert.deepProperty(res.body[0], 'workings.2.data_time.year');
+                    assert.deepProperty(res.body[0], 'workings.2.data_time.month');
+                    assert.deepProperty(res.body[0], 'workings.2.employment_type');
+                    assert.notDeepProperty(res.body[0], 'workings.2.gender');
+                    assert.deepProperty(res.body[0], 'workings.2.salary.type');
+                    assert.deepProperty(res.body[0], 'workings.2.salary.amount');
+                    assert.deepProperty(res.body[0], 'workings.2.experience_in_year');
+
                     assert.deepProperty(res.body[0], 'count');
                     assert.deepProperty(res.body[0], 'has_overtime_salary_count');
                     assert.deepProperty(res.body[0], 'has_overtime_salary_count.yes');
@@ -966,6 +1044,7 @@ describe('Workings 工時資訊', function() {
                     assert.deepProperty(res.body[0], 'workings');
                     assert.isArray(res.body[0].workings);
                     assert(res.body[0].workings.length < 5);
+                    //COMPANY2 ENGINEER1
                     assert.deepProperty(res.body[0], 'workings.0.job_title');
                     assert.deepProperty(res.body[0], 'workings.0.week_work_time');
                     assert.deepProperty(res.body[0], 'workings.0.overtime_frequency');
@@ -973,6 +1052,47 @@ describe('Workings 工時資訊', function() {
                     assert.deepProperty(res.body[0], 'workings.0.day_real_work_time');
                     assert.deepProperty(res.body[0], 'workings.0.created_at');
                     assert.deepProperty(res.body[0], 'workings.0.sector');
+                    assert.notDeepProperty(res.body[0], 'workings.0.is_currently_employed');
+                    assert.deepProperty(res.body[0], 'workings.0.data_time.year');
+                    assert.deepProperty(res.body[0], 'workings.0.data_time.month');
+                    assert.deepProperty(res.body[0], 'workings.0.employment_type');
+                    assert.notDeepProperty(res.body[0], 'workings.0.gender');
+                    assert.deepProperty(res.body[0], 'workings.0.salary.type');
+                    assert.deepProperty(res.body[0], 'workings.0.salary.amount');
+                    assert.deepProperty(res.body[0], 'workings.0.experience_in_year');
+                    //COMPANY2 ENGINEER2
+                    assert.deepProperty(res.body[0], 'workings.1.job_title');
+                    assert.deepProperty(res.body[0], 'workings.1.week_work_time');
+                    assert.deepProperty(res.body[0], 'workings.1.overtime_frequency');
+                    assert.deepProperty(res.body[0], 'workings.1.day_promised_work_time');
+                    assert.deepProperty(res.body[0], 'workings.1.day_real_work_time');
+                    assert.deepProperty(res.body[0], 'workings.1.created_at');
+                    assert.deepProperty(res.body[0], 'workings.1.sector');
+                    assert.notDeepProperty(res.body[0], 'workings.1.is_currently_employed');
+                    assert.deepProperty(res.body[0], 'workings.1.data_time.year');
+                    assert.deepProperty(res.body[0], 'workings.1.data_time.month');
+                    assert.deepProperty(res.body[0], 'workings.1.employment_type');
+                    assert.notDeepProperty(res.body[0], 'workings.1.gender');
+                    assert.notDeepProperty(res.body[0], 'workings.1.salary.type');
+                    assert.notDeepProperty(res.body[0], 'workings.1.salary.amount');
+                    assert.notDeepProperty(res.body[0], 'workings.1.experience_in_year');
+                    //COMPANY2 ENGINEER3
+                    assert.deepProperty(res.body[0], 'workings.2.job_title');
+                    assert.notDeepProperty(res.body[0], 'workings.2.week_work_time');
+                    assert.notDeepProperty(res.body[0], 'workings.2.overtime_frequency');
+                    assert.notDeepProperty(res.body[0], 'workings.2.day_promised_work_time');
+                    assert.notDeepProperty(res.body[0], 'workings.2.day_real_work_time');
+                    assert.deepProperty(res.body[0], 'workings.2.created_at');
+                    assert.deepProperty(res.body[0], 'workings.2.sector');
+                    assert.notDeepProperty(res.body[0], 'workings.2.is_currently_employed');
+                    assert.deepProperty(res.body[0], 'workings.2.data_time.year');
+                    assert.deepProperty(res.body[0], 'workings.2.data_time.month');
+                    assert.deepProperty(res.body[0], 'workings.2.employment_type');
+                    assert.notDeepProperty(res.body[0], 'workings.2.gender');
+                    assert.deepProperty(res.body[0], 'workings.2.salary.type');
+                    assert.deepProperty(res.body[0], 'workings.2.salary.amount');
+                    assert.deepProperty(res.body[0], 'workings.2.experience_in_year');
+
                     assert.deepProperty(res.body[0], 'count');
                     assert.notDeepProperty(res.body[0], 'has_overtime_salary_count');
                     assert.notDeepProperty(res.body[0], 'is_overtime_salary_legal_count');
@@ -1013,8 +1133,9 @@ describe('Workings 工時資訊', function() {
                     assert.deepPropertyVal(res.body, '0._id.name', 'COMPANY1');
 
                     let workings = res.body[0].workings;
-                    assert.deepPropertyVal(workings, '2.job_title', 'ENGINEER1');
-                    assert.deepPropertyVal(workings, '3.job_title', 'ENGINEER2');
+                    assert.deepPropertyVal(workings, '0.job_title', 'ENGINEER1');
+                    assert.deepPropertyVal(workings, '1.job_title', 'ENGINEER2');
+                    assert.deepPropertyVal(workings, '2.job_title', 'ENGINEER3');
                 })
                 .end(done);
         });
@@ -1075,6 +1196,42 @@ describe('Workings 工時資訊', function() {
                 .end(done);
             });
 
+        it('當 is_currently_employed == "yes", data_time 為 created_at 的年月',
+            function(done) {
+                request(app).get('/workings/search-and-group/by-company')
+                .query({company: 'COMPANY1'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.deepPropertyVal(res.body[0], 'workings.1.data_time.year', 2016);
+                    assert.deepPropertyVal(res.body[0], 'workings.1.data_time.month', 7);
+                })
+                .end(done);
+            });
+
+        it('當 is_currently_employed 未給定, data_time 為 created_at 的年月',
+            function(done) {
+                request(app).get('/workings/search-and-group/by-company')
+                .query({company: 'COMPANY1'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.deepPropertyVal(res.body[0], 'workings.2.data_time.year', 2011);
+                    assert.deepPropertyVal(res.body[0], 'workings.2.data_time.month', 5);
+                })
+                .end(done);
+            });
+
+        it('當 is_currently_employed == "no", data_time 為 job_ending_time',
+            function(done) {
+                request(app).get('/workings/search-and-group/by-company')
+                .query({company: 'COMPANY1'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.deepPropertyVal(res.body[0], 'workings.0.data_time.year', 2015);
+                    assert.deepPropertyVal(res.body[0], 'workings.0.data_time.month', 3);
+                })
+                .end(done);
+            });
+
         after(function() {
             return db.collection('workings').remove({});
         });
@@ -1085,7 +1242,7 @@ describe('Workings 工時資訊', function() {
             return db.collection('workings').insertMany([
                 {
                     job_title: "ENGINEER1",
-                    company: {id: "84149961", name: "COMPANY1"},
+                    company: {id: "84149961", name: "COMPANY1" },
                     week_work_time: 40,
                     overtime_frequency: 0,
                     day_promised_work_time: 8,
@@ -1095,12 +1252,16 @@ describe('Workings 工時資訊', function() {
                     has_overtime_salary: "yes",
                     is_overtime_salary_legal: "yes",
                     has_compensatory_dayoff: "yes",
-                    author: {
-                    },
+                    is_currently_employed: "no",
+                    job_ending_time: { year: 2015, month: 3 },
+                    employment_type: "full-time",
+                    gender: "male",
+                    salary: { type: "month", amount: 22000 },
+                    experience_in_year: 0,
                 },
                 {
                     job_title: "ENGINEER1",
-                    company: {id: "84149961", name: "COMPANY1"},
+                    company: {id: "84149962", name: "COMPANY2"},
                     week_work_time: 40,
                     overtime_frequency: 2,
                     day_promised_work_time: 8,
@@ -1110,62 +1271,60 @@ describe('Workings 工時資訊', function() {
                     has_overtime_salary: "yes",
                     is_overtime_salary_legal: "no",
                     has_compensatory_dayoff: "no",
-                    author: {
-                    },
+                    is_currently_employed: "yes",
+                    employment_type: "part-time",
                 },
                 {
                     job_title: "ENGINEER1",
-                    company: {id: "84149961", name: "COMPANY1"},
-                    week_work_time: 55,
-                    overtime_frequency: 3,
-                    day_promised_work_time: 8,
-                    day_real_work_time: 11,
-                    created_at: new Date("2016-07-22T14:15:44.929Z"),
+                    company: {id: "84149963", name: "COMPANY3"},
+                    created_at: new Date("2011-05-22T14:15:44.929Z"),
                     sector: "TAINAN",
-                    has_overtime_salary: "yes",
-                    is_overtime_salary_legal: "don't know",
-                    has_compensatory_dayoff: "no",
-                    author: {
-                    },
+                    employment_type: "part-time",
+                    salary: { type: "day", amount: 1000 },
+                    experience_in_year: 1,
                 },
                 {
                     job_title: "ENGINEER2",
-                    company: {id: "84149961", name: "COMPANY1"},
-                    week_work_time: 45,
-                    overtime_frequency: 1,
-                    day_promised_work_time: 9,
-                    day_real_work_time: 10,
-                    created_at: new Date("2016-07-23T14:15:44.929Z"),
+                    company: {id: "84149961", name: "COMPANY1" },
+                    week_work_time: 40,
+                    overtime_frequency: 0,
+                    day_promised_work_time: 8,
+                    day_real_work_time: 8,
+                    created_at: new Date("2016-07-21T14:15:44.929Z"),
                     sector: "TAIPEI",
-                    has_overtime_salary: "no",
-                    is_overtime_salary_legal: "",
+                    has_overtime_salary: "yes",
+                    is_overtime_salary_legal: "yes",
                     has_compensatory_dayoff: "yes",
+                    is_currently_employed: "no",
+                    job_ending_time: { year: 2015, month: 3 },
+                    employment_type: "full-time",
+                    gender: "male",
+                    salary: { type: "month", amount: 22000 },
+                    experience_in_year: 0,
                 },
                 {
                     job_title: "ENGINEER2",
-                    company: {id: "84149961", name: "COMPANY1"},
-                    week_work_time: 47,
-                    overtime_frequency: 3,
-                    day_promised_work_time: 7,
-                    day_real_work_time: 10,
-                    created_at: new Date("2016-07-20T14:15:44.929Z"),
-                    sector: "TAICHUNG",
-                    has_overtime_salary: "don't know",
-                    is_overtime_salary_legal: "",
-                    has_compensatory_dayoff: "don't know",
-                },
-                {
-                    job_title: "ENGINEER2",
-                    company: {name: "COMPANY"},
-                    week_work_time: 60,
-                    overtime_frequency: 3,
+                    company: {id: "84149962", name: "COMPANY2"},
+                    week_work_time: 40,
+                    overtime_frequency: 2,
                     day_promised_work_time: 8,
                     day_real_work_time: 10,
                     created_at: new Date("2016-07-20T14:15:44.929Z"),
                     sector: "TAIPEI",
-                    has_overtime_salary: "no",
-                    is_overtime_salary_legal: "",
-                    has_compensatory_dayoff: "don't know",
+                    has_overtime_salary: "yes",
+                    is_overtime_salary_legal: "no",
+                    has_compensatory_dayoff: "no",
+                    is_currently_employed: "yes",
+                    employment_type: "part-time",
+                },
+                {
+                    job_title: "ENGINEER2",
+                    company: {id: "84149963", name: "COMPANY3"},
+                    created_at: new Date("2011-05-22T14:15:44.929Z"),
+                    sector: "TAINAN",
+                    employment_type: "part-time",
+                    salary: { type: "day", amount: 1000 },
+                    experience_in_year: 1,
                 },
                 {
                     job_title: "TEACHER",
@@ -1198,17 +1357,66 @@ describe('Workings 工時資訊', function() {
                     assert.deepProperty(res.body, '0._id');
                     assert.deepProperty(res.body, '0.workings');
                     assert.isArray(res.body[0].workings);
-                    assert.deepProperty(res.body, '0.workings.0.company.name');
-                    assert.deepProperty(res.body, '0.workings.0.week_work_time');
-                    assert.deepProperty(res.body, '0.workings.0.overtime_frequency');
-                    assert.deepProperty(res.body, '0.workings.0.day_promised_work_time');
-                    assert.deepProperty(res.body, '0.workings.0.day_real_work_time');
-                    assert.deepProperty(res.body, '0.workings.0.created_at');
-                    assert.deepProperty(res.body, '0.workings.0.sector');
-                    assert.notDeepProperty(res.body, '0.workings.0.author');
-                    assert.notDeepProperty(res.body, '0.workings.0.has_overtime_salary');
-                    assert.notDeepProperty(res.body, '0.workings.0.is_overtime_salary_legal');
-                    assert.notDeepProperty(res.body, '0.workings.0.has_compensatory_dayoff');
+                    //ENGINEER1 COMPANY1
+                    assert.deepProperty(res.body[0], 'workings.0.company.name');
+                    assert.deepProperty(res.body[0], 'workings.0.week_work_time');
+                    assert.deepProperty(res.body[0], 'workings.0.overtime_frequency');
+                    assert.deepProperty(res.body[0], 'workings.0.day_promised_work_time');
+                    assert.deepProperty(res.body[0], 'workings.0.day_real_work_time');
+                    assert.deepProperty(res.body[0], 'workings.0.created_at');
+                    assert.deepProperty(res.body[0], 'workings.0.sector');
+                    assert.notDeepProperty(res.body[0], 'workings.0.is_currently_employed');
+                    assert.deepProperty(res.body[0], 'workings.0.data_time.year');
+                    assert.deepProperty(res.body[0], 'workings.0.data_time.month');
+                    assert.deepProperty(res.body[0], 'workings.0.employment_type');
+                    assert.notDeepProperty(res.body[0], 'workings.0.gender');
+                    assert.deepProperty(res.body[0], 'workings.0.salary.type');
+                    assert.deepProperty(res.body[0], 'workings.0.salary.amount');
+                    assert.deepProperty(res.body[0], 'workings.0.experience_in_year');
+                    assert.notDeepProperty(res.body[0], 'workings.0.author');
+                    assert.notDeepProperty(res.body[0], 'workings.0.has_overtime_salary');
+                    assert.notDeepProperty(res.body[0], 'workings.0.is_overtime_salary_legal');
+                    assert.notDeepProperty(res.body[0], 'workings.0.has_compensatory_dayoff');
+                    //ENGINEER2 COMPANY1
+                    assert.deepProperty(res.body[0], 'workings.1.company.name');
+                    assert.deepProperty(res.body[0], 'workings.1.week_work_time');
+                    assert.deepProperty(res.body[0], 'workings.1.overtime_frequency');
+                    assert.deepProperty(res.body[0], 'workings.1.day_promised_work_time');
+                    assert.deepProperty(res.body[0], 'workings.1.day_real_work_time');
+                    assert.deepProperty(res.body[0], 'workings.1.created_at');
+                    assert.deepProperty(res.body[0], 'workings.1.sector');
+                    assert.notDeepProperty(res.body[0], 'workings.1.is_currently_employed');
+                    assert.deepProperty(res.body[0], 'workings.1.data_time.year');
+                    assert.deepProperty(res.body[0], 'workings.1.data_time.month');
+                    assert.deepProperty(res.body[0], 'workings.1.employment_type');
+                    assert.notDeepProperty(res.body[0], 'workings.1.gender');
+                    assert.notDeepProperty(res.body[0], 'workings.1.salary.type');
+                    assert.notDeepProperty(res.body[0], 'workings.1.salary.amount');
+                    assert.notDeepProperty(res.body[0], 'workings.1.experience_in_year');
+                    assert.notDeepProperty(res.body[0], 'workings.1.author');
+                    assert.notDeepProperty(res.body[0], 'workings.1.has_overtime_salary');
+                    assert.notDeepProperty(res.body[0], 'workings.1.is_overtime_salary_legal');
+                    assert.notDeepProperty(res.body[0], 'workings.1.has_compensatory_dayoff');
+                    //COMPANY1 ENGINEER3
+                    assert.deepProperty(res.body[0], 'workings.2.company.name');
+                    assert.notDeepProperty(res.body[0], 'workings.2.week_work_time');
+                    assert.notDeepProperty(res.body[0], 'workings.2.overtime_frequency');
+                    assert.notDeepProperty(res.body[0], 'workings.2.day_promised_work_time');
+                    assert.notDeepProperty(res.body[0], 'workings.2.day_real_work_time');
+                    assert.deepProperty(res.body[0], 'workings.2.created_at');
+                    assert.deepProperty(res.body[0], 'workings.2.sector');
+                    assert.notDeepProperty(res.body[0], 'workings.2.is_currently_employed');
+                    assert.deepProperty(res.body[0], 'workings.2.data_time.year');
+                    assert.deepProperty(res.body[0], 'workings.2.data_time.month');
+                    assert.deepProperty(res.body[0], 'workings.2.employment_type');
+                    assert.notDeepProperty(res.body[0], 'workings.2.gender');
+                    assert.deepProperty(res.body[0], 'workings.2.salary.type');
+                    assert.deepProperty(res.body[0], 'workings.2.salary.amount');
+                    assert.deepProperty(res.body[0], 'workings.2.experience_in_year');
+                    assert.notDeepProperty(res.body[0], 'workings.2.author');
+                    assert.notDeepProperty(res.body[0], 'workings.2.has_overtime_salary');
+                    assert.notDeepProperty(res.body[0], 'workings.2.is_overtime_salary_legal');
+                    assert.notDeepProperty(res.body[0], 'workings.2.has_compensatory_dayoff');
                 })
                 .end(done);
         });
@@ -1243,8 +1451,8 @@ describe('Workings 工時資訊', function() {
                 .expect(function(res) {
                     const workings = res.body[0].workings;
                     assert.deepPropertyVal(workings, '0.company.name', 'COMPANY1');
-                    assert.deepPropertyVal(workings, '1.company.name', 'COMPANY1');
-                    assert.deepPropertyVal(workings, '2.company.name', 'COMPANY');
+                    assert.deepPropertyVal(workings, '1.company.name', 'COMPANY2');
+                    assert.deepPropertyVal(workings, '2.company.name', 'COMPANY3');
                 })
                 .end(done);
         });
@@ -1260,6 +1468,42 @@ describe('Workings 工時資訊', function() {
                 })
                 .end(done);
         });
+
+        it('當 is_currently_employed == "yes", data_time 為 created_at 的年月',
+            function(done) {
+                request(app).get('/workings/search-and-group/by-job-title')
+                .query({job_title: 'ENGINEER1'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.deepPropertyVal(res.body[0], 'workings.1.data_time.year', 2016);
+                    assert.deepPropertyVal(res.body[0], 'workings.1.data_time.month', 7);
+                })
+                .end(done);
+            });
+
+        it('當 is_currently_employed 未給定, data_time 為 created_at 的年月',
+            function(done) {
+                request(app).get('/workings/search-and-group/by-job-title')
+                .query({job_title: 'ENGINEER1'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.deepPropertyVal(res.body[0], 'workings.2.data_time.year', 2011);
+                    assert.deepPropertyVal(res.body[0], 'workings.2.data_time.month', 5);
+                })
+                .end(done);
+            });
+
+        it('當 is_currently_employed == "no", data_time 為 job_ending_time',
+            function(done) {
+                request(app).get('/workings/search-and-group/by-job-title')
+                .query({job_title: 'ENGINEER1'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.deepPropertyVal(res.body[0], 'workings.0.data_time.year', 2015);
+                    assert.deepPropertyVal(res.body[0], 'workings.0.data_time.month', 3);
+                })
+                .end(done);
+            });
 
         after(function() {
             return db.collection('workings').remove({});
