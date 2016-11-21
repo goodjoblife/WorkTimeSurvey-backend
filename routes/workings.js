@@ -559,10 +559,10 @@ router.get('/search-and-group/by-company', function(req, res, next) {
                         salary: "$salary",
                         data_time: {
                             year: {
-                                $cond: [{$eq: ["$is_currently_employed", "no"]}, "$job_ending_time.year", {$year: "$created_at"}]
+                                $cond: [{$eq: ["$is_currently_employed", "no"]}, "$job_ending_time.year", {$year: "$created_at"}],
                             },
                             month: {
-                                $cond: [{$eq: ["$is_currently_employed", "no"]}, "$job_ending_time.month", {$month: "$created_at"}]
+                                $cond: [{$eq: ["$is_currently_employed", "no"]}, "$job_ending_time.month", {$month: "$created_at"}],
                             },
                         },
                     },
@@ -678,10 +678,10 @@ router.get('/search-and-group/by-job-title', function(req, res, next) {
                         salary: "$salary",
                         data_time: {
                             year: {
-                                $cond: [{$eq: ["$is_currently_employed", "no"]}, "$job_ending_time.year", {$year: "$created_at"}]
+                                $cond: [{$eq: ["$is_currently_employed", "no"]}, "$job_ending_time.year", {$year: "$created_at"}],
                             },
                             month: {
-                                $cond: [{$eq: ["$is_currently_employed", "no"]}, "$job_ending_time.month", {$month: "$created_at"}]
+                                $cond: [{$eq: ["$is_currently_employed", "no"]}, "$job_ending_time.month", {$month: "$created_at"}],
                             },
                         },
                     },
