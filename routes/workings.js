@@ -173,6 +173,17 @@ router.post('/', function(req, res, next) {
         delete working.salary_amount;
     }
 
+    if (working.is_currently_employed === 'no') {
+        working.data_time = {};
+        working.data_time.year = working.job_ending_time.year;
+        working.data_time.month = working.job_ending_time.month;
+    } else if (working.is_currently_employed === 'yes') {
+        working.data_time = {};
+        const date = new Date(working.created_at);
+        working.data_time.year = date.getFullYear();
+        working.data_time.month = date.getMonth()+1;
+    }
+
     /*
      * So, here, the data are well-down
      */

@@ -915,6 +915,39 @@ describe('Workings 工時資訊', function() {
             });
         });
 
+        describe('data_time', function() {
+            it('should be job_ending_time year and month if is_currently_employed is "no"', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        is_currently_employed: 'no',
+                        job_ending_time_year: '2015',
+                        job_ending_time_month: '11',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.property(res.body.working, 'data_time');
+                        assert.deepPropertyVal(res.body.working, 'data_time.year', 2015);
+                        assert.deepPropertyVal(res.body.working, 'data_time.month', 11);
+                    })
+                    .end(done);
+            });
+
+            it('should be created_at year and month if is_currently_employed is "yes"', function(done) {
+                request(app).post('/workings')
+                    .send(generatePayload({
+                        is_currently_employed: 'yes',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.property(res.body.working, 'data_time');
+                        const date = new Date(res.body.working.created_at);
+                        assert.deepPropertyVal(res.body.working, 'data_time.year', date.getFullYear());
+                        assert.deepPropertyVal(res.body.working, 'data_time.month', date.getMonth()+1);
+                    })
+                    .end(done);
+            });
+        });
+
         afterEach(function() {
             nock.cleanAll();
         });
@@ -1580,7 +1613,6 @@ function generatePayload(opt) {
         overtime_frequency: '3',
         day_promised_work_time: '8',
         day_real_work_time: '10',
-
         is_currently_employed: 'yes',
         job_ending_time_year: ((new Date()).getFullYear()).toString(),
         job_ending_time_month: ((new Date()).getMonth()+1).toString(),
