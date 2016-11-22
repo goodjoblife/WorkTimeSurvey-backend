@@ -23,12 +23,14 @@ describe('Workings 工時資訊', function() {
                     sector: "AAA",
                     created_at: new Date("2016-09-06 08:00"),
                     salary: {type: "year", amount: 220000},
+                    data_time: {year: 2016, month: 9},
                 },
                 {
                     overtime_frequency: 2,
                     created_at: new Date("2016-09-06 09:00"),
                     salary: {type: "year", amount: 220000},
                     is_currently_employed: "yes",
+                    data_time: {year: 2016, month: 9},
                 },
                 {
                     overtime_frequency: 1,
@@ -36,14 +38,14 @@ describe('Workings 工時資訊', function() {
                     created_at: new Date("2016-09-06 09:03"),
                     salary: {type: "year", amount: 220000},
                     is_currently_employed: "no",
-                    job_ending_time: {year: 2014, month: 5},
+                    data_time: {year: 2014, month: 5},
                 },
                 {
                     overtime_frequency: 4,
                     created_at: new Date("2016-09-06 09:04"),
                     salary: {type: "year", amount: 220000},
                     is_currently_employed: "no",
-                    job_ending_time: {year: 2015, month: 5},
+                    data_time: {year: 2015, month: 5},
                 },
             ]);
         });
