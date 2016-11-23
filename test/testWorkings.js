@@ -677,6 +677,9 @@ describe('Workings 工時資訊', function() {
                             is_currently_employed: type,
                         }))
                         .expect(200)
+                        .expect(function(res) {
+                            assert.propertyVal(res.body.working, 'is_currently_employed', type);
+                        })
                         .end(done);
                 });
             }
@@ -727,6 +730,7 @@ describe('Workings 工時資訊', function() {
                 request(app).post('/workings')
                     .send(generatePayload({
                         is_currently_employed: 'no',
+                        job_ending_time_year: ((new Date()).getFullYear()).toString(),
                         job_ending_time_month: ((new Date()).getMonth()+2).toString(),
                     }))
                     .expect(422)
@@ -799,7 +803,7 @@ describe('Workings 工時資訊', function() {
             it('should be error if request others', function(done) {
                 request(app).post('/workings')
                     .send(generatePayload({
-                        employment_type: 'othermale',
+                        gender: 'othermale',
                     }))
                     .expect(422)
                     .end(done);
@@ -808,7 +812,7 @@ describe('Workings 工時資訊', function() {
             it('wouldn\'t be returned if there is no such field in payload', function(done) {
                 request(app).post('/workings')
                     .send(generatePayload({
-                        has_compensatory_dayoff: -1,
+                        gender: -1,
                     }))
                     .expect(200)
                     .expect(function(res) {
