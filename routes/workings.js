@@ -557,14 +557,7 @@ router.get('/search-and-group/by-company', function(req, res, next) {
                         employment_type: "$employment_type",
                         experience_in_year: "$experience_in_year",
                         salary: "$salary",
-                        data_time: {
-                            year: {
-                                $cond: [{$eq: ["$is_currently_employed", "no"]}, "$job_ending_time.year", {$year: "$created_at"}],
-                            },
-                            month: {
-                                $cond: [{$eq: ["$is_currently_employed", "no"]}, "$job_ending_time.month", {$month: "$created_at"}],
-                            },
-                        },
+                        data_time: "$data_time",
                     },
                 },
                 count: {$sum: 1},
@@ -676,14 +669,7 @@ router.get('/search-and-group/by-job-title', function(req, res, next) {
                         employment_type: "$employment_type",
                         experience_in_year: "$experience_in_year",
                         salary: "$salary",
-                        data_time: {
-                            year: {
-                                $cond: [{$eq: ["$is_currently_employed", "no"]}, "$job_ending_time.year", {$year: "$created_at"}],
-                            },
-                            month: {
-                                $cond: [{$eq: ["$is_currently_employed", "no"]}, "$job_ending_time.month", {$month: "$created_at"}],
-                            },
-                        },
+                        data_time: "$data_time",
                     },
                 },
                 count: {
