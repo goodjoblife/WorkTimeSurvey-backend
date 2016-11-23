@@ -821,6 +821,7 @@ describe('Workings 工時資訊', function() {
                     gender: "male",
                     salary: { type: "month", amount: 22000 },
                     experience_in_year: 0,
+                    data_time: { year: 2015, month: 3 },
                 },
                 {
                     job_title: "ENGINEER2",
@@ -836,6 +837,7 @@ describe('Workings 工時資訊', function() {
                     has_compensatory_dayoff: "no",
                     is_currently_employed: "yes",
                     employment_type: "part-time",
+                    data_time: { year: 2016, month: 7 },
                 },
                 {
                     job_title: "ENGINEER3",
@@ -845,6 +847,7 @@ describe('Workings 工時資訊', function() {
                     employment_type: "part-time",
                     salary: { type: "day", amount: 1000 },
                     experience_in_year: 1,
+                    data_time: { year: 2011, month: 5 },
                 },
                 {
                     job_title: "ENGINEER4",
@@ -857,6 +860,7 @@ describe('Workings 工時資訊', function() {
                     sector: "TAIPEI",
                     has_overtime_salary: "no",
                     has_compensatory_dayoff: "yes",
+                    data_time: { year: 2016, month: 7 },
                 },
                 {
                     job_title: "ENGINEER5",
@@ -869,6 +873,7 @@ describe('Workings 工時資訊', function() {
                     sector: "TAICHUNG",
                     has_overtime_salary: "don't know",
                     has_compensatory_dayoff: "don't know",
+                    data_time: { year: 2016, month: 7 },
                 },
                 {
                     job_title: "ENGINEER6",
@@ -879,6 +884,7 @@ describe('Workings 工時資訊', function() {
                     day_real_work_time: 7,
                     created_at: new Date("2016-07-25T14:15:44.929Z"),
                     sector: "TAICHUNG",
+                    data_time: { year: 2016, month: 7 },
                 },
                 {
                     job_title: "ENGINEER7",
@@ -890,6 +896,7 @@ describe('Workings 工時資訊', function() {
                     created_at: new Date("2016-07-29T14:15:44.929Z"),
                     sector: "TAICHUNG",
                     has_overtime_salary: "yes",
+                    data_time: { year: 2016, month: 7 },
                 },
                 {
                     job_title: "ENGINEER1",
@@ -909,6 +916,7 @@ describe('Workings 工時資訊', function() {
                     gender: "male",
                     salary: { type: "month", amount: 22000 },
                     experience_in_year: 0,
+                    data_time: { year: 2016, month: 11 },
                 },
                 {
                     job_title: "ENGINEER2",
@@ -924,6 +932,7 @@ describe('Workings 工時資訊', function() {
                     has_compensatory_dayoff: "no",
                     is_currently_employed: "yes",
                     employment_type: "part-time",
+                    data_time: { year: 2016, month: 7 },
                 },
                 {
                     job_title: "ENGINEER3",
@@ -934,6 +943,7 @@ describe('Workings 工時資訊', function() {
                     employment_type: "part-time",
                     salary: { type: "day", amount: 1000 },
                     experience_in_year: 1,
+                    data_time: { year: 2016, month: 7 },
                 },
                 {
                     job_title: "ENGINEER3",
@@ -946,6 +956,7 @@ describe('Workings 工時資訊', function() {
                     sector: "TAIPEI",
                     has_overtime_salary: "no",
                     has_compensatory_dayoff: "yes",
+                    data_time: { year: 2016, month: 7 },
                 },
             ]);
         });
@@ -1258,6 +1269,7 @@ describe('Workings 工時資訊', function() {
                     gender: "male",
                     salary: { type: "month", amount: 22000 },
                     experience_in_year: 0,
+                    data_time: { year: 2015, month: 3 },
                 },
                 {
                     job_title: "ENGINEER1",
@@ -1273,6 +1285,7 @@ describe('Workings 工時資訊', function() {
                     has_compensatory_dayoff: "no",
                     is_currently_employed: "yes",
                     employment_type: "part-time",
+                    data_time: { year: 2016, month: 7 },
                 },
                 {
                     job_title: "ENGINEER1",
@@ -1282,6 +1295,7 @@ describe('Workings 工時資訊', function() {
                     employment_type: "part-time",
                     salary: { type: "day", amount: 1000 },
                     experience_in_year: 1,
+                    data_time: { year: 2011, month: 5 },
                 },
                 {
                     job_title: "ENGINEER2",
@@ -1301,6 +1315,7 @@ describe('Workings 工時資訊', function() {
                     gender: "male",
                     salary: { type: "month", amount: 22000 },
                     experience_in_year: 0,
+                    data_time: { year: 2015, month: 3 },
                 },
                 {
                     job_title: "ENGINEER2",
@@ -1316,6 +1331,7 @@ describe('Workings 工時資訊', function() {
                     has_compensatory_dayoff: "no",
                     is_currently_employed: "yes",
                     employment_type: "part-time",
+                    data_time: { year: 2016, month: 7 },
                 },
                 {
                     job_title: "ENGINEER2",
@@ -1325,6 +1341,7 @@ describe('Workings 工時資訊', function() {
                     employment_type: "part-time",
                     salary: { type: "day", amount: 1000 },
                     experience_in_year: 1,
+                    data_time: { year: 2011, month: 5 },
                 },
                 {
                     job_title: "TEACHER",
@@ -1338,6 +1355,7 @@ describe('Workings 工時資訊', function() {
                     has_overtime_salary: "no",
                     is_overtime_salary_legal: "",
                     has_compensatory_dayoff: "don't know",
+                    data_time: { year: 2016, month: 7 },
                 },
             ]);
         });
