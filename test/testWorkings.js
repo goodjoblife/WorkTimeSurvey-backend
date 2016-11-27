@@ -1269,6 +1269,7 @@ describe('Workings 工時資訊', function() {
                     salary: { type: "month", amount: 22000 },
                     experience_in_year: 0,
                     data_time: { year: 2015, month: 3 },
+                    author: {},
                 },
                 {
                     job_title: "ENGINEER1",
@@ -1285,6 +1286,7 @@ describe('Workings 工時資訊', function() {
                     is_currently_employed: "yes",
                     employment_type: "part-time",
                     data_time: { year: 2016, month: 7 },
+                    author: {},
                 },
                 {
                     job_title: "ENGINEER1",
@@ -1295,6 +1297,7 @@ describe('Workings 工時資訊', function() {
                     salary: { type: "day", amount: 1000 },
                     experience_in_year: 1,
                     data_time: { year: 2011, month: 5 },
+                    author: {},
                 },
                 {
                     job_title: "ENGINEER2",
