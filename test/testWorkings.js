@@ -887,18 +887,6 @@ describe('Workings 工時資訊', function() {
                     data_time: { year: 2016, month: 7 },
                 },
                 {
-                    job_title: "ENGINEER7",
-                    company: {id: "84149961", name: "COMPANY1"},
-                    week_work_time: 44,
-                    overtime_frequency: 1,
-                    day_promised_work_time: 8,
-                    day_real_work_time: 7,
-                    created_at: new Date("2016-07-29T14:15:44.929Z"),
-                    sector: "TAICHUNG",
-                    has_overtime_salary: "yes",
-                    data_time: { year: 2016, month: 7 },
-                },
-                {
                     job_title: "ENGINEER1",
                     company: { name: "COMPANY2" },
                     week_work_time: 40,
@@ -1155,6 +1143,9 @@ describe('Workings 工時資訊', function() {
                     assert.deepPropertyVal(workings, '0.job_title', 'ENGINEER1');
                     assert.deepPropertyVal(workings, '1.job_title', 'ENGINEER2');
                     assert.deepPropertyVal(workings, '2.job_title', 'ENGINEER3');
+                    assert.deepPropertyVal(workings, '3.job_title', 'ENGINEER4');
+                    assert.deepPropertyVal(workings, '4.job_title', 'ENGINEER5');
+                    assert.deepPropertyVal(workings, '5.job_title', 'ENGINEER6');
                 })
                 .end(done);
         });
