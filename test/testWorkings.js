@@ -978,7 +978,7 @@ describe('Workings 工時資訊', function() {
                     assert.deepProperty(res.body[0], 'workings');
                     assert.isArray(res.body[0].workings);
                     assert(res.body[0].workings.length >= 5);
-                    //COMPANY1 ENGINEER1
+
                     assert.deepProperty(res.body[0], 'workings.0.job_title');
                     assert.deepProperty(res.body[0], 'workings.0.week_work_time');
                     assert.deepProperty(res.body[0], 'workings.0.overtime_frequency');
@@ -994,38 +994,6 @@ describe('Workings 工時資訊', function() {
                     assert.deepProperty(res.body[0], 'workings.0.salary.type');
                     assert.deepProperty(res.body[0], 'workings.0.salary.amount');
                     assert.deepProperty(res.body[0], 'workings.0.experience_in_year');
-                    //COMPANY1 ENGINEER2
-                    assert.deepProperty(res.body[0], 'workings.1.job_title');
-                    assert.deepProperty(res.body[0], 'workings.1.week_work_time');
-                    assert.deepProperty(res.body[0], 'workings.1.overtime_frequency');
-                    assert.deepProperty(res.body[0], 'workings.1.day_promised_work_time');
-                    assert.deepProperty(res.body[0], 'workings.1.day_real_work_time');
-                    assert.deepProperty(res.body[0], 'workings.1.created_at');
-                    assert.deepProperty(res.body[0], 'workings.1.sector');
-                    assert.notDeepProperty(res.body[0], 'workings.1.is_currently_employed');
-                    assert.deepProperty(res.body[0], 'workings.1.data_time.year');
-                    assert.deepProperty(res.body[0], 'workings.1.data_time.month');
-                    assert.deepProperty(res.body[0], 'workings.1.employment_type');
-                    assert.notDeepProperty(res.body[0], 'workings.1.gender');
-                    assert.notDeepProperty(res.body[0], 'workings.1.salary.type');
-                    assert.notDeepProperty(res.body[0], 'workings.1.salary.amount');
-                    assert.notDeepProperty(res.body[0], 'workings.1.experience_in_year');
-                    //COMPANY1 ENGINEER3
-                    assert.deepProperty(res.body[0], 'workings.2.job_title');
-                    assert.notDeepProperty(res.body[0], 'workings.2.week_work_time');
-                    assert.notDeepProperty(res.body[0], 'workings.2.overtime_frequency');
-                    assert.notDeepProperty(res.body[0], 'workings.2.day_promised_work_time');
-                    assert.notDeepProperty(res.body[0], 'workings.2.day_real_work_time');
-                    assert.deepProperty(res.body[0], 'workings.2.created_at');
-                    assert.deepProperty(res.body[0], 'workings.2.sector');
-                    assert.notDeepProperty(res.body[0], 'workings.2.is_currently_employed');
-                    assert.deepProperty(res.body[0], 'workings.2.data_time.year');
-                    assert.deepProperty(res.body[0], 'workings.2.data_time.month');
-                    assert.deepProperty(res.body[0], 'workings.2.employment_type');
-                    assert.notDeepProperty(res.body[0], 'workings.2.gender');
-                    assert.deepProperty(res.body[0], 'workings.2.salary.type');
-                    assert.deepProperty(res.body[0], 'workings.2.salary.amount');
-                    assert.deepProperty(res.body[0], 'workings.2.experience_in_year');
 
                     assert.deepProperty(res.body[0], 'count');
                     assert.deepProperty(res.body[0], 'has_overtime_salary_count');
@@ -1055,7 +1023,7 @@ describe('Workings 工時資訊', function() {
                     assert.deepProperty(res.body[0], 'workings');
                     assert.isArray(res.body[0].workings);
                     assert(res.body[0].workings.length < 5);
-                    //COMPANY2 ENGINEER1
+
                     assert.deepProperty(res.body[0], 'workings.0.job_title');
                     assert.deepProperty(res.body[0], 'workings.0.week_work_time');
                     assert.deepProperty(res.body[0], 'workings.0.overtime_frequency');
@@ -1071,7 +1039,44 @@ describe('Workings 工時資訊', function() {
                     assert.deepProperty(res.body[0], 'workings.0.salary.type');
                     assert.deepProperty(res.body[0], 'workings.0.salary.amount');
                     assert.deepProperty(res.body[0], 'workings.0.experience_in_year');
-                    //COMPANY2 ENGINEER2
+
+                    assert.deepProperty(res.body[0], 'count');
+                    assert.notDeepProperty(res.body[0], 'has_overtime_salary_count');
+                    assert.notDeepProperty(res.body[0], 'is_overtime_salary_legal_count');
+                    assert.notDeepProperty(res.body[0], 'has_compensatory_dayoff_count');
+                })
+                .end(done);
+        });
+
+        it('當該筆資料同時擁有工時及薪資資訊時，都會被回傳', function(done) {
+            request(app).get('/workings/search-and-group/by-company')
+                .query({company: 'COMPANY1'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.deepProperty(res.body[0], 'workings.0.job_title');
+                    assert.deepProperty(res.body[0], 'workings.0.week_work_time');
+                    assert.deepProperty(res.body[0], 'workings.0.overtime_frequency');
+                    assert.deepProperty(res.body[0], 'workings.0.day_promised_work_time');
+                    assert.deepProperty(res.body[0], 'workings.0.day_real_work_time');
+                    assert.deepProperty(res.body[0], 'workings.0.created_at');
+                    assert.deepProperty(res.body[0], 'workings.0.sector');
+                    assert.notDeepProperty(res.body[0], 'workings.0.is_currently_employed');
+                    assert.deepProperty(res.body[0], 'workings.0.data_time.year');
+                    assert.deepProperty(res.body[0], 'workings.0.data_time.month');
+                    assert.deepProperty(res.body[0], 'workings.0.employment_type');
+                    assert.notDeepProperty(res.body[0], 'workings.0.gender');
+                    assert.deepProperty(res.body[0], 'workings.0.salary.type');
+                    assert.deepProperty(res.body[0], 'workings.0.salary.amount');
+                    assert.deepProperty(res.body[0], 'workings.0.experience_in_year');
+                })
+                .end(done);
+        });
+
+        it('當該筆資料僅有工時資訊時，工時資訊會被回傳、薪資資訊不會被回傳', function(done) {
+            request(app).get('/workings/search-and-group/by-company')
+                .query({company: 'COMPANY1'})
+                .expect(200)
+                .expect(function(res) {
                     assert.deepProperty(res.body[0], 'workings.1.job_title');
                     assert.deepProperty(res.body[0], 'workings.1.week_work_time');
                     assert.deepProperty(res.body[0], 'workings.1.overtime_frequency');
@@ -1087,7 +1092,15 @@ describe('Workings 工時資訊', function() {
                     assert.notDeepProperty(res.body[0], 'workings.1.salary.type');
                     assert.notDeepProperty(res.body[0], 'workings.1.salary.amount');
                     assert.notDeepProperty(res.body[0], 'workings.1.experience_in_year');
-                    //COMPANY2 ENGINEER3
+                })
+                .end(done);
+        });
+
+        it('當該筆資料僅有薪資資訊時，薪資資訊會被回傳、工時資訊不會被回傳', function(done) {
+            request(app).get('/workings/search-and-group/by-company')
+                .query({company: 'COMPANY1'})
+                .expect(200)
+                .expect(function(res) {
                     assert.deepProperty(res.body[0], 'workings.2.job_title');
                     assert.notDeepProperty(res.body[0], 'workings.2.week_work_time');
                     assert.notDeepProperty(res.body[0], 'workings.2.overtime_frequency');
@@ -1103,11 +1116,6 @@ describe('Workings 工時資訊', function() {
                     assert.deepProperty(res.body[0], 'workings.2.salary.type');
                     assert.deepProperty(res.body[0], 'workings.2.salary.amount');
                     assert.deepProperty(res.body[0], 'workings.2.experience_in_year');
-
-                    assert.deepProperty(res.body[0], 'count');
-                    assert.notDeepProperty(res.body[0], 'has_overtime_salary_count');
-                    assert.notDeepProperty(res.body[0], 'is_overtime_salary_legal_count');
-                    assert.notDeepProperty(res.body[0], 'has_compensatory_dayoff_count');
                 })
                 .end(done);
         });
@@ -1375,7 +1383,6 @@ describe('Workings 工時資訊', function() {
                     assert.deepProperty(res.body, '0._id');
                     assert.deepProperty(res.body, '0.workings');
                     assert.isArray(res.body[0].workings);
-                    //ENGINEER1 COMPANY1
                     assert.deepProperty(res.body[0], 'workings.0.company.name');
                     assert.deepProperty(res.body[0], 'workings.0.week_work_time');
                     assert.deepProperty(res.body[0], 'workings.0.overtime_frequency');
@@ -1395,7 +1402,43 @@ describe('Workings 工時資訊', function() {
                     assert.notDeepProperty(res.body[0], 'workings.0.has_overtime_salary');
                     assert.notDeepProperty(res.body[0], 'workings.0.is_overtime_salary_legal');
                     assert.notDeepProperty(res.body[0], 'workings.0.has_compensatory_dayoff');
-                    //ENGINEER2 COMPANY1
+                })
+                .end(done);
+        });
+
+        it('當該筆資料同時擁有工時及薪資資訊時，都會被回傳', function(done) {
+            request(app).get('/workings/search-and-group/by-job-title')
+                .query({job_title: 'ENGINEER1'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.deepProperty(res.body[0], 'workings.0.company.name');
+                    assert.deepProperty(res.body[0], 'workings.0.week_work_time');
+                    assert.deepProperty(res.body[0], 'workings.0.overtime_frequency');
+                    assert.deepProperty(res.body[0], 'workings.0.day_promised_work_time');
+                    assert.deepProperty(res.body[0], 'workings.0.day_real_work_time');
+                    assert.deepProperty(res.body[0], 'workings.0.created_at');
+                    assert.deepProperty(res.body[0], 'workings.0.sector');
+                    assert.notDeepProperty(res.body[0], 'workings.0.is_currently_employed');
+                    assert.deepProperty(res.body[0], 'workings.0.data_time.year');
+                    assert.deepProperty(res.body[0], 'workings.0.data_time.month');
+                    assert.deepProperty(res.body[0], 'workings.0.employment_type');
+                    assert.notDeepProperty(res.body[0], 'workings.0.gender');
+                    assert.deepProperty(res.body[0], 'workings.0.salary.type');
+                    assert.deepProperty(res.body[0], 'workings.0.salary.amount');
+                    assert.deepProperty(res.body[0], 'workings.0.experience_in_year');
+                    assert.notDeepProperty(res.body[0], 'workings.0.author');
+                    assert.notDeepProperty(res.body[0], 'workings.0.has_overtime_salary');
+                    assert.notDeepProperty(res.body[0], 'workings.0.is_overtime_salary_legal');
+                    assert.notDeepProperty(res.body[0], 'workings.0.has_compensatory_dayoff');
+                })
+                .end(done);
+        });
+
+        it('當該筆資料僅有工時資訊時，工時資訊會被回傳、薪資資訊不會被回傳', function(done) {
+            request(app).get('/workings/search-and-group/by-job-title')
+                .query({job_title: 'ENGINEER1'})
+                .expect(200)
+                .expect(function(res) {
                     assert.deepProperty(res.body[0], 'workings.1.company.name');
                     assert.deepProperty(res.body[0], 'workings.1.week_work_time');
                     assert.deepProperty(res.body[0], 'workings.1.overtime_frequency');
@@ -1415,7 +1458,15 @@ describe('Workings 工時資訊', function() {
                     assert.notDeepProperty(res.body[0], 'workings.1.has_overtime_salary');
                     assert.notDeepProperty(res.body[0], 'workings.1.is_overtime_salary_legal');
                     assert.notDeepProperty(res.body[0], 'workings.1.has_compensatory_dayoff');
-                    //COMPANY1 ENGINEER3
+                })
+                .end(done);
+        });
+
+        it('當該筆資料僅有薪資資訊時，薪資資訊會被回傳、工時資訊不會被回傳', function(done) {
+            request(app).get('/workings/search-and-group/by-job-title')
+                .query({job_title: 'ENGINEER1'})
+                .expect(200)
+                .expect(function(res) {
                     assert.deepProperty(res.body[0], 'workings.2.company.name');
                     assert.notDeepProperty(res.body[0], 'workings.2.week_work_time');
                     assert.notDeepProperty(res.body[0], 'workings.2.overtime_frequency');
