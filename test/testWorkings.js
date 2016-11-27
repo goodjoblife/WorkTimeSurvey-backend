@@ -72,8 +72,10 @@ describe('Workings 工時資訊', function() {
                     assert.notDeepProperty(res.body.workings, '2.sector');
                     assert.deepPropertyVal(res.body.workings, '3.sector', 'AAA');
                     assert.deepPropertyVal(res.body.workings, '0.salary.type', "year");
+                    assert.deepPropertyVal(res.body.workings, '0.salary.amount', 220000);
                     assert.deepPropertyVal(res.body.workings, '0.data_time.year', 2015);
                     assert.deepPropertyVal(res.body.workings, '1.data_time.year', 2014);
+                    assert.deepPropertyVal(res.body.workings, '1.is_currently_employed', 'no');
                     assert.deepPropertyVal(res.body.workings, '2.data_time.year', 2016);
                     assert.deepPropertyVal(res.body.workings, '3.data_time.year', 2016);
                 })

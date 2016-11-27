@@ -35,6 +35,7 @@ router.get('/latest', function(req, res, next) {
         created_at: 1,
         salary: 1,
         data_time: 1,
+        is_currently_employed: 1,
     };
 
     const data = {};
