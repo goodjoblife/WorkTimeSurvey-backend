@@ -1206,42 +1206,6 @@ describe('Workings 工時資訊', function() {
                 .end(done);
             });
 
-        it('當 is_currently_employed == "yes", data_time 為 created_at 的年月',
-            function(done) {
-                request(app).get('/workings/search-and-group/by-company')
-                .query({company: 'COMPANY1'})
-                .expect(200)
-                .expect(function(res) {
-                    assert.deepPropertyVal(res.body[0], 'workings.1.data_time.year', 2016);
-                    assert.deepPropertyVal(res.body[0], 'workings.1.data_time.month', 7);
-                })
-                .end(done);
-            });
-
-        it('當 is_currently_employed 未給定, data_time 為 created_at 的年月',
-            function(done) {
-                request(app).get('/workings/search-and-group/by-company')
-                .query({company: 'COMPANY1'})
-                .expect(200)
-                .expect(function(res) {
-                    assert.deepPropertyVal(res.body[0], 'workings.2.data_time.year', 2011);
-                    assert.deepPropertyVal(res.body[0], 'workings.2.data_time.month', 5);
-                })
-                .end(done);
-            });
-
-        it('當 is_currently_employed == "no", data_time 為 job_ending_time',
-            function(done) {
-                request(app).get('/workings/search-and-group/by-company')
-                .query({company: 'COMPANY1'})
-                .expect(200)
-                .expect(function(res) {
-                    assert.deepPropertyVal(res.body[0], 'workings.0.data_time.year', 2015);
-                    assert.deepPropertyVal(res.body[0], 'workings.0.data_time.month', 3);
-                })
-                .end(done);
-            });
-
         after(function() {
             return db.collection('workings').remove({});
         });
@@ -1531,42 +1495,6 @@ describe('Workings 工時資訊', function() {
                 })
                 .end(done);
         });
-
-        it('當 is_currently_employed == "yes", data_time 為 created_at 的年月',
-            function(done) {
-                request(app).get('/workings/search-and-group/by-job-title')
-                .query({job_title: 'ENGINEER1'})
-                .expect(200)
-                .expect(function(res) {
-                    assert.deepPropertyVal(res.body[0], 'workings.1.data_time.year', 2016);
-                    assert.deepPropertyVal(res.body[0], 'workings.1.data_time.month', 7);
-                })
-                .end(done);
-            });
-
-        it('當 is_currently_employed 未給定, data_time 為 created_at 的年月',
-            function(done) {
-                request(app).get('/workings/search-and-group/by-job-title')
-                .query({job_title: 'ENGINEER1'})
-                .expect(200)
-                .expect(function(res) {
-                    assert.deepPropertyVal(res.body[0], 'workings.2.data_time.year', 2011);
-                    assert.deepPropertyVal(res.body[0], 'workings.2.data_time.month', 5);
-                })
-                .end(done);
-            });
-
-        it('當 is_currently_employed == "no", data_time 為 job_ending_time',
-            function(done) {
-                request(app).get('/workings/search-and-group/by-job-title')
-                .query({job_title: 'ENGINEER1'})
-                .expect(200)
-                .expect(function(res) {
-                    assert.deepPropertyVal(res.body[0], 'workings.0.data_time.year', 2015);
-                    assert.deepPropertyVal(res.body[0], 'workings.0.data_time.month', 3);
-                })
-                .end(done);
-            });
 
         after(function() {
             return db.collection('workings').remove({});
