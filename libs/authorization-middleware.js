@@ -1,3 +1,5 @@
+const HttpError = require('./errors');
+
 function redisLookUp(user_id){
   return new Promise((resolve, reject) => {
     if(user_id){
@@ -66,6 +68,6 @@ module.exports = (user_id, next) => {
     next();
   },
   err => {
-    throw new HTTPError(401, err);
+    throw new HttpError(401, err);
   })
 };
