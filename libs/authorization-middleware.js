@@ -69,6 +69,6 @@ module.exports = (request, response, next) => {
         next();
     },
     err => {
-        throw new HttpError(401, err);
+        throw new HttpError(403, err);
     });
 };
