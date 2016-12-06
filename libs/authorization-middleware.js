@@ -1,22 +1,26 @@
 const HttpError = require('./errors');
 
-function redisLookUp(user_id) {
+function redisLookUp(user_id, redis) {
     return new Promise((resolve, reject) => {
-        if (user_id) {
-            resolve();
-        } else {
-            reject("Facebook ID not found in Redis");
-        }
+        redis.get(user_id, (err, reply) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(reply);
+            }
+        });
     });
 }
 
-function redisInsert(user_id) {
+function redisInsert(user_id, redis) {
     return new Promise((resolve, reject) => {
-        if (user_id) {
-            resolve();
-        } else {
-            reject("Insertion failed");
-        }
+        redis.set(user_id, true, (err, reply) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(reply);
+            }
+        });
     });
 }
 
@@ -57,19 +61,15 @@ function hasSearchPermission(user_id, db) {
 
 module.exports = (request, response, next) => {
     // redis look up
-    redisLookUp(user_id).
+    redisLookUp(request.user_id, request.redis_client).
     // proceed if user found in cache
     then(Promise.resolve,
     err => {
         // validate user if user not found in cache
         return hasSearchPermission(request.user_id, request.db)
         // write authorized user into cache for later access
-        .then(() => {
-            return redisInsert(user_id);
-        },
-        Promise.reject);
-    },
-    Promise.reject)
+        .then(() => redisInsert(request.user_id, request.redis_client), Promise.reject);
+    })
     // proceed or throw error
     .then(() => {
         next();
