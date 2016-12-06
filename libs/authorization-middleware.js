@@ -1,4 +1,4 @@
-const HttpError = require('./errors');
+const HttpError = require('./errors').HttpError;
 
 function redisLookUp(user_id, redis) {
     return new Promise((resolve, reject) => {
@@ -25,21 +25,15 @@ function redisInsert(user_id, redis) {
 }
 
 function getDataNumOfUser(user_id, db) {
-    return new Promise((resolve, reject) => {
-        db.collection('authors')
-            .find({_id: {id: user_id, type: 'facebook'}})
-            .count()
-            .then(resolve, reject);
-    });
+    return db.collection('authors')
+        .find({_id: {id: user_id, type: 'facebook'}})
+        .count();
 }
 
 function getRefNumOfUser(user_id, db) {
-    return new Promise((resolve, reject) => {
-        db.collection('references')
-            .find({user: {id: user_id, type: 'facebook'}})
-            .count()
-            .then(resolve, reject);
-    });
+    return db.collection('references')
+        .find({user: {id: user_id, type: 'facebook'}})
+        .count();
 }
 
 function hasSearchPermission(user_id, db) {
