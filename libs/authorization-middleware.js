@@ -26,8 +26,8 @@ function redisInsert(user_id, redis) {
 
 function getDataNumOfUser(user_id, db) {
     return new Promise((resolve, reject) => {
-        db.collection('workings')
-            .find({'user_id': user_id})
+        db.collection('authors')
+            .find({'_id.id': user_id})
             .count()
             .then(resolve, reject);
     });
@@ -35,8 +35,8 @@ function getDataNumOfUser(user_id, db) {
 
 function getRefNumOfUser(user_id, db) {
     return new Promise((resolve, reject) => {
-        db.collection('workings')
-            .find({'ref_user_id': user_id})
+        db.collection('references')
+            .find({'user.id': user_id})
             .count()
             .then(resolve, reject);
     });
