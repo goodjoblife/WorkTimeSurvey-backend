@@ -1,5 +1,9 @@
 const redis = require('redis');
 
+/*
+ * The function will return a middleware that ships the redis_client connection.
+ * @param url the redis url string
+ */
 function expressRedisDb(url) {
     const redis_client = redis.createClient({'url': url});
 
