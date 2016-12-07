@@ -6,7 +6,8 @@ function redisLookUp(user_id, redis) {
             if (err) {
                 reject(err);
             } else {
-                resolve(reply);
+                if(reply) resolve(reply);
+                else reject('Not found in Redis');
             }
         });
     });
@@ -25,15 +26,39 @@ function redisInsert(user_id, redis) {
 }
 
 function getDataNumOfUser(user_id, db) {
-    return db.collection('authors')
+    return new Promise((resolve, reject) => {
+        db.collection('authors')
         .find({_id: {id: user_id, type: 'facebook'}})
-        .count();
+        .then(results => {
+            if(results.length==0){
+                resolve(0);
+            }
+            else{
+                resolve(results[0].queries_count);
+            }
+        }, 
+        err => {
+            reject(err);
+        });
+    });
 }
 
 function getRefNumOfUser(user_id, db) {
-    return db.collection('references')
+    return new Promise((resolve, reject) => {
+        db.collection('references')
         .find({user: {id: user_id, type: 'facebook'}})
-        .count();
+        .then(results => {
+            if(results.length==0){
+                resolve(0);
+            }
+            else{
+                resolve(results[0].count);
+            }
+        }, 
+        err => {
+            reject(err);
+        });
+    });
 }
 
 function hasSearchPermission(user_id, db) {
@@ -57,7 +82,10 @@ module.exports = (request, response, next) => {
     // redis look up
     redisLookUp(request.user_id, request.redis_client).
     // proceed if user found in cache
-    then(Promise.resolve,
+    then(
+    () => {
+        return Promise.resolve();
+    },
     err => {
         // validate user if user not found in cache
         return hasSearchPermission(request.user_id, request.db)
