@@ -46,9 +46,9 @@ function hasSearchPermission(user_id, db) {
     .then(values => {
         let sum = values.reduce((a, b) => a+b);
         if (sum > 0) {
-            Promise.resolve();
+            return Promise.resolve();
         } else {
-            Promise.reject("User does not meet authorization level");
+            return Promise.reject("User does not meet authorization level");
         }
     }, Promise.reject);
 }
