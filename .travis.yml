@@ -30,5 +30,6 @@ install:
 
 script:
     - npm test -- --timeout 30s
+    - npm run lint
 
 after_success: ".travis/after_success.sh"
