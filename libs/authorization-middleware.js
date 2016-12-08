@@ -6,7 +6,7 @@ function redisLookUp(user_id, redis) {
             if (err) {
                 reject(err);
             } else {
-                if(reply){
+                if (reply) {
                     resolve(reply);
                 } else {
                     reject('Not found in Redis');
@@ -34,14 +34,12 @@ function getDataNumOfUser(user_id, db) {
         .find({_id: {id: user_id, type: 'facebook'}})
         .toArray()
         .then(results => {
-            if(results.length==0){
+            if (results.length==0) {
                 resolve(0);
-            }
-            else{
+            } else {
                 resolve(results[0].queries_count);
             }
-        }, 
-        err => {
+        }, err => {
             reject(err);
         });
     });
@@ -53,14 +51,12 @@ function getRefNumOfUser(user_id, db) {
         .find({user: {id: user_id, type: 'facebook'}})
         .toArray()
         .then(results => {
-            if(results.length==0){
+            if (results.length == 0) {
                 resolve(0);
-            }
-            else{
+            } else {
                 resolve(results[0].count);
             }
-        }, 
-        err => {
+        }, err => {
             reject(err);
         });
     });
@@ -80,8 +76,7 @@ function hasSearchPermission(user_id, db) {
         } else {
             return Promise.reject("User does not meet authorization level");
         }
-    },
-    err => {
+    }, err => {
         return Promise.reject(err);
     });
 }
@@ -93,18 +88,20 @@ module.exports = (request, response, next) => {
     then(
     () => {
         return Promise.resolve();
-    },
-    err => {
+    }, err => {
         // validate user if user not found in cache
         return hasSearchPermission(request.user_id, request.db)
         // write authorized user into cache for later access
-        .then(() => redisInsert(request.user_id, request.redis_client), Promise.reject);
+        .then(() => {
+            return redisInsert(request.user_id, request.redis_client);
+        }, err => {
+            return Promise.reject(err);
+        });
     })
     // proceed or throw error
     .then(() => {
         next();
-    },
-    err => {
+    }, err => {
         throw new HttpError(403, err);
     });
 };
