@@ -6,8 +6,11 @@ function redisLookUp(user_id, redis) {
             if (err) {
                 reject(err);
             } else {
-                if(reply) resolve(reply);
-                else reject('Not found in Redis');
+                if(reply){
+                    resolve(reply);
+                } else {
+                    reject('Not found in Redis');
+                }
             }
         });
     });
@@ -29,6 +32,7 @@ function getDataNumOfUser(user_id, db) {
     return new Promise((resolve, reject) => {
         db.collection('authors')
         .find({_id: {id: user_id, type: 'facebook'}})
+        .toArray()
         .then(results => {
             if(results.length==0){
                 resolve(0);
@@ -47,6 +51,7 @@ function getRefNumOfUser(user_id, db) {
     return new Promise((resolve, reject) => {
         db.collection('references')
         .find({user: {id: user_id, type: 'facebook'}})
+        .toArray()
         .then(results => {
             if(results.length==0){
                 resolve(0);
@@ -75,7 +80,10 @@ function hasSearchPermission(user_id, db) {
         } else {
             return Promise.reject("User does not meet authorization level");
         }
-    }, Promise.reject);
+    },
+    err => {
+        return Promise.reject(err);
+    });
 }
 
 module.exports = (request, response, next) => {
