@@ -5,6 +5,7 @@ node_js:
 
 services:
     - mongodb
+    - redis-server
 
 addons:
     apt:
@@ -22,6 +23,7 @@ branches:
 env:
     global:
         - MONGODB_URI=mongodb://localhost/goodjob
+        - REDIS_URL=redis://localhost
         - NODE_ENV=test
         - secure: DP24ci2OIhSUAFsniGZitsG4NhhaA7/I2VyNDjiI+Q4Md+LzJ6c/oKxgiOm4mJgFNcXMfp2KAxn936k7vUG+363NRho/ccX8mFSaQWx3rVPUkam8ZvHp7WTyCsre0JSsEtDqsprU60gJaEDqjmzHSi/efG/PBkhIijmQiN7DmNB09ikSO5xBTsaI9/SY3rY5Sl9P0fS7/EOxF/BC/fx9PmNe1uzwS2cXZAuxZDtgCT8irkmhbioyictgoyq7w0FviHWzpWIKUJXwGZqny/KPoa/Wslgekmj69xAUJ/zmxgyQYY4RlF5lnSnplVWGT/a2P4gZzvZaMRI+hyB44g/NBvwwwncQ8ifE+ZkLthRGsk3LrK0EAnkcNDUv1983oc4BuQO4YIxNLYcz1dSswJn1RY5QbEcofXpdBhofHYqqQ0rC3TIY3p7sALkX20U6z+aVNGquXVJWlQIebfM5W/we1vQ+2cg2KYuxATmHf13tf25fD+08RSK/Ne18iIpYaMRXE81Z2xnx8CK9x7PAlx3/AQI5+BYMFxE66GIT4MRd7MMf+gN7tj41Q0Z/wkzfrujXAVGIN7ikosMrcNTdM8RbtYdkT+rfWnpuiRj9WdAmzrSnoPfSyHErpGSTakEAB8TsAyrGz9q6tSJ4nWIrSWoXXK70gIHC+H1VbdUKgHR4qY4=
 
@@ -30,5 +32,6 @@ install:
 
 script:
     - npm test -- --timeout 30s
+    - npm run lint
 
 after_success: ".travis/after_success.sh"

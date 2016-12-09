@@ -4,8 +4,8 @@
   "description": "GoodJob",
   "scripts": {
     "start": "node ./bin/www",
-    "test": "npm run lint && mocha",
-    "lint": "eslint libs/ routes/ test/"
+    "test": "mocha",
+    "lint": "eslint libs/ routes/ test/ middlewares/"
   },
   "repository": {
     "type": "git",
@@ -25,6 +25,7 @@
     "lodash": "^4.13.1",
     "mongodb": "~2.1.18",
     "morgan": "^1.7.0",
+    "redis": "^2.6.3",
     "request": "^2.72.0",
     "winston": "^2.2.0",
     "winston-mongodb": "^1.6.0"

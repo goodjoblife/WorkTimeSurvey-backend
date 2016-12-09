@@ -8,12 +8,16 @@ services:
       - "12000:3000"
     links:
       - mongo:mongo
+      - redis:redis
     working_dir: /app
     command: npm start
     environment:
       - MONGODB_URI=mongodb://mongo/goodjob
+      - REDIS_URL=redis://redis
       - NODE_ENV=development
   mongo:
     image: mongo
     volumes:
       - ./db:/data/db
+  redis:
+    image: redis
