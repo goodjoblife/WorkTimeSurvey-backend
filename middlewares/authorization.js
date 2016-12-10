@@ -78,16 +78,16 @@ module.exports = (request, response, next) => {
     redisLookUp(request.user_id, request.redis_client).
     // proceed if user found in cache
     then(() => {
-        return Promise.resolve(true);
+        return Promise.resolve();
     }, err => {
         // validate user if user not found in cache
         return resolveSearchPermission(request.user_id, request.db)
         // write authorized user into cache for later access
         .then(hasSearchPermission => {
             if (hasSearchPermission) {
-                return redisInsert(request.user_id, request.redis_client).finally(_ => Promise.resolve(true));
+                return redisInsert(request.user_id, request.redis_client).finally(Promise.resolve);
             } else {
-                return Promise.resolve(false);
+                return Promise.reject('User does not meet authorization level');
             }
         }, err => {
             return Promise.reject(err);
