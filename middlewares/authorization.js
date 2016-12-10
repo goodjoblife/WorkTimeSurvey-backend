@@ -84,7 +84,7 @@ module.exports = (request, response, next) => {
         return resolveSearchPermission(request.user_id, request.db)
         // write authorized user into cache for later access
         .then(hasSearchPermission => {
-            if(hasSearchPermission){
+            if (hasSearchPermission) {
                 return redisInsert(request.user_id, request.redis_client).finally(_ => Promise.resolve(true));
             } else {
                 return Promise.resolve(false);
