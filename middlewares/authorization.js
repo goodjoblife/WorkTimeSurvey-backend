@@ -1,4 +1,4 @@
-const HttpError = require('./errors').HttpError;
+const HttpError = require('../libs/errors').HttpError;
 
 function redisLookUp(user_id, redis) {
     return new Promise((resolve, reject) => {
