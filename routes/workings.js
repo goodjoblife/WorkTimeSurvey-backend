@@ -660,4 +660,44 @@ router.get('/jobs/search', function(req, res, next) {
     });
 });
 
+router.get('/sort_by/:SORT_FIELD', function(req, res, next) {
+
+    let order = req.query.order || "descending";
+    order = (order === "descending") ? -1 : 1;
+    const page = parseInt(req.query.page) || 0;
+    const limit = 25;
+
+    const collection = req.db.collection('workings');
+    const query = {};
+    query[req.params.SORT_FIELD] = {
+        $exists: true,
+    };
+    const opt = {
+        company: 1,
+        sector: 1,
+        created_at: 1,
+        job_title: 1,
+        week_work_time: 1,
+        overtime_frequency: 1,
+        salary: 1,
+        estimated_hourly_wage: 1,
+        data_time: 1,
+    };
+    const sort_field = {};
+    sort_field[req.params.SORT_FIELD] = order;
+
+    const data = {};
+    collection.find().count().then(function(count) {
+        data.total = count;
+
+        return collection.find(query, opt).sort(sort_field).skip(limit * page).limit(limit).toArray();
+    }).then(function(results) {
+        data.workings = results;
+
+        res.send(data);
+    }).catch(function(err) {
+        next(new HttpError("Internal Server Error", 500));
+    });
+});
+
 module.exports = router;
