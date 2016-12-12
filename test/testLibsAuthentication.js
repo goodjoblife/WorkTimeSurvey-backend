@@ -19,7 +19,7 @@ describe('Authentication Library', function() {
 
         it('resolve if cached', function() {
             const db = {};
-            const response = {id: '1', name: 'helloworld'}
+            const response = {id: '1', name: 'helloworld'};
 
             const redisGetFB = sandbox.stub(_redis, 'redisGetFB')
                 .withArgs(db, 'fake_accesstoken')
@@ -36,7 +36,7 @@ describe('Authentication Library', function() {
 
         it('resolve if not cached but access_token is valid', function() {
             const db = {};
-            const response = {id: '1', name: 'helloworld'}
+            const response = {id: '1', name: 'helloworld'};
 
             const redisGetFB = sandbox.stub(_redis, 'redisGetFB')
                 .withArgs(db, 'fake_accesstoken')
@@ -61,7 +61,7 @@ describe('Authentication Library', function() {
 
         it('resolve if cache error but access_token is valid', function() {
             const db = {};
-            const response = {id: '1', name: 'helloworld'}
+            const response = {id: '1', name: 'helloworld'};
 
             const redisGetFB = sandbox.stub(_redis, 'redisGetFB')
                 .withArgs(db, 'fake_accesstoken')

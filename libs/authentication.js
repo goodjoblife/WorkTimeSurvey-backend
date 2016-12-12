@@ -26,4 +26,4 @@ function cachedFacebookAuthentication(db, access_token) {
 
 module.exports = {
     cachedFacebookAuthentication,
-}
+};
