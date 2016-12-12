@@ -669,7 +669,7 @@ router.get('/sort_by/:SORT_FIELD', function(req, res, next) {
 
     const collection = req.db.collection('workings');
     const query = {};
-    query[req.params.SORT_FIELD] = {
+    query[req.sort_by] = {
         $exists: true,
     };
     const opt = {
@@ -684,7 +684,7 @@ router.get('/sort_by/:SORT_FIELD', function(req, res, next) {
         data_time: 1,
     };
     const sort_field = {};
-    sort_field[req.params.SORT_FIELD] = order;
+    sort_field[req.sort_by] = order;
 
     const data = {};
     collection.find().count().then(function(count) {

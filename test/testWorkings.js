@@ -703,5 +703,42 @@ describe('Workings 工時資訊', function() {
             return db.collection('workings').remove({});
         });
     });
+
+    describe('GET /workings/sort_by/:sort_by', function() {
+        before('Seeding some workings', function() {
+            return db.collection('workings').insertMany([
+                {
+                    overtime_frequency: 1,
+                    sector: "AAA",
+                    created_at: new Date("2016-09-06 08:00"),
+                },
+                {
+                    overtime_frequency: 2,
+                    created_at: new Date("2016-09-06 09:00"),
+                },
+                {
+                    overtime_frequency: 1,
+                    sector: "CCC",
+                    created_at: new Date("2016-09-06 09:03"),
+                },
+                {
+                    overtime_frequency: 4,
+                    created_at: new Date("2016-09-06 09:04"),
+                },
+            ]);
+        });
+
+        it('return the pagination', function(done) {
+            // to do
+        });
+
+        it('return the correct field', function(done) {
+            // to do
+        });
+
+        after(function() {
+            return db.collection('workings').remove({});
+        });
+    });
 });
 
