@@ -14,6 +14,8 @@ function cachedFacebookAuthenticationMiddleware(req, res, next) {
             })
             .then(() => {
                 next();
+            }, () => {
+                next(new HttpError('Unauthorized', 401));
             });
     }
 }
