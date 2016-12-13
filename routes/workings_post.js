@@ -161,21 +161,19 @@ function main(req, res, next) {
 
     const collection = req.db.collection("workings");
 
-    Promise.resolve(response_data).then(() => {
-        /*
-         * 如果使用者有給定 company id，將 company name 補成查詢到的公司
-         *
-         * 如果使用者是給定 company name，如果只找到一間公司，才補上 id
-         *
-         * 其他情況看 issue #7
-         */
-        return helper.normalizeCompany(req.db, working.company.id, company_query).then(company => {
-            working.company = company;
-        });
+    /*
+     * 如果使用者有給定 company id，將 company name 補成查詢到的公司
+     *
+     * 如果使用者是給定 company name，如果只找到一間公司，才補上 id
+     *
+     * 其他情況看 issue #7
+     */
+    helper.normalizeCompany(req.db, working.company.id, company_query).then(company => {
+        working.company = company;
     }).then(() => {
         const author = working.author;
 
-        return checkQuota(req.db, {id: author.id, type: author.type}).then(queries_count => {
+        return helper.checkAndUpdateQuota(req.db, {id: author.id, type: author.type}).then(queries_count => {
             response_data.queries_count = queries_count;
         });
     }).then(() => {
@@ -189,46 +187,6 @@ function main(req, res, next) {
 
         next(err);
     });
-}
-
-/*
- * Check the quota, limit queries <= 10
- *
- * The quota checker use author as _id
- *
- * @return  Promise
- *
- * Fullfilled with newest queries_count
- * Rejected with HttpError
- */
-function checkQuota(db, author) {
-    var collection = db.collection('authors');
-    var quota = 5;
-
-    return collection.findAndModify(
-        {
-            _id: author,
-            queries_count: {$lt: quota},
-        },
-        [
-        ],
-        {
-            $inc: { queries_count: 1 },
-        },
-        {
-            upsert: true,
-            new: true,
-        }
-    ).then(function(result) {
-        if (result.value.queries_count > quota) {
-            throw new HttpError(`您已經上傳${quota}次，已達最高上限`, 429);
-        }
-
-        return result.value.queries_count;
-    }).catch(function(err) {
-        throw new HttpError(`您已經上傳${quota}次，已達最高上限`, 429);
-    });
-
 }
 
 module.exports = {
