@@ -7,19 +7,22 @@ describe('Authorization middleware', function() {
         .then(function(db) {
             req.db = db;
         })
-        .then(new Promise(function(resolve, reject){
+        .then(new Promise(function(resolve, reject) {
             require('../middlewares').expressRedisDb('')(req, {}, err => {
-                if(err) reject(err);
-                else resolve();
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
             });
         }));
     });
 
     const test_data = [{counts: null, expected: false}];
-    [1,0,undefined].forEach(function(queries_count){
-        [1,0,undefined].forEach(function(reference_count){
+    [1, 0, undefined].forEach(function(queries_count) {
+        [1, 0, undefined].forEach(function(reference_count) {
             test_data.push({
-                counts:{
+                counts: {
                     queries_count: queries_count,
                     reference_count: reference_count,
                 },
@@ -27,48 +30,57 @@ describe('Authorization middleware', function() {
             });
         });
     });
-    
-    test_data.forEach(function(data){
-        describe(`correctly authorize user with ${JSON.stringify(data)}`, function(){
-            before(function(){
+
+    test_data.forEach(function(data) {
+        describe(`correctly authorize user with ${JSON.stringify(data)}`, function() {
+            before(function() {
                 req.user_id = 'peter.shih';
-                if(data.counts){
+                if (data.counts) {
                     return req.db.collection('authors').insert({
-                        _id:{
-                            id:'peter.shih',
-                            type:'facebook',
+                        _id: {
+                            id: 'peter.shih',
+                            type: 'facebook',
                         },
-                        queries_count:data.counts.queries_count,
+                        queries_count: data.counts.queries_count,
                     }).then(() => req.db.collection('references').insert({
-                        user:{
-                            id:'peter.shih',
-                            type:'facebook',
+                        user: {
+                            id: 'peter.shih',
+                            type: 'facebook',
                         },
-                        count:data.counts.reference_count,
+                        count: data.counts.reference_count,
                     }));
                 } else {
                     return Promise.resolve();
                 }
             });
 
-            it('search permission for user', function(){
-                return require('../middlewares/authorization')(req, {}, function(){
-                    if(!data.expected) throw 'Not as expected';
+            it('search permission for user', function() {
+                return require('../middlewares/authorization')(req, {}, function() {
+                    if (!data.expected) {
+                        throw 'Not as expected';
+                    }
                 }).catch(err => {
-                    if(data.expected) throw 'Not as expected';
+                    if (data.expected) {
+                        throw 'Not as expected';
+                    }
                 });
             });
 
-            it('checkout redis', function(done){
-                req.redis_client.get('peter.shih', (err,reply) => {
-                    if (err) done(err);
-                    else if (reply && data.expected) done();
-                    else if (!reply && !data.expected) done();
-                    else done('Incorrect key-value in redis')
+            it('checkout redis', function(done) {
+                req.redis_client.get('peter.shih', (err, reply) => {
+                    if (err) {
+                        done(err);
+                    } else if (reply && data.expected) {
+                        done();
+                    } else if (!reply && !data.expected) {
+                        done();
+                    } else {
+                        done('Incorrect key-value in redis');
+                    }
                 });
             });
 
-            after(function(){
+            after(function() {
                 req.db.collection('authors').remove({});
                 req.db.collection('references').remove({});
                 req.redis_client.flushall();
