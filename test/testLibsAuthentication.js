@@ -2,6 +2,7 @@ const chai = require('chai');
 chai.use(require("chai-as-promised"));
 const assert = chai.assert;
 const sinon = require('sinon');
+require('sinon-as-promised');
 
 const authentication = require('../libs/authentication');
 const facebook = require('../libs/facebook');
@@ -23,7 +24,7 @@ describe('Authentication Library', function() {
 
             const redisGetFB = sandbox.stub(_redis, 'redisGetFB')
                 .withArgs(db, 'fake_accesstoken')
-                .returns(Promise.resolve(response));
+                .resolves(response);
 
             const main = cachedFacebookAuthentication(db, 'fake_accesstoken');
             return Promise.all([
@@ -40,13 +41,13 @@ describe('Authentication Library', function() {
 
             const redisGetFB = sandbox.stub(_redis, 'redisGetFB')
                 .withArgs(db, 'fake_accesstoken')
-                .returns(Promise.resolve(null));
+                .resolves(null);
 
             const accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
-                .returns(Promise.resolve(response));
+                .resolves(response);
 
             const redisSetFB = sandbox.stub(_redis, 'redisSetFB')
-                .returns(Promise.resolve());
+                .resolves();
 
             const main = cachedFacebookAuthentication(db, 'fake_accesstoken');
             return Promise.all([
@@ -65,13 +66,13 @@ describe('Authentication Library', function() {
 
             const redisGetFB = sandbox.stub(_redis, 'redisGetFB')
                 .withArgs(db, 'fake_accesstoken')
-                .returns(Promise.reject());
+                .rejects();
 
             const accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
-                .returns(Promise.resolve(response));
+                .resolves(response);
 
             const redisSetFB = sandbox.stub(_redis, 'redisSetFB')
-                .returns(Promise.resolve());
+                .resolves();
 
             const main = cachedFacebookAuthentication(db, 'fake_accesstoken');
             return Promise.all([
@@ -89,13 +90,13 @@ describe('Authentication Library', function() {
 
             const redisGetFB = sandbox.stub(_redis, 'redisGetFB')
                 .withArgs(db, 'fake_accesstoken')
-                .returns(Promise.resolve(null));
+                .resolves(null);
 
             const accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
-                .returns(Promise.reject());
+                .rejects();
 
             const redisSetFB = sandbox.stub(_redis, 'redisSetFB')
-                .returns(Promise.resolve());
+                .resolves();
 
             const main = cachedFacebookAuthentication(db, 'fake_accesstoken');
             return Promise.all([
