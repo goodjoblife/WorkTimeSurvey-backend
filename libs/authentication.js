@@ -4,7 +4,7 @@ const _redis = require('./redis');
 /*
  * @param db RedisClient
  * @param access_token string
- * 
+ *
  * @return Promise
  * fulfilled: {id, name}
  * rejected : if unauthenticated
