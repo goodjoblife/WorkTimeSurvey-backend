@@ -54,14 +54,12 @@ describe('Authorization middleware', function() {
                 }
             });
 
-            it('search permission for user', function() {
-                return require('../middlewares/authorization')(req, {}, function() {
-                    if (!data.expected) {
-                        throw 'Not as expected';
-                    }
-                }).catch(err => {
-                    if (data.expected) {
-                        throw 'Not as expected';
+            it('search permission for user', function(done) {
+                require('../middlewares/authorization')(req, {}, function(err) {
+                    if (!err && !data.expected || err && data.expected) {
+                        done('Not as expected');
+                    } else {
+                        done();
                     }
                 });
             });

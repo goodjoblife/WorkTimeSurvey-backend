@@ -73,7 +73,7 @@ function resolveSearchPermission(user_id, db) {
 
 module.exports = (request, response, next) => {
     // redis look up
-    return redisLookUp(request.user_id, request.redis_client)
+    redisLookUp(request.user_id, request.redis_client)
     // proceed if user found in cache
     .catch(err => {
         // validate user if user not found in cache
@@ -91,6 +91,6 @@ module.exports = (request, response, next) => {
     .then(() => {
         next();
     }, err => {
-        throw new HttpError('Forbidden', 403);
+        next(new HttpError('Forbidden', 403));
     });
 };
