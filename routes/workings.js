@@ -661,15 +661,20 @@ router.get('/jobs/search', function(req, res, next) {
 });
 
 router.get('/sort_by/:SORT_FIELD', function(req, res, next) {
+    winston.info('/workings/sort_by/:SORT_FIELD', {query: req.query, ip: req.ip, ips: req.ips});
 
+    // input parameters
     let order = req.query.order || "descending";
     order = (order === "descending") ? -1 : 1;
     const page = parseInt(req.query.page) || 0;
     const limit = 25;
 
+    // preprocess by middleware
+    const sort_by = req.sort_by;
+
     const collection = req.db.collection('workings');
     const query = {};
-    query[req.sort_by] = {
+    query[sort_by] = {
         $exists: true,
     };
     const opt = {
@@ -684,7 +689,7 @@ router.get('/sort_by/:SORT_FIELD', function(req, res, next) {
         data_time: 1,
     };
     const sort_field = {};
-    sort_field[req.sort_by] = order;
+    sort_field[sort_by] = order;
 
     const data = {};
     collection.find().count().then(function(count) {
@@ -695,6 +700,108 @@ router.get('/sort_by/:SORT_FIELD', function(req, res, next) {
         data.workings = results;
 
         res.send(data);
+    }).catch(function(err) {
+        next(new HttpError("Internal Server Error", 500));
+    });
+});
+
+router.get('/search_by/job_title/group_by/:GROUP_FIELD/group_sort_by/:GROUP_SORT_FIELD', function(req, res, next) {
+    winston.info('/workings/search_by/job_title/group_by/:GROUP_FIELD/group_sort_by/:GROUP_SORT_FIELD', {
+        job_title: req.query.job_title,
+        ip: req.ip,
+        ips: req.ips,
+    });
+
+    // input parameter
+    const job_title = req.query.job_title;
+    let group_sort_order = req.query.group_sort_order || "descending";
+    group_sort_order = (group_sort_order === "descending") ? -1 : 1;
+
+    // preprocess by middleware
+    const group_by = req.group_by;
+    const group_sort_by = req.group_sort_by;
+
+    // json used in mongodb
+    const sort_field = {};
+    sort_field[group_sort_by] = group_sort_order;
+    const project_field = {
+        average: {
+            $cond: {
+                if: true,
+                then: {
+                    week_work_time: "$avg_week_work_time",
+                    estimated_hourly_wage: "$avg_estimated_hourly_wage",
+                },
+                else: "$skip",
+            },
+        },
+        workings: 1,
+        _id: 0,
+    };
+    project_field[group_by] = "$_id";
+
+    const collection = req.db.collection('workings');
+
+    if (! job_title || job_title === '') {
+        next(new HttpError("job_title is required", 422));
+        return;
+    }
+
+    collection.aggregate([
+        {
+            $match: {
+                job_title: new RegExp(lodash.escapeRegExp(job_title.toUpperCase())),
+            },
+        },
+        {
+            $sort: {
+                job_title: 1,
+            },
+        },
+        {
+            $group: {
+                _id: "$"+group_by,
+                avg_week_work_time: {
+                    $avg: "$week_work_time",
+                },
+                avg_estimated_hourly_wage: {
+                    $avg: "$estimated_hourly_wage",
+                },
+                workings: {
+                    $push: {
+                        job_title: "$job_title",
+                        week_work_time: "$week_work_time",
+                        overtime_frequency: "$overtime_frequency",
+                        day_promised_work_time: "$day_promised_work_time",
+                        day_real_work_time: "$day_real_work_time",
+                        created_at: "$created_at",
+                        sector: "$sector",
+                        employment_type: "$employment_type",
+                        data_time: "$data_time",
+                        experience_in_year: "$experience_in_year",
+                        salary: "$salary",
+                        estimated_hourly_wage: "$estimated_hourly_wage",
+                    },
+                },
+            },
+        },
+        {
+            $project: project_field,
+        },
+        {
+            $sort: sort_field,
+        },
+    ]).toArray().then(function(results) {
+        // if value in average is null, change it to undefined
+        for (let each of results) {
+            for (let group in each.average) {
+                if (each.average[group] === null) {
+                    each.average[group] = undefined;
+                }
+            }
+        }
+
+        res.send(results);
     }).catch(function(err) {
         next(new HttpError("Internal Server Error", 500));
     });
