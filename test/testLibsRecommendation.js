@@ -16,6 +16,10 @@ describe('Recommendation Library', function() {
             });
         });
 
+        before("The user field is an unique index", function() {
+            return db.collection('recommendations').createIndex({user: 1}, {unique: true});
+        });
+
         before(function() {
             return db.collection('recommendations').insertMany([
                 {
@@ -34,7 +38,7 @@ describe('Recommendation Library', function() {
                 type: 'facebook',
             };
 
-            return assert.becomes(recommendation.getRecommendationString(user), '00000000ccd8958909a983e9');
+            return assert.becomes(recommendation.getRecommendationString(db, user), '00000000ccd8958909a983e9');
         });
 
         it('resolve with new recommendation string', function() {
@@ -43,8 +47,26 @@ describe('Recommendation Library', function() {
                 type: 'facebook',
             };
 
-            // 這裡沒檢查得到的 string 是不是屬於 user 的
-            return assert.isFulfilled(recommendation.getRecommendationString(user));
+            const main = recommendation.getRecommendationString(db, user);
+
+            return Promise.all([
+                assert.isFulfilled(main),
+                // 尋找 DB 中的 user _id 與回傳的相符
+                main.then(() => db.collection('recommendations').findOne({user: user})).then(result => {
+                    return assert.becomes(main, result._id.toHexString());
+                }),
+            ]);
+        });
+
+        it('will return the same recommendation string', function() {
+            const user = {id: 'mark', type: 'facebook'};
+
+            const main1 = recommendation.getRecommendationString(db, user);
+            const main2 = recommendation.getRecommendationString(db, user);
+
+            return Promise.all([main1, main2]).then(([rec1, rec2]) => {
+                assert.equal(rec1, rec2);
+            });
         });
 
         after(function() {
@@ -74,19 +96,19 @@ describe('Recommendation Library', function() {
         });
 
         it('resolve with correct user', function() {
-            return assert.becomes(recommendation.getUserByRecommendationString('00000000ccd8958909a983e9'), {id: '-1', type: 'facebook'});
+            return assert.becomes(recommendation.getUserByRecommendationString(db, '00000000ccd8958909a983e9'), {id: '-1', type: 'facebook'});
         });
 
         it('resolve with null', function() {
-            return assert.becomes(recommendation.getUserByRecommendationString('00000000ccd8958909a983ea'), null);
+            return assert.becomes(recommendation.getUserByRecommendationString(db, '00000000ccd8958909a983ea'), null);
         });
 
         it('reject if format error', function() {
             return Promise.all([
                 // should be a string
-                assert.isRejected(recommendation.getUserByRecommendationString(1234)),
+                assert.isRejected(recommendation.getUserByRecommendationString(db, 1234)),
                 // should be a single String of 12 bytes or a string of 24 hex characters
-                assert.isRejected(recommendation.getUserByRecommendationString('0000')),
+                assert.isRejected(recommendation.getUserByRecommendationString(db, '0000')),
             ]);
         });
 
