@@ -674,9 +674,6 @@ router.get('/sort_by/:SORT_FIELD', function(req, res, next) {
 
     const collection = req.db.collection('workings');
     const query = {};
-    query[sort_by] = {
-        $exists: true,
-    };
     const opt = {
         company: 1,
         sector: 1,

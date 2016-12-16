@@ -704,37 +704,91 @@ describe('Workings 工時資訊', function() {
         });
     });
 
-    describe('GET /workings/sort_by/:sort_by', function() {
+    describe('GET /workings/sort_by/:SORT_FIELD', function() {
         before('Seeding some workings', function() {
             return db.collection('workings').insertMany([
                 {
+                    company: {name: "companyA"},
+                    created_at: new Date("2016-11-13T06:10:04.023Z"),
+                    job_title: "engineer1",
+                    week_work_time: 40,
                     overtime_frequency: 1,
-                    sector: "AAA",
-                    created_at: new Date("2016-09-06 08:00"),
+                    salary: {amount: 22000, type: "month"},
+                    estimated_hourly_wage: 100,
+                    data_time: {year: 2016, month: 10},
+                    sector: "Taipei", //optional
                 },
                 {
-                    overtime_frequency: 2,
-                    created_at: new Date("2016-09-06 09:00"),
-                },
-                {
+                    company: {name: "companyC"},
+                    created_at: new Date("2016-11-13T17:10:04.023Z"),
+                    job_title: "engineer3",
+                    week_work_time: 50,
                     overtime_frequency: 1,
-                    sector: "CCC",
-                    created_at: new Date("2016-09-06 09:03"),
+                    salary: {amount: 22000, type: "month"},
+                    estimated_hourly_wage: 120,
+                    data_time: {year: 2016, month: 10},
+                    sector: "Taipei", //optional
                 },
                 {
-                    overtime_frequency: 4,
-                    created_at: new Date("2016-09-06 09:04"),
+                    company: {name: "companyB"},
+                    created_at: new Date("2016-11-13T01:59:18.055Z"),
+                    job_title: "engineer2",
+                    week_work_time: 47.5,
+                    overtime_frequency: 3,
+                    //有的沒有薪資資訊，當然也不會有估計時薪
+                    data_time: {year: 2016, month: 10},
+                    sector: "Tainan",
+                },
+                {
+                    company: {name: "companyB"},
+                    created_at: new Date("2016-11-13T01:58:18.055Z"),
+                    job_title: "engineer2",
+                    //有的沒有工時資訊，如果不是時薪，不會有估計時薪
+                    salary: {amount: 22000, type: "month"},
+                    data_time: {year: 2016, month: 10},
+                    sector: "Tainan",
                 },
             ]);
         });
 
-        it('return the pagination', function(done) {
-            // to do
-        });
+        for (let sort_field of ['created_at', 'week_work_time', 'estimated_hourly_wage']) {
+            it('return the pagination with SORT_FIELD: '+sort_field, function(done) {
+                request(app).get('/workings/sort_by/'+sort_field)
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.propertyVal(res.body, 'total', 4);
+                        assert.property(res.body, 'workings');
+                        assert.lengthOf(res.body.workings, 4);
+                    })
+                    .end(done);
+            });
 
-        it('return the correct field', function(done) {
-            // to do
-        });
+            it('return the correct order with SORT_FIELD: '+sort_field, function(done) {
+                request(app).get('/workings/sort_by/'+sort_field)
+                    .expect(200)
+                    .expect(function(res) {
+                        const workings = res.body.workings;
+                        let undefined_idx = workings.length;
+                        for (let idx in workings) {
+                            if (workings[idx][sort_field] === undefined) {
+                                undefined_idx = idx;
+                                break;
+                            }
+                        }
+
+                        let num = workings[0][sort_field];
+                        for (let idx=1; idx<workings.length && idx < undefined_idx; ++idx) {
+                            assert(workings[idx][sort_field] <= num);
+                            num = workings[idx][sort_field];
+                        }
+                        for (let idx=undefined_idx; idx<workings.length; ++idx) {
+                            assert.isUndefined(workings[idx][sort_field]);
+                        }
+
+                    })
+                    .end(done);
+            });
+        }
 
         after(function() {
             return db.collection('workings').remove({});
