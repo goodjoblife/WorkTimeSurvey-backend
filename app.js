@@ -34,6 +34,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(expressMongoDb(process.env.MONGODB_URI));
+app.use(require('./middlewares').expressRedisDb(process.env.REDIS_URL));
 
 app.use(cors({
     origin: [
