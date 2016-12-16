@@ -47,6 +47,19 @@ describe('POST /me/recommendations 取得使用者推薦字串', function() {
             .end(done);
     });
 
+    it('fail if getRecommendationString fail', function(done) {
+        sandbox.stub(authentication, 'cachedFacebookAuthentication')
+            .resolves({id: '-1', name: 'mark86092'});
+        sandbox.stub(recommendation, 'getRecommendationString').rejects();
+
+        request(app).post('/me/recommendations')
+            .send({
+                access_token: 'fakeaccesstoken',
+            })
+            .expect(500)
+            .end(done);
+    });
+
     afterEach(function() {
         sandbox.restore();
     });

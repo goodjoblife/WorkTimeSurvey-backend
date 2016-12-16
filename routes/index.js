@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
+const HttpError = require('../libs/errors').HttpError;
 const authentication = require('../middlewares/authentication');
 const recommendation = require('../libs/recommendation');
 
