@@ -79,9 +79,11 @@ describe('Authorization middleware', function() {
             });
 
             after(function() {
-                req.db.collection('authors').remove({});
-                req.db.collection('references').remove({});
-                req.redis_client.flushall();
+                return Promise.all([
+                    req.db.collection('authors').remove({}),
+                    req.db.collection('references').remove({}),
+                    req.redis_client.flushall(),
+                ]);
             });
         });
     });
