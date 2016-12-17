@@ -2,11 +2,15 @@ describe('Authorization middleware', function() {
     const req = {};
 
     before(function() {
+        // setup user_id
+        req.user_id = 'peter.shih';
+        // setup db
         return require('mongodb').MongoClient
         .connect(process.env.MONGODB_URI)
         .then(function(db) {
             req.db = db;
         })
+        // setup redis
         .then(new Promise(function(resolve, reject) {
             require('../middlewares').expressRedisDb('')(req, {}, err => {
                 if (err) {
@@ -18,13 +22,14 @@ describe('Authorization middleware', function() {
         }));
     });
 
+    // generate test data for count combinations
     const test_data = [{counts: null, expected: false}];
     [1, 0, undefined].forEach(function(queries_count) {
         [1, 0, undefined].forEach(function(reference_count) {
             test_data.push({
                 counts: {
-                    queries_count: queries_count,
-                    reference_count: reference_count,
+                    queries_count,
+                    reference_count,
                 },
                 expected: (queries_count || 0) + (reference_count || 0) > 0,
             });
@@ -34,7 +39,7 @@ describe('Authorization middleware', function() {
     test_data.forEach(function(data) {
         describe(`correctly authorize user with ${JSON.stringify(data)}`, function() {
             before(function() {
-                req.user_id = 'peter.shih';
+                // insert test data into db
                 if (data.counts) {
                     return req.db.collection('authors').insert({
                         _id: {
@@ -49,8 +54,6 @@ describe('Authorization middleware', function() {
                         },
                         count: data.counts.reference_count,
                     }));
-                } else {
-                    return Promise.resolve();
                 }
             });
 
@@ -65,6 +68,7 @@ describe('Authorization middleware', function() {
             });
 
             it('checkout redis', function(done) {
+                // second access to permission will checkout redis first
                 req.redis_client.get('peter.shih', (err, reply) => {
                     if (err) {
                         done(err);
