@@ -629,12 +629,14 @@ function generatePayload(opt) {
     const valid = {
         access_token: 'random',
         job_title: 'test',
+        company_id: '00000000',
+        company: 'GoodJob',
+        is_currently_employed: 'yes',
+        employment_type: 'full-time',
         week_work_time: '40',
         overtime_frequency: '3',
         day_promised_work_time: '8',
         day_real_work_time: '10',
-        company_id: '00000000',
-        company: 'GoodJob',
     };
 
     var payload = {};
