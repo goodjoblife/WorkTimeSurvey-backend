@@ -109,7 +109,7 @@ function validation(req, res) {
     if (custom.salary_type || custom.salary_amount || data.experience_in_year) {
         hasSalaryData = true;
         try {
-            validateSalaryData(data);
+            validateSalaryData(req);
         } catch (err) {
             return Promise.reject(err);
         }
