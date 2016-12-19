@@ -93,5 +93,86 @@ describe('Authorization middleware', function() {
             });
         });
     });
+
+    describe('redis cached', function() {
+        before(function(done) {
+            redis_client.set('peter.shih', true, done);
+        });
+
+        before(function() {
+            return db.collection('authors').insertMany([
+                {
+                    _id: {
+                        id: 'mark86092',
+                        type: 'facebook',
+                    },
+                    queries_count: 1,
+                },
+                {
+                    _id: {
+                        id: 'test',
+                        type: 'facebook',
+                    },
+                    queries_count: 0,
+                },
+            ]);
+        });
+
+        it('success if redis cached', function(done) {
+            const req = {
+                user_id: 'peter.shih',
+                db: db,
+                redis_client: redis_client,
+            };
+
+            authorizationMiddleware(req, {}, function(err) {
+                try {
+                    assert.isUndefined(err);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
+        });
+
+        it('lookup mongo success if redis is not cached', function(done) {
+            const req = {
+                user_id: 'mark86092',
+                db: db,
+                redis_client: redis_client,
+            };
+
+            authorizationMiddleware(req, {}, function(err) {
+                try {
+                    assert.isUndefined(err);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
+        });
+
+        it('fail if lookup mongo fail and redis is not cached', function(done) {
+            const req = {
+                user_id: 'test',
+                db: db,
+                redis_client: redis_client,
+            };
+
+            authorizationMiddleware(req, {}, function(err) {
+                try {
+                    assert.instanceOf(err, HttpError);
+                    assert.equal(err.status, 403);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
+        });
+
+        after(function(done) {
+            redis_client.flushall(done);
+        });
+    });
 });
 
