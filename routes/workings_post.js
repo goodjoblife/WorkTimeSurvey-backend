@@ -218,72 +218,72 @@ function validateWorkingTimeData(req) {
     /*
      * Check all the required fields, or raise an 422 http error
      */
-        if (! data.week_work_time) {
-            throw new HttpError("最近一週實際工時未填", 422);
-        }
-        data.week_work_time = parseFloat(data.week_work_time);
-        if (isNaN(data.week_work_time)) {
-            throw new HttpError("最近一週實際工時必須是數字", 422);
-        }
-        if (data.week_work_time < 0 || data.week_work_time > 168) {
-            throw new HttpError("最近一週實際工時必須在0~168之間", 422);
-        }
+    if (! data.week_work_time) {
+        throw new HttpError("最近一週實際工時未填", 422);
+    }
+    data.week_work_time = parseFloat(data.week_work_time);
+    if (isNaN(data.week_work_time)) {
+        throw new HttpError("最近一週實際工時必須是數字", 422);
+    }
+    if (data.week_work_time < 0 || data.week_work_time > 168) {
+        throw new HttpError("最近一週實際工時必須在0~168之間", 422);
+    }
 
-        if (! data.overtime_frequency) {
-            throw new HttpError("加班頻率必填", 422);
-        }
-        if (["0", "1", "2", "3"].indexOf(data.overtime_frequency) === -1) {
-            throw new HttpError("加班頻率格式錯誤", 422);
-        }
-        data.overtime_frequency = parseInt(data.overtime_frequency);
+    if (! data.overtime_frequency) {
+        throw new HttpError("加班頻率必填", 422);
+    }
+    if (["0", "1", "2", "3"].indexOf(data.overtime_frequency) === -1) {
+        throw new HttpError("加班頻率格式錯誤", 422);
+    }
+    data.overtime_frequency = parseInt(data.overtime_frequency);
 
-        if (! data.day_promised_work_time) {
-            throw new HttpError("工作日表訂工時未填", 422);
-        }
-        data.day_promised_work_time = parseFloat(data.day_promised_work_time);
-        if (isNaN(data.day_promised_work_time)) {
-            throw new HttpError("工作日表訂工時必須是數字", 422);
-        }
-        if (data.day_promised_work_time < 0 || data.day_promised_work_time > 24) {
-            throw new HttpError("工作日表訂工時必須在0~24之間", 422);
-        }
+    if (! data.day_promised_work_time) {
+        throw new HttpError("工作日表訂工時未填", 422);
+    }
+    data.day_promised_work_time = parseFloat(data.day_promised_work_time);
+    if (isNaN(data.day_promised_work_time)) {
+        throw new HttpError("工作日表訂工時必須是數字", 422);
+    }
+    if (data.day_promised_work_time < 0 || data.day_promised_work_time > 24) {
+        throw new HttpError("工作日表訂工時必須在0~24之間", 422);
+    }
 
-        if (! data.day_real_work_time) {
-            throw new HttpError("工作日實際工時必填", 422);
-        }
-        data.day_real_work_time = parseFloat(data.day_real_work_time);
-        if (isNaN(data.day_real_work_time)) {
-            throw new HttpError("工作日實際工時必須是數字", 422);
-        }
-        if (data.day_real_work_time < 0 || data.day_real_work_time > 24) {
-            throw new HttpError("工作日實際工時必須在0~24之間", 422);
-        }
+    if (! data.day_real_work_time) {
+        throw new HttpError("工作日實際工時必填", 422);
+    }
+    data.day_real_work_time = parseFloat(data.day_real_work_time);
+    if (isNaN(data.day_real_work_time)) {
+        throw new HttpError("工作日實際工時必須是數字", 422);
+    }
+    if (data.day_real_work_time < 0 || data.day_real_work_time > 24) {
+        throw new HttpError("工作日實際工時必須在0~24之間", 422);
+    }
 
+    if (data.has_overtime_salary) {
+        if (["yes", "no", "don't know"].indexOf(data.has_overtime_salary) === -1) {
+            throw new HttpError('加班是否有加班費應為是/否/不知道', 422);
+        }
+    }
+
+    if (data.is_overtime_salary_legal) {
         if (data.has_overtime_salary) {
-            if (["yes", "no", "don't know"].indexOf(data.has_overtime_salary) === -1) {
-                throw new HttpError('加班是否有加班費應為是/否/不知道', 422);
-            }
-        }
-
-        if (data.is_overtime_salary_legal) {
-            if (data.has_overtime_salary) {
-                if (data.has_overtime_salary !== "yes") {
-                    throw new HttpError('加班應有加班費，本欄位才有意義', 422);
-                } else {
-                    if (["yes", "no", "don't know"].indexOf(data.is_overtime_salary_legal) === -1) {
-                        throw new HttpError('加班費是否合法應為是/否/不知道', 422);
-                    }
-                }
-            } else {
+            if (data.has_overtime_salary !== "yes") {
                 throw new HttpError('加班應有加班費，本欄位才有意義', 422);
+            } else {
+                if (["yes", "no", "don't know"].indexOf(data.is_overtime_salary_legal) === -1) {
+                    throw new HttpError('加班費是否合法應為是/否/不知道', 422);
+                }
             }
+        } else {
+            throw new HttpError('加班應有加班費，本欄位才有意義', 422);
         }
+    }
 
-        if (data.has_compensatory_dayoff) {
-            if (["yes", "no", "don't know"].indexOf(data.has_compensatory_dayoff) === -1) {
-                throw new HttpError('加班是否有補修應為是/否/不知道', 422);
-            }
+    if (data.has_compensatory_dayoff) {
+        if (["yes", "no", "don't know"].indexOf(data.has_compensatory_dayoff) === -1) {
+            throw new HttpError('加班是否有補修應為是/否/不知道', 422);
         }
+    }
 }
 
 /*
