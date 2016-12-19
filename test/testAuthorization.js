@@ -81,11 +81,11 @@ describe('Authorization middleware', function() {
             });
 
             after(function() {
-                db.collection('authors').remove({});
+                return db.collection('authors').remove({});
             });
 
             after(function() {
-                db.collection('references').remove({});
+                return db.collection('references').remove({});
             });
 
             after(function(done) {
@@ -172,6 +172,10 @@ describe('Authorization middleware', function() {
 
         after(function(done) {
             redis_client.flushall(done);
+        });
+
+        after(function() {
+            return db.collection('authors').remove({});
         });
     });
 });
