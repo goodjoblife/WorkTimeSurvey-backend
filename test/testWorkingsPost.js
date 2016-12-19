@@ -107,10 +107,51 @@ describe('Workings 工時資訊', function() {
                     .end(done);
             });
 
+            it('is_currently_employed is required', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        is_currently_employed: -1,
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            describe('when is_currently_employed == "no"', function() {
+                it('job_ending_time_year and job_ending_time_month are required', function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            is_currently_employed: 'no',
+                            job_ending_time_year: '2015',
+                            job_ending_time_month: '12',
+                        }))
+                        .expect(200)
+                        .end(done);
+                });
+
+                it('job_ending_time_year are required', function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            is_currently_employed: 'no',
+                            job_ending_time_month: '12',
+                        }))
+                        .expect(422)
+                        .end(done);
+                });
+
+                it('job_ending_time_month are required', function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            is_currently_employed: 'no',
+                            job_ending_time_year: '2015',
+                        }))
+                        .expect(422)
+                        .end(done);
+                });
+            });
+
             it('sector can be inserted', function(done) {
                 request(app).post('/workings')
                     .send(generateWorkingTimeRelatedPayload({
-                        //company_id: '00000001',
                         sector: 'Hello world',
                     }))
                     .expect(200)
@@ -408,6 +449,49 @@ describe('Workings 工時資訊', function() {
                 request(app).post('/workings')
                     .send(generateWorkingTimeRelatedPayload({
                         has_compensatory_dayoff: '-1',
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+        });
+
+        describe('Salary Validation Part', function() {
+            it('salary_type is required', function(done) {
+                request(app).post('/workings')
+                    .send(generateSalaryRelatedPayload({
+                        salary_type: -1,
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            for (let input of ['year', 'month', 'day', 'hour']) {
+                it(`salary_type should be ${input}`, function(done) {
+                    request(app).post('/workings')
+                        .send(generateSalaryRelatedPayload({
+                            salary_type: input,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.deepPropertyVal(res.body.working, 'salary.type', input);
+                        })
+                        .end(done);
+                });
+            }
+
+            it('salary_amount is required', function(done) {
+                request(app).post('/workings')
+                    .send(generateSalaryRelatedPayload({
+                        salary_amount: -1,
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            it('experience_in_year is required', function(done) {
+                request(app).post('/workings')
+                    .send(generateSalaryRelatedPayload({
+                        experience_in_year: -1,
                     }))
                     .expect(422)
                     .end(done);
