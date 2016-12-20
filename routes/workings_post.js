@@ -32,16 +32,21 @@ function collectData(req, res) {
     // pick these fields only
     // make sure the field is string
     [
-        "job_title", "week_work_time",
-        "overtime_frequency",
-        "day_promised_work_time", "day_real_work_time",
+        // common data
+        "job_title",
         "sector",
+        "gender",
+        "is_currently_employed",
+        "employment_type",
+        // workingtime data
+        "week_work_time",
+        "overtime_frequency",
+        "day_promised_work_time",
+        "day_real_work_time",
         "has_overtime_salary",
         "is_overtime_salary_legal",
         "has_compensatory_dayoff",
-        "is_currently_employed",
-        "employment_type",
-        "gender",
+        // salary data
         "experience_in_year",
     ].forEach(function(field, i) {
         if (req.body[field] && (typeof req.body[field] === "string") && req.body[field] !== "") {
