@@ -16,7 +16,7 @@ function collectData(req, res) {
         created_at: new Date(),
     };
 
-    if (req.body.email && (typeof req.body.email === "string") && req.body.email !== "") {
+    if (checkBodyField(req, 'main')) {
         author.email = req.body.email;
     }
 
@@ -49,14 +49,14 @@ function collectData(req, res) {
         // salary data
         "experience_in_year",
     ].forEach(function(field, i) {
-        if (req.body[field] && (typeof req.body[field] === "string") && req.body[field] !== "") {
+        if (checkBodyField(req, field)) {
             working[field] = req.body[field];
         }
     });
-    if (req.body.company_id && (typeof req.body.company_id === "string") && req.body.company_id !== "") {
+    if (checkBodyField(req, "company_id")) {
         working.company.id = req.body.company_id;
     }
-    if (req.body.company && (typeof req.body.company === "string") && req.body.company !== "") {
+    if (checkBodyField(req, "company")) {
         req.custom.company_query = req.body.company;
     }
 
