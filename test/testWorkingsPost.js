@@ -147,6 +147,81 @@ describe('Workings 工時資訊', function() {
                         .expect(422)
                         .end(done);
                 });
+
+                describe('job_ending_time_* should be reasonable', function() {
+                    it('job_ending_time_year <= this year', function(done) {
+                        let nextYear = new Date();
+                        nextYear.setFullYear(nextYear.getFullYear() + 1);
+                        request(app).post('/workings')
+                            .send(generateWorkingTimeRelatedPayload({
+                                is_currently_employed: 'no',
+                                job_ending_time_year: nextYear.getFullYear().toString(),
+                                job_ending_time_month: '1'
+                            }))
+                            .expect(422)
+                            .end(done);
+                    });
+
+                    it('job_ending_time_year > this year - 10', function(done) {
+                        request(app).post('/workings')
+                            .send(generateWorkingTimeRelatedPayload({
+                                is_currently_employed: 'no',
+                                job_ending_time_year: ((new Date()).getFullYear() - 10).toString(),
+                                job_ending_time_month: '1'
+                            }))
+                            .expect(422)
+                            .end(done);
+                    });
+
+                    it('job_ending_time_* <= now', function(done) {
+                        let now = new Date();
+
+                        request(app).post('/workings')
+                            .send(generateWorkingTimeRelatedPayload({
+                                is_currently_employed: 'no',
+                                job_ending_time_year: now.getFullYear().toString(),
+                                job_ending_time_month: (now.getMonth() + 1).toString(),
+                            }))
+                            .expect(200)
+                            .end(done);
+                    });
+
+                    it('job_ending_time_* <= now', function(done) {
+                        let nextMonth = new Date();
+                        nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+                        request(app).post('/workings')
+                            .send(generateWorkingTimeRelatedPayload({
+                                is_currently_employed: 'no',
+                                job_ending_time_year: nextMonth.getFullYear().toString(),
+                                job_ending_time_month: (nextMonth.getMonth() + 1).toString(),
+                            }))
+                            .expect(422)
+                            .end(done);
+                    });
+                });
+            });
+
+            describe('when is_currently_employed == "yes"', function() {
+                it('job_ending_time_year 不應該有', function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            is_currently_employed: 'no',
+                            job_ending_time_year: '2015',
+                        }))
+                        .expect(422)
+                        .end(done);
+                });
+
+                it('job_ending_time_month 不應該有', function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            is_currently_employed: 'no',
+                            job_ending_time_month: '12',
+                        }))
+                        .expect(422)
+                        .end(done);
+                });
             });
 
             it('sector can be inserted', function(done) {
@@ -160,6 +235,68 @@ describe('Workings 工時資訊', function() {
                     })
                     .end(done);
             });
+
+            for (let input of ['male', 'female', 'other']) {
+                it(`gender can be ${input}`, function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            gender: input,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.propertyVal(res.body.working, 'gender', input);
+                        })
+                        .end(done);
+                });
+            }
+
+            for (let input of ['']) {
+                it(`gender should not return if "${input}"`, function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            gender: input,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.notProperty(res.body.working, 'gender');
+                        })
+                        .end(done);
+                });
+            }
+
+            it('gender fail if invalid input', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        gender: 'invalid',
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            for (let input of ["full-time", "part-time", "intern", "temporary", "contract", "dispatched-labor"]) {
+                it(`employment_type can be ${input}`, function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            employment_type: input,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.propertyVal(res.body.working, 'employment_type', input);
+                        })
+                        .end(done);
+                });
+            }
+
+            for (let input of [-1, 'invalid']) {
+                it('employment_type is required', function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            employment_type: input,
+                        }))
+                        .expect(422)
+                        .end(done);
+                });
+            }
         });
 
         describe('WorkingTime Validation Part', function() {
@@ -577,6 +714,38 @@ describe('Workings 工時資訊', function() {
                         assert.equal(res.body.queries_count, 1);
                         assert.isUndefined(res.body.working.company.id);
                         assert.equal(res.body.working.company.name, 'GOODJOBGREAT');
+                    })
+                    .end(done);
+            });
+
+            it('data_time 是 job_ending_time_* 的組合, if is_currently_employed == "no"', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        is_currently_employed: 'no',
+                        job_ending_time_year: '2015',
+                        job_ending_time_month: '1',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.deepPropertyVal(res.body, 'working.data_time.year', 2015);
+                        assert.deepPropertyVal(res.body, 'working.data_time.month', 1);
+                    })
+                    .end(done);
+            });
+
+            it('data_time 是 created_at 的組合, if is_currently_employed == "yes"', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        is_currently_employed: 'yes',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.deepProperty(res.body, 'working.created_at');
+
+                        const created_at = new Date(res.body.working.created_at);
+
+                        assert.deepPropertyVal(res.body, 'working.data_time.year', created_at.getFullYear());
+                        assert.deepPropertyVal(res.body, 'working.data_time.month', created_at.getMonth() + 1);
                     })
                     .end(done);
             });
