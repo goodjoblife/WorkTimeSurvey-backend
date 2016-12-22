@@ -13,7 +13,6 @@ var winston = require('winston');
 require('winston-mongodb').MongoDB;
 
 var app = express();
-const middleware = require('./routes/middleware');
 
 app.set('trust proxy', 1);
 
@@ -46,9 +45,6 @@ app.use(cors({
 
 app.use('/', routes);
 app.use('/companies', require('./routes/companies'));
-app.use('/workings/sort_by/:SORT_FIELD', middleware.sort_by);
-app.use('/workings/search_by/job_title/group_by/:GROUP_FIELD', middleware.group_by);
-app.use('/workings/search_by/job_title/group_by/:GROUP_FIELD/group_sort_by/:GROUP_SORT_FIELD', middleware.group_sort_by);
 app.use('/workings', require('./routes/workings'));
 app.use('/jobs', require('./routes/jobs'));
 

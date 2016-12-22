@@ -1,53 +1,53 @@
 const HttpError = require('../libs/errors').HttpError;
 
 function sort_by(req, res, next) {
-    req.sort_by = req.params.SORT_FIELD || 'created_at';
+    const sort_by = req.query.sort_by || 'created_at';
+    let order = req.query.order || "descending";
+    order = (order === "descending") ? -1 : 1;
 
-    if (!["created_at", "week_work_time", "estimated_hourly_wage"].includes(req.sort_by)) {
-        next(new HttpError('SORT_FIELD error', 422));
-        return;
-    }
-    next();
-}
-
-function group_by(req, res, next) {
-    req.group_by = req.params.GROUP_FIELD;
-
-    if (!["company", "job_title"].includes(req.group_by)) {
-        next(new HttpError('GROUP_FIELD error', 422));
+    if (!["created_at", "week_work_time", "estimated_hourly_wage"].includes(sort_by)) {
+        next(new HttpError('sort_by error', 422));
         return;
     }
 
+    req.sort_by = {};
+    req.sort_by[sort_by] = order;
     next();
 }
 
 function group_sort_by(req, res, next) {
-    req.group_sort_by = req.params.GROUP_SORT_FIELD || "week_work_time";
+    const group_sort_by = req.query.group_sort_by || "week_work_time";
+    let group_sort_order = req.query.group_sort_order || "descending";
+    group_sort_order = (group_sort_order === "descending") ? -1 : 1;
 
-    if (req.group_by === undefined) {
-        next(new HttpError('group_by is required', 422));
-        return;
-    } else if (!["week_work_time", "estimated_hourly_wage"].includes(req.group_sort_by)) {
-        next(new HttpError('GROUP_SORT_FIELD error', 422));
+    if (!["week_work_time", "estimated_hourly_wage"].includes(group_sort_by)) {
+        next(new HttpError('group_sort_by error', 422));
         return;
     }
+
+    req.group_sort_by = {};
+    req.group_sort_by["average." + group_sort_by] = group_sort_order;
     next();
 }
 
-// search_by not used
-function search_by(req, res, next) {
-    req.search_by = req.params.SEARCH_FIELD;
+function pagination(req, res, next) {
+    const page = parseInt(req.query.page) || 0;
+    const limit = parseInt(req.query.limit) || 25;
 
-    if (!["company", "job_title"].includes(req.search_by)) {
-        next(new HttpError('SEARCH_FIELD error', 422));
+    if (isNaN(limit) || limit > 50) {
+        next(new HttpError("limit is not allow", 422));
         return;
     }
+
+    req.pagination = {
+        page: page,
+        limit: limit,
+    };
     next();
 }
 
 module.exports = {
     sort_by,
-    group_by,
     group_sort_by,
-    search_by,
+    pagination,
 };

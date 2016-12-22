@@ -5,18 +5,12 @@ const facebook = require('../libs/facebook');
 const winston = require('winston');
 const lodash = require('lodash');
 const post_helper = require('./workings_post');
+const middleware = require('./middleware');
 
-router.get('/sort_by/:SORT_FIELD', function(req, res, next) {
-    winston.info('/workings/sort_by/:SORT_FIELD', {query: req.query, ip: req.ip, ips: req.ips});
-
-    // input parameters
-    let order = req.query.order || "descending";
-    order = (order === "descending") ? -1 : 1;
-    const page = parseInt(req.query.page) || 0;
-    const limit = 25;
-
-    // preprocess by middleware
-    const sort_by = req.sort_by;
+router.get('/', middleware.sorted_by);
+router.get('/', middleware.pagination);
+router.get('/', function(req, res, next) {
+    winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
 
     const collection = req.db.collection('workings');
     const query = {};
@@ -25,22 +19,22 @@ router.get('/sort_by/:SORT_FIELD', function(req, res, next) {
         sector: 1,
         created_at: 1,
         job_title: 1,
+        data_time: 1,
         week_work_time: 1,
         overtime_frequency: 1,
         salary: 1,
         estimated_hourly_wage: 1,
-        data_time: 1,
     };
-    const sort_field = {};
-    sort_field[sort_by] = order;
+    const page = req.pagination.page;
+    const limit = req.pagination.limit;
 
     const data = {};
     collection.find().count().then(function(count) {
         data.total = count;
 
-        return collection.find(query, opt).sort(sort_field).skip(limit * page).limit(limit).toArray();
+        return collection.find(query, opt).sort(req.sort_by).skip(limit * page).limit(limit).toArray();
     }).then(function(results) {
-        data.workings = results;
+        data.time_and_salary = results;
 
         res.send(data);
     }).catch(function(err) {
@@ -81,81 +75,18 @@ router.post('/', (req, res, next) => {
     post_helper.validation(req, res).then(next, next);
 }, post_helper.main);
 
-router.get('/search_by/company/group_by/:GROUP_FIELD/group_sort_by/:GROUP_SORT_FIELD', function(req, res, next) {
-    winston.info('/workings/search_by/company/group_by/:GROUP_FIELD/group_sort_by/:GROUP_SORT_FIELD', {
-        company: req.query.company,
-        ip: req.ip,
-        ips: req.ips,
-    });
+router.use('/search_by/company/group_by/company', middleware.group_sort_by);
+router.get('/search_by/company/group_by/company', function(req, res, next) {
+    winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
 
     // input parameter
     const company = req.query.company;
-    let group_sort_order = req.query.group_sort_order || "descending";
-    group_sort_order = (group_sort_order === "descending") ? -1 : 1;
-
-    // preprocess by middleware
-    const group_by = req.group_by;
-    const group_sort_by = req.group_sort_by;
-
-    // json used in mongodb aggregate
-    const project_field = {
-        average: {
-            $cond: {
-                if: true,
-                then: {
-                    week_work_time: "$avg_week_work_time",
-                    estimated_hourly_wage: "$avg_estimated_hourly_wage",
-                },
-                else: "$skip",
-            },
-        },
-        has_overtime_salary_count: {
-            $cond: [
-                {$gte: ["$count", 5]},
-                {
-                    yes: "$has_overtime_salary_yes",
-                    no: "$has_overtime_salary_no",
-                    "don't know": "$has_overtime_salary_dont",
-                },
-                "$skip",
-            ],
-        },
-        is_overtime_salary_legal_count: {
-            $cond: [
-                {$gte: ["$count", 5]},
-                {
-                    yes: "$is_overtime_salary_legal_yes",
-                    no: "$is_overtime_salary_legal_no",
-                    "don't know": "$is_overtime_salary_legal_dont",
-                },
-                "$skip",
-            ],
-        },
-        has_compensatory_dayoff_count: {
-            $cond: [
-                {$gte: ["$count", 5]},
-                {
-                    yes: "$has_compensatory_dayoff_yes",
-                    no: "$has_compensatory_dayoff_no",
-                    "don't know": "$has_compensatory_dayoff_dont",
-                },
-                "$skip",
-            ],
-        },
-        workings: 1,
-        _id: 0,
-    };
-    project_field[group_by] = "$_id";
-    const sort_field = {};
-    sort_field[group_sort_by] = group_sort_order;
-
-    const collection = req.db.collection('workings');
-
     if (! company || company === '') {
-        next(new HttpError("job_title is required", 422));
+        next(new HttpError("company is required", 422));
         return;
     }
 
+    const collection = req.db.collection('workings');
     collection.aggregate([
         {
             $match: {
@@ -172,7 +103,7 @@ router.get('/search_by/company/group_by/:GROUP_FIELD/group_sort_by/:GROUP_SORT_F
         },
         {
             $group: {
-                _id: "$"+group_by,
+                _id: "$company",
                 has_overtime_salary_yes: {$sum:
                     {$cond: [{$eq: ["$has_overtime_salary", "yes"] }, 1, 0] },
                 },
@@ -206,87 +137,93 @@ router.get('/search_by/company/group_by/:GROUP_FIELD/group_sort_by/:GROUP_SORT_F
                 avg_estimated_hourly_wage: {
                     $avg: "$estimated_hourly_wage",
                 },
-                workings: {
+                time_and_salary: {
                     $push: {
                         job_title: "$job_title",
+                        sector: "$sector",
+                        employment_type: "$employment_type",
+                        created_at: "$created_at",
+                        data_time: "$data_time",
+                        //
                         week_work_time: "$week_work_time",
                         overtime_frequency: "$overtime_frequency",
                         day_promised_work_time: "$day_promised_work_time",
                         day_real_work_time: "$day_real_work_time",
-                        created_at: "$created_at",
-                        sector: "$sector",
-                        employment_type: "$employment_type",
-                        data_time: "$data_time",
+                        //
                         experience_in_year: "$experience_in_year",
                         salary: "$salary",
+                        //
                         estimated_hourly_wage: "$estimated_hourly_wage",
                     },
                 },
             },
         },
         {
-            $project: project_field,
+            $project: {
+                average: {
+                    week_work_time: "$avg_week_work_time",
+                    estimated_hourly_wage: "$avg_estimated_hourly_wage",
+                },
+                has_overtime_salary_count: {
+                    $cond: [
+                        {$gte: ["$count", 5]},
+                        {
+                            yes: "$has_overtime_salary_yes",
+                            no: "$has_overtime_salary_no",
+                            "don't know": "$has_overtime_salary_dont",
+                        },
+                        "$skip",
+                    ],
+                },
+                is_overtime_salary_legal_count: {
+                    $cond: [
+                        {$gte: ["$count", 5]},
+                        {
+                            yes: "$is_overtime_salary_legal_yes",
+                            no: "$is_overtime_salary_legal_no",
+                            "don't know": "$is_overtime_salary_legal_dont",
+                        },
+                        "$skip",
+                    ],
+                },
+                has_compensatory_dayoff_count: {
+                    $cond: [
+                        {$gte: ["$count", 5]},
+                        {
+                            yes: "$has_compensatory_dayoff_yes",
+                            no: "$has_compensatory_dayoff_no",
+                            "don't know": "$has_compensatory_dayoff_dont",
+                        },
+                        "$skip",
+                    ],
+                },
+                time_and_salary: 1,
+                _id: 0,
+                company: "$_id",
+            },
         },
         {
-            $sort: sort_field,
+            $sort: req.group_sort_by,
         },
     ]).toArray().then(function(results) {
-        // if value in average is null, change it to undefined
-        for (let each of results) {
-            for (let key in each.average) {
-                if (each.average[key] === null) {
-                    each.average[key] = undefined;
-                }
-            }
-        }
-
         res.send(results);
     }).catch(function(err) {
         next(new HttpError("Internal Server Error", 500));
     });
 });
 
-router.get('/search_by/job_title/group_by/:GROUP_FIELD/group_sort_by/:GROUP_SORT_FIELD', function(req, res, next) {
-    winston.info('/workings/search_by/job_title/group_by/:GROUP_FIELD/group_sort_by/:GROUP_SORT_FIELD', {
-        job_title: req.query.job_title,
-        ip: req.ip,
-        ips: req.ips,
-    });
+router.use('/search_by/job_title/group_by/company', middleware.group_sort_by);
+router.get('/search_by/job_title/group_by/company', function(req, res, next) {
+    winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
 
     // input parameter
     const job_title = req.query.job_title;
-    let group_sort_order = req.query.group_sort_order || "descending";
-    group_sort_order = (group_sort_order === "descending") ? -1 : 1;
-
-    // preprocess by middleware
-    const group_by = req.group_by;
-    const group_sort_by = req.group_sort_by;
-
-    // json used in mongodb aggregate
-    const project_field = {
-        average: {
-            $cond: {
-                if: true,
-                then: {
-                    week_work_time: "$avg_week_work_time",
-                    estimated_hourly_wage: "$avg_estimated_hourly_wage",
-                },
-                else: "$skip",
-            },
-        },
-        workings: 1,
-        _id: 0,
-    };
-    project_field[group_by] = "$_id";
-    const sort_field = {};
-    sort_field[group_sort_by] = group_sort_order;
-
-    const collection = req.db.collection('workings');
-
     if (! job_title || job_title === '') {
         next(new HttpError("job_title is required", 422));
         return;
     }
+
+    const collection = req.db.collection('workings');
 
     collection.aggregate([
         {
@@ -301,47 +238,49 @@ router.get('/search_by/job_title/group_by/:GROUP_FIELD/group_sort_by/:GROUP_SORT
         },
         {
             $group: {
-                _id: "$"+group_by,
+                _id: "$company",
                 avg_week_work_time: {
                     $avg: "$week_work_time",
                 },
                 avg_estimated_hourly_wage: {
                     $avg: "$estimated_hourly_wage",
                 },
-                workings: {
+                time_and_salary: {
                     $push: {
                         job_title: "$job_title",
+                        sector: "$sector",
+                        employment_type: "$employment_type",
+                        created_at: "$created_at",
+                        data_time: "$data_time",
+                        //
                         week_work_time: "$week_work_time",
                         overtime_frequency: "$overtime_frequency",
                         day_promised_work_time: "$day_promised_work_time",
                         day_real_work_time: "$day_real_work_time",
-                        created_at: "$created_at",
-                        sector: "$sector",
-                        employment_type: "$employment_type",
-                        data_time: "$data_time",
+                        //
                         experience_in_year: "$experience_in_year",
                         salary: "$salary",
+                        //
                         estimated_hourly_wage: "$estimated_hourly_wage",
                     },
                 },
             },
         },
         {
-            $project: project_field,
+            $project: {
+                average: {
+                    week_work_time: "$avg_week_work_time",
+                    estimated_hourly_wage: "$avg_estimated_hourly_wage",
+                },
+                time_and_salary: 1,
+                _id: 0,
+                company: "$_id",
+            },
         },
         {
-            $sort: sort_field,
+            $sort: req.group_sort_by,
         },
     ]).toArray().then(function(results) {
-        // if value in average is null, change it to undefined
-        for (let each of results) {
-            for (let key in each.average) {
-                if (each.average[key] === null) {
-                    each.average[key] = undefined;
-                }
-            }
-        }
-
         res.send(results);
     }).catch(function(err) {
         next(new HttpError("Internal Server Error", 500));
