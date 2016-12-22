@@ -96,7 +96,7 @@ describe('Authorization middleware', function() {
 
     describe('redis cached', function() {
         before(function(done) {
-            redis_client.set('peter.shih', true, done);
+            redis_client.set('permission_peter.shih', true, done);
         });
 
         before(function() {

@@ -3,7 +3,7 @@ const HttpError = require('../libs/errors').HttpError;
 
 function redisLookUp(user_id, redis) {
     return new Promise((resolve, reject) => {
-        redis.get(user_id, (err, reply) => {
+        redis.get('permission_' + user_id, (err, reply) => {
             if (err) {
                 reject(err);
             } else {
@@ -19,7 +19,7 @@ function redisLookUp(user_id, redis) {
 
 function redisInsert(user_id, redis) {
     return new Promise((resolve, reject) => {
-        redis.set(user_id, true, (err, reply) => {
+        redis.set('permission_' + user_id, true, (err, reply) => {
             if (err) {
                 reject(err);
             } else {
