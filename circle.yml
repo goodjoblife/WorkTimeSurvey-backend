@@ -1,0 +1,16 @@
+machine:
+  node:
+    version: 6
+  services:
+    - redis
+  environment:
+    MONGODB_URI: mongodb://localhost/goodjob
+    REDIS_URL: redis://localhost
+    NODE_ENV: test
+dependencies:
+  post:
+    - npm run migrate
+test:
+  override:
+    - npm test
+    - npm run lint
