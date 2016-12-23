@@ -56,6 +56,47 @@ function normalizeCompany(db, company_id, company_query) {
     }
 }
 
+/*
+ * Check the quota, limit queries <= 5
+ *
+ * The quota checker use author as _id
+ *
+ * @return  Promise
+ *
+ * Fullfilled with newest queries_count
+ * Rejected with HttpError
+ */
+function checkAndUpdateQuota(db, author) {
+    const collection = db.collection('authors');
+    const quota = 5;
+
+    return collection.findAndModify(
+        {
+            _id: author,
+            queries_count: {$lt: quota},
+        },
+        [
+        ],
+        {
+            $inc: { queries_count: 1 },
+        },
+        {
+            upsert: true,
+            new: true,
+        }
+    ).then(result => {
+        if (result.value.queries_count > quota) {
+            throw new HttpError(`您已經上傳${quota}次，已達最高上限`, 429);
+        }
+
+        return result.value.queries_count;
+    }, err => {
+        throw new HttpError(`您已經上傳${quota}次，已達最高上限`, 429);
+    });
+
+}
+
 module.exports = {
     normalizeCompany,
+    checkAndUpdateQuota,
 };

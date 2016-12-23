@@ -39,7 +39,7 @@ describe('Workings 工時資訊', function() {
                 .reply(200, {id: '-1', name: 'test'});
         });
 
-        describe('access_token', function () {
+        describe('Authentication & Authorization Part', function () {
             it('需要回傳 401 如果沒有 access_token', function(done) {
                 request(app).post('/workings')
                     .expect(401)
@@ -71,193 +71,162 @@ describe('Workings 工時資訊', function() {
             });
         });
 
-        describe('job_title (職稱)', function() {
-            it('is required', function(done) {
+        describe('generate payload', function() {
+            it('generateWorkingTimeRelatedPayload', function(done) {
                 request(app).post('/workings')
-                    .send(generatePayload({
+                    .send(generateWorkingTimeRelatedPayload())
+                    .expect(200)
+                    .end(done);
+            });
+
+            it('generateSalaryRelatedPayload', function(done) {
+                request(app).post('/workings')
+                    .send(generateSalaryRelatedPayload())
+                    .expect(200)
+                    .end(done);
+            });
+        });
+
+        describe('Common Data Validation Part', function() {
+            it('job_title is required', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
                         job_title: -1,
                     }))
                     .expect(422)
                     .end(done);
             });
 
-            it('will be converted to UPPERCASE', function(done) {
+            it('company or company_id is required', function(done) {
                 request(app).post('/workings')
-                    .send(generatePayload({
-                        company_id: '00000001',
-                        job_title: 'GoodJob',
-                    }))
-                    .expect(200)
-                    .expect(function(res) {
-                        assert.propertyVal(res.body.working, 'job_title', 'GOODJOB');
-                    })
-                    .end(done);
-            });
-        });
-
-        describe('week_work_time (最近一週實際工時)', function() {
-            it('is required', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        week_work_time: -1,
-                    }))
-                    .expect(422)
-                    .end(done);
-            });
-
-            it('should be a number', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        week_work_time: "test",
-                    }))
-                    .expect(422)
-                    .end(done);
-            });
-
-            it('should be a valid number', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        week_work_time: "186",
-                    }))
-                    .expect(422)
-                    .end(done);
-            });
-
-            it('can be a floating number', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        week_work_time: "30.5",
-                        company_id: '00000001',
-                    }))
-                    .expect(200)
-                    .expect(function(res) {
-                        assert.deepPropertyVal(res.body, 'working.week_work_time', 30.5);
-                    })
-                    .end(done);
-            });
-        });
-
-        describe('overtime_frequency 加班頻率', function() {
-            it('is required', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        overtime_frequency: -1,
-                    }))
-                    .expect(422)
-                    .end(done);
-            });
-
-            it('should in [0, 1, 2, 3]', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        overtime_frequency: '5',
-                    }))
-                    .expect(422)
-                    .end(done);
-            });
-        });
-
-        describe('day_promised_work_time', function() {
-            it('is required', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        day_promised_work_time: -1,
-                    }))
-                    .expect(422)
-                    .end(done);
-            });
-
-            it('should be a number', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        day_promised_work_time: "test",
-                    }))
-                    .expect(422)
-                    .end(done);
-            });
-
-            it('should be a valid number', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        day_promised_work_time: "25",
-                    }))
-                    .expect(422)
-                    .end(done);
-            });
-
-            it('can be a floating number', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        day_promised_work_time: "3.5",
-                        company_id: '00000001',
-                    }))
-                    .expect(200)
-                    .expect(function(res) {
-                        assert.deepPropertyVal(res.body, 'working.day_promised_work_time', 3.5);
-                    })
-                    .end(done);
-            });
-        });
-
-        describe('day_real_work_time', function() {
-            it('is required', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        day_real_work_time: -1,
-                    }))
-                    .expect(422)
-                    .end(done);
-            });
-
-            it('should be a number', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        day_real_work_time: "test",
-                    }))
-                    .expect(422)
-                    .end(done);
-            });
-
-            it('should be a valid number', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        day_real_work_time: "25",
-                    }))
-                    .expect(422)
-                    .end(done);
-            });
-
-            it('can be a floating number', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
-                        day_real_work_time: "3.5",
-                        company_id: '00000001',
-                    }))
-                    .expect(200)
-                    .expect(function(res) {
-                        assert.deepPropertyVal(res.body, 'working.day_real_work_time', 3.5);
-                    })
-                    .end(done);
-            });
-        });
-
-        describe('company (公司/單位名稱)', function() {
-            it('is required', function(done) {
-                request(app).post('/workings')
-                    .send(generatePayload({
+                    .send(generateWorkingTimeRelatedPayload({
                         company: -1,
                         company_id: -1,
                     }))
                     .expect(422)
                     .end(done);
             });
-        });
 
-        describe('sector', function() {
-            it('can be inserted', function(done) {
+            it('is_currently_employed is required', function(done) {
                 request(app).post('/workings')
-                    .send(generatePayload({
-                        company_id: '00000001',
+                    .send(generateWorkingTimeRelatedPayload({
+                        is_currently_employed: -1,
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            describe('when is_currently_employed == "no"', function() {
+                it('job_ending_time_year and job_ending_time_month are required', function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            is_currently_employed: 'no',
+                            job_ending_time_year: '2015',
+                            job_ending_time_month: '12',
+                        }))
+                        .expect(200)
+                        .end(done);
+                });
+
+                it('job_ending_time_year are required', function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            is_currently_employed: 'no',
+                            job_ending_time_month: '12',
+                        }))
+                        .expect(422)
+                        .end(done);
+                });
+
+                it('job_ending_time_month are required', function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            is_currently_employed: 'no',
+                            job_ending_time_year: '2015',
+                        }))
+                        .expect(422)
+                        .end(done);
+                });
+
+                describe('job_ending_time_* should be reasonable', function() {
+                    it('job_ending_time_year <= this year', function(done) {
+                        let nextYear = new Date();
+                        nextYear.setFullYear(nextYear.getFullYear() + 1);
+                        request(app).post('/workings')
+                            .send(generateWorkingTimeRelatedPayload({
+                                is_currently_employed: 'no',
+                                job_ending_time_year: nextYear.getFullYear().toString(),
+                                job_ending_time_month: '1',
+                            }))
+                            .expect(422)
+                            .end(done);
+                    });
+
+                    it('job_ending_time_year > this year - 10', function(done) {
+                        request(app).post('/workings')
+                            .send(generateWorkingTimeRelatedPayload({
+                                is_currently_employed: 'no',
+                                job_ending_time_year: ((new Date()).getFullYear() - 10).toString(),
+                                job_ending_time_month: '1',
+                            }))
+                            .expect(422)
+                            .end(done);
+                    });
+
+                    it('job_ending_time_* <= now', function(done) {
+                        let now = new Date();
+
+                        request(app).post('/workings')
+                            .send(generateWorkingTimeRelatedPayload({
+                                is_currently_employed: 'no',
+                                job_ending_time_year: now.getFullYear().toString(),
+                                job_ending_time_month: (now.getMonth() + 1).toString(),
+                            }))
+                            .expect(200)
+                            .end(done);
+                    });
+
+                    it('job_ending_time_* <= now', function(done) {
+                        let nextMonth = new Date();
+                        nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+                        request(app).post('/workings')
+                            .send(generateWorkingTimeRelatedPayload({
+                                is_currently_employed: 'no',
+                                job_ending_time_year: nextMonth.getFullYear().toString(),
+                                job_ending_time_month: (nextMonth.getMonth() + 1).toString(),
+                            }))
+                            .expect(422)
+                            .end(done);
+                    });
+                });
+            });
+
+            describe('when is_currently_employed == "yes"', function() {
+                it('job_ending_time_year 不應該有', function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            is_currently_employed: 'no',
+                            job_ending_time_year: '2015',
+                        }))
+                        .expect(422)
+                        .end(done);
+                });
+
+                it('job_ending_time_month 不應該有', function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            is_currently_employed: 'no',
+                            job_ending_time_month: '12',
+                        }))
+                        .expect(422)
+                        .end(done);
+                });
+            });
+
+            it('sector can be inserted', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
                         sector: 'Hello world',
                     }))
                     .expect(200)
@@ -266,14 +235,210 @@ describe('Workings 工時資訊', function() {
                     })
                     .end(done);
             });
+
+            for (let input of ['male', 'female', 'other']) {
+                it(`gender can be ${input}`, function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            gender: input,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.propertyVal(res.body.working, 'gender', input);
+                        })
+                        .end(done);
+                });
+            }
+
+            for (let input of ['']) {
+                it(`gender should not return if "${input}"`, function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            gender: input,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.notProperty(res.body.working, 'gender');
+                        })
+                        .end(done);
+                });
+            }
+
+            it('gender fail if invalid input', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        gender: 'invalid',
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            for (let input of ["full-time", "part-time", "intern", "temporary", "contract", "dispatched-labor"]) {
+                it(`employment_type can be ${input}`, function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            employment_type: input,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.propertyVal(res.body.working, 'employment_type', input);
+                        })
+                        .end(done);
+                });
+            }
+
+            for (let input of [-1, 'invalid']) {
+                it('employment_type is required', function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            employment_type: input,
+                        }))
+                        .expect(422)
+                        .end(done);
+                });
+            }
         });
 
-        describe('has_overtime_salary', function() {
+        describe('WorkingTime Validation Part', function() {
+            it('week_work_time is required', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        week_work_time: -1,
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            it('week_work_time should be a number', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        week_work_time: "test",
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            it('week_work_time should be a valid number', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        week_work_time: "186",
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            it('week_work_time can be a floating number', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        week_work_time: "30.5",
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.deepPropertyVal(res.body, 'working.week_work_time', 30.5);
+                    })
+                    .end(done);
+            });
+
+            it('overtime_frequency is required', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        overtime_frequency: -1,
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            it('overtime_frequency should in [0, 1, 2, 3]', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        overtime_frequency: '5',
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            it('day_promised_work_time is required', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        day_promised_work_time: -1,
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            it('day_promised_work_time should be a number', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        day_promised_work_time: "test",
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            it('day_promised_work_time should be a valid number', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        day_promised_work_time: "25",
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            it('day_promised_work_time can be a floating number', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        day_promised_work_time: "3.5",
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.deepPropertyVal(res.body, 'working.day_promised_work_time', 3.5);
+                    })
+                    .end(done);
+            });
+
+            it('day_real_work_time is required', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        day_real_work_time: -1,
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            it('day_real_work_time should be a number', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        day_real_work_time: "test",
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            it('day_real_work_time should be a valid number', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        day_real_work_time: "25",
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            it('day_real_work_time can be a floating number', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        day_real_work_time: "3.5",
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.deepPropertyVal(res.body, 'working.day_real_work_time', 3.5);
+                    })
+                    .end(done);
+            });
+
             for (let input of ['yes', 'no', 'don\'t know']) {
-                it('should be ' + input, function(done) {
+                it('has_overtime_salary should be ' + input, function(done) {
                     request(app).post('/workings')
-                        .send(generatePayload({
-                            company_id: '00000001',
+                        .send(generateWorkingTimeRelatedPayload({
                             has_overtime_salary: input,
                         }))
                         .expect(200)
@@ -284,10 +449,9 @@ describe('Workings 工時資訊', function() {
                 });
             }
             for (let input of ['', undefined]) {
-                it('wouldn\'t be returned if it is "' + input + '"', function(done) {
+                it('has_overtime_salary wouldn\'t be returned if it is "' + input + '"', function(done) {
                     request(app).post('/workings')
-                        .send(generatePayload({
-                            company_id: '00000001',
+                        .send(generateWorkingTimeRelatedPayload({
                             has_overtime_salary: input,
                         }))
                         .expect(200)
@@ -298,10 +462,9 @@ describe('Workings 工時資訊', function() {
                 });
             }
 
-            it('wouldn\'t be returned if there is no such field in payload', function(done) {
+            it('has_overtime_salary wouldn\'t be returned if there is no such field in payload', function(done) {
                 request(app).post('/workings')
-                    .send(generatePayload({
-                        company_id: '00000001',
+                    .send(generateWorkingTimeRelatedPayload({
                     }))
                     .expect(200)
                     .expect(function(res) {
@@ -310,23 +473,19 @@ describe('Workings 工時資訊', function() {
                     .end(done);
             });
 
-            it('should be error if request others', function(done) {
+            it('has_overtime_salary should be error if request others', function(done) {
                 request(app).post('/workings')
-                    .send(generatePayload({
-                        company_id: '00000001',
+                    .send(generateWorkingTimeRelatedPayload({
                         has_overtime_salary: '-1',
                     }))
                     .expect(422)
                     .end(done);
             });
-        });
 
-        describe('is_overtime_salary_legal', function() {
             for (let input of ['yes', 'no', 'don\'t know']) {
-                it('should be ' + input, function(done) {
+                it('is_overtime_salary_legal should be ' + input, function(done) {
                     request(app).post('/workings')
-                        .send(generatePayload({
-                            company_id: '00000001',
+                        .send(generateWorkingTimeRelatedPayload({
                             has_overtime_salary: 'yes',
                             is_overtime_salary_legal: input,
                         }))
@@ -338,10 +497,9 @@ describe('Workings 工時資訊', function() {
                 });
             }
             for (let preInput of ['no', 'don\'t know', '-1', '', undefined]) {
-                it('should be error if has_overtime_salary is not yes', function(done) {
+                it('is_overtime_salary_legal should be error if has_overtime_salary is not yes', function(done) {
                     request(app).post('/workings')
-                        .send(generatePayload({
-                            company_id: '00000001',
+                        .send(generateWorkingTimeRelatedPayload({
                             has_overtime_salary: preInput,
                             is_overtime_salary_legal: 'yes',
                         }))
@@ -351,10 +509,9 @@ describe('Workings 工時資訊', function() {
             }
 
             for (let input of ['', undefined]) {
-                it('wouldn\'t be returned if it is "' + input + '"', function(done) {
+                it('is_overtime_salary_legal wouldn\'t be returned if it is "' + input + '"', function(done) {
                     request(app).post('/workings')
-                        .send(generatePayload({
-                            company_id: '00000001',
+                        .send(generateWorkingTimeRelatedPayload({
                             has_overtime_salary: 'yes',
                             is_overtime_salary_legal: input,
                         }))
@@ -366,10 +523,9 @@ describe('Workings 工時資訊', function() {
                 });
             }
 
-            it('wouldn\'t be returned if there is no such field in payload', function(done) {
+            it('is_overtime_salary_legal wouldn\'t be returned if there is no such field in payload', function(done) {
                 request(app).post('/workings')
-                    .send(generatePayload({
-                        company_id: '00000001',
+                    .send(generateWorkingTimeRelatedPayload({
                     }))
                     .expect(200)
                     .expect(function(res) {
@@ -378,24 +534,20 @@ describe('Workings 工時資訊', function() {
                     .end(done);
             });
 
-            it('should be error if request others', function(done) {
+            it('is_overtime_salary_legal should be error if request others', function(done) {
                 request(app).post('/workings')
-                    .send(generatePayload({
-                        company_id: '00000001',
+                    .send(generateWorkingTimeRelatedPayload({
                         has_overtime_salary: 'yes',
                         is_overtime_salary_legal: '-1',
                     }))
                     .expect(422)
                     .end(done);
             });
-        });
 
-        describe('has_compensatory_dayoff', function() {
             for (let input of ['yes', 'no', 'don\'t know']) {
-                it('should be ' + input, function(done) {
+                it('has_compensatory_dayoff should be ' + input, function(done) {
                     request(app).post('/workings')
-                        .send(generatePayload({
-                            company_id: '00000001',
+                        .send(generateWorkingTimeRelatedPayload({
                             has_compensatory_dayoff: input,
                         }))
                         .expect(200)
@@ -406,10 +558,9 @@ describe('Workings 工時資訊', function() {
                 });
             }
             for (let input of ['', undefined]) {
-                it('wouldn\'t be returned if it is "' + input + '"', function(done) {
+                it('has_compensatory_dayoff wouldn\'t be returned if it is "' + input + '"', function(done) {
                     request(app).post('/workings')
-                        .send(generatePayload({
-                            company_id: '00000001',
+                        .send(generateWorkingTimeRelatedPayload({
                             has_compensatory_dayoff: input,
                         }))
                         .expect(200)
@@ -420,10 +571,9 @@ describe('Workings 工時資訊', function() {
                 });
             }
 
-            it('wouldn\'t be returned if there is no such field in payload', function(done) {
+            it('has_compensatory_dayoff wouldn\'t be returned if there is no such field in payload', function(done) {
                 request(app).post('/workings')
-                    .send(generatePayload({
-                        company_id: '00000001',
+                    .send(generateWorkingTimeRelatedPayload({
                     }))
                     .expect(200)
                     .expect(function(res) {
@@ -432,10 +582,9 @@ describe('Workings 工時資訊', function() {
                     .end(done);
             });
 
-            it('should be error if request others', function(done) {
+            it('has_compensatory_dayoff should be error if request others', function(done) {
                 request(app).post('/workings')
-                    .send(generatePayload({
-                        company_id: '00000001',
+                    .send(generateWorkingTimeRelatedPayload({
                         has_compensatory_dayoff: '-1',
                     }))
                     .expect(422)
@@ -443,10 +592,65 @@ describe('Workings 工時資訊', function() {
             });
         });
 
-        describe('company', function() {
-            it('只給 company_id 成功新增', function(done) {
+        describe('Salary Validation Part', function() {
+            it('salary_type is required', function(done) {
                 request(app).post('/workings')
-                    .send(generatePayload({
+                    .send(generateSalaryRelatedPayload({
+                        salary_type: -1,
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            for (let input of ['year', 'month', 'day', 'hour']) {
+                it(`salary_type should be ${input}`, function(done) {
+                    request(app).post('/workings')
+                        .send(generateSalaryRelatedPayload({
+                            salary_type: input,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.deepPropertyVal(res.body.working, 'salary.type', input);
+                        })
+                        .end(done);
+                });
+            }
+
+            it('salary_amount is required', function(done) {
+                request(app).post('/workings')
+                    .send(generateSalaryRelatedPayload({
+                        salary_amount: -1,
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+
+            it('experience_in_year is required', function(done) {
+                request(app).post('/workings')
+                    .send(generateSalaryRelatedPayload({
+                        experience_in_year: -1,
+                    }))
+                    .expect(422)
+                    .end(done);
+            });
+        });
+
+        describe('Normalize Data Part', function() {
+            it('job_title will be converted to UPPERCASE', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        job_title: 'GoodJob',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.propertyVal(res.body.working, 'job_title', 'GOODJOB');
+                    })
+                    .end(done);
+            });
+
+            it('company 只給 company_id 成功新增', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
                         company_id: '00000001',
                         company: -1,
                     }))
@@ -459,9 +663,9 @@ describe('Workings 工時資訊', function() {
                     .end(done);
             });
 
-            it('禁止錯誤的 company_id', function(done) {
+            it('company 禁止錯誤的 company_id', function(done) {
                 request(app).post('/workings')
-                    .send(generatePayload({
+                    .send(generateWorkingTimeRelatedPayload({
                         company_id: '00000000',
                         company: -1,
                     }))
@@ -469,9 +673,9 @@ describe('Workings 工時資訊', function() {
                     .end(done);
             });
 
-            it('只給 company 成功新增', function(done) {
+            it('company 只給 company 成功新增', function(done) {
                 request(app).post('/workings')
-                    .send(generatePayload({
+                    .send(generateWorkingTimeRelatedPayload({
                         company_id: -1,
                         company: 'GOODJOB',
                     }))
@@ -484,9 +688,9 @@ describe('Workings 工時資訊', function() {
                     .end(done);
             });
 
-            it('當 company 是小寫時，轉換成大寫', function(done) {
+            it('company 是小寫時，轉換成大寫', function(done) {
                 request(app).post('/workings')
-                    .send(generatePayload({
+                    .send(generateWorkingTimeRelatedPayload({
                         company_id: -1,
                         company: 'GoodJob',
                     }))
@@ -501,7 +705,7 @@ describe('Workings 工時資訊', function() {
 
             it('只給 company，但名稱無法決定唯一公司，成功新增', function(done) {
                 request(app).post('/workings')
-                    .send(generatePayload({
+                    .send(generateWorkingTimeRelatedPayload({
                         company_id: -1,
                         company: 'GoodJobGreat',
                     }))
@@ -514,6 +718,40 @@ describe('Workings 工時資訊', function() {
                     .end(done);
             });
 
+            it('data_time 是 job_ending_time_* 的組合, if is_currently_employed == "no"', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        is_currently_employed: 'no',
+                        job_ending_time_year: '2015',
+                        job_ending_time_month: '1',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.deepPropertyVal(res.body, 'working.data_time.year', 2015);
+                        assert.deepPropertyVal(res.body, 'working.data_time.month', 1);
+                    })
+                    .end(done);
+            });
+
+            it('data_time 是 created_at 的組合, if is_currently_employed == "yes"', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        is_currently_employed: 'yes',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.deepProperty(res.body, 'working.created_at');
+
+                        const created_at = new Date(res.body.working.created_at);
+
+                        assert.deepPropertyVal(res.body, 'working.data_time.year', created_at.getFullYear());
+                        assert.deepPropertyVal(res.body, 'working.data_time.month', created_at.getMonth() + 1);
+                    })
+                    .end(done);
+            });
+        });
+
+        describe('Quota Check Part', function() {
             it('只能新增 5 筆資料', function(done) {
                 nock.cleanAll();
                 nock('https://graph.facebook.com:443')
@@ -528,9 +766,8 @@ describe('Workings 工時資訊', function() {
                 for (let i = 0; i < count; i++) {
                     requestPromiseStack.push(new Promise(function(resolve, reject) {
                         request(app).post('/workings')
-                            .send(generatePayload({
+                            .send(generateWorkingTimeRelatedPayload({
                                 company_id: '00000001',
-                                company: -1,
                             }))
                             .expect(200)
                             .expect(function(res) {
@@ -549,9 +786,8 @@ describe('Workings 工時資訊', function() {
 
                 Promise.all(requestPromiseStack).then(function() {
                     request(app).post('/workings')
-                        .send(generatePayload({
+                        .send(generateWorkingTimeRelatedPayload({
                             company_id: '00000001',
-                            company: -1,
                         }))
                         .expect(429)
                         .end(done);
@@ -570,9 +806,8 @@ describe('Workings 工時資訊', function() {
 
                 (new Promise(function(resolve, reject) {
                     request(app).post('/workings')
-                        .send(generatePayload({
+                        .send(generateWorkingTimeRelatedPayload({
                             company_id: '00000001',
-                            company: -1,
                         }))
                         .expect(200)
                         .expect(function(res) {
@@ -589,9 +824,8 @@ describe('Workings 工時資訊', function() {
                         });
                 })).then(function() {
                     request(app).post('/workings')
-                        .send(generatePayload({
+                        .send(generateWorkingTimeRelatedPayload({
                             company_id: '00000001',
-                            company: -1,
                         }))
                         .expect(200)
                         .expect(function(res) {
@@ -624,17 +858,54 @@ describe('Workings 工時資訊', function() {
     });
 });
 
-function generatePayload(opt) {
+function generateWorkingTimeRelatedPayload(opt) {
     opt = opt || {};
     const valid = {
         access_token: 'random',
         job_title: 'test',
+        company_id: '00000001',
+        is_currently_employed: 'yes',
+        employment_type: 'full-time',
         week_work_time: '40',
         overtime_frequency: '3',
         day_promised_work_time: '8',
         day_real_work_time: '10',
-        company_id: '00000000',
-        company: 'GoodJob',
+    };
+
+    var payload = {};
+    for (let key in valid) {
+        if (opt[key]) {
+            if (opt[key] === -1) {
+                continue;
+            } else {
+                payload[key] = opt[key];
+            }
+        } else {
+            payload[key] = valid[key];
+        }
+    }
+    for (let key in opt) {
+        if (opt[key] === -1) {
+            continue;
+        } else {
+            payload[key] = opt[key];
+        }
+    }
+
+    return payload;
+}
+
+function generateSalaryRelatedPayload(opt) {
+    opt = opt || {};
+    const valid = {
+        access_token: 'random',
+        job_title: 'test',
+        company_id: '00000001',
+        is_currently_employed: 'yes',
+        employment_type: 'full-time',
+        salary_type: 'year',
+        salary_amount: '10000',
+        experience_in_year: '10',
     };
 
     var payload = {};

@@ -4,7 +4,7 @@ const HttpError = require('../libs/errors').HttpError;
 const facebook = require('../libs/facebook');
 const winston = require('winston');
 const lodash = require('lodash');
-const helper = require('./workings_helper');
+const post_helper = require('./workings_post');
 
 /**
  * @api {get} /workings/latest 最新工時資訊
@@ -51,6 +51,11 @@ router.get('/latest', function(req, res, next) {
     });
 });
 
+router.post('/', function(req, res, next) {
+    req.custom = {};
+    next();
+});
+
 /*
  *  When developing, you can set environment to skip facebook auth
  */
@@ -62,7 +67,7 @@ if (! process.env.SKIP_FACEBOOK_AUTH) {
         facebook.accessTokenAuth(access_token).then(function(facebook) {
             winston.info("facebook auth success", {access_token: access_token, ip: req.ip, ips: req.ips});
 
-            req.facebook = facebook;
+            req.custom.facebook = facebook;
             next();
         }).catch(function(err) {
             winston.info("facebook auth fail", {access_token: access_token, ip: req.ip, ips: req.ips});
@@ -73,248 +78,11 @@ if (! process.env.SKIP_FACEBOOK_AUTH) {
 
 }
 
-/**
- * @api {post} /workings 新增工時資訊
- * @apiGroup Workings
- * @apiParam {String} access_token FB client auth token
- * @apiParam {String} job_title 職稱
- * @apiParam {Number{0-168}} week_work_time 最近一週總工時
- * @apiParam {Number=1,2,3,4} overtime_frequency 加班頻率
- * @apiParam {Number} day_promised_work_time 工作日表訂工時
- * @apiParam {Number} day_real_work_time 工作日實際平均工時
- * @apiParam {String} [company_id]
- * @apiParam {String} [company] 須跟 company_id 至少有一個
- * @apiParam {String} [email] Email
- * @apiSuccess {Object} .
- */
-router.post('/', function(req, res, next) {
-    /*
-     * Prepare and collect the data from request
-     */
-    var author = {};
-
-    if (req.body.email && (typeof req.body.email === "string") && req.body.email !== "") {
-        author.email = req.body.email;
-    }
-
-    if (req.facebook) {
-        author.id = req.facebook.id,
-        author.name = req.facebook.name,
-        author.type = "facebook";
-    } else {
-        author.id = "-1";
-        author.type = "test";
-    }
-
-    const working = {
-        author: author,
-        company: {},
-        created_at: new Date(),
-    };
-
-    const data = {
-        working: working,
-    };
-
-    // pick these fields only
-    // make sure the field is string
-    [
-        "job_title", "week_work_time",
-        "overtime_frequency",
-        "day_promised_work_time", "day_real_work_time",
-        "sector",
-        "has_overtime_salary",
-        "is_overtime_salary_legal",
-        "has_compensatory_dayoff",
-    ].forEach(function(field, i) {
-        if (req.body[field] && (typeof req.body[field] === "string") && req.body[field] !== "") {
-            working[field] = req.body[field];
-        }
-    });
-    if (req.body.company_id && (typeof req.body.company_id === "string") && req.body.company_id !== "") {
-        working.company.id = req.body.company_id;
-    }
-    if (req.body.company && (typeof req.body.company === "string") && req.body.company !== "") {
-        working.query = req.body.company;
-    }
-
-    /*
-     * Check all the required fields, or raise an 422 http error
-     */
-    try {
-        validateWorking(working);
-    } catch (err) {
-        winston.info("validating fail", {id: data._id, ip: req.ip, ips: req.ips});
-
-        next(err);
-        return;
-    }
-
-    /*
-     * Normalize the data
-     */
-    working.job_title = working.job_title.toUpperCase();
-
-    /*
-     * So, here, the data are well-down
-     */
-
-    const collection = req.db.collection("workings");
-
-    Promise.resolve(data).then(function(data) {
-        /*
-         * 如果使用者有給定 company id，將 company name 補成查詢到的公司
-         *
-         * 如果使用者是給定 company name，如果只找到一間公司，才補上 id
-         *
-         * 其他情況看 issue #7
-         */
-        const working = data.working;
-
-        return helper.normalizeCompany(req.db, working.company.id, working.query).then(company => {
-            working.company = company;
-
-            return data;
-        });
-    }).then(function(data) {
-        const author = data.working.author;
-
-        return checkQuota(req.db, {id: author.id, type: author.type}).then(function(queries_count) {
-            data.queries_count = queries_count;
-
-            return data;
-        });
-    }).then(function(data) {
-        return collection.insert(data.working);
-    }).then(function(result) {
-        winston.info("workings insert data success", {id: data.working._id, ip: req.ip, ips: req.ips});
-
-        res.send(data);
-    }).catch(function(err) {
-        winston.info("workings insert data fail", {id: data._id, ip: req.ip, ips: req.ips, err: err});
-
-        next(err);
-    });
-});
-
-function validateWorking(data) {
-    if (! data.job_title) {
-        throw new HttpError("職稱未填", 422);
-    }
-
-    if (! data.week_work_time) {
-        throw new HttpError("最近一週實際工時未填", 422);
-    }
-    data.week_work_time = parseFloat(data.week_work_time);
-    if (isNaN(data.week_work_time)) {
-        throw new HttpError("最近一週實際工時必須是數字", 422);
-    }
-    if (data.week_work_time < 0 || data.week_work_time > 168) {
-        throw new HttpError("最近一週實際工時必須在0~168之間", 422);
-    }
-
-    if (! data.overtime_frequency) {
-        throw new HttpError("加班頻率必填", 422);
-    }
-    if (["0", "1", "2", "3"].indexOf(data.overtime_frequency) === -1) {
-        throw new HttpError("加班頻率格式錯誤", 422);
-    }
-    data.overtime_frequency = parseInt(data.overtime_frequency);
-
-    if (! data.day_promised_work_time) {
-        throw new HttpError("工作日表訂工時未填", 422);
-    }
-    data.day_promised_work_time = parseFloat(data.day_promised_work_time);
-    if (isNaN(data.day_promised_work_time)) {
-        throw new HttpError("工作日表訂工時必須是數字", 422);
-    }
-    if (data.day_promised_work_time < 0 || data.day_promised_work_time > 24) {
-        throw new HttpError("工作日表訂工時必須在0~24之間", 422);
-    }
-
-    if (! data.day_real_work_time) {
-        throw new HttpError("工作日實際工時必填", 422);
-    }
-    data.day_real_work_time = parseFloat(data.day_real_work_time);
-    if (isNaN(data.day_real_work_time)) {
-        throw new HttpError("工作日實際工時必須是數字", 422);
-    }
-    if (data.day_real_work_time < 0 || data.day_real_work_time > 24) {
-        throw new HttpError("工作日實際工時必須在0~24之間", 422);
-    }
-
-    if (! data.company.id) {
-        if (! data.query) {
-            throw new HttpError("公司/單位名稱必填", 422);
-        }
-    }
-
-    if (data.has_overtime_salary) {
-        if (["yes", "no", "don't know"].indexOf(data.has_overtime_salary) === -1) {
-            throw new HttpError('加班是否有加班費應為是/否/不知道', 422);
-        }
-    }
-
-    if (data.is_overtime_salary_legal) {
-        if (data.has_overtime_salary) {
-            if (data.has_overtime_salary !== "yes") {
-                throw new HttpError('加班應有加班費，本欄位才有意義', 422);
-            } else {
-                if (["yes", "no", "don't know"].indexOf(data.is_overtime_salary_legal) === -1) {
-                    throw new HttpError('加班費是否合法應為是/否/不知道', 422);
-                }
-            }
-        } else {
-            throw new HttpError('加班應有加班費，本欄位才有意義', 422);
-        }
-    }
-
-    if (data.has_compensatory_dayoff) {
-        if (["yes", "no", "don't know"].indexOf(data.has_compensatory_dayoff) === -1) {
-            throw new HttpError('加班是否有補修應為是/否/不知道', 422);
-        }
-    }
-}
-
-/*
- * Check the quota, limit queries <= 10
- *
- * The quota checker use author as _id
- *
- * @return  Promise
- *
- * Fullfilled with newest queries_count
- * Rejected with HttpError
- */
-function checkQuota(db, author) {
-    var collection = db.collection('authors');
-    var quota = 5;
-
-    return collection.findAndModify(
-        {
-            _id: author,
-            queries_count: {$lt: quota},
-        },
-        [
-        ],
-        {
-            $inc: { queries_count: 1 },
-        },
-        {
-            upsert: true,
-            new: true,
-        }
-    ).then(function(result) {
-        if (result.value.queries_count > quota) {
-            throw new HttpError(`您已經上傳${quota}次，已達最高上限`, 429);
-        }
-
-        return result.value.queries_count;
-    }).catch(function(err) {
-        throw new HttpError(`您已經上傳${quota}次，已達最高上限`, 429);
-    });
-
-}
+router.post('/', (req, res, next) => {
+    post_helper.collectData(req, res).then(next, next);
+}, (req, res, next) => {
+    post_helper.validation(req, res).then(next, next);
+}, post_helper.main);
 
 /**
  * @api {get} /workings/search-and-group/by-company search by given company

@@ -24,6 +24,7 @@ env:
 
 install:
     - npm install
+    - ./bin/migrate
 
 script:
     - npm test -- --timeout 30s
