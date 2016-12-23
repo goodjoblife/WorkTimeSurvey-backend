@@ -16,10 +16,6 @@ describe('Recommendation Library', function() {
             });
         });
 
-        before("The user field is an unique index", function() {
-            return db.collection('recommendations').createIndex({user: 1}, {unique: true});
-        });
-
         before(function() {
             return db.collection('recommendations').insertMany([
                 {
