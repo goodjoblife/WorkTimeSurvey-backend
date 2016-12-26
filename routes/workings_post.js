@@ -1,4 +1,5 @@
 const HttpError = require('../libs/errors').HttpError;
+const ObjectIdError = require('../libs/errors').ObjectIdError;
 const winston = require('winston');
 const helper = require('./workings_helper');
 const recommendation = require('../libs/recommendation');
@@ -386,14 +387,25 @@ function main(req, res, next) {
     }).then(() => {
         //這邊嘗試從recommendation_string去取得推薦使用者的資訊
         if (working.recommendation_string) {
-            return recommendation.getUserByRecommendationString(req.db, working.recommendation_string);
-        }        else {
+            return recommendation.getUserByRecommendationString(req.db, working.recommendation_string).then(
+                result => {
+                    if (result === null) {
+                        throw new HttpError('無法找到推薦者，請確認網址是否正確、或有更動到原始網址', 422);
+                    } else {
+                        return result;
+                    }
+                },
+                err => {
+                    if (err instanceof ObjectIdError) {
+                        throw new HttpError('推薦者參照字串格式錯誤，請確認網址是否正確、或有更動到原始網址', 422);
+                    }
+                });
+        } else {
             return null;
         }
     }).then((rec_user) => {
         if (rec_user !== null) {
             working.recommended_by = rec_user;
-            delete working.recommendation_string;
         }
     }).then(() => {
         const author = working.author;
