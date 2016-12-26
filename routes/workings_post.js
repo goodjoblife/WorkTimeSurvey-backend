@@ -407,6 +407,9 @@ function main(req, res, next) {
         if (rec_user !== null) {
             working.recommended_by = rec_user;
         }
+        if (working.recommendation_string) {
+            delete working.recommendation_string;
+        }
     }).then(() => {
         const author = working.author;
 

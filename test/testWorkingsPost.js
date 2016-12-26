@@ -787,17 +787,28 @@ describe('Workings 工時資訊', function() {
                     .end(done);
             });
 
-            it('it should not upload user info while recommendation_string is not found in DB', function(done) {
+            it('should not upload recommendation_string to DB if recommendation_string can be found', function(done) {
                 request(app).post('/workings')
                     .send(generateWorkingTimeRelatedPayload({
-                        recommendation_string: "00000000ccd8958909a983e7",
+                        recommendation_string: "00000000ccd8958909a983e8",
                     }))
                     .expect(200)
                     .expect(function(res) {
-                        assert.notDeepProperty(res.body.working, 'recommended_by');
+                        assert.notDeepProperty(res.body.working, 'recommended_string');
                     })
                     .end(done);
             });
+
+            for (let test_string of ["00000000ccd8958909a983e7", "00000000ccd8958909a983e6", "ABCD", "1234"]) {
+                it('it should response 422 when recommendation_string is not found in DB', function(done) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            recommendation_string: test_string,
+                        }))
+                        .expect(422)
+                        .end(done);
+                });
+            }
 
             it('it should not upload user info while recommendation_string is not given', function(done) {
                 request(app).post('/workings')
