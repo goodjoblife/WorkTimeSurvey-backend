@@ -9,4 +9,15 @@ class HttpError extends Error {
     }
 }
 
+class ObjectIdError extends Error {
+    /*
+     * @param  message  any
+     */
+    constructor(message) {
+        super(message);
+    }
+}
+
+
 module.exports.HttpError = HttpError;
+module.exports.ObjectIdError = ObjectIdError;
