@@ -389,6 +389,7 @@ function main(req, res, next) {
         if (working.recommendation_string) {
             return recommendation.getUserByRecommendationString(req.db, working.recommendation_string).then(
                 result => {
+                    //if no error but still cannot find user
                     if (result === null) {
                         throw new HttpError('無法找到推薦者，請確認網址是否正確、或有更動到原始網址', 422);
                     } else {
@@ -396,6 +397,7 @@ function main(req, res, next) {
                     }
                 },
                 err => {
+                    //if recommendation_string is not valid
                     if (err instanceof ObjectIdError) {
                         throw new HttpError('推薦者參照字串格式錯誤，請確認網址是否正確、或有更動到原始網址', 422);
                     } else {
