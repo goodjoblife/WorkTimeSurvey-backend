@@ -1,4 +1,5 @@
 const ObjectId = require('mongodb').ObjectId;
+const ObjectIdError = require('./errors').ObjectIdError;
 
 function getRecommendationString(db, user) {
     return db.collection('recommendations')
@@ -25,6 +26,9 @@ function getUserByRecommendationString(db, recommendation_string) {
         .then(() => {
             if (typeof recommendation_string !== 'string') {
                 throw new Error('recommendation_string should be a string');
+            }
+            if (!ObjectId.isValid(recommendation_string)) {
+                throw new ObjectIdError("recommendation_string is not a valid string for ObjectId");
             }
             // new ObjectId may throw error
             return new ObjectId(recommendation_string);
