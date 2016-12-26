@@ -7,7 +7,7 @@ const lodash = require('lodash');
 const post_helper = require('./workings_post');
 const middleware = require('./middleware');
 
-router.get('/', middleware.sorted_by);
+router.get('/', middleware.sort_by);
 router.get('/', middleware.pagination);
 router.get('/', function(req, res, next) {
     winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
