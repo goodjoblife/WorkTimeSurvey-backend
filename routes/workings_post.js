@@ -352,6 +352,22 @@ function main(req, res, next) {
             type: req.custom.salary_type,
             amount: req.custom.salary_amount,
         };
+
+        let estimated_hourly_wage;
+        if (working.salary.type === 'hour') {
+            estimated_hourly_wage = working.salary.amount;
+        } else if (working.day_real_work_time && working.week_work_time) {
+            if (working.salary.type === 'day') {
+                estimated_hourly_wage = working.salary.amount / working.day_real_work_time;
+            } else if (working.salary.type === 'month') {
+                estimated_hourly_wage = (working.salary.amount * 12) /
+                                        (52 * working.week_work_time - (12+7) * working.day_real_work_time);
+            } else if (working.salary.type === 'year') {
+                estimated_hourly_wage = working.salary.amount /
+                                        (52 * working.week_work_time - (12+7) * working.day_real_work_time);
+            }
+        }
+        working.estimated_hourly_wage = estimated_hourly_wage;
     }
     if (working.is_currently_employed === 'no') {
         working.data_time = {
