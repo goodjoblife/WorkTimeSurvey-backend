@@ -794,7 +794,7 @@ describe('Workings 工時資訊', function() {
                     }))
                     .expect(200)
                     .expect(function(res) {
-                        assert.notDeepProperty(res.body.working, 'recommended_string');
+                        assert.notDeepProperty(res.body.working, 'recommendatiion_string');
                     })
                     .end(done);
             });
