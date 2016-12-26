@@ -4,6 +4,7 @@ const request = require('supertest');
 const app = require('../app');
 const MongoClient = require('mongodb').MongoClient;
 const nock = require('nock');
+const ObjectId = require('mongodb').ObjectId;
 
 describe('Workings 工時資訊', function() {
     var db = undefined;
@@ -751,6 +752,64 @@ describe('Workings 工時資訊', function() {
             });
         });
 
+        describe('Recommendation String Part', function() {
+            before('Seed some recommendation mappings', function() {
+                return db.collection('recommendations').insertMany([
+                    {
+                        _id: new ObjectId('00000000ccd8958909a983e8'),
+                        user: {
+                            id: 'AAA',
+                            type: 'facebook',
+                        },
+                    },
+                    {
+                        _id: new ObjectId('00000000ccd8958909a983e9'),
+                        user: {
+                            id: 'BBB',
+                            type: 'facebook',
+                        },
+                    },
+                ]);
+            });
+
+            it('should upload correct user info while giving correct recommendation_string', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        recommendation_string: "00000000ccd8958909a983e8",
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.deepProperty(res.body.working, 'recommended_by.id');
+                        assert.deepPropertyVal(res.body, 'working.recommended_by.id', 'AAA');
+                        assert.deepProperty(res.body.working, 'recommended_by.type');
+                        assert.deepPropertyVal(res.body, 'working.recommended_by.type', 'facebook');
+                    })
+                    .end(done);
+            });
+
+            it('it should not upload user info while recommendation_string is not found in DB', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        recommendation_string: "00000000ccd8958909a983e7",
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.notDeepProperty(res.body.working, 'recommended_by');
+                    })
+                    .end(done);
+            });
+
+            it('it should not upload user info while recommendation_string is not given', function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({ }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.notDeepProperty(res.body.working, 'recommended_by');
+                    })
+                    .end(done);
+            });
+        });
+
         describe('Quota Check Part', function() {
             it('只能新增 5 筆資料', function(done) {
                 nock.cleanAll();
@@ -854,6 +913,10 @@ describe('Workings 工時資訊', function() {
 
         after('DB: 清除 companies', function() {
             return db.collection('companies').remove({});
+        });
+
+        after('DB: 清除 recommendations', function() {
+            return db.collection('recommendations').remove({});
         });
     });
 });
