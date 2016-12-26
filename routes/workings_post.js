@@ -398,6 +398,8 @@ function main(req, res, next) {
                 err => {
                     if (err instanceof ObjectIdError) {
                         throw new HttpError('推薦者參照字串格式錯誤，請確認網址是否正確、或有更動到原始網址', 422);
+                    } else {
+                        throw err;
                     }
                 });
         } else {
