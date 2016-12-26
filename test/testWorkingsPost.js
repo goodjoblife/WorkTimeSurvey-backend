@@ -616,6 +616,73 @@ describe('Workings 工時資訊', function() {
                 });
             }
 
+            it(`if salary_type is 'hour' should have 'estimated_hourly_wage' field`, function(done) {
+                request(app).post('/workings')
+                    .send(generateSalaryRelatedPayload({
+                        salary_type: 'hour',
+                        salary_amount: '100',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.property(res.body.working, 'estimated_hourly_wage');
+                        assert.propertyVal(res.body.working, 'estimated_hourly_wage', 100);
+                    })
+                    .end(done);
+            });
+
+            it(`if salary_type is 'day' and has WorkingTime information
+                should have 'estimated_hourly_wage' field`, function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        salary_type: 'day',
+                        salary_amount: '10000',
+                        experience_in_year: '10',
+                        day_real_work_time: '10',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.property(res.body.working, 'estimated_hourly_wage');
+                        assert.propertyVal(res.body.working, 'estimated_hourly_wage', 1000);
+                    })
+                    .end(done);
+            });
+
+            it(`if salary_type is 'month' and has WorkingTime information
+                should have 'estimated_hourly_wage' field`, function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        salary_type: 'month',
+                        salary_amount: '10000',
+                        experience_in_year: '10',
+                        day_real_work_time: '10',
+                        week_work_time: '40',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.property(res.body.working, 'estimated_hourly_wage');
+                        assert.closeTo(res.body.working.estimated_hourly_wage, 63, 1);
+                    })
+                    .end(done);
+            });
+
+            it(`if salary_type is 'year' and has WorkingTime information
+                should have 'estimated_hourly_wage' field`, function(done) {
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({
+                        salary_type: 'year',
+                        salary_amount: '100000',
+                        experience_in_year: '10',
+                        day_real_work_time: '10',
+                        week_work_time: '40',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.property(res.body.working, 'estimated_hourly_wage');
+                        assert.closeTo(res.body.working.estimated_hourly_wage, 52, 1);
+                    })
+                    .end(done);
+            });
+
             it('salary_amount is required', function(done) {
                 request(app).post('/workings')
                     .send(generateSalaryRelatedPayload({
