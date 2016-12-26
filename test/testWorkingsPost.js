@@ -633,10 +633,9 @@ describe('Workings 工時資訊', function() {
             it(`if salary_type is 'day' and has WorkingTime information
                 should have 'estimated_hourly_wage' field`, function(done) {
                 request(app).post('/workings')
-                    .send(generateWorkingTimeRelatedPayload({
+                    .send(generateAllPayload({
                         salary_type: 'day',
                         salary_amount: '10000',
-                        experience_in_year: '10',
                         day_real_work_time: '10',
                     }))
                     .expect(200)
@@ -650,10 +649,9 @@ describe('Workings 工時資訊', function() {
             it(`if salary_type is 'month' and has WorkingTime information
                 should have 'estimated_hourly_wage' field`, function(done) {
                 request(app).post('/workings')
-                    .send(generateWorkingTimeRelatedPayload({
+                    .send(generateAllPayload({
                         salary_type: 'month',
                         salary_amount: '10000',
-                        experience_in_year: '10',
                         day_real_work_time: '10',
                         week_work_time: '40',
                     }))
@@ -668,10 +666,9 @@ describe('Workings 工時資訊', function() {
             it(`if salary_type is 'year' and has WorkingTime information
                 should have 'estimated_hourly_wage' field`, function(done) {
                 request(app).post('/workings')
-                    .send(generateWorkingTimeRelatedPayload({
+                    .send(generateAllPayload({
                         salary_type: 'year',
                         salary_amount: '100000',
-                        experience_in_year: '10',
                         day_real_work_time: '10',
                         week_work_time: '40',
                     }))
@@ -998,3 +995,44 @@ function generateSalaryRelatedPayload(opt) {
     return payload;
 }
 
+function generateAllPayload(opt) {
+    opt = opt || {};
+    const valid = {
+        access_token: 'random',
+        job_title: 'test',
+        company_id: '00000001',
+        is_currently_employed: 'yes',
+        employment_type: 'full-time',
+        // Salary related
+        salary_type: 'year',
+        salary_amount: '10000',
+        experience_in_year: '10',
+        // WorkingTime related
+        week_work_time: '40',
+        overtime_frequency: '3',
+        day_promised_work_time: '8',
+        day_real_work_time: '10',
+    };
+
+    var payload = {};
+    for (let key in valid) {
+        if (opt[key]) {
+            if (opt[key] === -1) {
+                continue;
+            } else {
+                payload[key] = opt[key];
+            }
+        } else {
+            payload[key] = valid[key];
+        }
+    }
+    for (let key in opt) {
+        if (opt[key] === -1) {
+            continue;
+        } else {
+            payload[key] = opt[key];
+        }
+    }
+
+    return payload;
+}
