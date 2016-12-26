@@ -1,7 +1,7 @@
 const HttpError = require('../libs/errors').HttpError;
 const winston = require('winston');
 const helper = require('./workings_helper');
-
+const recommendation = require('../libs/recommendation');
 /*
  * [req.custom.facebook]
  *
@@ -48,6 +48,8 @@ function collectData(req, res) {
         "has_compensatory_dayoff",
         // salary data
         "experience_in_year",
+        //user recommendation data
+        "recommendation_string",
     ].forEach(function(field, i) {
         if (checkBodyField(req, field)) {
             working[field] = req.body[field];
@@ -369,6 +371,9 @@ function main(req, res, next) {
     const collection = req.db.collection("workings");
 
     /*
+     *  這邊處理需要呼叫async函數的部份
+     */
+    /*
      * 如果使用者有給定 company id，將 company name 補成查詢到的公司
      *
      * 如果使用者是給定 company name，如果只找到一間公司，才補上 id
@@ -377,6 +382,18 @@ function main(req, res, next) {
      */
     helper.normalizeCompany(req.db, working.company.id, company_query).then(company => {
         working.company = company;
+    }).then(() => {
+        //這邊嘗試從recommendation_string去取得推薦使用者的資訊
+        if (working.recommendation_string) {
+            return recommendation.getUserByRecommendationString(req.db, working.recommendation_string);
+        }        else {
+            return null;
+        }
+    }).then((rec_user) => {
+        if (rec_user !== null) {
+            working.recommended_by = rec_user;
+            delete working.recommendation_string;
+        }
     }).then(() => {
         const author = working.author;
 
