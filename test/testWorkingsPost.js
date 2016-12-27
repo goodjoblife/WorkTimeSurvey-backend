@@ -772,31 +772,62 @@ describe('Workings 工時資訊', function() {
                 ]);
             });
 
-            it('should upload correct user info while giving correct recommendation_string', function(done) {
-                request(app).post('/workings')
-                    .send(generateWorkingTimeRelatedPayload({
-                        recommendation_string: "00000000ccd8958909a983e8",
-                    }))
-                    .expect(200)
-                    .expect(function(res) {
-                        assert.deepProperty(res.body.working, 'recommended_by.id');
-                        assert.deepPropertyVal(res.body, 'working.recommended_by.id', 'AAA');
-                        assert.deepProperty(res.body.working, 'recommended_by.type');
-                        assert.deepPropertyVal(res.body, 'working.recommended_by.type', 'facebook');
-                    })
-                    .end(done);
+            it('should upload recommended_by info but not return recommended_by while recommendation_string is correct', function() {
+                const send_request = new Promise(function(resolve, reject) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            recommendation_string: "00000000ccd8958909a983e8",
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.notDeepProperty(res.body.working, 'recommended_by');
+                        })
+                        .end(function(err, res) {
+                            if (err) {
+                                reject(err);
+                            }                            else {
+                                resolve(res.body.working._id);
+                            }
+                        });
+                });
+                const test_db = send_request.then((data_id) => {
+                    return db.collection('workings').findOne({_id: ObjectId(data_id)}).then(result => {
+                        assert.deepProperty(result, 'recommended_by');
+                        assert.deepProperty(result, 'recommended_by.id');
+                        assert.deepProperty(result, 'recommended_by.type');
+                        assert.deepPropertyVal(result, 'recommended_by.id', 'AAA');
+                        assert.deepPropertyVal(result, 'recommended_by.type', 'facebook');
+                    });
+                });
+
+                return Promise.all([send_request, test_db]);
             });
 
-            it('should not upload recommendation_string to DB if recommendation_string can be found', function(done) {
-                request(app).post('/workings')
-                    .send(generateWorkingTimeRelatedPayload({
-                        recommendation_string: "00000000ccd8958909a983e8",
-                    }))
-                    .expect(200)
-                    .expect(function(res) {
-                        assert.notDeepProperty(res.body.working, 'recommendatiion_string');
-                    })
-                    .end(done);
+            it('should neither upload recommendation_string nor return recommendation_string while recommendation_string is correct', function() {
+                const send_request = new Promise(function(resolve, reject) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            recommendation_string: "00000000ccd8958909a983e8",
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.notDeepProperty(res.body.working, 'recommendation_string');
+                        })
+                        .end(function(err, res) {
+                            if (err) {
+                                reject(err);
+                            }                            else {
+                                resolve(res.body.working._id);
+                            }
+                        });
+                });
+                const test_db = send_request.then((data_id) => {
+                    return db.collection('workings').findOne({_id: ObjectId(data_id)}).then(result => {
+                        assert.notDeepProperty(result, 'recommendation_string');
+                    });
+                });
+
+                return Promise.all([send_request, test_db]);
             });
 
             for (let test_string of ["00000000ccd8958909a983e7", "00000000ccd8958909a983e6", "ABCD", "1234"]) {
@@ -810,14 +841,29 @@ describe('Workings 工時資訊', function() {
                 });
             }
 
-            it('it should not upload user info while recommendation_string is not given', function(done) {
-                request(app).post('/workings')
-                    .send(generateWorkingTimeRelatedPayload({ }))
-                    .expect(200)
-                    .expect(function(res) {
-                        assert.notDeepProperty(res.body.working, 'recommended_by');
-                    })
-                    .end(done);
+            it('it should not upload recommended_by and return recommended_by while recommendation_string is not given', function() {
+                const send_request = new Promise(function(resolve, reject) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({ }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.notDeepProperty(res.body.working, 'recommended_by');
+                        })
+                        .end(function(err, res) {
+                            if (err) {
+                                reject(err);
+                            }                            else {
+                                resolve(res.body.working._id);
+                            }
+                        });
+                });
+                const test_db = send_request.then((data_id) => {
+                    return db.collection('workings').findOne({_id: ObjectId(data_id)}).then(result => {
+                        assert.notDeepProperty(result, 'recommended_by');
+                    });
+                });
+
+                return Promise.all([send_request, test_db]);
             });
         });
 
