@@ -14,7 +14,7 @@ describe('Workings 工時資訊', function() {
         });
     });
 
-    describe('GET /workings', function() {
+    describe.skip('GET /workings', function() {
         before('Seeding some workings', function() {
             return db.collection('workings').insertMany([
                 {
@@ -706,7 +706,7 @@ describe('Workings 工時資訊', function() {
         });
     });
 
-    describe.skip('GET /workings', function() {
+    describe('GET /workings', function() {
         before('Seeding some workings', function() {
             return db.collection('workings').insertMany([
                 {
@@ -753,8 +753,8 @@ describe('Workings 工時資訊', function() {
             ]);
         });
 
-        for (let sort_field of ['created_at', 'week_work_time', 'estimated_hourly_wage']) {
-            it(`return the pagination with SORT_FIELD ${sort_field}`, function(done) {
+        for (let sort_field of [undefined, 'created_at', 'week_work_time', 'estimated_hourly_wage']) {
+            it(`return the pagination with SORT_FIELD: ${sort_field}`, function(done) {
                 request(app).get('/workings')
                     .query({
                         sort_by: sort_field,
@@ -768,35 +768,66 @@ describe('Workings 工時資訊', function() {
                     .end(done);
             });
 
-            it(`return the correct order with SORT_FIELD: ${sort_field}`, function(done) {
+            it(`return correct default order with SORT_FIELD: ${sort_field}`, function(done) {
                 request(app).get('/workings')
                     .query({
                         sort_by: sort_field,
                     })
                     .expect(200)
                     .expect(function(res) {
+                        if (sort_field === undefined) {
+                            sort_field = 'created_at';
+                        }
+
                         const workings = res.body.time_and_salary;
-                        let undefined_idx = workings.length;
+                        let undefined_start_idx = workings.length;
+
                         for (let idx in workings) {
                             if (workings[idx][sort_field] === undefined) {
-                                undefined_idx = idx;
+                                undefined_start_idx = idx;
                                 break;
                             }
                         }
 
-                        let num = workings[0][sort_field];
-                        for (let idx=1; idx<workings.length && idx < undefined_idx; ++idx) {
-                            assert(workings[idx][sort_field] <= num);
-                            num = workings[idx][sort_field];
+                        for (let idx=1; idx<undefined_start_idx; ++idx) {
+                            assert(workings[idx][sort_field] <= workings[idx-1][sort_field]);
                         }
-                        for (let idx=undefined_idx; idx<workings.length; ++idx) {
+                        for (let idx=undefined_start_idx; idx<workings.length; ++idx) {
                             assert.isUndefined(workings[idx][sort_field]);
                         }
-
                     })
                     .end(done);
             });
         }
+
+        it(`sort_by ascending order with default SORT_FIELD 'created_at'`, function(done) {
+            request(app).get('/workings')
+                .query({
+                    order: 'ascending',
+                })
+                .expect(200)
+                .expect(function(res) {
+                    // sort_field default is field 'created_at'
+                    const sort_field = 'created_at';
+                    const workings = res.body.time_and_salary;
+                    let undefined_start_idx = workings.length;
+
+                    for (let idx in workings) {
+                        if (workings[idx][sort_field] === undefined) {
+                            undefined_start_idx = idx;
+                            break;
+                        }
+                    }
+
+                    for (let idx=1; idx<undefined_start_idx; ++idx) {
+                        assert(workings[idx][sort_field] >= workings[idx-1][sort_field]);
+                    }
+                    for (let idx=undefined_start_idx; idx<workings.length; ++idx) {
+                        assert.isUndefined(workings[idx][sort_field]);
+                    }
+                })
+                .end(done);
+        });
 
         after(function() {
             return db.collection('workings').remove({});
