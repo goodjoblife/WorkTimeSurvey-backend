@@ -18,6 +18,5 @@ class ObjectIdError extends Error {
     }
 }
 
-
 module.exports.HttpError = HttpError;
 module.exports.ObjectIdError = ObjectIdError;
