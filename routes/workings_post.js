@@ -424,7 +424,8 @@ function main(req, res, next) {
         return collection.insert(working);
     }).then(() => {
         winston.info("workings insert data success", {id: working._id, ip: req.ip, ips: req.ips});
-
+        //delete some sensitive information before sending response
+        delete response_data.working.recommended_by;
         res.send(response_data);
     }).catch(function(err) {
         winston.info("workings insert data fail", {id: working._id, ip: req.ip, ips: req.ips, err: err});
