@@ -785,7 +785,7 @@ describe('Workings 工時資訊', function() {
                         .end(function(err, res) {
                             if (err) {
                                 reject(err);
-                            }                            else {
+                            } else {
                                 resolve(res.body.working._id);
                             }
                         });
@@ -816,7 +816,7 @@ describe('Workings 工時資訊', function() {
                         .end(function(err, res) {
                             if (err) {
                                 reject(err);
-                            }                            else {
+                            } else {
                                 resolve(res.body.working._id);
                             }
                         });
@@ -852,7 +852,7 @@ describe('Workings 工時資訊', function() {
                         .end(function(err, res) {
                             if (err) {
                                 reject(err);
-                            }                            else {
+                            } else {
                                 resolve(res.body.working._id);
                             }
                         });
