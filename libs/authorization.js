@@ -1,5 +1,4 @@
 const resolveSearchPermission = require('./search-permission').resolveSearchPermission;
-const HttpError = require('./errors').HttpError;
 
 function redisLookUp(user_id, redis) {
     return new Promise((resolve, reject) => {
@@ -45,7 +44,7 @@ function cachedSearchPermissionAuthorization(db, user) {
             }
         });
     });
-};
+}
 
 module.exports = {
     cachedSearchPermissionAuthorization,
