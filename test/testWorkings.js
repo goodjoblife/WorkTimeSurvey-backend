@@ -14,53 +14,125 @@ describe('Workings 工時資訊', function() {
         });
     });
 
-    describe.skip('GET /workings', function() {
+    describe('GET /workings', function() {
         before('Seeding some workings', function() {
             return db.collection('workings').insertMany([
                 {
+                    company: {name: "companyA"},
+                    created_at: new Date("2016-11-13T06:10:04.023Z"),
+                    job_title: "engineer1",
+                    week_work_time: 40,
                     overtime_frequency: 1,
-                    sector: "AAA",
-                    created_at: new Date("2016-09-06 08:00"),
+                    salary: {amount: 22000, type: "month"},
+                    estimated_hourly_wage: 100,
+                    data_time: {year: 2016, month: 10},
+                    sector: "Taipei", //optional
                 },
                 {
-                    overtime_frequency: 2,
-                    created_at: new Date("2016-09-06 09:00"),
-                },
-                {
+                    company: {name: "companyC"},
+                    created_at: new Date("2016-11-13T17:10:04.023Z"),
+                    job_title: "engineer3",
+                    week_work_time: 50,
                     overtime_frequency: 1,
-                    sector: "CCC",
-                    created_at: new Date("2016-09-06 09:03"),
+                    salary: {amount: 22000, type: "month"},
+                    estimated_hourly_wage: 120,
+                    data_time: {year: 2016, month: 10},
+                    sector: "Taipei", //optional
                 },
                 {
-                    overtime_frequency: 4,
-                    created_at: new Date("2016-09-06 09:04"),
+                    company: {name: "companyB"},
+                    created_at: new Date("2016-11-13T01:59:18.055Z"),
+                    job_title: "engineer2",
+                    week_work_time: 47.5,
+                    overtime_frequency: 3,
+                    //有的沒有薪資資訊，當然也不會有估計時薪
+                    data_time: {year: 2016, month: 10},
+                    sector: "Tainan",
+                },
+                {
+                    company: {name: "companyB"},
+                    created_at: new Date("2016-11-13T01:58:18.055Z"),
+                    job_title: "engineer2",
+                    //有的沒有工時資訊，如果不是時薪，不會有估計時薪
+                    salary: {amount: 22000, type: "month"},
+                    data_time: {year: 2016, month: 10},
+                    sector: "Tainan",
                 },
             ]);
         });
 
-        it('return the pagination', function(done) {
+        for (let sort_field of [undefined, 'created_at', 'week_work_time', 'estimated_hourly_wage']) {
+            it(`return the pagination with SORT_FIELD: ${sort_field}`, function(done) {
+                request(app).get('/workings')
+                    .query({
+                        sort_by: sort_field,
+                    })
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.propertyVal(res.body, 'total', 4);
+                        assert.property(res.body, 'time_and_salary');
+                        assert.lengthOf(res.body.time_and_salary, 4);
+                    })
+                    .end(done);
+            });
+
+            it(`return correct default order with SORT_FIELD: ${sort_field}`, function(done) {
+                request(app).get('/workings')
+                    .query({
+                        sort_by: sort_field,
+                    })
+                    .expect(200)
+                    .expect(function(res) {
+                        if (sort_field === undefined) {
+                            sort_field = 'created_at';
+                        }
+
+                        const workings = res.body.time_and_salary;
+                        let undefined_start_idx = workings.length;
+
+                        for (let idx in workings) {
+                            if (workings[idx][sort_field] === undefined) {
+                                undefined_start_idx = idx;
+                                break;
+                            }
+                        }
+
+                        for (let idx=1; idx<undefined_start_idx; ++idx) {
+                            assert(workings[idx][sort_field] <= workings[idx-1][sort_field]);
+                        }
+                        for (let idx=undefined_start_idx; idx<workings.length; ++idx) {
+                            assert.isUndefined(workings[idx][sort_field]);
+                        }
+                    })
+                    .end(done);
+            });
+        }
+
+        it(`sort_by ascending order with default SORT_FIELD 'created_at'`, function(done) {
             request(app).get('/workings')
-                .expect(200)
-                .expect(function(res) {
-                    assert.propertyVal(res.body, 'total', 4);
-                    assert.property(res.body, 'time_and_salary');
-                    assert.lengthOf(res.body.time_and_salary, 4);
+                .query({
+                    order: 'ascending',
                 })
-                .end(done);
-        });
-
-        it('return the correct field', function(done) {
-            request(app).get('/workings')
                 .expect(200)
                 .expect(function(res) {
-                    const time_and_salary = res.body.time_and_salary;
+                    // sort_field default is field 'created_at'
+                    const sort_field = 'created_at';
+                    const workings = res.body.time_and_salary;
+                    let undefined_start_idx = workings.length;
 
-                    assert.deepPropertyVal(time_and_salary, '0.overtime_frequency', 4);
-                    assert.notDeepProperty(time_and_salary, '0.author');
-                    assert.notDeepProperty(time_and_salary, '0.sector');
-                    assert.deepPropertyVal(time_and_salary, '1.sector', 'CCC');
-                    assert.notDeepProperty(time_and_salary, '2.sector');
-                    assert.deepPropertyVal(time_and_salary, '3.sector', 'AAA');
+                    for (let idx in workings) {
+                        if (workings[idx][sort_field] === undefined) {
+                            undefined_start_idx = idx;
+                            break;
+                        }
+                    }
+
+                    for (let idx=1; idx<undefined_start_idx; ++idx) {
+                        assert(workings[idx][sort_field] >= workings[idx-1][sort_field]);
+                    }
+                    for (let idx=undefined_start_idx; idx<workings.length; ++idx) {
+                        assert.isUndefined(workings[idx][sort_field]);
+                    }
                 })
                 .end(done);
         });
@@ -706,132 +778,5 @@ describe('Workings 工時資訊', function() {
         });
     });
 
-    describe('GET /workings', function() {
-        before('Seeding some workings', function() {
-            return db.collection('workings').insertMany([
-                {
-                    company: {name: "companyA"},
-                    created_at: new Date("2016-11-13T06:10:04.023Z"),
-                    job_title: "engineer1",
-                    week_work_time: 40,
-                    overtime_frequency: 1,
-                    salary: {amount: 22000, type: "month"},
-                    estimated_hourly_wage: 100,
-                    data_time: {year: 2016, month: 10},
-                    sector: "Taipei", //optional
-                },
-                {
-                    company: {name: "companyC"},
-                    created_at: new Date("2016-11-13T17:10:04.023Z"),
-                    job_title: "engineer3",
-                    week_work_time: 50,
-                    overtime_frequency: 1,
-                    salary: {amount: 22000, type: "month"},
-                    estimated_hourly_wage: 120,
-                    data_time: {year: 2016, month: 10},
-                    sector: "Taipei", //optional
-                },
-                {
-                    company: {name: "companyB"},
-                    created_at: new Date("2016-11-13T01:59:18.055Z"),
-                    job_title: "engineer2",
-                    week_work_time: 47.5,
-                    overtime_frequency: 3,
-                    //有的沒有薪資資訊，當然也不會有估計時薪
-                    data_time: {year: 2016, month: 10},
-                    sector: "Tainan",
-                },
-                {
-                    company: {name: "companyB"},
-                    created_at: new Date("2016-11-13T01:58:18.055Z"),
-                    job_title: "engineer2",
-                    //有的沒有工時資訊，如果不是時薪，不會有估計時薪
-                    salary: {amount: 22000, type: "month"},
-                    data_time: {year: 2016, month: 10},
-                    sector: "Tainan",
-                },
-            ]);
-        });
-
-        for (let sort_field of [undefined, 'created_at', 'week_work_time', 'estimated_hourly_wage']) {
-            it(`return the pagination with SORT_FIELD: ${sort_field}`, function(done) {
-                request(app).get('/workings')
-                    .query({
-                        sort_by: sort_field,
-                    })
-                    .expect(200)
-                    .expect(function(res) {
-                        assert.propertyVal(res.body, 'total', 4);
-                        assert.property(res.body, 'time_and_salary');
-                        assert.lengthOf(res.body.time_and_salary, 4);
-                    })
-                    .end(done);
-            });
-
-            it(`return correct default order with SORT_FIELD: ${sort_field}`, function(done) {
-                request(app).get('/workings')
-                    .query({
-                        sort_by: sort_field,
-                    })
-                    .expect(200)
-                    .expect(function(res) {
-                        if (sort_field === undefined) {
-                            sort_field = 'created_at';
-                        }
-
-                        const workings = res.body.time_and_salary;
-                        let undefined_start_idx = workings.length;
-
-                        for (let idx in workings) {
-                            if (workings[idx][sort_field] === undefined) {
-                                undefined_start_idx = idx;
-                                break;
-                            }
-                        }
-
-                        for (let idx=1; idx<undefined_start_idx; ++idx) {
-                            assert(workings[idx][sort_field] <= workings[idx-1][sort_field]);
-                        }
-                        for (let idx=undefined_start_idx; idx<workings.length; ++idx) {
-                            assert.isUndefined(workings[idx][sort_field]);
-                        }
-                    })
-                    .end(done);
-            });
-        }
-
-        it(`sort_by ascending order with default SORT_FIELD 'created_at'`, function(done) {
-            request(app).get('/workings')
-                .query({
-                    order: 'ascending',
-                })
-                .expect(200)
-                .expect(function(res) {
-                    // sort_field default is field 'created_at'
-                    const sort_field = 'created_at';
-                    const workings = res.body.time_and_salary;
-                    let undefined_start_idx = workings.length;
-
-                    for (let idx in workings) {
-                        if (workings[idx][sort_field] === undefined) {
-                            undefined_start_idx = idx;
-                            break;
-                        }
-                    }
-
-                    for (let idx=1; idx<undefined_start_idx; ++idx) {
-                        assert(workings[idx][sort_field] >= workings[idx-1][sort_field]);
-                    }
-                    for (let idx=undefined_start_idx; idx<workings.length; ++idx) {
-                        assert.isUndefined(workings[idx][sort_field]);
-                    }
-                })
-                .end(done);
-        });
-
-        after(function() {
-            return db.collection('workings').remove({});
-        });
-    });
 });
 
