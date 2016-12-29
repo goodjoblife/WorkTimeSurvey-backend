@@ -6,7 +6,26 @@ const winston = require('winston');
 const lodash = require('lodash');
 const post_helper = require('./workings_post');
 const middleware = require('./middleware');
+const authenticationLib = require('../libs/authentication');
+const authorizationLib = require('../libs/authorization');
 
+router.get('/', function(req, res, next) {
+    const db = req.redis_client;
+    const access_token = req.query.access_token;
+    req.custom = {};
+
+    if (typeof access_token !== "string") {
+        next();
+    } else {
+        authenticationLib.cachedFacebookAuthentication(db, access_token)
+            .then(account => authorizationLib.cachedSearchPermissionAuthorization(db, account))
+            .then(() => {
+                // the client has permission
+                req.custom.search_permission = true;
+            })
+            .then(() => next(), () => next());
+    }
+});
 router.get('/', middleware.sort_by);
 router.get('/', middleware.pagination);
 router.get('/', function(req, res, next) {
@@ -25,8 +44,16 @@ router.get('/', function(req, res, next) {
         salary: 1,
         estimated_hourly_wage: 1,
     };
-    const page = req.pagination.page;
-    const limit = req.pagination.limit;
+
+    let page = req.pagination.page;
+    let limit = req.pagination.limit;
+
+    if (req.custom.search_permission !== true) {
+        // the user can only view latest 10 data
+        page = 0;
+        limit = 10;
+        req.sort_by = {created_at: -1};
+    }
 
     const data = {};
     collection.find().count().then(function(count) {
