@@ -454,12 +454,12 @@ describe('Workings 工時資訊', function() {
                 .end(done);
         });
 
-        it('依照 job_title 來分群資料，結構正確', function(done) {
+        it('依照 company 來分群資料，結構正確', function(done) {
             request(app).get('/workings/search_by/job_title/group_by/company')
                 .query({job_title: 'ENGINEER1'})
                 .expect(200)
                 .expect(function(res) {
-                    assert.isArray(res.body[0].time_and_salary);
+                    assert.isArray(res.body);
                     assert.deepProperty(res.body[0], 'company.name');
                     assert.deepProperty(res.body[0], 'average');
                     assert.isObject(res.body[0].average);
@@ -506,7 +506,7 @@ describe('Workings 工時資訊', function() {
                 .end(done);
         });
 
-        it('job_title match any substring in 工時資訊.job_title 欄位', function(done) {
+        it('job_title match any substring in 薪時資訊.job_title 欄位', function(done) {
             request(app).get('/workings/search_by/job_title/group_by/company')
                 .query({job_title: 'ENGINEER'})
                 .expect(200)
