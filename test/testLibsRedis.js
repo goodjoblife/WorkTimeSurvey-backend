@@ -43,4 +43,40 @@ describe('Redis Library', function() {
             redis_client.flushdb(done);
         });
     });
+
+    describe('redisGetPermission', function() {
+        const redis_client = redis.createClient(process.env.REDIS_URL);
+
+        before("Seed some data", function(done) {
+            redis_client.set('permission_facebook_mark', '1', done);
+        });
+
+        it('resolved true if key exists', function() {
+            return assert.becomes(_redis.redisGetPermission(redis_client, 'facebook_mark'), true);
+        });
+
+        it('resolved false if key doesn\'t exist', function() {
+            return assert.becomes(_redis.redisGetPermission(redis_client, 'facebook_notmark'), false);
+        });
+
+        after(function(done) {
+            redis_client.flushdb(done);
+        });
+    });
+
+    describe('redisSetPermission', function() {
+        const redis_client = redis.createClient(process.env.REDIS_URL);
+
+        it('set success', function() {
+            const set = _redis.redisSetPermission(redis_client, 'facebook_mark');
+            return Promise.all([
+                assert.isFulfilled(set),
+                assert.becomes(set.then(() => _redis.redisGetPermission(redis_client, 'facebook_mark')), true),
+            ]);
+        });
+
+        after(function(done) {
+            redis_client.flushdb(done);
+        });
+    });
 });
