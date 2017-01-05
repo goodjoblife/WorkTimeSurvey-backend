@@ -45,7 +45,7 @@ describe('Authorization middleware', function() {
                             type: 'facebook',
                         },
                         queries_count: data.counts.queries_count,
-                    }).then(() => db.collection('references').insert({
+                    }).then(() => db.collection('recommendations').insert({
                         user: {
                             id: 'peter.shih',
                             type: 'facebook',
@@ -88,7 +88,7 @@ describe('Authorization middleware', function() {
             });
 
             after(function() {
-                return db.collection('references').remove({});
+                return db.collection('recommendations').remove({});
             });
 
             after(function(done) {

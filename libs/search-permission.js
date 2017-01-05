@@ -9,7 +9,7 @@ function getDataNumOfUser(db, user) {
 }
 
 function getRefNumOfUser(db, user) {
-    return db.collection('references').find({user: user}).toArray().then(results => {
+    return db.collection('recommendations').find({user: user}).toArray().then(results => {
         if (results.length == 0) {
             return 0;
         } else {
