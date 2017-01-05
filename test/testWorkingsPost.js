@@ -832,8 +832,59 @@ describe('Workings 工時資訊', function() {
                             id: 'BBB',
                             type: 'facebook',
                         },
+                        count: 3,
                     },
                 ]);
+            });
+
+            it('should generate recommendation count=1 while recommendation_string is correct', function() {
+                const send_request = new Promise(function(resolve, reject) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            recommendation_string: "00000000ccd8958909a983e8",
+                        }))
+                        .expect(200)
+                        .end(function(err, res) {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve();
+                            }
+                        });
+                });
+                const test_db = send_request.then(() => {
+                    return db.collection('recommendations').findOne({_id: ObjectId("00000000ccd8958909a983e8")}).then(result => {
+                        assert.deepProperty(result, 'count');
+                        assert.deepPropertyVal(result, 'count', 1);
+                    });
+                });
+
+                return Promise.all([send_request, test_db]);
+            });
+
+            it('should increase recommendation count while recommendation_string is correct', function() {
+                const send_request = new Promise(function(resolve, reject) {
+                    request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            recommendation_string: "00000000ccd8958909a983e9",
+                        }))
+                        .expect(200)
+                        .end(function(err, res) {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve();
+                            }
+                        });
+                });
+                const test_db = send_request.then(() => {
+                    return db.collection('recommendations').findOne({_id: ObjectId("00000000ccd8958909a983e9")}).then(result => {
+                        assert.deepProperty(result, 'count');
+                        assert.deepPropertyVal(result, 'count', 4);
+                    });
+                });
+
+                return Promise.all([send_request, test_db]);
             });
 
             it('should upload recommended_by info but not return recommended_by while recommendation_string is correct', function() {
