@@ -19,6 +19,100 @@ describe('Workings 工時資訊', function() {
         });
     });
 
+    describe('GET /workings (無權限)', function() {
+        let sandbox;
+
+        before('Seeding some workings', function() {
+            const workings = [];
+            for (let i = 0; i < 12; i++) {
+                const created_at = new Date('2017-01-01T00:00:00.000Z');
+                created_at.setMonth(i);
+                workings.push({
+                    company: {name: `company${i}`},
+                    created_at: created_at,
+                });
+            }
+
+            return db.collection('workings').insertMany(workings);
+        });
+
+        beforeEach(function() {
+            sandbox = sinon.sandbox.create();
+        });
+
+        it('return latest 10 results if not autheticated', function(done) {
+            const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').rejects();
+            //sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
+            request(app).get('/workings')
+                .query({
+                    access_token: 'faketoken',
+                })
+                .expect(200)
+                .expect(function(res) {
+                    assert.propertyVal(res.body, 'total', 12);
+                    assert.property(res.body, 'time_and_salary');
+                    assert.lengthOf(res.body.time_and_salary, 10);
+                    assert.deepPropertyVal(res.body, 'time_and_salary.0.company.name', 'company11');
+                    assert.deepPropertyVal(res.body, 'time_and_salary.9.company.name', 'company2');
+
+                    sinon.assert.calledOnce(authentication);
+                })
+                .end(done);
+        });
+
+        it('return latest 10 results if not authorized', function(done) {
+            const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            const authorization = sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').rejects();
+
+            request(app).get('/workings')
+                .query({
+                    access_token: 'faketoken',
+                })
+                .expect(200)
+                .expect(function(res) {
+                    assert.propertyVal(res.body, 'total', 12);
+                    assert.property(res.body, 'time_and_salary');
+                    assert.lengthOf(res.body.time_and_salary, 10);
+                    assert.deepPropertyVal(res.body, 'time_and_salary.0.company.name', 'company11');
+                    assert.deepPropertyVal(res.body, 'time_and_salary.9.company.name', 'company2');
+
+                    sinon.assert.calledOnce(authentication);
+                    sinon.assert.calledOnce(authorization);
+                })
+                .end(done);
+        });
+
+        it('return latest 10 results even with page=1 (next page)', function(done) {
+            const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').rejects();
+
+            request(app).get('/workings')
+                .query({
+                    access_token: 'faketoken',
+                    page: 1,
+                })
+                .expect(200)
+                .expect(function(res) {
+                    assert.propertyVal(res.body, 'total', 12);
+                    assert.property(res.body, 'time_and_salary');
+                    assert.lengthOf(res.body.time_and_salary, 10);
+                    assert.deepPropertyVal(res.body, 'time_and_salary.0.company.name', 'company11');
+                    assert.deepPropertyVal(res.body, 'time_and_salary.9.company.name', 'company2');
+
+                    sinon.assert.calledOnce(authentication);
+                })
+                .end(done);
+        });
+
+        after(function() {
+            return db.collection('workings').remove({});
+        });
+
+        afterEach(function() {
+            sandbox.restore();
+        });
+    });
+
     describe('GET /workings', function() {
         let sandbox;
 
