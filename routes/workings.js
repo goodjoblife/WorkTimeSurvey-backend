@@ -183,6 +183,7 @@ router.get('/search_by/company/group_by/company', function(req, res, next) {
                         estimated_hourly_wage: "$estimated_hourly_wage",
                     },
                 },
+                count: {$sum: 1},
             },
         },
         {

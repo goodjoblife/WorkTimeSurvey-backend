@@ -4,7 +4,7 @@ const assert = chai.assert;
 const MongoClient = require('mongodb').MongoClient;
 const redis = require('redis');
 const HttpError = require('../libs/errors').HttpError;
-const authorizationMiddleware = require('../middlewares/authorization');
+const authorization = require('../middlewares/authorization');
 
 describe('Authorization middleware', function() {
     let db;
@@ -45,7 +45,7 @@ describe('Authorization middleware', function() {
                             type: 'facebook',
                         },
                         queries_count: data.counts.queries_count,
-                    }).then(() => db.collection('references').insert({
+                    }).then(() => db.collection('recommendations').insert({
                         user: {
                             id: 'peter.shih',
                             type: 'facebook',
@@ -58,13 +58,16 @@ describe('Authorization middleware', function() {
             it('search permission for user', function(done) {
                 // build the fake request
                 const req = {
-                    user_id: 'peter.shih',
+                    user: {
+                        id: 'peter.shih',
+                        type: 'facebook',
+                    },
                     db: db,
                     redis_client: redis_client,
                 };
 
                 // I expect next is called, so I can check here
-                authorizationMiddleware(req, {}, function(err) {
+                authorization.cachedSearchPermissionAuthorizationMiddleware(req, {}, function(err) {
                     try {
                         if (data.expected === true) {
                             assert.isUndefined(err);
@@ -85,7 +88,7 @@ describe('Authorization middleware', function() {
             });
 
             after(function() {
-                return db.collection('references').remove({});
+                return db.collection('recommendations').remove({});
             });
 
             after(function(done) {
@@ -96,7 +99,7 @@ describe('Authorization middleware', function() {
 
     describe('redis cached', function() {
         before(function(done) {
-            redis_client.set('permission_peter.shih', true, done);
+            redis_client.set('permission_facebook_peter.shih', '1', done);
         });
 
         before(function() {
@@ -120,12 +123,15 @@ describe('Authorization middleware', function() {
 
         it('success if redis cached', function(done) {
             const req = {
-                user_id: 'peter.shih',
+                user: {
+                    id: 'peter.shih',
+                    type: 'facebook',
+                },
                 db: db,
                 redis_client: redis_client,
             };
 
-            authorizationMiddleware(req, {}, function(err) {
+            authorization.cachedSearchPermissionAuthorizationMiddleware(req, {}, function(err) {
                 try {
                     assert.isUndefined(err);
                     done();
@@ -137,12 +143,15 @@ describe('Authorization middleware', function() {
 
         it('lookup mongo success if redis is not cached', function(done) {
             const req = {
-                user_id: 'mark86092',
+                user: {
+                    id: 'mark86092',
+                    type: 'facebook',
+                },
                 db: db,
                 redis_client: redis_client,
             };
 
-            authorizationMiddleware(req, {}, function(err) {
+            authorization.cachedSearchPermissionAuthorizationMiddleware(req, {}, function(err) {
                 try {
                     assert.isUndefined(err);
                     done();
@@ -154,12 +163,15 @@ describe('Authorization middleware', function() {
 
         it('fail if lookup mongo fail and redis is not cached', function(done) {
             const req = {
-                user_id: 'test',
+                user: {
+                    id: 'test',
+                    type: 'facebook',
+                },
                 db: db,
                 redis_client: redis_client,
             };
 
-            authorizationMiddleware(req, {}, function(err) {
+            authorization.cachedSearchPermissionAuthorizationMiddleware(req, {}, function(err) {
                 try {
                     assert.instanceOf(err, HttpError);
                     assert.equal(err.status, 403);

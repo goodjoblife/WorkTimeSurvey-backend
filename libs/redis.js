@@ -49,10 +49,25 @@ function redisSetFB(db, key, value) {
     return setAsync(db, 'fb_' + key, JSON.stringify(value));
 }
 
+function redisGetPermission(db, key) {
+    return getAsync(db, 'permission_' + key).then(reply => {
+        if (reply) {
+            return true;
+        } else {
+            return false;
+        }
+    });
+}
+
+function redisSetPermission(db, key) {
+    return setAsync(db, 'permission_' + key, '1');
+}
 module.exports = {
     getAsync,
     setAsync,
     expireAsync,
     redisGetFB,
     redisSetFB,
+    redisGetPermission,
+    redisSetPermission,
 };
