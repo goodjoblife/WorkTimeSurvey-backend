@@ -460,37 +460,37 @@ describe('Workings 工時資訊', function() {
                 .expect(200)
                 .expect(function(res) {
                     assert.isArray(res.body[0].time_and_salary);
-                    assert.deepProperty(res.body, '0.company.name');
-                    assert.deepProperty(res.body, '0.average');
+                    assert.deepProperty(res.body[0], 'company.name');
+                    assert.deepProperty(res.body[0], 'average');
                     assert.isObject(res.body[0].average);
-                    assert.deepProperty(res.body, '0.average.week_work_time');
-                    assert.deepProperty(res.body, '0.average.estimated_hourly_wage');
-                    assert.deepProperty(res.body, '0.time_and_salary');
+                    assert.deepProperty(res.body[0], 'average.week_work_time');
+                    assert.deepProperty(res.body[0], 'average.estimated_hourly_wage');
+                    assert.deepProperty(res.body[0], 'time_and_salary');
                     assert.isArray(res.body[0].time_and_salary);
-                    assert.deepProperty(res.body, '0.time_and_salary.0.job_title');
-                    assert.deepProperty(res.body, '0.time_and_salary.0.sector');
-                    assert.deepProperty(res.body, '0.time_and_salary.0.employment_type');
-                    assert.deepProperty(res.body, '0.time_and_salary.0.created_at');
-                    assert.deepProperty(res.body, '0.time_and_salary.0.data_time');
+                    assert.deepProperty(res.body[0], 'time_and_salary.0.job_title');
+                    assert.deepProperty(res.body[0], 'time_and_salary.0.sector');
+                    assert.deepProperty(res.body[0], 'time_and_salary.0.employment_type');
+                    assert.deepProperty(res.body[0], 'time_and_salary.0.created_at');
+                    assert.deepProperty(res.body[0], 'time_and_salary.0.data_time');
                     assert.isObject(res.body[0].time_and_salary[0].data_time);
-                    assert.deepProperty(res.body, '0.time_and_salary.0.data_time.year');
-                    assert.deepProperty(res.body, '0.time_and_salary.0.data_time.month');
-                    assert.notDeepProperty(res.body, '0.time_and_salary.0.author');
+                    assert.deepProperty(res.body[0], 'time_and_salary.0.data_time.year');
+                    assert.deepProperty(res.body[0], 'time_and_salary.0.data_time.month');
+                    assert.notDeepProperty(res.body[0], 'time_and_salary.0.author');
                     //
-                    assert.deepProperty(res.body, '0.time_and_salary.0.week_work_time');
-                    assert.deepProperty(res.body, '0.time_and_salary.0.overtime_frequency');
-                    assert.deepProperty(res.body, '0.time_and_salary.0.day_promised_work_time');
-                    assert.deepProperty(res.body, '0.time_and_salary.0.day_real_work_time');
-                    assert.notDeepProperty(res.body, '0.time_and_salary.0.has_overtime_salary');
-                    assert.notDeepProperty(res.body, '0.time_and_salary.0.is_overtime_salary_legal');
-                    assert.notDeepProperty(res.body, '0.time_and_salary.0.has_compensatory_dayoff');
+                    assert.deepProperty(res.body[0], 'time_and_salary.0.week_work_time');
+                    assert.deepProperty(res.body[0], 'time_and_salary.0.overtime_frequency');
+                    assert.deepProperty(res.body[0], 'time_and_salary.0.day_promised_work_time');
+                    assert.deepProperty(res.body[0], 'time_and_salary.0.day_real_work_time');
+                    assert.notDeepProperty(res.body[0], 'time_and_salary.0.has_overtime_salary');
+                    assert.notDeepProperty(res.body[0], 'time_and_salary.0.is_overtime_salary_legal');
+                    assert.notDeepProperty(res.body[0], 'time_and_salary.0.has_compensatory_dayoff');
                     //
-                    assert.deepProperty(res.body, '0.time_and_salary.0.experience_in_year');
-                    assert.deepProperty(res.body, '0.time_and_salary.0.salary');
+                    assert.deepProperty(res.body[0], 'time_and_salary.0.experience_in_year');
+                    assert.deepProperty(res.body[0], 'time_and_salary.0.salary');
                     assert.isObject(res.body[0].time_and_salary[0].salary);
-                    assert.deepProperty(res.body, '0.time_and_salary.0.salary.type');
-                    assert.deepProperty(res.body, '0.time_and_salary.0.salary.amount');
-                    assert.deepProperty(res.body, '0.time_and_salary.0.estimated_hourly_wage');
+                    assert.deepProperty(res.body[0], 'time_and_salary.0.salary.type');
+                    assert.deepProperty(res.body[0], 'time_and_salary.0.salary.amount');
+                    assert.deepProperty(res.body[0], 'time_and_salary.0.estimated_hourly_wage');
                 })
                 .end(done);
         });
@@ -501,7 +501,7 @@ describe('Workings 工時資訊', function() {
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 1);
-                    assert.deepPropertyVal(res.body, '0.time_and_salary.0.job_title', 'ENGINEER1');
+                    assert.deepPropertyVal(res.body[0], 'time_and_salary.0.job_title', 'ENGINEER1');
                 })
                 .end(done);
         });
@@ -512,10 +512,10 @@ describe('Workings 工時資訊', function() {
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body[0].time_and_salary, 1);
-                    assert.deepPropertyVal(res.body, '0.time_and_salary.0.job_title', 'ENGINEER3');
+                    assert.deepPropertyVal(res.body[0], 'time_and_salary.0.job_title', 'ENGINEER3');
                     assert.lengthOf(res.body[1].time_and_salary, 4);
-                    assert.deepPropertyVal(res.body, '1.time_and_salary.0.job_title', 'ENGINEER1');
-                    assert.deepPropertyVal(res.body, '1.time_and_salary.2.job_title', 'ENGINEER2');
+                    assert.deepPropertyVal(res.body[1], 'time_and_salary.0.job_title', 'ENGINEER1');
+                    assert.deepPropertyVal(res.body[1], 'time_and_salary.2.job_title', 'ENGINEER2');
                 })
                 .end(done);
         });
