@@ -422,6 +422,16 @@ describe('Workings 工時資訊', function() {
                     assert.lengthOf(res.body, 2);
                     assert.deepPropertyVal(res.body[0], 'company.name', 'COMPANY1');
                     assert.deepPropertyVal(res.body[1], 'company.name', 'COMPANY2');
+                })
+                .end(done);
+        });
+
+        it('依照 job_title 排序 data in company group', function(done) {
+            request(app).get('/workings/search_by/company/group_by/company')
+                .query({company: 'COMPANY1'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.lengthOf(res.body, 1);
                     assert.deepPropertyVal(res.body[0].time_and_salary, '0.job_title', 'ENGINEER1');
                     assert.deepPropertyVal(res.body[0].time_and_salary, '2.job_title', 'ENGINEER2');
                     assert.deepPropertyVal(res.body[0].time_and_salary, '4.job_title', 'ENGINEER3');
