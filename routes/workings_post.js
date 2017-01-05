@@ -410,11 +410,12 @@ function main(req, res, next) {
             return null;
         }
     }).then((rec_user) => {
-        if (rec_user !== null) {
-            working.recommended_by = rec_user;
-        }
         if (working.recommendation_string) {
             delete working.recommendation_string;
+        }
+        if (rec_user !== null) {
+            working.recommended_by = rec_user;
+            return req.db.collection('recommendations').update({user: rec_user}, {$inc: {count: 1}});
         }
     }).then(() => {
         const author = working.author;
