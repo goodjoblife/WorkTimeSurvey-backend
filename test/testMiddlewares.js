@@ -46,7 +46,9 @@ describe('Authentication Middleware', function() {
                 try {
                     assert.isUndefined(err);
                     assert.property(req, 'facebook');
+                    assert.property(req, 'user');
                     assert.deepEqual(req.facebook, {id: "-1", name: "test"});
+                    assert.deepEqual(req.user, {id: "-1", type: "facebook"});
                     sinon.assert.calledOnce(stub);
                     done();
                 } catch (e) {
