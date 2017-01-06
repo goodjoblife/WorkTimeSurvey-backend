@@ -24,14 +24,16 @@ router.post('/me/recommendations', [
     },
 ]);
 
-router.use('/me/permission/search', authentication.cachedFacebookAuthenticationMiddleware);
-router.use('/me/permission/search', authorization.cachedSearchPermissionAuthorizationMiddleware);
-// Middleware Error Handler
-router.use('/me/permission/search', function(err, req, res, next) {
-    res.send({hasSearchPermission: false});
-});
-router.get('/me/permission/search', function(req, res, next) {
-    res.send({hasSearchPermission: true});
-});
+router.get('/me/permission/search', [
+    authentication.cachedFacebookAuthenticationMiddleware,
+    authorization.cachedSearchPermissionAuthorizationMiddleware,
+    // Middleware Error Handler
+    function(err, req, res, next) {
+        res.send({hasSearchPermission: false});
+    },
+    function(req, res, next) {
+        res.send({hasSearchPermission: true});
+    }
+]);
 
 module.exports = router;
