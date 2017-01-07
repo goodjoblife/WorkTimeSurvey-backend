@@ -1,5 +1,13 @@
 const request = require('request');
 
+/*
+ * 根據 access_token 取得 FB 身份
+ *
+ * @param access_token any
+ *
+ * @fulfilled  {id, name}
+ * @rejected   Error (reason)
+ */
 function accessTokenAuth(access_token) {
     return new Promise(function(resolve, reject) {
         if (! access_token) {
