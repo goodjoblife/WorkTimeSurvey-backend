@@ -33,7 +33,7 @@ router.get('/me/permissions/search', [
     },
     function(req, res, next) {
         res.send({hasSearchPermission: true});
-    }
+    },
 ]);
 
 module.exports = router;
