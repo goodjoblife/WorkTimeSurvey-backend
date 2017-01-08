@@ -263,7 +263,47 @@ describe('Workings 工時資訊', function() {
         });
     });
 
+    describe('GET /search_by/company/group_by/company (無權限)', function() {
+        let sandbox;
+
+        beforeEach(function() {
+            sandbox = sinon.sandbox.create();
+        });
+
+        it('return error 403 if not autheticated', function(done) {
+            const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').rejects();
+
+            request(app).get('/workings/search_by/company/group_by/company')
+                .query({access_token: 'faketoken'})
+                .expect(403)
+                .expect(function(res) {
+                    sinon.assert.calledOnce(authentication);
+                })
+                .end(done);
+        });
+
+        it('return error 403 if not authorized', function(done) {
+            const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            const authorization = sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').rejects();
+
+            request(app).get('/workings/search_by/company/group_by/company')
+                .query({access_token: 'faketoken'})
+                .expect(403)
+                .expect(function(res) {
+                    sinon.assert.calledOnce(authentication);
+                    sinon.assert.calledOnce(authorization);
+                })
+                .end(done);
+        });
+
+        afterEach(function() {
+            sandbox.restore();
+        });
+    });
+
     describe('GET /search_by/company/group_by/company', function() {
+        let sandbox;
+
         before('Seeding some workings', function() {
             return db.collection('workings').insertMany([
                 {
@@ -401,15 +441,33 @@ describe('Workings 工時資訊', function() {
             ]);
         });
 
+        beforeEach(function() {
+            sandbox = sinon.sandbox.create();
+        });
+
         it('error 422 if no company provided', function(done) {
+            const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            const authorization = sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
             request(app).get('/workings/search_by/company/group_by/company')
+                .query({access_token: 'faketoken'})
                 .expect(422)
+                .expect(function(res) {
+                    sinon.assert.calledOnce(authentication);
+                    sinon.assert.calledOnce(authorization);
+                })
                 .end(done);
         });
 
         it('依照 company 來分群資料，結構正確 (workings.length >= 5)', function(done) {
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
             request(app).get('/workings/search_by/company/group_by/company')
-                .query({company: 'COMPANY1'})
+                .query({
+                    company: 'COMPANY1',
+                    access_token: 'faketoken',
+                })
                 .expect(200)
                 .expect(function(res) {
                     assert.isArray(res.body);
@@ -463,8 +521,14 @@ describe('Workings 工時資訊', function() {
         });
 
         it('依照 company 來分群資料，結構正確 (workings.length < 5)', function(done) {
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
             request(app).get('/workings/search_by/company/group_by/company')
-                .query({company: 'COMPANY2'})
+                .query({
+                    company: 'COMPANY2',
+                    access_token: 'faketoken',
+                })
                 .expect(200)
                 .expect(function(res) {
                     assert.isArray(res.body);
@@ -509,8 +573,14 @@ describe('Workings 工時資訊', function() {
         });
 
         it('小寫 company query 轉換成大寫', function(done) {
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
             request(app).get('/workings/search_by/company/group_by/company')
-                .query({company: 'company1'})
+                .query({
+                    company: 'company1',
+                    access_token: 'faketoken',
+                })
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 1);
@@ -520,8 +590,14 @@ describe('Workings 工時資訊', function() {
         });
 
         it('company match any substring in company.name', function(done) {
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
             request(app).get('/workings/search_by/company/group_by/company')
-                .query({company: 'COMPANY'})
+                .query({
+                    company: 'COMPANY',
+                    access_token: 'faketoken',
+                })
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 2);
@@ -532,11 +608,15 @@ describe('Workings 工時資訊', function() {
         });
 
         it('依照 group_sort_order 排序 group data', function(done) {
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
             request(app).get('/workings/search_by/company/group_by/company')
                 .query({
                     company: 'COMPANY',
                     group_sort_by: 'week_work_time',
                     group_sort_order: 'ascending',
+                    access_token: 'faketoken',
                 })
                 .expect(200)
                 .expect(function(res) {
@@ -548,22 +628,33 @@ describe('Workings 工時資訊', function() {
         });
 
         it('依照 job_title 排序 data in company group', function(done) {
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
             request(app).get('/workings/search_by/company/group_by/company')
-                .query({company: 'COMPANY1'})
+                .query({
+                    company: 'COMPANY1',
+                    access_token: 'faketoken',
+                })
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 1);
                     assert.deepPropertyVal(res.body[0].time_and_salary, '0.job_title', 'ENGINEER1');
                     assert.deepPropertyVal(res.body[0].time_and_salary, '2.job_title', 'ENGINEER2');
                     assert.deepPropertyVal(res.body[0].time_and_salary, '4.job_title', 'ENGINEER3');
-
                 })
                 .end(done);
         });
 
         it('根據統編搜尋', function(done) {
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
             request(app).get('/workings/search_by/company/group_by/company')
-                .query({company: '84149961'})
+                .query({
+                    company: '84149961',
+                    access_token: 'faketoken',
+                })
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 1);
@@ -573,8 +664,14 @@ describe('Workings 工時資訊', function() {
         });
 
         it('當 workings.length >= 5, has_overtime_salary_count values 加總會小於等於 workings.length', function(done) {
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
             request(app).get('/workings/search_by/company/group_by/company')
-                .query({company: 'COMPANY1'})
+                .query({
+                    company: 'COMPANY1',
+                    access_token: 'faketoken',
+                })
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 1);
@@ -583,15 +680,20 @@ describe('Workings 工時資訊', function() {
                     total += res.body[0].has_overtime_salary_count.no;
                     total += res.body[0].has_overtime_salary_count["don't know"];
                     assert(total <= res.body[0].time_and_salary.length);
-
                 })
                 .end(done);
         });
 
         it('當 workings.length >= 5, has_overtime_salary_count.yes 會大於等於 is_overtime_salary_legal_count values 加總',
             function(done) {
+                sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+                sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
                 request(app).get('/workings/search_by/company/group_by/company')
-                .query({company: 'COMPANY1'})
+                .query({
+                    company: 'COMPANY1',
+                    access_token: 'faketoken',
+                })
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 1);
@@ -606,6 +708,10 @@ describe('Workings 工時資訊', function() {
 
         after(function() {
             return db.collection('workings').remove({});
+        });
+
+        afterEach(function() {
+            sandbox.restore();
         });
     });
 
