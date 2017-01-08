@@ -6,26 +6,8 @@ const winston = require('winston');
 const lodash = require('lodash');
 const post_helper = require('./workings_post');
 const middleware = require('./middleware');
-const authenticationLib = require('../libs/authentication');
-const authorizationLib = require('../libs/authorization');
 
-router.get('/', function(req, res, next) {
-    const db = req.redis_client;
-    const access_token = req.query.access_token;
-    req.custom = {};
-
-    if (typeof access_token !== "string") {
-        next();
-    } else {
-        authenticationLib.cachedFacebookAuthentication(db, access_token)
-            .then(account => authorizationLib.cachedSearchPermissionAuthorization(db, account))
-            .then(() => {
-                // the client has permission
-                req.custom.search_permission = true;
-            })
-            .then(() => next(), () => next());
-    }
-});
+router.get('/', middleware.checkSearchPermission);
 router.get('/', middleware.sort_by);
 router.get('/', middleware.pagination);
 router.get('/', function(req, res, next) {

@@ -1,4 +1,6 @@
 const HttpError = require('../libs/errors').HttpError;
+const authenticationLib = require('../libs/authentication');
+const authorizationLib = require('../libs/authorization');
 
 function sort_by(req, res, next) {
     const sort_by = req.query.sort_by || 'created_at';
@@ -46,8 +48,27 @@ function pagination(req, res, next) {
     next();
 }
 
+function checkSearchPermission(req, res, next) {
+    const db = req.redis_client;
+    const access_token = req.query.access_token;
+    req.custom = {};
+
+    if (typeof access_token !== "string") {
+        next();
+    } else {
+        authenticationLib.cachedFacebookAuthentication(db, access_token)
+            .then(account => authorizationLib.cachedSearchPermissionAuthorization(db, account))
+            .then(() => {
+                // the client has permission
+                req.custom.search_permission = true;
+            })
+            .then(() => next(), () => next());
+    }
+}
+
 module.exports = {
     sort_by,
     group_sort_by,
     pagination,
+    checkSearchPermission,
 };
