@@ -609,7 +609,47 @@ describe('Workings 工時資訊', function() {
         });
     });
 
+    describe('GET /search_by/job_title/group_by/company (無權限)', function() {
+        let sandbox;
+
+        beforeEach(function() {
+            sandbox = sinon.sandbox.create();
+        });
+
+        it('return error 403 if not autheticated', function(done) {
+            const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').rejects();
+
+            request(app).get('/workings/search_by/job_title/group_by/company')
+                .query({access_token: 'faketoken'})
+                .expect(403)
+                .expect(function(res) {
+                    sinon.assert.calledOnce(authentication);
+                })
+                .end(done);
+        });
+
+        it('return error 403 if not authorized', function(done) {
+            const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            const authorization = sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').rejects();
+
+            request(app).get('/workings/search_by/job_title/group_by/company')
+                .query({access_token: 'faketoken'})
+                .expect(403)
+                .expect(function(res) {
+                    sinon.assert.calledOnce(authentication);
+                    sinon.assert.calledOnce(authorization);
+                })
+                .end(done);
+        });
+
+        afterEach(function() {
+            sandbox.restore();
+        });
+    });
+
     describe('GET /search_by/job_title/group_by/company', function() {
+        let sandbox;
+
         before('Seeding some workings', function() {
             return db.collection('workings').insertMany([
                 {
@@ -707,15 +747,33 @@ describe('Workings 工時資訊', function() {
             ]);
         });
 
+        beforeEach(function() {
+            sandbox = sinon.sandbox.create();
+        });
+
         it('error 422 if no job_title provided', function(done) {
+            const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            const authorization = sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
             request(app).get('/workings/search_by/job_title/group_by/company')
+                .query({access_token: 'faketoken'})
                 .expect(422)
+                .expect(function(res) {
+                    sinon.assert.calledOnce(authentication);
+                    sinon.assert.calledOnce(authorization);
+                })
                 .end(done);
         });
 
         it('依照 company 來分群資料，結構正確', function(done) {
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
             request(app).get('/workings/search_by/job_title/group_by/company')
-                .query({job_title: 'ENGINEER1'})
+                .query({
+                    job_title: 'ENGINEER1',
+                    access_token: 'faketoken',
+                })
                 .expect(200)
                 .expect(function(res) {
                     assert.isArray(res.body);
@@ -755,8 +813,14 @@ describe('Workings 工時資訊', function() {
         });
 
         it('小寫 job_title 轉換成大寫', function(done) {
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
             request(app).get('/workings/search_by/job_title/group_by/company')
-                .query({job_title: 'engineer1'})
+                .query({
+                    job_title: 'engineer1',
+                    access_token: 'faketoken',
+                })
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 1);
@@ -766,8 +830,14 @@ describe('Workings 工時資訊', function() {
         });
 
         it('job_title match any substring in 薪時資訊.job_title 欄位', function(done) {
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
             request(app).get('/workings/search_by/job_title/group_by/company')
-                .query({job_title: 'ENGINEER'})
+                .query({
+                    job_title: 'ENGINEER',
+                    access_token: 'faketoken',
+                })
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body[0].time_and_salary, 1);
@@ -780,12 +850,15 @@ describe('Workings 工時資訊', function() {
         });
 
         it('依照 group_sort_order 排序 group data', function(done) {
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
             request(app).get('/workings/search_by/job_title/group_by/company')
                 .query({
                     group_sort_by: 'week_work_time',
                     job_title: 'ENGINEER',
                     group_sort_order: 'ascending',
-
+                    access_token: 'faketoken',
                 })
                 .expect(200)
                 .expect(function(res) {
@@ -799,6 +872,10 @@ describe('Workings 工時資訊', function() {
 
         after(function() {
             return db.collection('workings').remove({});
+        });
+
+        afterEach(function() {
+            sandbox.restore();
         });
     });
 
