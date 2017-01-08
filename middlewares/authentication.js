@@ -5,7 +5,7 @@ function cachedFacebookAuthenticationMiddleware(req, res, next) {
     const db = req.redis_client;
     let access_token;
     // POST or GET
-    if (req.body.access_token) {
+    if (req.body.access_token !== undefined) {
         access_token = req.body.access_token;
     } else {
         access_token = req.query.access_token;
