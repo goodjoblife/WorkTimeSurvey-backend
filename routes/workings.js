@@ -222,9 +222,15 @@ router.get('/search_by/company/group_by/company', function(req, res, next) {
     });
 });
 
+router.get('/search_by/job_title/group_by/company', middleware.checkSearchPermission);
 router.use('/search_by/job_title/group_by/company', middleware.group_sort_by);
 router.get('/search_by/job_title/group_by/company', function(req, res, next) {
     winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
+
+    if (req.custom.search_permission !== true) {
+        next(new HttpError("permission is required", 403));
+        return;
+    }
 
     // input parameter
     const job_title = req.query.job_title;
