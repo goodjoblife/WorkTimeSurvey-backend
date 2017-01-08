@@ -2,12 +2,13 @@ const facebook = require('./facebook');
 const _redis = require('./redis');
 
 /*
- * @param db RedisClient
+ * 透過 access_token 取得身份（有 cache ）
+ *
+ * @param db           redis_client
  * @param access_token string
  *
- * @return Promise
- * fulfilled: {id, name}
- * rejected : if unauthenticated
+ * @fulfilled {id, name}
+ * @rejected  error, if unauthenticated
  */
 function cachedFacebookAuthentication(db, access_token) {
     function facebookAuth(db, access_token) {

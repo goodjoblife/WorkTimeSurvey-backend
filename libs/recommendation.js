@@ -1,6 +1,15 @@
 const ObjectId = require('mongodb').ObjectId;
 const ObjectIdError = require('./errors').ObjectIdError;
 
+/*
+ * 取得使用者的推薦字串
+ *
+ * @param db   mongo db
+ * @param user {id, type}
+ *
+ * @fulfilled HexString of ObjectId
+ * @rejected  error
+ */
 function getRecommendationString(db, user) {
     return db.collection('recommendations')
         .findOneAndUpdate({
@@ -21,6 +30,19 @@ function getRecommendationString(db, user) {
         });
 }
 
+/*
+ * 根據推薦字串取得使用者
+ *
+ * @param db                    mongo db
+ * @param recommendation_string string
+ *
+ * @fulfilled user {id, type} || null
+ * @rejected  error
+ *
+ * @Error         recommendation_string 不是字串
+ * @ObjectIdError recommendation_string 不合法
+ * @Error         其它錯誤
+ */
 function getUserByRecommendationString(db, recommendation_string) {
     return Promise.resolve()
         .then(() => {
