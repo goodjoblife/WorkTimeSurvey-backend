@@ -24,7 +24,7 @@ router.post('/me/recommendations', [
     },
 ]);
 
-router.get('/me/permission/search', [
+router.get('/me/permissions/search', [
     authentication.cachedFacebookAuthenticationMiddleware,
     authorization.cachedSearchPermissionAuthorizationMiddleware,
     // Middleware Error Handler

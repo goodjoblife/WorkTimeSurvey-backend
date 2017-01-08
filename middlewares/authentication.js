@@ -3,7 +3,13 @@ const HttpError = require('../libs/errors').HttpError;
 
 function cachedFacebookAuthenticationMiddleware(req, res, next) {
     const db = req.redis_client;
-    const access_token = req.body.access_token;
+    let access_token;
+    // POST or GET
+    if (req.body.access_token) {
+        access_token = req.body.access_token;
+    } else {
+        access_token = req.query.access_token;
+    }
 
     if (typeof access_token !== "string") {
         next(new HttpError('Unauthorized', 401));
