@@ -1,3 +1,7 @@
+
+const FB_TOKEN_EXPIRE_TIME = 1800; //30 mins = 30*60
+const SEARCH_PERMISSION_EXPIRE_TIME = 172800; //2 days = 2*24*60*60
+
 /*
  * @param db  redis client
  * @param key string
@@ -37,6 +41,14 @@ function setAsync(db, key, value) {
     });
 }
 
+/*
+ * @param db    redis client
+ * @param key   string
+ * @param time(seconds)  integer
+ *
+ * @fulfilled reply
+ * @rejected  error
+ */
 function expireAsync(db, key, time) {
     return new Promise((resolve, reject) => {
         db.expire(key, time, function(err, reply) {
@@ -75,7 +87,9 @@ function redisGetFB(db, key) {
  * @rejected  error
  */
 function redisSetFB(db, key, value) {
-    return setAsync(db, 'fb_' + key, JSON.stringify(value));
+    return setAsync(db, 'fb_' + key, JSON.stringify(value)).then(() => {
+        return expireAsync(db, 'fb_' + key, FB_TOKEN_EXPIRE_TIME);
+    });
 }
 
 /*
@@ -103,7 +117,9 @@ function redisGetPermission(db, key) {
  * @rejected  error
  */
 function redisSetPermission(db, key) {
-    return setAsync(db, 'permission_' + key, '1');
+    return setAsync(db, 'permission_' + key, '1').then(() => {
+        return expireAsync(db, 'permission_' + key, SEARCH_PERMISSION_EXPIRE_TIME);
+    });
 }
 module.exports = {
     getAsync,
