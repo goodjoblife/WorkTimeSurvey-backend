@@ -57,7 +57,13 @@ function checkSearchPermission(req, res, next) {
         next();
     } else {
         authenticationLib.cachedFacebookAuthentication(db, access_token)
-            .then(account => authorizationLib.cachedSearchPermissionAuthorization(db, account))
+            .then(account => {
+                req.user = {
+                    id: account.id,
+                    type: 'facebook',
+                };
+                return authorizationLib.cachedSearchPermissionAuthorization(db, account);
+            })
             .then(() => {
                 // the client has permission
                 req.custom.search_permission = true;
