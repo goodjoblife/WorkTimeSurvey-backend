@@ -62,7 +62,8 @@ describe('Workings 工時資訊', function() {
         });
 
         it('return latest 10 results if not authorized', function(done) {
-            const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                .resolves({id: '-1', name: 'LittleWhiteYA'});
             const authorization = sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').rejects();
 
             request(app).get('/workings')
@@ -168,7 +169,8 @@ describe('Workings 工時資訊', function() {
 
         for (let sort_field of [undefined, 'created_at', 'week_work_time', 'estimated_hourly_wage']) {
             it(`return the pagination with SORT_FIELD: ${sort_field}`, function(done) {
-                sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+                sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                    .resolves({id: '-1', name: 'LittleWhiteYA'});
                 sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
                 request(app).get('/workings')
@@ -186,7 +188,8 @@ describe('Workings 工時資訊', function() {
             });
 
             it(`return correct default order with SORT_FIELD: ${sort_field}`, function(done) {
-                sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+                sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                    .resolves({id: '-1', name: 'LittleWhiteYA'});
                 sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
                 request(app).get('/workings')
@@ -222,7 +225,8 @@ describe('Workings 工時資訊', function() {
         }
 
         it(`sort_by ascending order with default SORT_FIELD 'created_at'`, function(done) {
-            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
             request(app).get('/workings')
@@ -270,20 +274,21 @@ describe('Workings 工時資訊', function() {
             sandbox = sinon.sandbox.create();
         });
 
-        it('return error 403 if not autheticated', function(done) {
+        it('return error 401 Unauthorized if not autheticated', function(done) {
             const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').rejects();
 
             request(app).get('/workings/search_by/company/group_by/company')
                 .query({access_token: 'faketoken'})
-                .expect(403)
+                .expect(401)
                 .expect(function(res) {
                     sinon.assert.calledOnce(authentication);
                 })
                 .end(done);
         });
 
-        it('return error 403 if not authorized', function(done) {
-            const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+        it('return error 403 Forbidden if not authorized', function(done) {
+            const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                .resolves({id: '-1', name: 'LittleWhiteYA'});
             const authorization = sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').rejects();
 
             request(app).get('/workings/search_by/company/group_by/company')
@@ -293,6 +298,12 @@ describe('Workings 工時資訊', function() {
                     sinon.assert.calledOnce(authentication);
                     sinon.assert.calledOnce(authorization);
                 })
+                .end(done);
+        });
+
+        it('return error 401 Unauthorized if dont get access_token', function(done) {
+            request(app).get('/workings/search_by/company/group_by/company')
+                .expect(401)
                 .end(done);
         });
 
@@ -446,7 +457,8 @@ describe('Workings 工時資訊', function() {
         });
 
         it('error 422 if no company provided', function(done) {
-            const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                .resolves({id: '-1', name: 'LittleWhiteYA'});
             const authorization = sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
             request(app).get('/workings/search_by/company/group_by/company')
@@ -460,7 +472,8 @@ describe('Workings 工時資訊', function() {
         });
 
         it('依照 company 來分群資料，結構正確 (workings.length >= 5)', function(done) {
-            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
             request(app).get('/workings/search_by/company/group_by/company')
@@ -521,7 +534,8 @@ describe('Workings 工時資訊', function() {
         });
 
         it('依照 company 來分群資料，結構正確 (workings.length < 5)', function(done) {
-            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
             request(app).get('/workings/search_by/company/group_by/company')
@@ -573,7 +587,8 @@ describe('Workings 工時資訊', function() {
         });
 
         it('小寫 company query 轉換成大寫', function(done) {
-            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
             request(app).get('/workings/search_by/company/group_by/company')
@@ -590,7 +605,8 @@ describe('Workings 工時資訊', function() {
         });
 
         it('company match any substring in company.name', function(done) {
-            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
             request(app).get('/workings/search_by/company/group_by/company')
@@ -608,7 +624,8 @@ describe('Workings 工時資訊', function() {
         });
 
         it('依照 group_sort_order 排序 group data', function(done) {
-            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
             request(app).get('/workings/search_by/company/group_by/company')
@@ -628,7 +645,8 @@ describe('Workings 工時資訊', function() {
         });
 
         it('依照 job_title 排序 data in company group', function(done) {
-            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
             request(app).get('/workings/search_by/company/group_by/company')
@@ -647,7 +665,8 @@ describe('Workings 工時資訊', function() {
         });
 
         it('根據統編搜尋', function(done) {
-            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
             request(app).get('/workings/search_by/company/group_by/company')
@@ -664,7 +683,8 @@ describe('Workings 工時資訊', function() {
         });
 
         it('當 workings.length >= 5, has_overtime_salary_count values 加總會小於等於 workings.length', function(done) {
-            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
             request(app).get('/workings/search_by/company/group_by/company')
@@ -686,7 +706,8 @@ describe('Workings 工時資訊', function() {
 
         it('當 workings.length >= 5, has_overtime_salary_count.yes 會大於等於 is_overtime_salary_legal_count values 加總',
             function(done) {
-                sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves();
+                sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                .resolves({id: '-1', name: 'LittleWhiteYA'});
                 sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
                 request(app).get('/workings/search_by/company/group_by/company')
