@@ -49,20 +49,20 @@ function pagination(req, res, next) {
 }
 
 function checkSearchPermission(req, res, next) {
-    const db = req.redis_client;
+    const redis_client = req.redis_client;
     const access_token = req.query.access_token;
     req.custom = {};
 
     if (typeof access_token !== "string") {
         next();
     } else {
-        authenticationLib.cachedFacebookAuthentication(db, access_token)
+        authenticationLib.cachedFacebookAuthentication(redis_client, access_token)
             .then(account => {
                 req.user = {
                     id: account.id,
                     type: 'facebook',
                 };
-                return authorizationLib.cachedSearchPermissionAuthorization(db, account);
+                return authorizationLib.cachedSearchPermissionAuthorization(req.db, redis_client, req.user);
             })
             .then(() => {
                 // the client has permission
