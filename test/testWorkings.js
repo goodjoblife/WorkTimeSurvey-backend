@@ -248,10 +248,38 @@ describe('Workings 工時資訊', function() {
                         }
                     }
 
+                    // bug
                     for (let idx=1; idx<undefined_start_idx; ++idx) {
                         assert(workings[idx][sort_field] >= workings[idx-1][sort_field]);
                     }
                     for (let idx=undefined_start_idx; idx<workings.length; ++idx) {
+                        assert.isUndefined(workings[idx][sort_field]);
+                    }
+                })
+                .end(done);
+        });
+
+        it(`sort_by ascending order with SORT_FIELD 'week_work_time'`, function(done) {
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                .resolves({id: '-1', name: 'LittleWhiteYA'});
+            sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
+            request(app).get('/workings')
+                .query({
+                    sort_by: 'week_work_time',
+                    order: 'ascending',
+                    access_token: 'faketoken',
+                })
+                .expect(200)
+                .expect(function(res) {
+                    const sort_field = 'week_work_time';
+                    const workings = res.body.time_and_salary;
+
+                    let undefined_idx = 3;
+                    for (let idx=1; idx<undefined_idx; ++idx) {
+                        assert(workings[idx][sort_field] >= workings[idx-1][sort_field]);
+                    }
+                    for (let idx=undefined_idx; idx<workings.length; ++idx) {
                         assert.isUndefined(workings[idx][sort_field]);
                     }
                 })

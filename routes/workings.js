@@ -43,6 +43,16 @@ router.get('/', function(req, res, next) {
 
         return collection.find(query, opt).sort(req.sort_by).skip(limit * page).limit(limit).toArray();
     }).then(function(results) {
+        // move undefined data to the bottom of array
+        const sort_by = req.query.sort_by || 'created_at';
+        if (results.length > 0 && results[0][sort_by] === undefined) {
+            let undefined_count = 1;
+            for (let idx=1; idx<results.length && results[idx][sort_by] === undefined; ++idx, ++undefined_count);
+
+            const undefined_arr = results.splice(0, undefined_count);
+            results = results.concat(undefined_arr);
+        }
+
         data.time_and_salary = results;
 
         res.send(data);
