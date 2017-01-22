@@ -239,21 +239,9 @@ describe('Workings 工時資訊', function() {
                     // sort_field default is field 'created_at'
                     const sort_field = 'created_at';
                     const workings = res.body.time_and_salary;
-                    let undefined_start_idx = workings.length;
 
-                    for (let idx in workings) {
-                        if (workings[idx][sort_field] === undefined) {
-                            undefined_start_idx = idx;
-                            break;
-                        }
-                    }
-
-                    // bug
-                    for (let idx=1; idx<undefined_start_idx; ++idx) {
+                    for (let idx=1; idx<workings.length; ++idx) {
                         assert(workings[idx][sort_field] >= workings[idx-1][sort_field]);
-                    }
-                    for (let idx=undefined_start_idx; idx<workings.length; ++idx) {
-                        assert.isUndefined(workings[idx][sort_field]);
                     }
                 })
                 .end(done);
