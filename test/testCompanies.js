@@ -43,8 +43,8 @@ describe('companies', function() {
             ]);
         });
 
-        it('包含兩個欄位：id, name', function(done) {
-            request(app)
+        it('包含兩個欄位：id, name', function() {
+            return request(app)
                 .get('/companies/search')
                 .query({key: 'MARK'})
                 .expect(200)
@@ -52,34 +52,31 @@ describe('companies', function() {
                     assert.isArray(res.body);
                     assert.deepProperty(res.body, '0.id');
                     assert.deepProperty(res.body, '0.name');
-                })
-                .end(done);
+                });
         });
 
-        it('搜尋 `MARK`', function(done) {
-            request(app)
+        it('搜尋 `MARK`', function() {
+            return request(app)
                 .get('/companies/search')
                 .query({key: 'MARK'})
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 2);
-                })
-                .end(done);
+                });
         });
 
-        it('搜尋 `公司`', function(done) {
-            request(app)
+        it('搜尋 `公司`', function() {
+            return request(app)
                 .get('/companies/search')
                 .query({key: '公司'})
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 2);
-                })
-                .end(done);
+                });
         });
 
-        it('搜尋 id `00000004`', function(done) {
-            request(app)
+        it('搜尋 id `00000004`', function() {
+            return request(app)
                 .get('/companies/search')
                 .query({key: '00000004'})
                 .expect(200)
@@ -88,26 +85,23 @@ describe('companies', function() {
                     assert.propertyVal(res.body[0], 'id', '00000004');
                     assert.propertyVal(res.body[0], 'name', '公司好工作');
                     assert.propertyVal(res.body[0], 'capital', 2500);
-                })
-                .end(done);
+                });
         });
 
-        it('搜尋小寫關鍵字 `mark`', function(done) {
-            request(app)
+        it('搜尋小寫關鍵字 `mark`', function() {
+            return request(app)
                 .get('/companies/search')
                 .query({key: 'mark'})
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 2);
-                })
-                .end(done);
+                });
         });
 
-        it('沒有關鍵字，要輸出錯誤', function(done) {
-            request(app)
+        it('沒有關鍵字，要輸出錯誤', function() {
+            return request(app)
                 .get('/companies/search')
-                .expect(422)
-                .end(done);
+                .expect(422);
         });
 
         after(function() {

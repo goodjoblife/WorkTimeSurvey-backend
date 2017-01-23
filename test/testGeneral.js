@@ -11,24 +11,22 @@ describe('CORS', function() {
     ];
 
     for (let origin of client_origins) {
-        it(origin + ' is in cors list', function(done) {
-            request(app).get('/')
+        it(origin + ' is in cors list', function() {
+            return request(app).get('/')
                 .set('origin', origin)
                 .expect(404)
                 .expect(function(res) {
                     assert.propertyVal(res.header, 'access-control-allow-origin', origin);
-                })
-                .end(done);
+                });
         });
     }
 
-    it('reject other origin', function(done) {
-        request(app).get('/')
+    it('reject other origin', function() {
+        return request(app).get('/')
             .set('origin', 'http://www.google.com.tw')
             .expect(404)
             .expect(function(res) {
                 assert.notProperty(res.header, 'access-control-allow-origin');
-            })
-            .end(done);
+            });
     });
 });
