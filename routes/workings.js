@@ -14,7 +14,6 @@ router.get('/', function(req, res, next) {
     winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
 
     const collection = req.db.collection('workings');
-    const query = {};
     const opt = {
         company: 1,
         sector: 1,
@@ -34,30 +33,40 @@ router.get('/', function(req, res, next) {
         // the user can only view latest 10 data
         page = 0;
         limit = 10;
+        req.query_field = {
+            created_at: {
+                $exists: true,
+            },
+        };
         req.sort_by = {created_at: -1};
     }
 
     const data = {};
-    collection.find().count().then(function(count) {
+    collection.count().then(function(count) {
         data.total = count;
 
-        return collection.find(query, opt).sort(req.sort_by).skip(limit * page).limit(limit).toArray();
+        return collection.find(req.query_field, opt).sort(req.sort_by).skip(limit * page).limit(limit).toArray();
     }).then(function(results) {
-        // move undefined data to the bottom of array
-        const sort_by = req.query.sort_by || 'created_at';
-        if (results.length > 0 && results[0][sort_by] === undefined) {
-            let undefined_count = 1;
-            for (let idx=1; idx<results.length && results[idx][sort_by] === undefined; ++idx) {
-                ++undefined_count;
-            }
+        data.time_and_salary = results;
+        if (results.length < limit) {
+            collection.find(req.query_field).count().then(function(count_defined_num) {
+                const undefined_page = page - Math.floor(count_defined_num / limit);
 
-            const undefined_arr = results.splice(0, undefined_count);
-            results = results.concat(undefined_arr);
+                const query = {};
+                query[req.query.sort_by] = {};
+                query[req.query.sort_by].$exists = false;
+                return collection.find(query, opt)
+                        .skip(limit * undefined_page)
+                        .limit(limit - results.length).toArray();
+            }).then(function(results) {
+                data.time_and_salary = data.time_and_salary.concat(results);
+
+                res.send(data);
+            });
+        } else {
+            res.send(data);
         }
 
-        data.time_and_salary = results;
-
-        res.send(data);
     }).catch(function(err) {
         next(new HttpError("Internal Server Error", 500));
     });
