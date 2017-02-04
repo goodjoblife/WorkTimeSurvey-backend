@@ -46,24 +46,22 @@ router.get('/', function(req, res, next) {
         data.total = count;
 
         return collection.find(query, opt).sort(req.sort_by).skip(limit * page).limit(limit).toArray();
-    }).then(function(results) {
-        data.time_and_salary = results;
-        if (results.length < limit) {
-            collection.find(query).count().then(function(count_defined_num) {
+    }).then(function(defined_results) {
+        if (defined_results.length < limit) {
+            return collection.find(query).count().then(function(count_defined_num) {
                 query[req.query.sort_by] = {$exists: false};
 
                 return collection.find(query, opt)
-                        .skip(limit * page + results.length - count_defined_num)
-                        .limit(limit - results.length).toArray();
-            }).then(function(results) {
-                data.time_and_salary = data.time_and_salary.concat(results);
-
-                res.send(data);
-            });
+                        .skip(limit * page + defined_results.length - count_defined_num)
+                        .limit(limit - defined_results.length).toArray();
+            }).then(results => defined_results.concat(results));
         } else {
-            res.send(data);
+            return defined_results;
         }
+    }).then(function(results) {
+        data.time_and_salary = results;
 
+        res.send(data);
     }).catch(function(err) {
         next(new HttpError("Internal Server Error", 500));
     });
