@@ -274,6 +274,30 @@ describe('Workings 工時資訊', function() {
                 .end(done);
         });
 
+        it(`欄位是 undefined 的資料全部會被放在 defined 的資料的後面`, function(done) {
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                .resolves({id: '-1', name: 'LittleWhiteYA'});
+            sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
+            request(app).get('/workings')
+                .query({
+                    sort_by: 'week_work_time',
+                    order: 'ascending',
+                    access_token: 'faketoken',
+                    limit: '2',
+                    page: '1',
+                })
+                .expect(200)
+                .expect(function(res) {
+                    const sort_field = 'week_work_time';
+                    const workings = res.body.time_and_salary;
+
+                    assert.isDefined(workings[0][sort_field]);
+                    assert.isUndefined(workings[1][sort_field]);
+                })
+                .end(done);
+        });
+
         after(function() {
             return db.collection('workings').remove({});
         });
