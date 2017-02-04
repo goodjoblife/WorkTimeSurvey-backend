@@ -26,6 +26,8 @@ router.get('/', function(req, res, next) {
         estimated_hourly_wage: 1,
     };
 
+    let query = {};
+    query[req.query.sort_by] = {$exists: true};
     let page = req.pagination.page;
     let limit = req.pagination.limit;
 
@@ -33,11 +35,9 @@ router.get('/', function(req, res, next) {
         // the user can only view latest 10 data
         page = 0;
         limit = 10;
-        req.query_field = {
-            created_at: {
-                $exists: true,
-            },
-        };
+        query = {};
+        query.created_at = {$exists: true};
+        req.query.sort_by = "created_at";
         req.sort_by = {created_at: -1};
     }
 
@@ -45,18 +45,15 @@ router.get('/', function(req, res, next) {
     collection.count().then(function(count) {
         data.total = count;
 
-        return collection.find(req.query_field, opt).sort(req.sort_by).skip(limit * page).limit(limit).toArray();
+        return collection.find(query, opt).sort(req.sort_by).skip(limit * page).limit(limit).toArray();
     }).then(function(results) {
         data.time_and_salary = results;
         if (results.length < limit) {
-            collection.find(req.query_field).count().then(function(count_defined_num) {
-                const undefined_page = page - Math.floor(count_defined_num / limit);
+            collection.find(query).count().then(function(count_defined_num) {
+                query[req.query.sort_by] = {$exists: false};
 
-                const query = {};
-                query[req.query.sort_by] = {};
-                query[req.query.sort_by].$exists = false;
                 return collection.find(query, opt)
-                        .skip(limit * undefined_page)
+                        .skip(limit * page + results.length - count_defined_num)
                         .limit(limit - results.length).toArray();
             }).then(function(results) {
                 data.time_and_salary = data.time_and_salary.concat(results);

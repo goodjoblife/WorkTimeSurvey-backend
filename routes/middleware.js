@@ -13,10 +13,6 @@ function sort_by(req, res, next) {
     }
 
     req.query.sort_by = sort_by;
-    req.query_field = {};
-    req.query_field[sort_by] = {
-        $exists: true,
-    };
     req.sort_by = {};
     req.sort_by[sort_by] = order;
     next();
