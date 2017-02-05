@@ -560,6 +560,8 @@ describe('Workings 工時資訊', function() {
                     assert.isObject(res.body[0].time_and_salary[0].salary);
                     assert.deepProperty(res.body[0], 'time_and_salary.0.salary.type');
                     assert.deepProperty(res.body[0], 'time_and_salary.0.salary.amount');
+                    //
+                    assert.propertyVal(res.body[0], 'count', 5);
                 });
         });
 
@@ -612,6 +614,8 @@ describe('Workings 工時資訊', function() {
                     assert.isObject(res.body[0].time_and_salary[0].salary);
                     assert.deepProperty(res.body[0], 'time_and_salary.0.salary.type');
                     assert.deepProperty(res.body[0], 'time_and_salary.0.salary.amount');
+                    //
+                    assert.propertyVal(res.body[0], 'count', 1);
                 });
         });
 
