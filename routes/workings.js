@@ -235,6 +235,7 @@ router.get('/search_by/company/group_by/company', function(req, res, next) {
                 time_and_salary: 1,
                 _id: 0,
                 company: "$_id",
+                count: 1,
             },
         },
         {
