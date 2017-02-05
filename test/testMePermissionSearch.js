@@ -16,7 +16,7 @@ describe('GET /me/permission/search 確認使用者查詢資訊權限', function
         sandbox = sinon.sandbox.create();
     });
 
-    it('hasSearchPermission is true', function(done) {
+    it('hasSearchPermission is true', function() {
         const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication')
             .withArgs(sinon.match.object, 'fakeaccesstoken')
             .resolves({id: '-1', name: 'LittleWhiteYA'});
@@ -25,7 +25,7 @@ describe('GET /me/permission/search 確認使用者查詢資訊權限', function
             .withArgs(sinon.match.object, sinon.match.object, {id: '-1', type: 'facebook'})
             .resolves(true);
 
-        request(app).get('/me/permissions/search')
+        return request(app).get('/me/permissions/search')
             .query({
                 access_token: 'fakeaccesstoken',
             })
@@ -35,31 +35,29 @@ describe('GET /me/permission/search 確認使用者查詢資訊權限', function
                 sinon.assert.calledOnce(cachedSearchPermissionAuthorization);
 
                 assert.propertyVal(res.body, 'hasSearchPermission', true);
-            })
-            .end(done);
+            });
     });
 
-    it('hasSearchPermission is false if facebook auth fail', function(done) {
+    it('hasSearchPermission is false if facebook auth fail', function() {
         sandbox.stub(authentication, 'cachedFacebookAuthentication').rejects();
 
-        request(app).get('/me/permissions/search')
+        return request(app).get('/me/permissions/search')
             .query({
                 access_token: 'fakeaccesstoken',
             })
             .expect(200)
             .expect(function(res) {
                 assert.propertyVal(res.body, 'hasSearchPermission', false);
-            })
-            .end(done);
+            });
     });
 
-    it('hasSearchPermission is false if authorization fail', function(done) {
+    it('hasSearchPermission is false if authorization fail', function() {
         const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication')
             .withArgs(sinon.match.object, 'fakeaccesstoken')
             .resolves({id: '-1', name: 'LittleWhiteYA'});
         sandbox.stub(authorization, 'cachedSearchPermissionAuthorization').rejects();
 
-        request(app).get('/me/permissions/search')
+        return request(app).get('/me/permissions/search')
             .query({
                 access_token: 'fakeaccesstoken',
             })
@@ -68,8 +66,7 @@ describe('GET /me/permission/search 確認使用者查詢資訊權限', function
                 sinon.assert.calledOnce(cachedFacebookAuthentication);
 
                 assert.propertyVal(res.body, 'hasSearchPermission', false);
-            })
-            .end(done);
+            });
     });
 
     afterEach(function() {
