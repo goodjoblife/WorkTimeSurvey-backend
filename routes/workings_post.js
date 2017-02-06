@@ -50,8 +50,6 @@ function collectData(req, res) {
         "has_compensatory_dayoff",
         // salary data
         "experience_in_year",
-        //user recommendation data
-        "recommendation_string",
     ].forEach(function(field, i) {
         if (checkBodyField(req, field)) {
             working[field] = req.body[field];
@@ -75,6 +73,11 @@ function collectData(req, res) {
     }
     if (checkBodyField(req, "salary_amount")) {
         req.custom.salary_amount = req.body.salary_amount;
+    }
+
+    // user recommendation
+    if (checkBodyField(req, "recommendation_string")) {
+        req.custom.recommendation_string = req.body.recommendation_string;
     }
 
     return Promise.resolve();
@@ -388,12 +391,12 @@ function main(req, res, next) {
         working.company = company;
     }).then(() => {
         //這邊嘗試從recommendation_string去取得推薦使用者的資訊
-        if (working.recommendation_string) {
-            return recommendation.getUserByRecommendationString(req.db, working.recommendation_string).then(
+        if (req.custom.recommendation_string) {
+            return recommendation.getUserByRecommendationString(req.db, req.custom.recommendation_string).then(
                 result => {
                     //if no error but still cannot find user
                     if (result === null) {
-                        throw new HttpError('無法找到推薦者，請確認網址是否正確、或有更動到原始網址', 422);
+                        return null;
                     } else {
                         return result;
                     }
@@ -401,7 +404,7 @@ function main(req, res, next) {
                 err => {
                     //if recommendation_string is not valid
                     if (err instanceof ObjectIdError) {
-                        throw new HttpError('推薦者參照字串格式錯誤，請確認網址是否正確、或有更動到原始網址', 422);
+                        return null;
                     } else {
                         throw err;
                     }
@@ -410,12 +413,15 @@ function main(req, res, next) {
             return null;
         }
     }).then((rec_user) => {
-        if (working.recommendation_string) {
-            delete working.recommendation_string;
-        }
         if (rec_user !== null) {
             working.recommended_by = rec_user;
             return req.db.collection('recommendations').update({user: rec_user}, {$inc: {count: 1}});
+        } else {
+            // 如果不是 user，依然把 recommendation_string 儲存起來
+            if (req.custom.recommendation_string) {
+                working.recommended_by = req.custom.recommendation_string;
+            }
+            return;
         }
     }).then(() => {
         const author = working.author;

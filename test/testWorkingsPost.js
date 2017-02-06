@@ -854,12 +854,27 @@ describe('Workings 工時資訊', function() {
             });
 
             for (let test_string of ["00000000ccd8958909a983e7", "00000000ccd8958909a983e6", "ABCD", "1234"]) {
-                it('it should response 422 when recommendation_string is not found in DB', function() {
-                    return request(app).post('/workings')
+                it('should save recommendation_string to recommended_by', function() {
+                    const send_request = request(app).post('/workings')
                         .send(generateWorkingTimeRelatedPayload({
                             recommendation_string: test_string,
                         }))
-                        .expect(422);
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.notDeepProperty(res.body.working, 'recommendation_string');
+                        })
+                        .then(function(res) {
+                            return res.body.working._id;
+                        });
+
+                    const test_db = send_request.then((data_id) => {
+                        return db.collection('workings').findOne({_id: ObjectId(data_id)}).then(result => {
+                            assert.notDeepProperty(result, 'recommendation_string');
+                            assert.deepPropertyVal(result, 'recommended_by', test_string);
+                        });
+                    });
+
+                    return Promise.all([send_request, test_db]);
                 });
             }
 
