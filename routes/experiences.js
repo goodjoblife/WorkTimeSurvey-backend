@@ -1,36 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const HttpError = require('../libs/errors').HttpError;
-const facebook = require('../libs/facebook');
 //const lodash = require('lodash');
 const winston = require('winston');
 const helper = require('./workings_helper');
 
 router.post('/interview_experiences', (req, res, next) => {
-    const access_token = req.body.access_token;
+    const data_fields = [
+        // Required
+        "job_title",
+        "interview_time",
+        // Optional
+        "education",
+        "salary",
+        "working_experiences",
+        "shared_experiences",
+    ];
 
-    facebook.accessTokenAuth(access_token).then(facebook => {
-        winston.info("facebook auth success", {access_token: access_token, ip: req.ip, ips: req.ips});
-
-        req.custom.facebook = facebook;
-    }).then(() => {
-        const data_fields = [
-            // Required
-            "job_title",
-            "interview_time",
-            // Optional
-            "education",
-            "salary",
-            "working_experiences",
-            "shared_experiences",
-        ];
-
-        collectExperienceData(req, data_fields).then(next, next);
-    }).catch(function(err) {
-        winston.info("facebook auth fail", {access_token: access_token, ip: req.ip, ips: req.ips});
-
-        next(new HttpError("Unauthorized", 401));
-    });
+    collectExperienceData(req, data_fields).then(next, next);
 }, (req, res, next) => {
     validation(req).then(next, next);
 }, main);
@@ -45,9 +32,6 @@ function collectExperienceData(req, fields) {
         created_at: new Date(),
     };
 
-    //
-    // facebook auth not done
-    //
     if (req.custom.facebook) {
         author.id = req.custom.facebook_id;
         author.name = req.custom.facebook.name;
