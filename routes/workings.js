@@ -53,7 +53,7 @@ router.get('/', function(req, res, next) {
             return collection.find(query).count().then(function(count_defined_num) {
                 query = {
                     [req.custom.sort_by]: {$exists: false},
-                }
+                };
 
                 return collection.find(query, opt)
                         .skip(limit * page + defined_results.length - count_defined_num)
