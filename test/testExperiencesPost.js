@@ -1,5 +1,5 @@
-const chai = require('chai');
-const assert = chai.assert;
+//const chai = require('chai');
+//const assert = chai.assert;
 const request = require('supertest');
 const app = require('../app');
 const MongoClient = require('mongodb').MongoClient;
@@ -12,7 +12,7 @@ describe('experiences 面試和工作經驗資訊', function() {
             db = _db;
         });
     });
-    
+
 
     describe('POST /interview_experiences', function() {
         before('Seed companies', function() {
@@ -79,7 +79,7 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .end(done);
             });
         });
-    
+
         describe('Interview Validation Part', function() {
             it('interview_time_year is required', function(done) {
                 request(app).post('/interview_experiences')
@@ -104,19 +104,19 @@ describe('experiences 面試和工作經驗資訊', function() {
                     request(app).post('/interview_experiences')
                         .send(generateInterviewExperiencePayload({
                             interview_time_year: "a",
-                        }))  
+                        }))
                         .expect(422)
                         .end(done);
-                });  
+                });
 
                 it('interview_time_month sould be number', function(done) {
                     request(app).post('/interview_experiences')
                         .send(generateInterviewExperiencePayload({
                             interview_time_year: "a",
-                        }))  
+                        }))
                         .expect(422)
                         .end(done);
-                });  
+                });
 
                 it('interview_time_year <= this year', function(done) {
                     let nextYear = new Date();
@@ -124,25 +124,25 @@ describe('experiences 面試和工作經驗資訊', function() {
                     request(app).post('/interview_experiences')
                         .send(generateInterviewExperiencePayload({
                             interview_time_year: nextYear.getFullYear().toString(),
-                        }))  
+                        }))
                         .expect(422)
                         .end(done);
-                });  
+                });
 
                 it('interview_time_year > this year - 10', function(done) {
                     request(app).post('/interview_experiences')
                         .send(generateInterviewExperiencePayload({
                             interview_time_year: ((new Date()).getFullYear() - 10).toString(),
-                        }))  
+                        }))
                         .expect(422)
                         .end(done);
-                });  
+                });
 
                 it('interview_time_month should be 1~12', function(done) {
                     request(app).post('/interview_experiences')
                         .send(generateInterviewExperiencePayload({
                             interview_time_month: "13",
-                        }))  
+                        }))
                         .expect(422)
                         .end(done);
                 });
@@ -154,11 +154,11 @@ describe('experiences 面試和工作經驗資訊', function() {
                         .send(generateInterviewExperiencePayload({
                             interview_time_year: now.getFullYear().toString(),
                             interview_time_month: (now.getMonth() + 2).toString(),
-                        }))  
+                        }))
                         .expect(422)
                         .end(done);
                 });
-            }); 
+            });
 
             it('interview_result is required', function(done) {
                 request(app).post('/interview_experiences')
@@ -266,7 +266,7 @@ function generateInterviewExperiencePayload(opt) {
             {
                 subtitle: "subtitle1",
                 content: "content1",
-            }
+            },
         ],
         experience_in_year: '10',
         education: "BS",
@@ -277,7 +277,7 @@ function generateInterviewExperiencePayload(opt) {
             {
                 question: "qas1",
                 answer: "ans1",
-            }
+            },
         ],
         interview_result: "up",
         salary_type: 'year',

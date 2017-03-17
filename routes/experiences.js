@@ -110,7 +110,7 @@ function validateInterviewData(data) {
         data.interview_time = {
             year: parseInt(data.interview_time_year),
             month: parseInt(data.interview_time_month),
-        }
+        };
         delete data.interview_time_year;
         delete data.interview_time_month;
 
