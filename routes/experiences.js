@@ -8,14 +8,31 @@ const helper = require('./workings_helper');
 router.post('/interview_experiences', (req, res, next) => {
     const data_fields = [
         // Required
+        "author_id",
+        "author_type",
+        "area",
         "job_title",
-        "interview_time",
+        "interview_time_year",
+        "interview_time_month",
+        "interview_result",
+        "overall_rating",
+        "title",
         // Optional
+        "sections",
+        "interview_qas",
+        "experience_in_year",
         "education",
-        "salary",
-        "working_experiences",
-        "shared_experiences",
+        "salary_type",
+        "salary_amount",
     ];
+
+    req.custom = {};
+    req.custom.experience = {
+        author: {},
+        company: {},
+        created_at: new Date(),
+        type: "interview",
+    };
 
     collectExperienceData(req, data_fields).then(next, next);
 }, (req, res, next) => {
@@ -24,22 +41,7 @@ router.post('/interview_experiences', (req, res, next) => {
 
 
 function collectExperienceData(req, fields) {
-    req.custom = {};
-    const author = req.custom.author = {};
-    const experience = req.custom.experience = {
-        author: author,
-        company: {},
-        created_at: new Date(),
-    };
-
-    if (req.custom.facebook) {
-        author.id = req.custom.facebook_id;
-        author.name = req.custom.facebook.name;
-        author.type = "facebook";
-    } else {
-        author.id = "-1";
-        author.type = "test";
-    }
+    const experience = req.custom.experience;
 
     // pick fields only
     // make sure the field is string
@@ -48,21 +50,26 @@ function collectExperienceData(req, fields) {
             experience[field] = req.body[field];
         }
     });
+
     if (checkBodyField(req, "company_id")) {
         experience.company.id = req.body.company_id;
-    }
-    if (checkBodyField(req, "company")) {
-        req.custom.company_query = req.body.company;
+    } else if (checkBodyField(req, "company")) {
+        experience.company.query = req.body.company;
     }
 
     return Promise.resolve();
 }
 
 function validation(req) {
-    const custom = req.custom;
+    const experience = req.custom.experience;
 
     try {
-        validateData(custom);
+        validateCommonData(experience);
+        if (experience.type === "interview") {
+            validateInterviewData(experience);
+        } else if (experience.type === "work") {
+            validateWorkData(experience);
+        }
     } catch (err) {
         winston.info("validating fail", {ip: req.ip, ips: req.ips});
 
@@ -72,21 +79,104 @@ function validation(req) {
     return Promise.resolve();
 }
 
-function validateData(custom) {
-    const data = custom.experience;
-
-    if (! data.company.id) {
-        if (! custom.company_query) {
-            throw new HttpError("公司/單位名稱要填喔!", 422);
-        }
+function validateCommonData(data) {
+    /*
+    if (! data.author) {
+        throw new HttpError("使用者沒登入嗎？", 500);
+    }
+    */
+    if (! data.company.id && ! data.company.query) {
+        throw new HttpError("公司/單位名稱要填喔！", 422);
+    }
+    if (! data.area) {
+        throw new HttpError("地區要填喔！", 422);
     }
     if (! data.job_title) {
-        throw new HttpError("職稱要填喔!", 422);
+        throw new HttpError("職稱要填喔！", 422);
     }
-    if (! data.interview_time) {
-        throw new HttpError("留一下面試時間吧~", 422);
+    if (! data.title) {
+        throw new HttpError("標題要寫喔！", 422);
+    }
+}
+
+function validateInterviewData(data) {
+
+    // Required
+    if (! data.interview_time_year) {
+        throw new HttpError("面試年份要填喔！", 422);
+    } else if (! data.interview_time_month) {
+        throw new HttpError("面試月份要填喔！", 422);
+    } else {
+        data.interview_time = {
+            year: parseInt(data.interview_time_year),
+            month: parseInt(data.interview_time_month),
+        }
+        delete data.interview_time_year;
+        delete data.interview_time_month;
+
+        const now = new Date();
+        if (isNaN(data.interview_time.year)) {
+            throw new HttpError('面試年份需為數字', 422);
+        } else if (data.interview_time.year <= now.getFullYear() - 10) {
+            throw new HttpError('面試年份需在10年內', 422);
+        }
+        if (isNaN(data.interview_time.month)) {
+            throw new HttpError('面試月份需為數字', 422);
+        } else if (data.interview_time.month < 1 || data.interview_time.month > 12) {
+            throw new HttpError('面試月份需在1~12月', 422);
+        }
+        if ((data.interview_time.year === now.getFullYear() && data.interview_time.month > (now.getMonth() + 1)) ||
+            data.interview_time.year > now.getFullYear()) {
+            throw new HttpError('面試月份不可能比現在時間晚', 422);
+        }
     }
 
+    if (! data.interview_result) {
+        throw new HttpError("面試結果要填喔！", 422);
+    }
+
+    if (! data.overall_rating) {
+        throw new HttpError("這次面試你給幾分？", 422);
+    } else if (["1", "2", "3", "4", "5"].indexOf(data.overall_rating) === -1) {
+        throw new HttpError('面試分數有誤', 422);
+    }
+
+    // Optional
+    if (data.experience_in_year) {
+        data.experience_in_year = parseInt(data.experience_in_year);
+        if (isNaN(data.experience_in_year)) {
+            throw new HttpError('相關職務工作經驗需為數字', 422);
+        } else if (data.experience_in_year < 0 || data.experience_in_year > 50) {
+            throw new HttpError('相關職務工作經驗需大於等於0，小於等於50', 422);
+        }
+    }
+
+    if (data.education) {
+        // todo
+    }
+
+    if (data.salary_amount && data.salary_type) {
+        data.salary = {
+            amount: parseInt(data.salary_amount),
+            type: data.salary_type,
+        };
+
+        delete data.salary_amount;
+        delete data.salary_type;
+
+        if (["year", "month", "day", "hour"].indexOf(data.salary.type) === -1) {
+            throw new HttpError('薪資種類需為年薪/月薪/日薪/時薪', 422);
+        }
+        if (isNaN(data.salary.amount)) {
+            throw new HttpError('薪資需為數字', 422);
+        } else if (data.salary.amount < 0) {
+            throw new HttpError('薪資不小於0', 422);
+        }
+    }
+}
+
+function validateWorkData(data) {
+    //todo
 }
 
 function checkBodyField(req, field) {
@@ -99,7 +189,6 @@ function checkBodyField(req, field) {
 
 function main(req, res, next) {
     const experience = req.custom.experience;
-    const company_query = req.custom.company_query;
     const response_data = {
         experience: experience,
     };
@@ -120,9 +209,9 @@ function main(req, res, next) {
      *
      * 其他情況看 issue #7
      */
-    helper.normalizeCompany(req.db, experience.company.id, company_query).then(company => {
+    helper.normalizeCompany(req.db, experience.company.id, experience.company.query).then(company => {
         experience.company = company;
-    }).then(() => {
+
         return collection.insert(experience);
     }).then(() => {
         winston.info("experiences insert data success", {id: experience._id, ip: req.ip, ips: req.ips});
