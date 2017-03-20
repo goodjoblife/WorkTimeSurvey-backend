@@ -5,38 +5,38 @@ const lodash = require('lodash');
 const winston = require('winston');
 
 router.get('/experiences', function(req, res, next) {
-	const query = {};
+    const query = {};
 
-    if (! req.query.search_query && ! req.query.search_field) {
+    if (req.query.search_query && req.query.search_field) {
         if (!["company", "job_title"].includes(req.query.search_field)) {
             next(new HttpError('search_field error', 422));
             return;
-        } 
+        }
 
-		if (req.query.search_field === 'company') {
-			query["$or"] = [
+        if (req.query.search_field === 'company') {
+            query["$or"] = [
                 {'company.name': new RegExp(lodash.escapeRegExp(req.query.search_query.toUpperCase()))},
                 {'company.id': req.query.search_query},
-            ]
-		} else if (req.query.search_field === 'job_title') {
+            ];
+        } else if (req.query.search_field === 'job_title') {
             query.job_title = new RegExp(lodash.escapeRegExp(req.query.search_query.toUpperCase()));
         }
     }
 
     req.find_query = query;
     next();
-})
+});
 router.get('/experiences', function(req, res, next) {
-    const sort_by = req.query_sort_by || 'created_at';
-	if (!["created_at", "popular"].includes(sort_by)) {
-		next(new HttpError('sort_by error', 422));
-		return;
-    } 
+    const sort_by = req.query.sort_by || 'created_at';
+    if (!["created_at", "popular"].includes(sort_by)) {
+        next(new HttpError('sort_by error', 422));
+        return;
+    }
 
-	req.sort_by = {};
-	req.sort_by[sort_by] = -1;
+    req.sort_by = {};
+    req.sort_by[sort_by] = -1;
     next();
-})
+});
 router.get('/experiences', function (req, res, next) {
     const page = parseInt(req.query.page) || 0;
 
@@ -44,14 +44,14 @@ router.get('/experiences', function (req, res, next) {
         page: page,
     };
     next();
-}
+});
 router.get('/experiences', function(req, res, next) {
     winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
 
     const collection = req.db.collection('experiences');
     const opt = {
-	    _id: 1,
-        type: 1,    
+        _id: 1,
+        type: 1,
         created_at: 1,
         company: 1,
         job_title: 1,
@@ -73,7 +73,7 @@ router.get('/experiences', function(req, res, next) {
 
         return collection.find(find_query, opt).sort(sort_by).skip(limit * page).limit(limit).toArray();
     }).then(function(results) {
-        data.time_and_salary = results;
+        data.experiences = results;
 
         res.send(data);
     }).catch(function(err) {
