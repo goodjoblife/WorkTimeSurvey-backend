@@ -47,18 +47,20 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 like_count: 1,
                 reply_count: 1,
                 share_count: 1,
-            }, function(err, result) {
-                testId = result.insertedId.toString();
+            }).then(function(result) {
+                testId = result.ops[0]._id;
             });
         });
 
         it('Get url /experience/:id and expected get one data', function() {
             return request.get("/experiences/" + testId)
-                .expect(200)
                 .expect(function(res) {
                     assert.deepProperty(res.body, 'experience');
                     assert.equal(res.body.experience._id, testId);
                 });
+        });
+        after(function() {
+            return db.collection('experiences').remove({});
         });
     });
 });

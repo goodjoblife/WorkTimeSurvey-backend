@@ -32,7 +32,13 @@ router.get('/experiences/:id', function(req, res, next) {
     collection.find({
         "_id": new mongo.ObjectId(id),
     }, opt).toArray(function(err, result) {
-        res.send({experience: result[0]});
+        if (err) {
+            next(new HttpError(err), 500);
+        } else {
+            res.send({
+                experience: result[0],
+            });
+        }
     });
 });
 
