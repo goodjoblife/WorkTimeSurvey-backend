@@ -30,12 +30,11 @@ router.post('/:id/likes', (req, res, next) => {
 
     const id =  req.params.id;
     if(typeof id === 'undefined'){
-        next(new HttpError('id error'), 422);
+        next(new HttpError('id error', 422));
         return;
     }
 
     const author = {};
-    console.log(req.custom);
     if (req.custom && req.custom.facebook) {
         author.id = req.custom.facebook.id,
         author.name = req.custom.facebook.name,
