@@ -26,8 +26,9 @@ router.get('/', function(req, res, next) {
         estimated_hourly_wage: 1,
     };
 
-    let query = {};
-    query[req.query.sort_by] = {$exists: true};
+    let query = {
+        [req.custom.sort_by]: {$exists: true},
+    };
     let page = req.pagination.page;
     let limit = req.pagination.limit;
 
@@ -35,21 +36,24 @@ router.get('/', function(req, res, next) {
         // the user can only view latest 10 data
         page = 0;
         limit = 10;
-        query = {};
-        query.created_at = {$exists: true};
-        req.query.sort_by = "created_at";
-        req.sort_by = {created_at: -1};
+        query = {
+            created_at: {$exists: true},
+        };
+        req.custom.sort_by = "created_at";
+        req.custom.sort = {created_at: -1};
     }
 
     const data = {};
     collection.count().then(function(count) {
         data.total = count;
 
-        return collection.find(query, opt).sort(req.sort_by).skip(limit * page).limit(limit).toArray();
+        return collection.find(query, opt).sort(req.custom.sort).skip(limit * page).limit(limit).toArray();
     }).then(function(defined_results) {
         if (defined_results.length < limit) {
             return collection.find(query).count().then(function(count_defined_num) {
-                query[req.query.sort_by] = {$exists: false};
+                query = {
+                    [req.custom.sort_by]: {$exists: false},
+                };
 
                 return collection.find(query, opt)
                         .skip(limit * page + defined_results.length - count_defined_num)

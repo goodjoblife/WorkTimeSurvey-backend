@@ -12,9 +12,14 @@ function sort_by(req, res, next) {
         return;
     }
 
-    req.query.sort_by = sort_by;
-    req.sort_by = {};
-    req.sort_by[sort_by] = order;
+    if (!req.custom) {
+        req.custom = {};
+    }
+
+    req.custom.sort = {
+        [sort_by]: order,
+    };
+    req.custom.sort_by = sort_by;
     next();
 }
 
