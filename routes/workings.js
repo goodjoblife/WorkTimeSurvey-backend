@@ -137,6 +137,7 @@ router.get('/search_by/company/group_by/company', function(req, res, next) {
         {
             $sort: {
                 job_title: 1,
+                created_at: 1,
             },
         },
         {
@@ -283,6 +284,7 @@ router.get('/search_by/job_title/group_by/company', function(req, res, next) {
         {
             $sort: {
                 job_title: 1,
+                created_at: 1,
             },
         },
         {

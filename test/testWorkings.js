@@ -382,6 +382,10 @@ describe('Workings 工時資訊', function() {
                     job_title: "ENGINEER1",
                     company: {id: "84149961", name: "COMPANY1"},
                     is_currently_employed: 'yes',
+                    data_time: {
+                        year: 2016,
+                        month: 5,
+                    },
                     employment_type: 'full-time',
                     created_at: new Date("2016-07-20T02:00:00.000Z"),
                     author: {
@@ -525,7 +529,8 @@ describe('Workings 工時資訊', function() {
                     assert.isArray(res.body[0].time_and_salary);
                     assert(res.body[0].time_and_salary.length >= 5);
                     assert.deepProperty(res.body[0], 'time_and_salary.0.job_title');
-                    assert.deepProperty(res.body[0], 'time_and_salary.0.sector');
+                    // The first one don't have sector, see #183
+                    //assert.deepProperty(res.body[0], 'time_and_salary.0.sector');
                     assert.deepProperty(res.body[0], 'time_and_salary.0.employment_type');
                     assert.deepProperty(res.body[0], 'time_and_salary.0.created_at');
                     assert.deepProperty(res.body[0], 'time_and_salary.0.data_time');
@@ -839,6 +844,10 @@ describe('Workings 工時資訊', function() {
                     job_title: "ENGINEER1",
                     company: {id: "84149961", name: "COMPANY1"},
                     is_currently_employed: 'yes',
+                    data_time: {
+                        year: 2016,
+                        month: 5,
+                    },
                     employment_type: 'full-time',
                     created_at: new Date("2016-07-20T02:00:00.000Z"),
                     author: {
@@ -943,7 +952,8 @@ describe('Workings 工時資訊', function() {
                     assert.deepProperty(res.body[0], 'time_and_salary');
                     assert.isArray(res.body[0].time_and_salary);
                     assert.deepProperty(res.body[0], 'time_and_salary.0.job_title');
-                    assert.deepProperty(res.body[0], 'time_and_salary.0.sector');
+                    // see #183
+                    //assert.deepProperty(res.body[0], 'time_and_salary.0.sector');
                     assert.deepProperty(res.body[0], 'time_and_salary.0.employment_type');
                     assert.deepProperty(res.body[0], 'time_and_salary.0.created_at');
                     assert.deepProperty(res.body[0], 'time_and_salary.0.data_time');
