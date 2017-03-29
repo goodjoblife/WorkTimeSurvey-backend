@@ -1,11 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const HttpError = require('../libs/errors').HttpError;
-//const lodash = require('lodash');
 const winston = require('winston');
 const helper = require('./workings_helper');
 
-router.post('/interview_experiences', (req, res, next) => {
+router.post('/', function(req, res, next) {
     const data_fields = [
         // Required
         "author_id",
@@ -35,7 +34,7 @@ router.post('/interview_experiences', (req, res, next) => {
     };
 
     collectExperienceData(req, data_fields).then(next, next);
-}, (req, res, next) => {
+}, function(req, res, next) {
     validation(req).then(next, next);
 }, main);
 

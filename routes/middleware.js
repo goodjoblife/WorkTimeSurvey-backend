@@ -12,6 +12,7 @@ function sort_by(req, res, next) {
         return;
     }
 
+    req.query.sort_by = sort_by;
     req.sort_by = {};
     req.sort_by[sort_by] = order;
     next();

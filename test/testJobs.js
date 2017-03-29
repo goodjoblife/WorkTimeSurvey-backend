@@ -30,37 +30,34 @@ describe('jobs', function() {
             ]);
         });
 
-        it('will return array with _id, des', function(done) {
-            request(app)
+        it('will return array with _id, des', function() {
+            return request(app)
                 .get('/jobs/search')
                 .query({key: 'g'})
                 .expect(200)
                 .expect(function(res) {
                     assert.isArray(res.body);
                     assert.deepProperty(res.body, '0._id');
-                })
-                .end(done);
+                });
         });
 
-        it('will return jobs with keyword `g`', function(done) {
-            request(app)
+        it('will return jobs with keyword `g`', function() {
+            return request(app)
                 .get('/jobs/search')
                 .query({key: 'g'})
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 1);
-                })
-                .end(done);
+                });
         });
 
-        it('will return all jobs if missing keyword', function(done) {
-            request(app)
+        it('will return all jobs if missing keyword', function() {
+            return request(app)
                 .get('/jobs/search')
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body, 2);
-                })
-                .end(done);
+                });
         });
 
         after(function() {

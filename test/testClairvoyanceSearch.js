@@ -54,14 +54,13 @@ describe('Clairvoyance 天眼通 API', function() {
     });
 
     describe('根據公司搜尋', function() {
-        it('error 422 if no company provided', function(done) {
-            request(app).get('/clairvoyance/search/by-company')
-                .expect(422)
-                .end(done);
+        it('error 422 if no company provided', function() {
+            return request(app).get('/clairvoyance/search/by-company')
+                .expect(422);
         });
 
-        it('Search and return the pagination results', function(done) {
-            request(app).get('/clairvoyance/search/by-company')
+        it('Search and return the pagination results', function() {
+            return request(app).get('/clairvoyance/search/by-company')
                 .query({company: 'MY GOODJOB LIFE'})
                 .expect(200)
                 .expect(function(res) {
@@ -75,34 +74,31 @@ describe('Clairvoyance 天眼通 API', function() {
                     assert.deepProperty(res.body, 'workings.0.created_at');
                     assert.notDeepProperty(res.body, 'workings.0.author');
                     assert.notDeepProperty(res.body, 'workings.0._id');
-                })
-                .end(done);
+                });
         });
 
-        it('小寫 company 轉換成大寫', function(done) {
-            request(app).get('/clairvoyance/search/by-company')
+        it('小寫 company 轉換成大寫', function() {
+            return request(app).get('/clairvoyance/search/by-company')
                 .query({company: 'my goodjob Life'})
                 .expect(200)
                 .expect(function(res) {
                     assert.property(res.body, 'workings');
                     assert.lengthOf(res.body.workings, 3);
-                })
-                .end(done);
+                });
         });
 
-        it('company match any substring in workings.company.name', function(done) {
-            request(app).get('/clairvoyance/search/by-company')
+        it('company match any substring in workings.company.name', function() {
+            return request(app).get('/clairvoyance/search/by-company')
                 .query({company: 'GOODJOB'})
                 .expect(200)
                 .expect(function(res) {
                     assert.property(res.body, 'workings');
                     assert.lengthOf(res.body.workings, 4);
-                })
-                .end(done);
+                });
         });
 
-        it('sort workings by created_at desc', function(done) {
-            request(app).get('/clairvoyance/search/by-company')
+        it('sort workings by created_at desc', function() {
+            return request(app).get('/clairvoyance/search/by-company')
                 .query({company: 'MY GOODJOB LIFE'})
                 .expect(200)
                 .expect(function(res) {
@@ -111,31 +107,28 @@ describe('Clairvoyance 天眼通 API', function() {
                     assert.deepPropertyVal(res.body, 'workings.0.week_work_time', 30);
                     assert.deepPropertyVal(res.body, 'workings.1.week_work_time', 20);
                     assert.deepPropertyVal(res.body, 'workings.2.week_work_time', 40);
-                })
-                .end(done);
+                });
         });
 
-        it('根據統編搜尋', function(done) {
-            request(app).get('/clairvoyance/search/by-company')
+        it('根據統編搜尋', function() {
+            return request(app).get('/clairvoyance/search/by-company')
                 .query({company: '00000002'})
                 .expect(200)
                 .expect(function(res) {
                     assert.property(res.body, 'workings');
                     assert.lengthOf(res.body.workings, 1);
-                })
-                .end(done);
+                });
         });
     });
 
     describe('根據職稱搜尋', function() {
-        it('error 422 if no job_title provided', function(done) {
-            request(app).get('/clairvoyance/search/by-job')
-                .expect(422)
-                .end(done);
+        it('error 422 if no job_title provided', function() {
+            return request(app).get('/clairvoyance/search/by-job')
+                .expect(422);
         });
 
-        it('Search and return the pagination results', function(done) {
-            request(app).get('/clairvoyance/search/by-job')
+        it('Search and return the pagination results', function() {
+            return request(app).get('/clairvoyance/search/by-job')
                 .query({job_title: "TEST"})
                 .expect(200)
                 .expect(function(res) {
@@ -149,34 +142,31 @@ describe('Clairvoyance 天眼通 API', function() {
                     assert.deepProperty(res.body, 'workings.0.created_at');
                     assert.notDeepProperty(res.body, 'workings.0.author');
                     assert.notDeepProperty(res.body, 'workings.0._id');
-                })
-                .end(done);
+                });
         });
 
-        it('小寫 job_title 轉換成大寫', function(done) {
-            request(app).get('/clairvoyance/search/by-job')
+        it('小寫 job_title 轉換成大寫', function() {
+            return request(app).get('/clairvoyance/search/by-job')
                 .query({job_title: "test pm"})
                 .expect(200)
                 .expect(function(res) {
                     assert.property(res.body, 'workings');
                     assert.lengthOf(res.body.workings, 1);
-                })
-                .end(done);
+                });
         });
 
-        it('job_title match any substring in workings.job_title', function(done) {
-            request(app).get('/clairvoyance/search/by-job')
+        it('job_title match any substring in workings.job_title', function() {
+            return request(app).get('/clairvoyance/search/by-job')
                 .query({job_title: "TEST"})
                 .expect(200)
                 .expect(function(res) {
                     assert.property(res.body, 'workings');
                     assert.lengthOf(res.body.workings, 3);
-                })
-                .end(done);
+                });
         });
 
-        it('sort workings by created_at desc', function(done) {
-            request(app).get('/clairvoyance/search/by-job')
+        it('sort workings by created_at desc', function() {
+            return request(app).get('/clairvoyance/search/by-job')
                 .query({job_title: "TEST"})
                 .expect(200)
                 .expect(function(res) {
@@ -185,8 +175,7 @@ describe('Clairvoyance 天眼通 API', function() {
                     assert.deepPropertyVal(res.body, 'workings.0.week_work_time', 50);
                     assert.deepPropertyVal(res.body, 'workings.1.week_work_time', 30);
                     assert.deepPropertyVal(res.body, 'workings.2.week_work_time', 40);
-                })
-                .end(done);
+                });
         });
     });
 
@@ -207,26 +196,24 @@ describe('Clairvoyance 天眼通 API', function() {
 
             describe('CORS while in ' + api_path, function() {
                 for (let origin of allowed_origins) {
-                    it(origin + ' is in cors list', function(done) {
-                        request(app).get(api_path)
+                    it(origin + ' is in cors list', function() {
+                        return request(app).get(api_path)
                             .set('origin', origin)
                             .expect(422)
                             .expect(function(res) {
                                 assert.propertyVal(res.header, 'access-control-allow-origin', origin);
-                            })
-                            .end(done);
+                            });
                     });
                 }
             });
 
-            it('reject other origin', function(done) {
-                request(app).get(api_path)
+            it('reject other origin', function() {
+                return request(app).get(api_path)
                     .set('origin', 'http://www.google.com.tw')
                     .expect(422)
                     .expect(function(res) {
                         assert.notProperty(res.header, 'access-control-allow-origin');
-                    })
-                    .end(done);
+                    });
             });
         }
     });

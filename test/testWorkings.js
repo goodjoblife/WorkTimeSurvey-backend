@@ -40,11 +40,11 @@ describe('Workings 工時資訊', function() {
             sandbox = sinon.sandbox.create();
         });
 
-        it('return latest 10 results if not autheticated', function(done) {
+        it('return latest 10 results if not autheticated', function() {
             const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').rejects();
             //sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-            request(app).get('/workings')
+            return request(app).get('/workings')
                 .query({
                     access_token: 'faketoken',
                 })
@@ -55,18 +55,18 @@ describe('Workings 工時資訊', function() {
                     assert.lengthOf(res.body.time_and_salary, 10);
                     assert.deepPropertyVal(res.body, 'time_and_salary.0.company.name', 'company11');
                     assert.deepPropertyVal(res.body, 'time_and_salary.9.company.name', 'company2');
-
-                    sinon.assert.calledOnce(authentication);
                 })
-                .end(done);
+                .then(function() {
+                    sinon.assert.calledOnce(authentication);
+                });
         });
 
-        it('return latest 10 results if not authorized', function(done) {
+        it('return latest 10 results if not authorized', function() {
             const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
             const authorization = sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').rejects();
 
-            request(app).get('/workings')
+            return request(app).get('/workings')
                 .query({
                     access_token: 'faketoken',
                 })
@@ -77,17 +77,17 @@ describe('Workings 工時資訊', function() {
                     assert.lengthOf(res.body.time_and_salary, 10);
                     assert.deepPropertyVal(res.body, 'time_and_salary.0.company.name', 'company11');
                     assert.deepPropertyVal(res.body, 'time_and_salary.9.company.name', 'company2');
-
+                })
+                .then(function() {
                     sinon.assert.calledOnce(authentication);
                     sinon.assert.calledOnce(authorization);
-                })
-                .end(done);
+                });
         });
 
-        it('return latest 10 results even with page=1 (next page)', function(done) {
+        it('return latest 10 results even with page=1 (next page)', function() {
             const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').rejects();
 
-            request(app).get('/workings')
+            return request(app).get('/workings')
                 .query({
                     access_token: 'faketoken',
                     page: 1,
@@ -99,10 +99,10 @@ describe('Workings 工時資訊', function() {
                     assert.lengthOf(res.body.time_and_salary, 10);
                     assert.deepPropertyVal(res.body, 'time_and_salary.0.company.name', 'company11');
                     assert.deepPropertyVal(res.body, 'time_and_salary.9.company.name', 'company2');
-
-                    sinon.assert.calledOnce(authentication);
                 })
-                .end(done);
+                .then(function() {
+                    sinon.assert.calledOnce(authentication);
+                });
         });
 
         after(function() {
@@ -168,12 +168,12 @@ describe('Workings 工時資訊', function() {
         });
 
         for (let sort_field of [undefined, 'created_at', 'week_work_time', 'estimated_hourly_wage']) {
-            it(`return the pagination with SORT_FIELD: ${sort_field}`, function(done) {
+            it(`return the pagination with SORT_FIELD: ${sort_field}`, function() {
                 sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                     .resolves({id: '-1', name: 'LittleWhiteYA'});
                 sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-                request(app).get('/workings')
+                return request(app).get('/workings')
                     .query({
                         sort_by: sort_field,
                         access_token: 'faketoken',
@@ -183,16 +183,15 @@ describe('Workings 工時資訊', function() {
                         assert.propertyVal(res.body, 'total', 4);
                         assert.property(res.body, 'time_and_salary');
                         assert.lengthOf(res.body.time_and_salary, 4);
-                    })
-                    .end(done);
+                    });
             });
 
-            it(`return correct default order with SORT_FIELD: ${sort_field}`, function(done) {
+            it(`return correct default order with SORT_FIELD: ${sort_field}`, function() {
                 sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                     .resolves({id: '-1', name: 'LittleWhiteYA'});
                 sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-                request(app).get('/workings')
+                return request(app).get('/workings')
                     .query({
                         sort_by: sort_field,
                         access_token: 'faketoken',
@@ -219,17 +218,16 @@ describe('Workings 工時資訊', function() {
                         for (let idx=undefined_start_idx; idx<workings.length; ++idx) {
                             assert.isUndefined(workings[idx][sort_field]);
                         }
-                    })
-                    .end(done);
+                    });
             });
         }
 
-        it(`sort_by ascending order with default SORT_FIELD 'created_at'`, function(done) {
+        it(`sort_by ascending order with default SORT_FIELD 'created_at'`, function() {
             sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-            request(app).get('/workings')
+            return request(app).get('/workings')
                 .query({
                     order: 'ascending',
                     access_token: 'faketoken',
@@ -239,23 +237,60 @@ describe('Workings 工時資訊', function() {
                     // sort_field default is field 'created_at'
                     const sort_field = 'created_at';
                     const workings = res.body.time_and_salary;
-                    let undefined_start_idx = workings.length;
 
-                    for (let idx in workings) {
-                        if (workings[idx][sort_field] === undefined) {
-                            undefined_start_idx = idx;
-                            break;
-                        }
-                    }
-
-                    for (let idx=1; idx<undefined_start_idx; ++idx) {
+                    for (let idx=1; idx<workings.length; ++idx) {
                         assert(workings[idx][sort_field] >= workings[idx-1][sort_field]);
                     }
-                    for (let idx=undefined_start_idx; idx<workings.length; ++idx) {
+                });
+        });
+
+        it(`sort_by ascending order with SORT_FIELD 'week_work_time'`, function() {
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                .resolves({id: '-1', name: 'LittleWhiteYA'});
+            sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
+            return request(app).get('/workings')
+                .query({
+                    sort_by: 'week_work_time',
+                    order: 'ascending',
+                    access_token: 'faketoken',
+                })
+                .expect(200)
+                .expect(function(res) {
+                    const sort_field = 'week_work_time';
+                    const workings = res.body.time_and_salary;
+
+                    let undefined_idx = 3;
+                    for (let idx=1; idx<undefined_idx; ++idx) {
+                        assert(workings[idx][sort_field] >= workings[idx-1][sort_field]);
+                    }
+                    for (let idx=undefined_idx; idx<workings.length; ++idx) {
                         assert.isUndefined(workings[idx][sort_field]);
                     }
+                });
+        });
+
+        it(`欄位是 undefined 的資料全部會被放在 defined 的資料的後面`, function() {
+            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                .resolves({id: '-1', name: 'LittleWhiteYA'});
+            sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
+
+            return request(app).get('/workings')
+                .query({
+                    sort_by: 'week_work_time',
+                    order: 'ascending',
+                    access_token: 'faketoken',
+                    limit: '2',
+                    page: '1',
                 })
-                .end(done);
+                .expect(200)
+                .expect(function(res) {
+                    const sort_field = 'week_work_time';
+                    const workings = res.body.time_and_salary;
+
+                    assert.isDefined(workings[0][sort_field]);
+                    assert.isUndefined(workings[1][sort_field]);
+                });
         });
 
         after(function() {
@@ -274,37 +309,34 @@ describe('Workings 工時資訊', function() {
             sandbox = sinon.sandbox.create();
         });
 
-        it('return error 401 Unauthorized if not autheticated', function(done) {
+        it('return error 401 Unauthorized if not autheticated', function() {
             const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').rejects();
 
-            request(app).get('/workings/search_by/company/group_by/company')
+            return request(app).get('/workings/search_by/company/group_by/company')
                 .query({access_token: 'faketoken'})
                 .expect(401)
-                .expect(function(res) {
+                .then(function() {
                     sinon.assert.calledOnce(authentication);
-                })
-                .end(done);
+                });
         });
 
-        it('return error 403 Forbidden if not authorized', function(done) {
+        it('return error 403 Forbidden if not authorized', function() {
             const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
             const authorization = sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').rejects();
 
-            request(app).get('/workings/search_by/company/group_by/company')
+            return request(app).get('/workings/search_by/company/group_by/company')
                 .query({access_token: 'faketoken'})
                 .expect(403)
-                .expect(function(res) {
+                .then(function(res) {
                     sinon.assert.calledOnce(authentication);
                     sinon.assert.calledOnce(authorization);
-                })
-                .end(done);
+                });
         });
 
-        it('return error 401 Unauthorized if dont get access_token', function(done) {
-            request(app).get('/workings/search_by/company/group_by/company')
-                .expect(401)
-                .end(done);
+        it('return error 401 Unauthorized if dont get access_token', function() {
+            return request(app).get('/workings/search_by/company/group_by/company')
+                .expect(401);
         });
 
         afterEach(function() {
@@ -456,27 +488,26 @@ describe('Workings 工時資訊', function() {
             sandbox = sinon.sandbox.create();
         });
 
-        it('error 422 if no company provided', function(done) {
+        it('error 422 if no company provided', function() {
             const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
             const authorization = sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-            request(app).get('/workings/search_by/company/group_by/company')
+            return request(app).get('/workings/search_by/company/group_by/company')
                 .query({access_token: 'faketoken'})
                 .expect(422)
-                .expect(function(res) {
+                .then(function(res) {
                     sinon.assert.calledOnce(authentication);
                     sinon.assert.calledOnce(authorization);
-                })
-                .end(done);
+                });
         });
 
-        it('依照 company 來分群資料，結構正確 (workings.length >= 5)', function(done) {
+        it('依照 company 來分群資料，結構正確 (workings.length >= 5)', function() {
             sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-            request(app).get('/workings/search_by/company/group_by/company')
+            return request(app).get('/workings/search_by/company/group_by/company')
                 .query({
                     company: 'COMPANY1',
                     access_token: 'faketoken',
@@ -529,16 +560,17 @@ describe('Workings 工時資訊', function() {
                     assert.isObject(res.body[0].time_and_salary[0].salary);
                     assert.deepProperty(res.body[0], 'time_and_salary.0.salary.type');
                     assert.deepProperty(res.body[0], 'time_and_salary.0.salary.amount');
-                })
-                .end(done);
+                    //
+                    assert.propertyVal(res.body[0], 'count', 5);
+                });
         });
 
-        it('依照 company 來分群資料，結構正確 (workings.length < 5)', function(done) {
+        it('依照 company 來分群資料，結構正確 (workings.length < 5)', function() {
             sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-            request(app).get('/workings/search_by/company/group_by/company')
+            return request(app).get('/workings/search_by/company/group_by/company')
                 .query({
                     company: 'COMPANY2',
                     access_token: 'faketoken',
@@ -582,16 +614,17 @@ describe('Workings 工時資訊', function() {
                     assert.isObject(res.body[0].time_and_salary[0].salary);
                     assert.deepProperty(res.body[0], 'time_and_salary.0.salary.type');
                     assert.deepProperty(res.body[0], 'time_and_salary.0.salary.amount');
-                })
-                .end(done);
+                    //
+                    assert.propertyVal(res.body[0], 'count', 1);
+                });
         });
 
-        it('小寫 company query 轉換成大寫', function(done) {
+        it('小寫 company query 轉換成大寫', function() {
             sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-            request(app).get('/workings/search_by/company/group_by/company')
+            return request(app).get('/workings/search_by/company/group_by/company')
                 .query({
                     company: 'company1',
                     access_token: 'faketoken',
@@ -600,16 +633,15 @@ describe('Workings 工時資訊', function() {
                 .expect(function(res) {
                     assert.lengthOf(res.body, 1);
                     assert.deepPropertyVal(res.body[0], 'company.name', 'COMPANY1');
-                })
-                .end(done);
+                });
         });
 
-        it('company match any substring in company.name', function(done) {
+        it('company match any substring in company.name', function() {
             sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-            request(app).get('/workings/search_by/company/group_by/company')
+            return request(app).get('/workings/search_by/company/group_by/company')
                 .query({
                     company: 'COMPANY',
                     access_token: 'faketoken',
@@ -619,16 +651,15 @@ describe('Workings 工時資訊', function() {
                     assert.lengthOf(res.body, 2);
                     assert.deepPropertyVal(res.body[0], 'company.name', 'COMPANY2');
                     assert.deepPropertyVal(res.body[1], 'company.name', 'COMPANY1');
-                })
-                .end(done);
+                });
         });
 
-        it('依照 group_sort_order 排序 group data', function(done) {
+        it('依照 group_sort_order 排序 group data', function() {
             sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-            request(app).get('/workings/search_by/company/group_by/company')
+            return request(app).get('/workings/search_by/company/group_by/company')
                 .query({
                     company: 'COMPANY',
                     group_sort_by: 'week_work_time',
@@ -640,16 +671,15 @@ describe('Workings 工時資訊', function() {
                     assert.lengthOf(res.body, 2);
                     assert.deepPropertyVal(res.body[0], 'company.name', 'COMPANY1');
                     assert.deepPropertyVal(res.body[1], 'company.name', 'COMPANY2');
-                })
-                .end(done);
+                });
         });
 
-        it('依照 job_title 排序 data in company group', function(done) {
+        it('依照 job_title 排序 data in company group', function() {
             sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-            request(app).get('/workings/search_by/company/group_by/company')
+            return request(app).get('/workings/search_by/company/group_by/company')
                 .query({
                     company: 'COMPANY1',
                     access_token: 'faketoken',
@@ -660,16 +690,15 @@ describe('Workings 工時資訊', function() {
                     assert.deepPropertyVal(res.body[0].time_and_salary, '0.job_title', 'ENGINEER1');
                     assert.deepPropertyVal(res.body[0].time_and_salary, '2.job_title', 'ENGINEER2');
                     assert.deepPropertyVal(res.body[0].time_and_salary, '4.job_title', 'ENGINEER3');
-                })
-                .end(done);
+                });
         });
 
-        it('根據統編搜尋', function(done) {
+        it('根據統編搜尋', function() {
             sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-            request(app).get('/workings/search_by/company/group_by/company')
+            return request(app).get('/workings/search_by/company/group_by/company')
                 .query({
                     company: '84149961',
                     access_token: 'faketoken',
@@ -678,16 +707,15 @@ describe('Workings 工時資訊', function() {
                 .expect(function(res) {
                     assert.lengthOf(res.body, 1);
                     assert.deepPropertyVal(res.body, '0.company.id', '84149961');
-                })
-                .end(done);
+                });
         });
 
-        it('當 workings.length >= 5, has_overtime_salary_count values 加總會小於等於 workings.length', function(done) {
+        it('當 workings.length >= 5, has_overtime_salary_count values 加總會小於等於 workings.length', function() {
             sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-            request(app).get('/workings/search_by/company/group_by/company')
+            return request(app).get('/workings/search_by/company/group_by/company')
                 .query({
                     company: 'COMPANY1',
                     access_token: 'faketoken',
@@ -700,17 +728,16 @@ describe('Workings 工時資訊', function() {
                     total += res.body[0].has_overtime_salary_count.no;
                     total += res.body[0].has_overtime_salary_count["don't know"];
                     assert(total <= res.body[0].time_and_salary.length);
-                })
-                .end(done);
+                });
         });
 
         it('當 workings.length >= 5, has_overtime_salary_count.yes 會大於等於 is_overtime_salary_legal_count values 加總',
-            function(done) {
+            function() {
                 sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
                 sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-                request(app).get('/workings/search_by/company/group_by/company')
+                return request(app).get('/workings/search_by/company/group_by/company')
                 .query({
                     company: 'COMPANY1',
                     access_token: 'faketoken',
@@ -723,8 +750,7 @@ describe('Workings 工時資訊', function() {
                     total += res.body[0].is_overtime_salary_legal_count.no;
                     total += res.body[0].is_overtime_salary_legal_count["don't know"];
                     assert(res.body[0].has_overtime_salary_count.yes >= total);
-                })
-                .end(done);
+                });
             });
 
         after(function() {
@@ -743,37 +769,34 @@ describe('Workings 工時資訊', function() {
             sandbox = sinon.sandbox.create();
         });
 
-        it('return error 401 Unauthorized if not autheticated', function(done) {
+        it('return error 401 Unauthorized if not autheticated', function() {
             const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').rejects();
 
-            request(app).get('/workings/search_by/job_title/group_by/company')
+            return request(app).get('/workings/search_by/job_title/group_by/company')
                 .query({access_token: 'faketoken'})
                 .expect(401)
                 .expect(function(res) {
                     sinon.assert.calledOnce(authentication);
-                })
-                .end(done);
+                });
         });
 
-        it('return error 403 Forbidden if not authorized', function(done) {
+        it('return error 403 Forbidden if not authorized', function() {
             const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
             const authorization = sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').rejects();
 
-            request(app).get('/workings/search_by/job_title/group_by/company')
+            return request(app).get('/workings/search_by/job_title/group_by/company')
                 .query({access_token: 'faketoken'})
                 .expect(403)
                 .expect(function(res) {
                     sinon.assert.calledOnce(authentication);
                     sinon.assert.calledOnce(authorization);
-                })
-                .end(done);
+                });
         });
 
-        it('return error 401 Unauthorized if dont get access_token', function(done) {
-            request(app).get('/workings/search_by/job_title/group_by/company')
-                .expect(401)
-                .end(done);
+        it('return error 401 Unauthorized if dont get access_token', function() {
+            return request(app).get('/workings/search_by/job_title/group_by/company')
+                .expect(401);
         });
 
         afterEach(function() {
@@ -885,27 +908,26 @@ describe('Workings 工時資訊', function() {
             sandbox = sinon.sandbox.create();
         });
 
-        it('error 422 if no job_title provided', function(done) {
+        it('error 422 if no job_title provided', function() {
             const authentication = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
             const authorization = sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-            request(app).get('/workings/search_by/job_title/group_by/company')
+            return request(app).get('/workings/search_by/job_title/group_by/company')
                 .query({access_token: 'faketoken'})
                 .expect(422)
                 .expect(function(res) {
                     sinon.assert.calledOnce(authentication);
                     sinon.assert.calledOnce(authorization);
-                })
-                .end(done);
+                });
         });
 
-        it('依照 company 來分群資料，結構正確', function(done) {
+        it('依照 company 來分群資料，結構正確', function() {
             sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-            request(app).get('/workings/search_by/job_title/group_by/company')
+            return request(app).get('/workings/search_by/job_title/group_by/company')
                 .query({
                     job_title: 'ENGINEER1',
                     access_token: 'faketoken',
@@ -944,16 +966,15 @@ describe('Workings 工時資訊', function() {
                     assert.deepProperty(res.body[0], 'time_and_salary.0.salary.type');
                     assert.deepProperty(res.body[0], 'time_and_salary.0.salary.amount');
                     assert.deepProperty(res.body[0], 'time_and_salary.0.estimated_hourly_wage');
-                })
-                .end(done);
+                });
         });
 
-        it('小寫 job_title 轉換成大寫', function(done) {
+        it('小寫 job_title 轉換成大寫', function() {
             sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-            request(app).get('/workings/search_by/job_title/group_by/company')
+            return request(app).get('/workings/search_by/job_title/group_by/company')
                 .query({
                     job_title: 'engineer1',
                     access_token: 'faketoken',
@@ -962,16 +983,15 @@ describe('Workings 工時資訊', function() {
                 .expect(function(res) {
                     assert.lengthOf(res.body, 1);
                     assert.deepPropertyVal(res.body[0], 'time_and_salary.0.job_title', 'ENGINEER1');
-                })
-                .end(done);
+                });
         });
 
-        it('job_title match any substring in 薪時資訊.job_title 欄位', function(done) {
+        it('job_title match any substring in 薪時資訊.job_title 欄位', function() {
             sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-            request(app).get('/workings/search_by/job_title/group_by/company')
+            return request(app).get('/workings/search_by/job_title/group_by/company')
                 .query({
                     job_title: 'ENGINEER',
                     access_token: 'faketoken',
@@ -983,16 +1003,15 @@ describe('Workings 工時資訊', function() {
                     assert.lengthOf(res.body[1].time_and_salary, 4);
                     assert.deepPropertyVal(res.body[1], 'time_and_salary.0.job_title', 'ENGINEER1');
                     assert.deepPropertyVal(res.body[1], 'time_and_salary.2.job_title', 'ENGINEER2');
-                })
-                .end(done);
+                });
         });
 
-        it('依照 group_sort_order 排序 group data', function(done) {
+        it('依照 group_sort_order 排序 group data', function() {
             sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
                 .resolves({id: '-1', name: 'LittleWhiteYA'});
             sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
 
-            request(app).get('/workings/search_by/job_title/group_by/company')
+            return request(app).get('/workings/search_by/job_title/group_by/company')
                 .query({
                     group_sort_by: 'week_work_time',
                     job_title: 'ENGINEER',
@@ -1005,8 +1024,7 @@ describe('Workings 工時資訊', function() {
                     for (let idx = 1; idx < res.body.length; ++idx) {
                         assert(res.body[idx].average.week_work_time >= res.body[idx-1].average.week_work_time);
                     }
-                })
-                .end(done);
+                });
         });
 
         after(function() {
@@ -1062,34 +1080,31 @@ describe('Workings 工時資訊', function() {
             ]);
         });
 
-        it('error 422 if no key provided', function(done) {
-            request(app).get('/workings/companies/search')
-                .expect(422)
-                .end(done);
+        it('error 422 if no key provided', function() {
+            return request(app).get('/workings/companies/search')
+                .expect(422);
         });
 
-        it('正確搜尋出公司名稱', function(done) {
-            request(app).get('/workings/companies/search')
+        it('正確搜尋出公司名稱', function() {
+            return request(app).get('/workings/companies/search')
                 .query({key: 'GOODJOB'})
                 .expect(200)
                 .expect(function(res) {
                     assert.isArray(res.body);
                     assert.lengthOf(res.body, 2);
                     assert.deepProperty(res.body, '0._id');
-                })
-                .end(done);
+                });
         });
 
-        it('小寫關鍵字轉換成大寫', function(done) {
-            request(app).get('/workings/companies/search')
+        it('小寫關鍵字轉換成大寫', function() {
+            return request(app).get('/workings/companies/search')
                 .query({key: 'goodjob'})
                 .expect(200)
                 .expect(function(res) {
                     assert.isArray(res.body);
                     assert.lengthOf(res.body, 2);
                     assert.deepProperty(res.body, '0._id');
-                })
-                .end(done);
+                });
         });
 
         after(function() {
@@ -1141,46 +1156,42 @@ describe('Workings 工時資訊', function() {
             ]);
         });
 
-        it('error 422 if no key provided', function(done) {
-            request(app).get('/workings/jobs/search')
-                .expect(422)
-                .end(done);
+        it('error 422 if no key provided', function() {
+            return request(app).get('/workings/jobs/search')
+                .expect(422);
         });
 
-        it('正確搜尋出職稱', function(done) {
-            request(app).get('/workings/jobs/search')
+        it('正確搜尋出職稱', function() {
+            return request(app).get('/workings/jobs/search')
                 .query({key: 'JOB'})
                 .expect(200)
                 .expect(function(res) {
                     assert.isArray(res.body);
                     assert.lengthOf(res.body, 2);
                     assert.deepProperty(res.body, '0._id');
-                })
-                .end(done);
+                });
         });
 
-        it('正確搜尋出職稱', function(done) {
-            request(app).get('/workings/jobs/search')
+        it('正確搜尋出職稱', function() {
+            return request(app).get('/workings/jobs/search')
                 .query({key: 'JOB1'})
                 .expect(200)
                 .expect(function(res) {
                     assert.isArray(res.body);
                     assert.lengthOf(res.body, 1);
                     assert.deepProperty(res.body, '0._id');
-                })
-                .end(done);
+                });
         });
 
-        it('小寫關鍵字轉換成大寫', function(done) {
-            request(app).get('/workings/jobs/search')
+        it('小寫關鍵字轉換成大寫', function() {
+            return request(app).get('/workings/jobs/search')
                 .query({key: 'job'})
                 .expect(200)
                 .expect(function(res) {
                     assert.isArray(res.body);
                     assert.lengthOf(res.body, 2);
                     assert.deepProperty(res.body, '0._id');
-                })
-                .end(done);
+                });
         });
 
         after(function() {

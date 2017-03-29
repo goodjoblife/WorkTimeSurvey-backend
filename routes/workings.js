@@ -14,7 +14,6 @@ router.get('/', function(req, res, next) {
     winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
 
     const collection = req.db.collection('workings');
-    const query = {};
     const opt = {
         company: 1,
         sector: 1,
@@ -27,6 +26,8 @@ router.get('/', function(req, res, next) {
         estimated_hourly_wage: 1,
     };
 
+    let query = {};
+    query[req.query.sort_by] = {$exists: true};
     let page = req.pagination.page;
     let limit = req.pagination.limit;
 
@@ -34,14 +35,29 @@ router.get('/', function(req, res, next) {
         // the user can only view latest 10 data
         page = 0;
         limit = 10;
+        query = {};
+        query.created_at = {$exists: true};
+        req.query.sort_by = "created_at";
         req.sort_by = {created_at: -1};
     }
 
     const data = {};
-    collection.find().count().then(function(count) {
+    collection.count().then(function(count) {
         data.total = count;
 
         return collection.find(query, opt).sort(req.sort_by).skip(limit * page).limit(limit).toArray();
+    }).then(function(defined_results) {
+        if (defined_results.length < limit) {
+            return collection.find(query).count().then(function(count_defined_num) {
+                query[req.query.sort_by] = {$exists: false};
+
+                return collection.find(query, opt)
+                        .skip(limit * page + defined_results.length - count_defined_num)
+                        .limit(limit - defined_results.length).toArray();
+            }).then(results => defined_results.concat(results));
+        } else {
+            return defined_results;
+        }
     }).then(function(results) {
         data.time_and_salary = results;
 
@@ -219,6 +235,7 @@ router.get('/search_by/company/group_by/company', function(req, res, next) {
                 time_and_salary: 1,
                 _id: 0,
                 company: "$_id",
+                count: 1,
             },
         },
         {
