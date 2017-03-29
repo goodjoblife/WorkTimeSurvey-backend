@@ -4,7 +4,8 @@ const HttpError = require('../libs/errors').HttpError;
 const lodash = require('lodash');
 const winston = require('winston');
 
-router.get('/experiences', function(req, res, next) {
+// 查詢面試及工作經驗 API
+router.get('/', function(req, res, next) {
     const query = {};
 
     if (req.query.search_query && req.query.search_field) {
@@ -26,7 +27,7 @@ router.get('/experiences', function(req, res, next) {
     req.find_query = query;
     next();
 });
-router.get('/experiences', function(req, res, next) {
+router.get('/', function(req, res, next) {
     const sort_by = req.query.sort_by || 'created_at';
     if (!["created_at", "popular"].includes(sort_by)) {
         next(new HttpError('sort_by error', 422));
@@ -37,7 +38,7 @@ router.get('/experiences', function(req, res, next) {
     req.sort_by[sort_by] = -1;
     next();
 });
-router.get('/experiences', function (req, res, next) {
+router.get('/', function (req, res, next) {
     const page = parseInt(req.query.page) || 0;
 
     req.pagination = {
@@ -45,7 +46,7 @@ router.get('/experiences', function (req, res, next) {
     };
     next();
 });
-router.get('/experiences', function(req, res, next) {
+router.get('/', function(req, res, next) {
     winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
 
     const collection = req.db.collection('experiences');
@@ -79,6 +80,11 @@ router.get('/experiences', function(req, res, next) {
     }).catch(function(err) {
         next(new HttpError("Internal Server Error", 500));
     });
+});
+
+// CHANGE ME: Get experience api
+router.get(':id', function(req, res, next) {
+    //
 });
 
 module.exports = router;
