@@ -1,4 +1,3 @@
-const mongo = require('mongodb');
 
 class LikeService {
 
