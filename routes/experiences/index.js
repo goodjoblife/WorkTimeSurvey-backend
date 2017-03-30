@@ -3,6 +3,7 @@ const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
 const lodash = require('lodash');
 const winston = require('winston');
+const ExperienceService = require('../../services/experience_service');
 
 // 查詢面試及工作經驗 API
 router.get('/', function(req, res, next) {
