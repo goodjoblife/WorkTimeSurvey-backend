@@ -51,6 +51,7 @@ app.use('/jobs', require('./routes/jobs'));
 app.use('/experiences', require('./routes/experiences'));
 app.use('/interview_experiences', require('./routes/interview_experiences'));
 app.use('/work_experiences', require('./routes/work_experiences'));
+app.use('/replies/', require('./routes/likes'));
 
 const corsOption = {
     origin: [
