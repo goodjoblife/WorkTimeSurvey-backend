@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const HttpError = require('../libs/errors').HttpError;
+const HttpError = require('../../libs/errors').HttpError;
 const winston = require('winston');
-const ReplyService = require('./services/replyService');
-const authentication = require('../middlewares/authentication');
+const ReplyService = require('../../services/reply_service');
+const authentication = require('../../middlewares/authentication');
 
 router.post('/experiences/:id/replies', [
     authentication.cachedFacebookAuthenticationMiddleware,

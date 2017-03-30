@@ -69,9 +69,10 @@ describe('replices', function() {
                 .expect(500);
         });
         after(function() {
-            return db.collection('experiences').remove({}).then(() => {
+            let pro1 = db.collection('replies').remove({});
+            let pro2 = db.collection('experiences').remove({});
+            return Promise.all([pro1, pro2]).then(() => {
                 sandbox.restore();
-                Promise.resolve();
             });
         });
     });

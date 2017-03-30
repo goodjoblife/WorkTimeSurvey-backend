@@ -15,9 +15,8 @@ class ReplyService {
      * @returns {Promise}
      */
     addReply(experienceId, user, content) {
-        //TODO : 回傳留言樓層
         return new Promise((resolve, reject) => {
-            this._checkExperiencedIdExit(experienceId).then((result) => {
+            this._checkExperiencedIdExist(experienceId).then((result) => {
                 const status = result.data[0].status;
                 this.collection.insert({
                     "experience_id": experienceId,
@@ -53,7 +52,7 @@ class ReplyService {
      * 用來驗證要留言的文章是否存在
      * @return {Promise}
      */
-    _checkExperiencedIdExit(id) {
+    _checkExperiencedIdExist(id) {
         return new Promise((resolve, reject) => {
             this.experienceCollection.find({
                 "_id": new mongo.ObjectId(id),
