@@ -4,8 +4,8 @@ class LikeService {
 
     constructor(db) {
         this.collection = db.collection('likes');
-        this.repliesCollection = db.collection('replies');
-        this.experienceCollection = db.collection('experiences');
+        this.replies_collection = db.collection('replies');
+        this.experiences_collection = db.collection('experiences');
     }
 
 }

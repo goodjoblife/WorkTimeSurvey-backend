@@ -4,7 +4,7 @@ class ReplyService {
 
     constructor(db) {
         this.collection = db.collection('replies');
-        this.experienceCollection = db.collection('experiences');
+        this.experiences_collection = db.collection('experiences');
     }
 
 }
