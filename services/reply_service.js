@@ -8,6 +8,14 @@ class ReplyService {
         this.experiences_collection = db.collection('experiences');
     }
 
+
+    /**
+     * 檢查該留言是否存在。
+     * @param {string} id - id of the reply
+     * @returns {Promise}
+            resolved: null
+            rejected: ObjectNotExistError or mongodb default reason object in promise
+     */
     checkIdExist(id) {
         return this.collection.findOne({_id: new ObjectId(id)}).then(value => {
             if(value === null) {

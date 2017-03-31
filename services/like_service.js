@@ -15,6 +15,8 @@ class LikeService {
      * @param {string} reply_id - id of target reply
      * @param {object} user - user's object { "id":1111,"type":"facebook" }
      * @returns {Promise}
+            resolved: the id of like document
+            rejected: DuplicateKeyError or mongodb default reason object in promise
      */
     createLikeToReply(reply_id, user) {
         const data = {
@@ -32,11 +34,6 @@ class LikeService {
                 throw err;
             }
         })
-    }
-
-    //private function to create a like
-    _createLike(collection_name, doc_id, user) {
-
     }
 
 }
