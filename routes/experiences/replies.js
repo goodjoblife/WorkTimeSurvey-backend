@@ -2,7 +2,7 @@ const winston = require('winston');
 const express = require('express');
 const HttpError = require('../../libs/errors').HttpError;
 const router = express.Router();
-const ReplyService = require('../../services/reply_service');
+const Reply_Service = require('../../services/reply_service');
 const authentication = require('../../middlewares/authentication');
 
 router.post('/:id/replies', [
@@ -12,17 +12,17 @@ router.post('/:id/replies', [
             id: req.user.id,
             type: req.user.type,
         };
-        const experienceId = req.params.id;
+        const experience_id = req.params.id;
         const content = req.body.content;
-        const replyService = new ReplyService(req.db);
+        const reply_service = new Reply_Service(req.db);
         winston.info("/experiences/:id/replies", {
-            id: experienceId,
+            id: experience_id,
             ip: req.ip,
             ips: req.ips,
             data: req.body,
         });
 
-        replyService.addReply(experienceId, user, content).then((result) => {
+        reply_service.addReply(experience_id, user, content).then((result) => {
             res.send(result);
         }).catch((err) => {
             next(new HttpError(err, 500));

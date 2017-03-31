@@ -4,7 +4,7 @@ class ReplyService {
 
     constructor(db) {
         this.collection = db.collection('replies');
-        this.experienceCollection = db.collection('experiences');
+        this.experience_collection = db.collection('experiences');
     }
 
     /**
@@ -14,11 +14,11 @@ class ReplyService {
      * @param {string} content - reply content
      * @returns {Promise}
      */
-    addReply(experienceId, user, content) {
+    addReply(experience_id, user, content) {
         return new Promise((resolve, reject) => {
-            this._checkExperiencedIdExist(experienceId).then((result) => {
+            this._checkExperiencedIdExist(experience_id).then((result) => {
                 return this.collection.insertOne({
-                    "experience_id": experienceId,
+                    "experience_id": experience_id,
                     "user": user,
                     "created_at": new Date(),
                     "content": content,
@@ -47,7 +47,7 @@ class ReplyService {
      */
     _checkExperiencedIdExist(id) {
         return new Promise((resolve, reject) => {
-            this.experienceCollection.findOne({
+            this.experience_collection.findOne({
                 "_id": new mongo.ObjectId(id),
             }, {
                 "_id": 1,
