@@ -18,5 +18,25 @@ class ObjectIdError extends Error {
     }
 }
 
+class DuplicateKeyError extends Error {
+    /*
+     * @param  message  any
+     */
+    constructor(message) {
+        super(message);
+    }
+}
+
+class ObjectNotExistError extends Error {
+    /*
+     * @param  message  any
+     */
+    constructor(message) {
+        super(message);
+    }
+}
+
 module.exports.HttpError = HttpError;
 module.exports.ObjectIdError = ObjectIdError;
+module.exports.DuplicateKeyError = DuplicateKeyError;
+module.exports.ObjectNotExistError = ObjectNotExistError;
