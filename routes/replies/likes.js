@@ -3,29 +3,16 @@ const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
 const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
-const facebook = require('../../libs/facebook');
 const winston = require('winston');
 const LikeService = require('../../services/like_service');
 const ReplyService = require('../../services/reply_service');
+const authenticationMiddleware = require('../../middlewares/authentication').cachedFacebookAuthenticationMiddleware;
 
 /*
  * When developing, you can set environment to skip facebook auth
  */
 if (! process.env.SKIP_FACEBOOK_AUTH) {
-    router.post('/', function(req, res, next) {
-        var access_token = req.body.access_token;
-
-        facebook.accessTokenAuth(access_token).then(function(facebook) {
-            winston.info("facebook auth success", {access_token: access_token, ip: req.ip, ips: req.ips});
-
-            req.custom.facebook = facebook;
-            next();
-        }).catch(function(err) {
-            winston.info("facebook auth fail", {access_token: access_token, ip: req.ip, ips: req.ips});
-
-            next(new HttpError("Unauthorized", 401));
-        });
-    });
+    router.post('/:id/likes', authenticationMiddleware);
 }
 
 router.post('/:id/likes', (req, res, next) => {
