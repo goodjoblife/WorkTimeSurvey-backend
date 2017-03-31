@@ -5,7 +5,6 @@ const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const winston = require('winston');
 const LikeService = require('../../services/like_service');
-const ReplyService = require('../../services/reply_service');
 const authenticationMiddleware = require('../../middlewares/authentication').cachedFacebookAuthenticationMiddleware;
 
 /*
@@ -34,12 +33,9 @@ router.post('/:id/likes', (req, res, next) => {
         author.type = "test";
     }
 
-    const reply_service = new ReplyService(req.db);
     const like_service = new LikeService(req.db);
 
-    reply_service.checkIdExist(id).then(value => {
-        return like_service.createLikeToReply(id, author);
-    }).then(value => {
+    like_service.createLikeToReply(id, author).then(value => {
         winston.info("user likes a reply successfully", {id: value, ip: req.ip, ips: req.ips});
         res.send({success: true});
     }).catch(reason => {
