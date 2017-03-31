@@ -18,7 +18,7 @@ describe('replices', function() {
 
 
     describe('Post : /experiences/:id/replies', function() {
-        let experienceId = undefined;
+        let experience_id = undefined;
         let sandbox;
 
         before('Create test data', function() {
@@ -38,13 +38,13 @@ describe('replices', function() {
                 },
                 status: "published",
             }).then(function(result) {
-                experienceId = result.ops[0]._id.toString();
+                experience_id = result.ops[0]._id.toString();
             });
         });
 
         it('Success, and expected return data', function() {
             return request(app)
-                .post('/experiences/' + experienceId + '/replies')
+                .post('/experiences/' + experience_id + '/replies')
                 .send({
                     access_token: 'fakeaccesstoken',
                     content: "你好我是大留言",
