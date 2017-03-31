@@ -1,10 +1,10 @@
-const mongo = require('mongodb');
+const Experience_Service = require('./experience_service');
 
 class ReplyService {
 
     constructor(db) {
         this.collection = db.collection('replies');
-        this.experiences_collection = db.collection('experiences');
+        this.experience_service = new Experience_Service(db);
     }
 
     /**
@@ -26,9 +26,9 @@ class ReplyService {
      *      "msg" : "error msseage"
      *  }
      */
-    addReply(experience_id, user, content) {
+    createReply(experience_id, user, content) {
         return new Promise((resolve, reject) => {
-            this._checkExperiencedIdExist(experience_id).then((is_exist) => {
+            this.experience_service.checkExperiencedIdExist(experience_id).then((is_exist) => {
                 if (!is_exist) {
                     reject({
                         "code": 404,
@@ -55,39 +55,12 @@ class ReplyService {
             }).catch((err) => {
                 reject({
                     "code": 500,
-                    "msg": err.msg,
+                    "msg": err.message,
                 });
             });
         });
     }
 
-    /**
-     * 用來驗證要留言的文章是否存在
-     * @return {Promise}
-     *  - resolved : true/false
-     *  - reject :  { msg : "error message" }
-     */
-    _checkExperiencedIdExist(id) {
-        if (!mongo.ObjectId.isValid(id)) {
-            return Promise.resolve(false);
-        }
-
-        return this.experiences_collection.findOne({
-            "_id": new mongo.ObjectId(id),
-        }, {
-            "_id": 1,
-        }).then((result) => {
-            if (result) {
-                return true;
-            } else {
-                return false;
-            }
-        }).catch((err) => {
-            return {
-                msg: err,
-            };
-        });
-    }
 }
 
 

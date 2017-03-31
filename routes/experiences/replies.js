@@ -22,7 +22,7 @@ router.post('/:id/replies', [
             data: req.body,
         });
 
-        reply_service.addReply(experience_id, user, content).then((result) => {
+        reply_service.createReply(experience_id, user, content).then((result) => {
             res.send(result);
         }).catch((err) => {
             if (err.code == 404) {

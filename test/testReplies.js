@@ -7,7 +7,7 @@ require('sinon-as-promised');
 
 const authentication = require('../libs/authentication');
 
-describe('replices', function() {
+describe('Replies Test', function() {
 
     let db = undefined;
     before(function() {
@@ -71,9 +71,11 @@ describe('replices', function() {
         after(function() {
             let pro1 = db.collection('replies').remove({});
             let pro2 = db.collection('experiences').remove({});
-            return Promise.all([pro1, pro2]).then(() => {
-                sandbox.restore();
-            });
+            return Promise.all([pro1, pro2]);
+        });
+
+        after(function() {
+            sandbox.restore();
         });
     });
 });
