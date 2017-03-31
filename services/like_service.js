@@ -28,12 +28,12 @@ class LikeService {
         return this.collection.insertOne(data).then(value => {
             return value.insertedId;
         }, reason => {
-            if(reason.code === 11000){  //E11000 duplicate key error
+            if (reason.code === 11000) {  //E11000 duplicate key error
                 throw new DuplicateKeyError("該留言已經被按讚");
             } else {
-                throw err;
+                throw reason;
             }
-        })
+        });
     }
 
 }

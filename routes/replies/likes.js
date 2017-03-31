@@ -4,7 +4,6 @@ const HttpError = require('../../libs/errors').HttpError;
 const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const facebook = require('../../libs/facebook');
-const ObjectId = require('mongodb').ObjectId;
 const winston = require('winston');
 const LikeService = require('../../services/like_service');
 const ReplyService = require('../../services/reply_service');
@@ -33,7 +32,7 @@ router.post('/:id/likes', (req, res, next) => {
     winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
 
     const id =  req.params.id;
-    if(typeof id === 'undefined'){
+    if (typeof id === 'undefined') {
         next(new HttpError('id error', 422));
         return;
     }
@@ -57,14 +56,14 @@ router.post('/:id/likes', (req, res, next) => {
         winston.info("user likes a reply successfully", {id: value, ip: req.ip, ips: req.ips});
         res.send({success: true});
     }).catch(reason => {
-        if(reason instanceof DuplicateKeyError) {
+        if (reason instanceof DuplicateKeyError) {
             next(new HttpError(reason.message, 403));
         } else if (reason instanceof ObjectNotExistError) {
             next(new HttpError(reason.message, 404));
         } else {
             next(new HttpError("Internal Server Error", 500));
         }
-    })
+    });
 
 });
 

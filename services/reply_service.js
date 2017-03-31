@@ -18,7 +18,7 @@ class ReplyService {
      */
     checkIdExist(id) {
         return this.collection.findOne({_id: new ObjectId(id)}).then(value => {
-            if(value === null) {
+            if (value === null) {
                 throw new ObjectNotExistError("該留言不存在");
             } else {
                 return value;
