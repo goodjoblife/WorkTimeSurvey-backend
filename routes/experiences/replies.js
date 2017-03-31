@@ -25,7 +25,11 @@ router.post('/:id/replies', [
         reply_service.addReply(experience_id, user, content).then((result) => {
             res.send(result);
         }).catch((err) => {
-            next(new HttpError(err, 500));
+            if (err.code == 404) {
+                next(new HttpError(err.msg, 404));
+            } else {
+                next(new HttpError(err.msg, 500));
+            }
         });
     },
 ]);

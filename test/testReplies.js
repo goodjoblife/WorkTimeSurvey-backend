@@ -1,3 +1,4 @@
+debugger;
 const assert = require('chai').assert;
 const request = require('supertest');
 const app = require('../app');
@@ -66,7 +67,7 @@ describe('replices', function() {
                     access_token: 'fakeaccesstoken',
                     content: "你好我是大留言",
                 })
-                .expect(500);
+                .expect(404);
         });
         after(function() {
             let pro1 = db.collection('replies').remove({});
