@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
 const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
+const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const facebook = require('../../libs/facebook');
 const ObjectId = require('mongodb').ObjectId;
 const winston = require('winston');
@@ -47,17 +48,24 @@ router.post('/:id/likes', (req, res, next) => {
         author.type = "test";
     }
 
+    const reply_service = new ReplyService(req.db);
     const like_service = new LikeService(req.db);
-    like_service.createLikeToReply(id, author).then(value => {
+
+    reply_service.checkIdExist(id).then(value => {
+        return like_service.createLikeToReply(id, author);
+    }).then(value => {
         winston.info("user likes a reply successfully", {id: value, ip: req.ip, ips: req.ips});
         res.send({success: true});
-    }, reason => {
+    }).catch(reason => {
         if(reason instanceof DuplicateKeyError) {
             next(new HttpError(reason.message, 403));
+        } else if (reason instanceof ObjectNotExistError) {
+            next(new HttpError(reason.message, 404));
         } else {
             next(new HttpError("Internal Server Error", 500));
         }
     })
+
 });
 
 router.delete('/:id/likes', function(req, res, next) {
