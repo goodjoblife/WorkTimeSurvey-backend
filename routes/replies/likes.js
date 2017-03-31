@@ -5,13 +5,13 @@ const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const winston = require('winston');
 const LikeService = require('../../services/like_service');
-const authenticationMiddleware = require('../../middlewares/authentication').cachedFacebookAuthenticationMiddleware;
+const authentication = require('../../middlewares/authentication');
 
 /*
  * When developing, you can set environment to skip facebook auth
  */
 if (! process.env.SKIP_FACEBOOK_AUTH) {
-    router.post('/:id/likes', authenticationMiddleware);
+    router.post('/:id/likes', authentication.cachedFacebookAuthenticationMiddleware);
 }
 
 router.post('/:id/likes', (req, res, next) => {
@@ -24,10 +24,9 @@ router.post('/:id/likes', (req, res, next) => {
     }
 
     const author = {};
-    if (req.custom && req.custom.facebook) {
-        author.id = req.custom.facebook.id,
-        author.name = req.custom.facebook.name,
-        author.type = "facebook";
+    if (req.user && req.user.id && req.user.type) {
+        author.id = req.user.id;
+        author.type = req.user.type;
     } else {
         author.id = "-1";
         author.type = "test";
