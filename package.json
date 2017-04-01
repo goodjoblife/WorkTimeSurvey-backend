@@ -24,7 +24,7 @@
     "express": "^4.13.4",
     "express-mongo-db": "^2.0.3",
     "lodash": "^4.13.1",
-    "mongodb": "~2.1.18",
+    "mongodb": "^2.2.25",
     "morgan": "^1.7.0",
     "redis": "^2.6.3",
     "request": "^2.72.0",
