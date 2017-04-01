@@ -4,7 +4,7 @@ WorkTimeSurvey Backend
 [![Build Status](https://travis-ci.org/goodjoblife/WorkTimeSurvey-backend.svg?branch=master)](https://travis-ci.org/goodjoblife/WorkTimeSurvey-backend)
 
 * Environment: nodejs 6
-* DB: mongo
+* DB: mongodb, redis
 
 ## Contirbution
 
@@ -15,33 +15,39 @@ See our [Contribution Guide](CONTRIBUTING.md)
 ### Use docker-compose
 
 ```
-npm install
+docker-compose run --rm node npm install
+```
+
+```
+docker-compose run --rm node npm run migrate
 ```
 
 ```
 docker-compose up
 ```
 
-### Manual
+### 手動跑
 
 ```
 npm install
 ```
 
 ```
-MONGODB_URI=xxx npm start
+MONGODB_URI=xxx REDIS_URL=yyy npm start
 ```
-where xxx is your mongodb url
 
-If you would like to work around with the api, but want to skip the facebook auth, please add `SKIP_FACEBOOK_AUTH=1` to `docker-compose.yml` node env
+`MONGODB_URI` 是 mongodb 的連線網址（例：mongodb://localhost/goodjob），
+`REDIS_URL` 是 redis 的連線網址（例：redis://localhost）
 
-## Test
+## 測試
 
 > 注意：請不要拿正式的資料庫做網址，測試將會清除一切資料
 > Notice: The test will clean all the data in db, please DON'T use db in production
 
-> When you run test, please make sure `SKIP_FACEBOOK_AUTH` is not set on env, or you may receive some error
+```
+docker-compose run --rm node npm test
+```
 
 ```
-MONGODB_URI=xxx npm test
+docker-compose run --rm node npm run lint
 ```
