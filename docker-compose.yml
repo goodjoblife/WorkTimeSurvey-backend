@@ -17,7 +17,5 @@ services:
       - NODE_ENV=development
   mongo:
     image: mongo
-    volumes:
-      - ./db:/data/db
   redis:
     image: redis
