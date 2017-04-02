@@ -3,4 +3,5 @@ module.exports = [
     'create-recommendations-collection',
     'calc-data-time',
     'create-workings-collection',
+    'create-likes-collection',
 ];
