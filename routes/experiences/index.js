@@ -3,9 +3,7 @@ const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
 const lodash = require('lodash');
 const winston = require('winston');
-/* an example to import service
 const ExperienceService = require('../../services/experience_service');
-*/
 
 // 查詢面試及工作經驗 API
 router.get('/', function(req, res, next) {
@@ -18,10 +16,11 @@ router.get('/', function(req, res, next) {
         }
 
         if (req.query.search_field === 'company') {
-            query["$or"] = [
-                {'company.name': new RegExp(lodash.escapeRegExp(req.query.search_query.toUpperCase()))},
-                {'company.id': req.query.search_query},
-            ];
+            query["$or"] = [{
+                'company.name': new RegExp(lodash.escapeRegExp(req.query.search_query.toUpperCase())),
+            }, {
+                'company.id': req.query.search_query,
+            }];
         } else if (req.query.search_field === 'job_title') {
             query.job_title = new RegExp(lodash.escapeRegExp(req.query.search_query.toUpperCase()));
         }
@@ -41,7 +40,7 @@ router.get('/', function(req, res, next) {
     req.sort_by[sort_by] = -1;
     next();
 });
-router.get('/', function (req, res, next) {
+router.get('/', function(req, res, next) {
     const page = parseInt(req.query.page) || 0;
 
     req.pagination = {
@@ -50,7 +49,11 @@ router.get('/', function (req, res, next) {
     next();
 });
 router.get('/', function(req, res, next) {
-    winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
+    winston.info(req.originalUrl, {
+        query: req.query,
+        ip: req.ip,
+        ips: req.ips,
+    });
 
     const collection = req.db.collection('experiences');
     const opt = {
@@ -86,9 +89,21 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/:id', function(req, res, next) {
-    res.send('Yo! you are in GET /experiences/:id');
-});
+    const id = req.params.id;
+    winston.info('experiences/id', {
+        id: id,
+        ip: req.ip,
+        ips: req.ips,
+    });
 
+    const experience_service = new ExperienceService(req.db);
+    experience_service.getExperienceById(id).then((result) => {
+        res.send(result);
+    }).catch((err) => {
+        next(new HttpError("Internal Service Error", 500));
+    });
+
+});
 router.use('/', require('./replies'));
 router.use('/', require('./likes'));
 
