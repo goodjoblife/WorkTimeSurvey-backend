@@ -10,7 +10,7 @@ class ExperienceService {
      * 用來驗證要留言的文章是否存在
      * @return {Promise}
      *  - resolved : true/false
-     *  - reject :  { msg : "error message" }
+     *  - reject : Default error
      */
     checkExperiencedIdExist(id) {
         if (!mongo.ObjectId.isValid(id)) {
@@ -28,9 +28,7 @@ class ExperienceService {
                 return false;
             }
         }).catch((err) => {
-            Promise.reject({
-                "msg": err.message,
-            });
+            throw err;
         });
     }
 

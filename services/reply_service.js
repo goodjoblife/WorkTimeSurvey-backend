@@ -1,4 +1,5 @@
 const Experience_Service = require('./experience_service');
+const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
 
 class ReplyService {
 
@@ -21,43 +22,33 @@ class ReplyService {
      *          "status" : "published"
      *      }
      *
-     *  - reject :  {
-     *      "code" : 500/404,
-     *      "msg" : "error msseage"
-     *  }
+     *  - reject : defaultError/ObjectNotExistError
+     *
      */
     createReply(experience_id, user, content) {
-        return new Promise((resolve, reject) => {
-            this.experience_service.checkExperiencedIdExist(experience_id).then((is_exist) => {
-                if (!is_exist) {
-                    reject({
-                        "code": 404,
-                        "msg": "this experienced doesn't exist",
-                    });
-                }
+        return this.experience_service.checkExperiencedIdExist(experience_id).then((is_exist) => {
+            if (!is_exist) {
+                throw new ObjectNotExistError("該篇文章不存在");
+            }
 
-                return this.collection.insertOne({
-                    "experience_id": experience_id,
-                    "user": user,
-                    "created_at": new Date(),
-                    "content": content,
-                    "status": "published",
-                });
-            }).then((result) => {
-                resolve({
-                    "reply": {
-                        "id": result.ops[0]._id.toString(),
-                        "content": content,
-                        "like_count": 0,
-                        "floor": 1,
-                    },
-                });
-            }).catch((err) => {
-                reject({
-                    "code": 500,
-                    "msg": err.message,
-                });
+            return this.collection.insertOne({
+                "experience_id": experience_id,
+                "user": user,
+                "created_at": new Date(),
+                "content": content,
+                "status": "published",
             });
+        }).then((result) => {
+            return {
+                "reply": {
+                    "id": result.ops[0]._id.toString(),
+                    "content": content,
+                    "like_count": 0,
+                    "floor": 1,
+                },
+            };
+        }).catch((err) => {
+            throw err;
         });
     }
 }
