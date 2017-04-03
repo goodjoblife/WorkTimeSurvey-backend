@@ -2,7 +2,7 @@ const chai = require('chai');
 chai.use(require('chai-datetime'));
 const assert = chai.assert;
 const request = require('supertest');
-const app = require('../app');
+const app = require('../../../app');
 const MongoClient = require('mongodb').MongoClient;
 
 describe('Experiences 面試和工作經驗資訊', function() {

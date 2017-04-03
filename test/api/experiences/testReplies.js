@@ -1,11 +1,11 @@
 const assert = require('chai').assert;
 const request = require('supertest');
-const app = require('../app');
+const app = require('../../../app');
 const MongoClient = require('mongodb').MongoClient;
 const sinon = require('sinon');
 require('sinon-as-promised');
 
-const authentication = require('../libs/authentication');
+const authentication = require('../../../libs/authentication');
 
 describe('Replies Test', function() {
 
