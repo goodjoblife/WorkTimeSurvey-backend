@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
+const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const lodash = require('lodash');
 const winston = require('winston');
 const ExperienceService = require('../../services/experience_service');
-const ObjectNotExistError = require('../../libs/errors');
 
 // 查詢面試及工作經驗 API
 router.get('/', function(req, res, next) {

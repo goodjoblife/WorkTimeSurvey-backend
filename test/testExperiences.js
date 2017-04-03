@@ -51,12 +51,17 @@ describe('Experiences 面試和工作經驗資訊', function() {
             });
         });
 
-        it('Get url /experience/:id and expected get one data', function() {
+        it(' Expected get one data', function() {
             return request(app).get("/experiences/" + testId)
+                .expect(200)
                 .expect(function(res) {
                     assert.equal(res.body._id, testId);
                     assert.notDeepProperty(res.body, 'author');
                 });
+        });
+        it('Set error uri and expected to get error', function() {
+            return request(app).get("/experiences/123XXX")
+                .expect(404);
         });
         after(function() {
             return db.collection('experiences').remove({});

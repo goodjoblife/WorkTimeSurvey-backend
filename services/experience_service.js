@@ -1,5 +1,5 @@
 const mongo = require('mongodb');
-const ObjectNotExistError = require('../libs/errors').objectNotExistError;
+const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
 
 class ExperienceService {
 
@@ -26,8 +26,8 @@ class ExperienceService {
      *  - reject : ObjectNotExistError/Default Error
      */
     getExperienceById(id) {
-        if (!this._isValidId) {
-            throw new ObjectNotExistError("該文章不存在");
+        if (!this._isValidId(id)) {
+            return Promise.reject(new ObjectNotExistError("該文章不存在"));
         }
 
         const opt = {
@@ -40,7 +40,16 @@ class ExperienceService {
                 return result;
             } else {
                 throw new ObjectNotExistError("該文章不存在");
+            }
+        }).catch((err) => {
+            throw err;
+        });
+    }
+    _isValidId(id) {
+        return (id && mongo.ObjectId.isValid(id));
+    }
 
+    /**
      * 用來驗證要留言的文章是否存在
      * @return {Promise}
      *  - resolved : true/false
@@ -66,9 +75,6 @@ class ExperienceService {
         });
     }
 
-    _isValidId(id) {
-        return (id && mongo.ObjectId.isValid(id));
-    }
 
 }
 
