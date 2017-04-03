@@ -5,7 +5,6 @@ class ReplyService {
         this.collection = db.collection('replies');
         this.experiences_collection = db.collection('experiences');
     }
-
 }
 
 module.exports = ReplyService;
