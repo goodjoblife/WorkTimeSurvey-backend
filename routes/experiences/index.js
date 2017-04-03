@@ -4,6 +4,7 @@ const HttpError = require('../../libs/errors').HttpError;
 const lodash = require('lodash');
 const winston = require('winston');
 const ExperienceService = require('../../services/experience_service');
+const ObjectNotExistError = require('../../libs/errors');
 
 // 查詢面試及工作經驗 API
 router.get('/', function(req, res, next) {
@@ -100,7 +101,11 @@ router.get('/:id', function(req, res, next) {
     experience_service.getExperienceById(id).then((result) => {
         res.send(result);
     }).catch((err) => {
-        next(new HttpError("Internal Service Error", 500));
+        if (err instanceof ObjectNotExistError) {
+            next(new HttpError(err.message, 404));
+        } else {
+            next(new HttpError("Internal Service Error", 500));
+        }
     });
 
 });

@@ -13,7 +13,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
             db = _db;
         });
     });
-describe('GET /experiences/:id', function() {
+    describe('GET /experiences/:id', function() {
 
         let testId = undefined;
 
@@ -52,10 +52,10 @@ describe('GET /experiences/:id', function() {
         });
 
         it('Get url /experience/:id and expected get one data', function() {
-            return request.get("/experiences/" + testId)
+            return request(app).get("/experiences/" + testId)
                 .expect(function(res) {
-                    assert.deepProperty(res.body, 'experience');
-                    assert.equal(res.body.experience._id, testId);
+                    assert.equal(res.body._id, testId);
+                    assert.notDeepProperty(res.body, 'author');
                 });
         });
         after(function() {
@@ -65,77 +65,67 @@ describe('GET /experiences/:id', function() {
     describe('GET /experiences', function() {
 
         before('Seeding some experiences', function() {
-            return db.collection('experiences').insertMany([
-                {
-                    created_at: new Date("2017-03-20T10:00:00.929Z"),
-                    company: {
-                        name: "GOODJOB1",
-                        id: "123",
-                    },
-                    area: "台北",
-                    job_title: "SW ENGINEER",
-                    interview_time_year: "2017",
-                    interview_time_month: "3",
-                    // interview_result: ???,
-                    overall_rating: "5",
-                    sections: [
-                        {
-                            subtitle: "面試過程",
-                            content: "很開心",
-                        },
-                    ],
-                    experience_in_year: "1",
-                    education: "bachelor",
-                    salary_type: "month",
-                    salary_amount: "66666",
+            return db.collection('experiences').insertMany([{
+                created_at: new Date("2017-03-20T10:00:00.929Z"),
+                company: {
+                    name: "GOODJOB1",
+                    id: "123",
                 },
-                {
-                    created_at: new Date("2017-03-21T10:00:00.929Z"),
-                    company: {
-                        name: "GOODJOB2",
-                        id: "123",
-                    },
-                    area: "台北",
-                    job_title: "ENGINEER",
-                    interview_time_year: "2017",
-                    interview_time_month: "3",
-                    // interview_result: ???,
-                    overall_rating: "5",
-                    sections: [
-                        {
-                            subtitle: "面試過程",
-                            content: "很開心",
-                        },
-                    ],
-                    experience_in_year: "1",
-                    education: "bachelor",
-                    salary_type: "month",
-                    salary_amount: "66666",
+                area: "台北",
+                job_title: "SW ENGINEER",
+                interview_time_year: "2017",
+                interview_time_month: "3",
+                // interview_result: ???,
+                overall_rating: "5",
+                sections: [{
+                    subtitle: "面試過程",
+                    content: "很開心",
+                }],
+                experience_in_year: "1",
+                education: "bachelor",
+                salary_type: "month",
+                salary_amount: "66666",
+            }, {
+                created_at: new Date("2017-03-21T10:00:00.929Z"),
+                company: {
+                    name: "GOODJOB2",
+                    id: "123",
                 },
-                {
-                    created_at: new Date("2017-03-22T10:00:00.929Z"),
-                    company: {
-                        name: "BADJOB",
-                        id: "321",
-                    },
-                    area: "台北",
-                    job_title: "HW ENGINEER",
-                    interview_time_year: "2017",
-                    interview_time_month: "3",
-                    // interview_result: ???,
-                    overall_rating: "5",
-                    sections: [
-                        {
-                            subtitle: "面試過程",
-                            content: "很開心",
-                        },
-                    ],
-                    experience_in_year: "1",
-                    education: "bachelor",
-                    salary_type: "month",
-                    salary_amount: "77777",
+                area: "台北",
+                job_title: "ENGINEER",
+                interview_time_year: "2017",
+                interview_time_month: "3",
+                // interview_result: ???,
+                overall_rating: "5",
+                sections: [{
+                    subtitle: "面試過程",
+                    content: "很開心",
+                }],
+                experience_in_year: "1",
+                education: "bachelor",
+                salary_type: "month",
+                salary_amount: "66666",
+            }, {
+                created_at: new Date("2017-03-22T10:00:00.929Z"),
+                company: {
+                    name: "BADJOB",
+                    id: "321",
                 },
-            ]);
+                area: "台北",
+                job_title: "HW ENGINEER",
+                interview_time_year: "2017",
+                interview_time_month: "3",
+                // interview_result: ???,
+                overall_rating: "5",
+                sections: [{
+                    subtitle: "面試過程",
+                    content: "很開心",
+                }],
+                experience_in_year: "1",
+                education: "bachelor",
+                salary_type: "month",
+                salary_amount: "77777",
+            }]);
         });
 
         it(`check API return correct data without query`, function() {
@@ -246,4 +236,3 @@ describe('GET /experiences/:id', function() {
         });
     });
 });
-
