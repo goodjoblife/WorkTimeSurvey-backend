@@ -17,11 +17,10 @@ router.get('/', function(req, res, next) {
         }
 
         if (req.query.search_field === 'company') {
-            query["$or"] = [{
-                'company.name': new RegExp(lodash.escapeRegExp(req.query.search_query.toUpperCase())),
-            }, {
-                'company.id': req.query.search_query,
-            }];
+            query["$or"] = [
+                {'company.name': new RegExp(lodash.escapeRegExp(req.query.search_query.toUpperCase()))},
+                {'company.id': req.query.search_query},
+            ];
         } else if (req.query.search_field === 'job_title') {
             query.job_title = new RegExp(lodash.escapeRegExp(req.query.search_query.toUpperCase()));
         }
@@ -50,11 +49,7 @@ router.get('/', function(req, res, next) {
     next();
 });
 router.get('/', function(req, res, next) {
-    winston.info(req.originalUrl, {
-        query: req.query,
-        ip: req.ip,
-        ips: req.ips,
-    });
+    winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
 
     const collection = req.db.collection('experiences');
     const opt = {
