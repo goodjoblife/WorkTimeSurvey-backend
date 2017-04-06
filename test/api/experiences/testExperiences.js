@@ -149,7 +149,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .query({})
                 .expect(200)
                 .expect(function(res) {
-                    assert.propertyVal(res.body, 'total', 3);
+                    assert.propertyVal(res.body, 'total_pages', 1);
                     assert.property(res.body, 'experiences');
                     assert.lengthOf(res.body.experiences, 3);
                     assert.deepPropertyVal(res.body.experiences[0], 'company.name', 'BADJOB');
@@ -161,7 +161,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
             return request(app).get('/experiences')
                 .query({
                     search_query: "GOODJOB2",
-                    search_field: "company",
+                    search_by: "company",
                 })
                 .expect(200)
                 .expect(function(res) {
@@ -177,7 +177,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
             return request(app).get('/experiences')
                 .query({
                     search_query: "HW ENGINEER",
-                    search_field: "job_title",
+                    search_by: "job_title",
                 })
                 .expect(200)
                 .expect(function(res) {
@@ -193,7 +193,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
             return request(app).get('/experiences')
                 .query({
                     search_query: "GoodJob1",
-                    search_field: "company",
+                    search_by: "company",
                 })
                 .expect(200)
                 .expect(function(res) {
@@ -207,7 +207,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
             return request(app).get('/experiences')
                 .query({
                     search_query: "GOODJOB",
-                    search_field: "company",
+                    search_by: "company",
                 })
                 .expect(200)
                 .expect(function(res) {
@@ -237,7 +237,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
             return request(app).get('/experiences')
                 .query({
                     search_query: "321",
-                    search_field: "company",
+                    search_by: "company",
                 })
                 .expect(200)
                 .expect(function(res) {
@@ -246,6 +246,25 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
+        it('search_by輸入不符合規定之種類，預期回傳error code 422', function() {
+
+            return request(app).get('/experiences')
+                .query({
+                    search_query: "321",
+                    search_by: "xxxxx",
+                })
+                .expect(422);
+        });
+
+        it('sort輸入不符合規定之種類，預期回傳error code 422', function() {
+
+            return request(app).get('/experiences')
+                .query({
+                    search_query: "321",
+                    sort: "xxxxx",
+                })
+                .expect(422);
+        });
         after(function() {
             return db.collection('experiences').remove({});
         });

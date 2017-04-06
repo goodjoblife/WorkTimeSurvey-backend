@@ -36,7 +36,17 @@ class ObjectNotExistError extends Error {
     }
 }
 
+class ObjectError extends Error {
+    /*
+     * @param  message  any
+     */
+    constructor(message) {
+        super(message);
+    }
+}
+
 module.exports.HttpError = HttpError;
 module.exports.ObjectIdError = ObjectIdError;
 module.exports.DuplicateKeyError = DuplicateKeyError;
 module.exports.ObjectNotExistError = ObjectNotExistError;
+module.exports.ObjectError = ObjectError;
