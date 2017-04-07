@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const lodash = require('lodash');
 const HttpError = require('../../libs/errors').HttpError;
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const ObjectError = require('../../libs/errors').ObjectError;
@@ -8,6 +9,15 @@ const ExperienceService = require('../../services/experience_service');
 
 /**
  * Get /experiences api
+ * @param {object} req.query
+ *  - {
+ *      search_query = "GoodJob".
+ *      search_by = "compnay",
+ *      sort = "created_at",
+ *      page = 0,
+ *      limit = 20,
+ *      type = "interview"
+ *  }
  * @returns {object}
  *  - {
  *      total_pages : 1,
@@ -35,9 +45,26 @@ router.get('/', function(req, res, next) {
         ips: req.ips,
     });
 
+    if (!_isValidSearchByField(req.query.search_by)) {
+        next(new HttpError("search by 格式錯誤", 422));
+    }
+    const sort_field = req.query.sort || "created_at";
+    if (!_isValidSortField(sort_field)) {
+        next(new HttpError("sort by 格式錯誤", 422));
+    }
+    const query = _queryToDBQuery(req.query.search_query, req.query.search_by);
+    const sort = {};
+    sort[sort_field] = -1;
+    const page = parseInt(req.query.page) || 0;
+    const limit = req.query.limit || 25;
+    const skip = limit * page;
+
     const experience_service = new ExperienceService(req.db);
-    experience_service.getExperiencesByQuery(req.query).then((result) => {
-        result.experiences.map(modelMapToViewModel);
+    experience_service.getExperiences(query, sort, skip, limit).then((result) => {
+        result.total_pages = Math.ceil(result.total/limit);
+        result.page = page;
+        result.experiences.map(_modelMapToViewModel);
+        delete result.total;
         res.send(result);
     }).catch((err) => {
         if (err instanceof ObjectError) {
@@ -48,12 +75,45 @@ router.get('/', function(req, res, next) {
     });
 });
 
-function modelMapToViewModel(experience) {
+function _modelMapToViewModel(experience) {
     const sections = experience.sections;
     experience.preview = sections[0].content;
     delete experience.sections;
 }
 
+function _isValidSearchByField(search_by) {
+    if (!search_by) {
+        return true;
+    }
+    const Default_Field = ["company", "job_title"];
+    return Default_Field.includes(search_by);
+}
+
+function _isValidSortField(sort_by) {
+    if (!sort_by) {
+        return true;
+    }
+    const Default_Field = ["created_at", "job_title"];
+    return Default_Field.includes(sort_by);
+}
+
+function _queryToDBQuery(search_query, search_by) {
+    let query = {};
+    if (!(search_by && search_query)) {
+        return query;
+    }
+
+    if (search_by == "company") {
+        query["$or"] = [{
+            'company.name': new RegExp(lodash.escapeRegExp(search_query.toUpperCase())),
+        }, {
+            'company.id': search_query,
+        }];
+    } else if (search_by == "job_title") {
+        query.job_title = new RegExp(lodash.escapeRegExp(search_query.toUpperCase()));
+    }
+    return query;
+}
 router.get('/:id', function(req, res, next) {
     const id = req.params.id;
     winston.info('experiences/id', {
@@ -61,6 +121,7 @@ router.get('/:id', function(req, res, next) {
         ip: req.ip,
         ips: req.ips,
     });
+
 
     const experience_service = new ExperienceService(req.db);
     experience_service.getExperienceById(id).then((result) => {
