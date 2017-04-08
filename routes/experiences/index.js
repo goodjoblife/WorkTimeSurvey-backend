@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const lodash = require('lodash');
 const HttpError = require('../../libs/errors').HttpError;
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
-const ObjectError = require('../../libs/errors').ObjectError;
+const lodash = require('lodash');
 const winston = require('winston');
 const ExperienceService = require('../../services/experience_service');
 
@@ -53,25 +52,25 @@ router.get('/', function(req, res, next) {
         next(new HttpError("sort by 格式錯誤", 422));
     }
     const query = _queryToDBQuery(req.query.search_query, req.query.search_by);
-    const sort = {};
-    sort[sort_field] = -1;
+    const sort = {
+        [sort_field]: -1,
+    };
     const page = parseInt(req.query.page) || 0;
     const limit = req.query.limit || 25;
     const skip = limit * page;
 
+    let result = {};
     const experience_service = new ExperienceService(req.db);
-    experience_service.getExperiences(query, sort, skip, limit).then((result) => {
-        result.total_pages = Math.ceil(result.total/limit);
+    experience_service.getExperiencesCountByQuery(query).then((count) => {
+        result.total_pages = Math.ceil(count / limit);
+        return experience_service.getExperiences(query, sort, skip, limit);
+    }).then((docs) => {
         result.page = page;
+        result.experiences = docs;
         result.experiences.map(_modelMapToViewModel);
-        delete result.total;
         res.send(result);
     }).catch((err) => {
-        if (err instanceof ObjectError) {
-            next(new HttpError(err.message, 422));
-        } else {
-            next(new HttpError("Internal Service Error", 500));
-        }
+        next(new HttpError("Internal Service Error", 500));
     });
 });
 
@@ -122,7 +121,6 @@ router.get('/:id', function(req, res, next) {
         ips: req.ips,
     });
 
-
     const experience_service = new ExperienceService(req.db);
     experience_service.getExperienceById(id).then((result) => {
         res.send(result);
@@ -134,6 +132,7 @@ router.get('/:id', function(req, res, next) {
         }
     });
 });
+
 router.use('/', require('./replies'));
 router.use('/', require('./likes'));
 
