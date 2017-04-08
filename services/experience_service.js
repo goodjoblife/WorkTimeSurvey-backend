@@ -130,7 +130,9 @@ class ExperienceService {
             throw err;
         });
     }
-
+    createExperience(experience) {
+        return this.collection.insert(experience);
+    }
 
 }
 

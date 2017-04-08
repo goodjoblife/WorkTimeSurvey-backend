@@ -1,8 +1,12 @@
+debugger;
 //const chai = require('chai');
 //const assert = chai.assert;
 const request = require('supertest');
 const app = require('../../../app');
 const MongoClient = require('mongodb').MongoClient;
+const sinon = require('sinon');
+require('sinon-as-promised');
+const authentication = require('../../../libs/authentication');
 
 describe('experiences 面試和工作經驗資訊', function() {
     let db = undefined;
@@ -15,7 +19,15 @@ describe('experiences 面試和工作經驗資訊', function() {
 
 
     describe('POST /interview_experiences', function() {
+        let sandbox;
         before('Seed companies', function() {
+            sandbox = sinon.sandbox.create();
+            sandbox.stub(authentication, 'cachedFacebookAuthentication')
+                .withArgs(sinon.match.object, 'fakeaccesstoken')
+                .resolves({
+                    id: '-1',
+                    name: 'markLin',
+                });
             return db.collection('companies').insertMany([
                 {
                     id: '00000001',
@@ -250,6 +262,9 @@ describe('experiences 面試和工作經驗資訊', function() {
         after('DB: 清除 companies', function() {
             return db.collection('companies').remove({});
         });
+        after(function() {
+            sandbox.restore();
+        });
     });
 });
 
@@ -304,6 +319,6 @@ function generateInterviewExperiencePayload(opt) {
             payload[key] = opt[key];
         }
     }
-
+    payload["access_token"] = "fakeaccesstoken";
     return payload;
 }
