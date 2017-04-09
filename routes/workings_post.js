@@ -2,6 +2,7 @@ const HttpError = require('../libs/errors').HttpError;
 const ObjectIdError = require('../libs/errors').ObjectIdError;
 const winston = require('winston');
 const helper = require('./workings_helper');
+const companyHelper= require('./company_helper');
 const recommendation = require('../libs/recommendation');
 
 /*
@@ -376,7 +377,6 @@ function main(req, res, next) {
     }
 
     const collection = req.db.collection("workings");
-
     /*
      *  這邊處理需要呼叫async函數的部份
      */
@@ -387,7 +387,7 @@ function main(req, res, next) {
      *
      * 其他情況看 issue #7
      */
-    helper.normalizeCompany(req.db, working.company.id, company_query).then(company => {
+    companyHelper.getCompanyByIdOrQuery(req.db, working.company.id, company_query).then(company => {
         working.company = company;
     }).then(() => {
         //這邊嘗試從recommendation_string去取得推薦使用者的資訊

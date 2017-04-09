@@ -1,7 +1,4 @@
-
-const ObjectError = require('../libs/errors').ObjectError;
-
-class WorkService {
+class CompanyService {
 
     constructor(db) {
         this.collection = db.collection('companies');
@@ -19,4 +16,4 @@ class WorkService {
 
 }
 
-module.exports = WorkService;
+module.exports = CompanyService;

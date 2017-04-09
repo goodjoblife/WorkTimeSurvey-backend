@@ -1,12 +1,43 @@
 const express = require('express');
 const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
+const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const winston = require('winston');
-const WorkService = require('../../services/work_service');
 const ExperienceService = require('../../services/experience_service');
+const helper = require('../company_helper');
 const authentication = require('../../middlewares/authentication');
-//const helper = require('./workings_helper');
 
+/**
+ * Post /interview_experiences
+ * @param {object} req.body
+ *  - {
+ *  company_query : "1111",
+ *  company_id : "123456",
+ *  region : "台北市",
+ *  job_title : "BackEnd Developer",
+ *  experience_in_year : "10",
+ *  education : "碩士",
+ *  interview_time_year : "2016",
+ *  interview_time_month : "12",
+ *  interview_result : "錄取",
+ *  salary_amoount : "year",
+ *  overall_rating : "5",
+ *  sections : [
+ *      { subtitle:"hello" , content : "test" }
+ *  ],
+ *  interview_qas : [
+ *      { querstion : "what you name?" , answer : "you father"}
+ *  ],
+ *  interview_sensitive_questions : [
+ *      "what your name ?"
+ *  ]
+ *  }
+ *
+ * @returns {object}
+ *  - {
+ *      success : true
+ *  }
+ */
 router.post('/', [
     authentication.cachedFacebookAuthenticationMiddleware,
     function(req, res, next) {
@@ -15,17 +46,20 @@ router.post('/', [
         experience.type = "interview";
         experience.company = {};
         experience.author = {};
-        checkExperienceField(experience);
-        let valid_result = validation(experience, req);
+        checkExperienceFieldAndChange(experience);
+        let valid_result = validation(experience);
         if (!valid_result.result) {
+            winston.info("validating fail", {
+                ip: req.ip,
+                ips: req.ips,
+            });
             next(valid_result.err);
-            return;
         }
 
         const experience_service = new ExperienceService(req.db);
         experience.job_title = experience.job_title.toUpperCase();
 
-        _normalizeCompany(req.db, experience.company.id, experience.company.query).then(company => {
+        helper.getCompanyByIdOrQuery(req.db, experience.company.id, experience.company.query).then(company => {
             experience.company = company;
             experience.author = {
                 id: req.user.id,
@@ -44,6 +78,9 @@ router.post('/', [
                 success: true,
             });
         }).catch(err => {
+            if (err instanceof ObjectNotExistError) {
+                next(new HttpError(err.message, 422));
+            }
             winston.info("experiences insert data fail", {
                 id: experience._id,
                 ip: req.ip,
@@ -56,15 +93,12 @@ router.post('/', [
     },
 ]);
 
-
-
 /**
  * 檢查experience的field，是否屬於default field，不是則刪除
  *
  * @param experience
- * @returns {undefined}
  */
-function checkExperienceField(experience) {
+function checkExperienceFieldAndChange(experience) {
 
     const Default_FIELDS = [
         // Required
@@ -108,7 +142,7 @@ function _checkField(data, field) {
     }
 }
 
-function validation(experience, req) {
+function validation(experience) {
 
     try {
         validateCommonData(experience);
@@ -118,10 +152,6 @@ function validation(experience, req) {
             validateWorkData(experience);
         }
     } catch (err) {
-        winston.info("validating fail", {
-            ip: req.ip,
-            ips: req.ips,
-        });
         return {
             result: false,
             err: err,
@@ -232,50 +262,5 @@ function validateWorkData(data) {
     //todo
 }
 
-/*
- * 如果使用者有給定 company id，將 company name 補成查詢到的公司
- *
- * 如果使用者是給定 company query，如果只找到一間公司，才補上 id
- *
- * 其他情況看 issue #7
- */
-function _normalizeCompany(db, company_id, company_query) {
-    const work_service = new WorkService(db);
-
-    if (company_id) {
-        return work_service.searchCompanyById(company_id).then(results => {
-            if (results.length === 0) {
-                throw new HttpError("公司統編不正確", 422);
-            }
-
-            return {
-                id: company_id,
-                name: results[0].name,
-            };
-        });
-    } else {
-        return work_service.searchCompanyById(company_query).then(results => {
-            if (results.length === 0) {
-                return this.searchCompanyByName(company_query.toUpperCase()).then(results => {
-                    if (results.length === 1) {
-                        return {
-                            id: results[0].id,
-                            name: results[0].name,
-                        };
-                    } else {
-                        return {
-                            name: company_query.toUpperCase(),
-                        };
-                    }
-                });
-            } else {
-                return {
-                    id: results[0].id,
-                    name: results[0].name,
-                };
-            }
-        });
-    }
-}
 
 module.exports = router;
