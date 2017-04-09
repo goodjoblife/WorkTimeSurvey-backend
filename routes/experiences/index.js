@@ -133,6 +133,7 @@ router.get('/:id', function(req, res, next) {
             next(new HttpError("Internal Service Error", 500));
         }
     });
+
 });
 router.use('/', require('./replies'));
 router.use('/', require('./likes'));
