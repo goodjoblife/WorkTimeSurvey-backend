@@ -16,10 +16,8 @@ class ExperienceService {
      *  limit : 20
      *
      * @returns {Promise}
-     *  - resolved : {
-     *      total : 10,
-     *      find_count : 1,
-     *      experiences : [
+     *  - resolved :
+     *  [
      *          {
      *              _id : ObjectId,
      *              type : interview/work,
@@ -37,30 +35,32 @@ class ExperienceService {
      *              like_count : 0,
      *              reply_count : 0,
      *          }
-     *      ]
-     *  }
+     *  ]
      *  - reject :  Default Error;
      */
     getExperiences(query, sort, skip = 0, limit = 25) {
-
         const opt = {
             author: 0,
             education: 0,
         };
 
-        let result = {};
+        return this.collection.find(query, opt).sort(sort).skip(skip).limit(limit).toArray()
+            .then((docs) => {
+                return docs;
+            }).catch((err) => {
+                throw err;
+            });
+    }
+    /**
+     *  取得搜尋的文章總數
+     * @param {object} query - mognodb find query
+     * @returns {Promise}
+     *  - resolved : 10 (Number)
+     */
+    getExperiencesCountByQuery(query) {
         return this.collection.find(query, {
             "_id": 1,
-        }).count().then((count) => {
-            result.total = count;
-            return this.collection.find(query, opt).sort(sort).skip(skip).limit(limit).toArray();
-        }).then((docs) => {
-            result.find_count = docs.length;
-            result.experiences = docs;
-            return result;
-        }).catch((err) => {
-            throw err;
-        });
+        }).count();
     }
 
     /**
