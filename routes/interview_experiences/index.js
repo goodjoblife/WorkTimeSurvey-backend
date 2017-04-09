@@ -31,6 +31,7 @@ const authentication = require('../../middlewares/authentication');
  *  interview_sensitive_questions : [
  *      "what your name ?"
  *  ]
+ *
  *  }
  *
  * @returns {object}
