@@ -23,7 +23,7 @@ env:
         - NODE_ENV=test
 
 install:
-    - npm install
+    - yarn install
     - ./bin/migrate
 
 script:

@@ -22,7 +22,7 @@ jobs:
                 command: npm run migrate
             - run:
                 name: Unit test and API test
-                command: npm test
+                command: npm test -- --timeout 30s
             - run:
                 name: Lint
                 command: npm run lint
