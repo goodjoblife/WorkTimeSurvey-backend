@@ -1,4 +1,4 @@
-NODE = docker-compose exec -T node
+NODE = docker-compose run --rm node
 
 all:
 

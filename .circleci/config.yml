@@ -16,17 +16,17 @@ jobs:
                 key: wtsb-{{ .Branch }}-{{ checksum "package.json" }}
             - run:
                 name: Install Dependencies
-                command: npm install
+                command: yarn install
             - run:
                 name: Migrate
                 command: npm run migrate
             - run:
                 name: Unit test and API test
-                command: npm test
+                command: npm test -- --timeout 30s
             - run:
                 name: Lint
                 command: npm run lint
             - save_cache:
                 key: wtsb-{{ .Branch }}-{{ checksum "package.json" }}
                 paths:
-                    - "~/.npm"
+                    - "~/.cache/yarn"
