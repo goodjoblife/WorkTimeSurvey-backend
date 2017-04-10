@@ -16,7 +16,7 @@ jobs:
                 key: wtsb-{{ .Branch }}-{{ checksum "package.json" }}
             - run:
                 name: Install Dependencies
-                command: npm install
+                command: yarn install
             - run:
                 name: Migrate
                 command: npm run migrate
@@ -29,4 +29,4 @@ jobs:
             - save_cache:
                 key: wtsb-{{ .Branch }}-{{ checksum "package.json" }}
                 paths:
-                    - "~/.npm"
+                    - "~/.cache/yarn"
