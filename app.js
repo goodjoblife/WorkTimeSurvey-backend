@@ -1,4 +1,5 @@
 var express = require('express');
+var compression = require('compression');
 var path = require('path');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
@@ -15,6 +16,8 @@ require('winston-mongodb').MongoDB;
 var app = express();
 
 app.set('trust proxy', 1);
+
+app.use(compression());
 
 // winston logging setup
 if (app.get('env') !== 'test') {
