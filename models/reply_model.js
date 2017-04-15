@@ -1,11 +1,11 @@
-const Experience_Service = require('./experience_service');
+const ExperienceModel = require('./experience_model');
 const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
 
-class ReplyService {
+class ReplyModel {
 
     constructor(db) {
         this.collection = db.collection('replies');
-        this.experience_service = new Experience_Service(db);
+        this.experience_model = new ExperienceModel(db);
     }
 
     /**
@@ -26,7 +26,7 @@ class ReplyService {
      *
      */
     createReply(experience_id, user, content) {
-        return this.experience_service.checkExperiencedIdExist(experience_id).then((is_exist) => {
+        return this.experience_model.checkExperiencedIdExist(experience_id).then((is_exist) => {
             if (!is_exist) {
                 throw new ObjectNotExistError("該篇文章不存在");
             }
@@ -54,4 +54,4 @@ class ReplyService {
 }
 
 
-module.exports = ReplyService;
+module.exports = ReplyModel;

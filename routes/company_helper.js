@@ -1,5 +1,5 @@
 const HttpError = require('../libs/errors').HttpError;
-const CompanyService = require('../services/company_service');
+const CompanyService = require('../models/company_model');
 /*
  * 如果使用者有給定 company id，將 company name 補成查詢到的公司
  *

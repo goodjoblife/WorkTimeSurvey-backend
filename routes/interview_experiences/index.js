@@ -3,7 +3,7 @@ const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const winston = require('winston');
-const ExperienceService = require('../../services/experience_service');
+const ExperienceModel = require('../../models/experience_model');
 const helper = require('../company_helper');
 const authentication = require('../../middlewares/authentication');
 
@@ -57,7 +57,7 @@ router.post('/', [
             next(valid_result.err);
         }
 
-        const experience_service = new ExperienceService(req.db);
+        const experience_model = new ExperienceModel(req.db);
         experience.job_title = experience.job_title.toUpperCase();
 
         helper.getCompanyByIdOrQuery(req.db, experience.company.id, experience.company.query).then(company => {
@@ -67,7 +67,7 @@ router.post('/', [
                 type: req.user.type,
             };
             experience.created_at = new Date();
-            return experience_service.createExperience(experience);
+            return experience_model.createExperience(experience);
         }).then(() => {
             winston.info("experiences insert data success", {
                 id: experience._id,

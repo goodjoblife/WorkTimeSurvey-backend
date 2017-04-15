@@ -3,7 +3,7 @@ const ObjectId = require('mongodb').ObjectId;
 const DuplicateKeyError = require('../libs/errors').DuplicateKeyError;
 const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
 
-class LikeService {
+class LikeModel {
 
     constructor(db) {
         this.collection = db.collection('likes');
@@ -62,4 +62,4 @@ class LikeService {
 
 }
 
-module.exports = LikeService;
+module.exports = LikeModel;

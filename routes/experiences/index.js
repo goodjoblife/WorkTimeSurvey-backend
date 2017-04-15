@@ -4,7 +4,7 @@ const HttpError = require('../../libs/errors').HttpError;
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const lodash = require('lodash');
 const winston = require('winston');
-const ExperienceService = require('../../services/experience_service');
+const ExperienceModel = require('../../models/experience_model');
 
 /**
  * Get /experiences api
@@ -60,10 +60,10 @@ router.get('/', function(req, res, next) {
     const skip = limit * page;
 
     let result = {};
-    const experience_service = new ExperienceService(req.db);
-    experience_service.getExperiencesCountByQuery(query).then((count) => {
+    const experience_model = new ExperienceModel(req.db);
+    experience_model.getExperiencesCountByQuery(query).then((count) => {
         result.total_pages = Math.ceil(count / limit);
-        return experience_service.getExperiences(query, sort, skip, limit);
+        return experience_model.getExperiences(query, sort, skip, limit);
     }).then((docs) => {
         result.page = page;
         result.experiences = docs;
@@ -121,8 +121,8 @@ router.get('/:id', function(req, res, next) {
         ips: req.ips,
     });
 
-    const experience_service = new ExperienceService(req.db);
-    experience_service.getExperienceById(id).then((result) => {
+    const experience_model = new ExperienceModel(req.db);
+    experience_model.getExperienceById(id).then((result) => {
         res.send(result);
     }).catch((err) => {
         if (err instanceof ObjectNotExistError) {

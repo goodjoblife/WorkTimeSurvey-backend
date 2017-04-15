@@ -1,7 +1,7 @@
 const mongo = require('mongodb');
 const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
 
-class ExperienceService {
+class ExperienceModel {
 
     constructor(db) {
         this.collection = db.collection('experiences');
@@ -136,4 +136,4 @@ class ExperienceService {
 
 }
 
-module.exports = ExperienceService;
+module.exports = ExperienceModel;

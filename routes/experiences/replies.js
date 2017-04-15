@@ -2,7 +2,7 @@ const winston = require('winston');
 const express = require('express');
 const HttpError = require('../../libs/errors').HttpError;
 const router = express.Router();
-const Reply_Service = require('../../services/reply_service');
+const ReplyModel = require('../../models/reply_model');
 const authentication = require('../../middlewares/authentication');
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 
@@ -20,7 +20,7 @@ router.post('/:id/replies', [
             next(new HttpError("留言內容請少於1000個字元", 422));
         }
 
-        const reply_service = new Reply_Service(req.db);
+        const reply_model = new ReplyModel(req.db);
         winston.info("/experiences/:id/replies", {
             id: experience_id,
             ip: req.ip,
@@ -28,7 +28,7 @@ router.post('/:id/replies', [
             data: req.body,
         });
 
-        reply_service.createReply(experience_id, user, content).then((result) => {
+        reply_model.createReply(experience_id, user, content).then((result) => {
             res.send(result);
         }).catch((err) => {
             if (err instanceof ObjectNotExistError) {

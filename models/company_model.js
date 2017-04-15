@@ -1,4 +1,4 @@
-class CompanyService {
+class CompanyModel {
 
     constructor(db) {
         this.collection = db.collection('companies');
@@ -16,4 +16,4 @@ class CompanyService {
 
 }
 
-module.exports = CompanyService;
+module.exports = CompanyModel;
