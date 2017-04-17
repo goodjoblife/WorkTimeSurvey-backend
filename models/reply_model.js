@@ -51,6 +51,35 @@ class ReplyModel {
             throw err;
         });
     }
+
+    /**
+     * 根據經驗文章id，取得文章留言
+     * @param {string} experience_id - experience's id
+     * @returns {Promise}
+     *  - [
+     *      _id : ObjectId,
+     *      experience_id : ObjectId,
+     *      author : {
+     *          id : ObjectId,
+     *      },
+     *      created_at : new Date(),
+     *      content : "Hello GoodJob",
+     *  ]
+     */
+    getRepliesByExperienceId(experience_id, sort = {created_at: -1}, skip = 0, limit = 10000) {
+        return this.experience_model.checkExperiencedIdExist(experience_id).then((is_exist) => {
+            if (!is_exist) {
+                throw new ObjectNotExistError("該篇文章不存在");
+            }
+
+            return this.collection.find({
+                experience_id: experience_id,
+            }).sort(sort).skip(skip).limit(limit).toArray();
+
+        }).catch((err) => {
+            throw err;
+        });
+    }
 }
 
 

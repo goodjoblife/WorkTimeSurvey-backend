@@ -78,4 +78,64 @@ describe('Replies Test', function() {
             sandbox.restore();
         });
     });
+
+    describe('Get : /experiences/:id/replies', function() {
+        let experience_id = undefined;
+
+        before('Create test data', function() {
+            return db.collection('experiences').insert({
+                type: 'interview',
+                author: {
+                    type: "facebook",
+                    _id: "123",
+                },
+                status: "published",
+            }).then(function(result) {
+                experience_id = result.ops[0]._id.toString();
+                return db.collection('replies').insertMany([{
+                    experience_id: experience_id,
+                    author: {
+                        id: "003",
+                    },
+                    content: "hello test0",
+                }, {
+                    experience_id: experience_id,
+                    author: {
+                        id: "002",
+                    },
+                    content: "hello test1",
+                }, {
+                    experience_id: experience_id,
+                    author: {
+                        id: "003",
+                    },
+                    content: "hello test2",
+                }]);
+            });
+        });
+
+        it('Get experiences replies data and expect 3 replies ', function() {
+            return request(app)
+                .get('/experiences/' + experience_id + '/replies')
+                .expect(200)
+                .expect(function(res) {
+                    assert.property(res.body, 'replies');
+                    assert.notDeepProperty(res.body, 'author');
+                    assert.isArray(res.body.replies);
+                    assert.lengthOf(res.body.replies, 3);
+                });
+        });
+
+        it('Set error replies and expect error code 404', function() {
+            return request(app)
+                .get('/experiences/1111/replies')
+                .expect(404);
+        });
+        after(function() {
+            let pro1 = db.collection('replies').remove({});
+            let pro2 = db.collection('experiences').remove({});
+            return Promise.all([pro1, pro2]);
+        });
+
+    });
 });
