@@ -91,7 +91,7 @@ describe('Replies Test', function() {
                 },
                 status: "published",
             }).then(function(result) {
-                experience_id = result.ops[0]._id.toString();
+                experience_id = result.ops[0]._id;
                 return db.collection('replies').insertMany([{
                     experience_id: experience_id,
                     author: {

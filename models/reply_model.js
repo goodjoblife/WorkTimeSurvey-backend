@@ -1,5 +1,6 @@
 const ExperienceModel = require('./experience_model');
 const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
+const ObjectId = require('mongodb').ObjectId;
 
 class ReplyModel {
 
@@ -73,7 +74,7 @@ class ReplyModel {
             }
 
             return this.collection.find({
-                experience_id: experience_id,
+                experience_id: new ObjectId(experience_id),
             }).sort(sort).skip(skip).limit(limit).toArray();
 
         }).catch((err) => {
