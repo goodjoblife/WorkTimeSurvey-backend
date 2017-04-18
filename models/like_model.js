@@ -2,13 +2,47 @@ const DBRef = require('mongodb').DBRef;
 const ObjectId = require('mongodb').ObjectId;
 const DuplicateKeyError = require('../libs/errors').DuplicateKeyError;
 const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
+const ExperienceModel = require('./experience_model');
 
 class LikeModel {
 
     constructor(db) {
         this.collection = db.collection('likes');
         this.replies_collection = db.collection('replies');
-        this.experiences_collection = db.collection('experiences');
+        this.experience_model = new ExperienceModel(db);
+    }
+    /**
+     * 新增讚至一篇文章
+     * @param {string} experience_id - experience's id
+     * @param {object} user -
+     * {
+     *  id : "xxxxx",
+     *  type : "facebook",
+     * }
+     * @returns {Promise}
+     *  - resolved : "xxxxx" (like's id)
+     *  - reject : ObjectNotExistError / Default Error
+     */
+    createLikeToExperience(experience_id, user) {
+        return this.experience_model.checkExperiencedIdExist(experience_id).then((is_exist) => {
+            if (!is_exist) {
+                throw new ObjectNotExistError("該篇文章不存在");
+            }
+
+            const data = {
+                "user": user,
+                "ref": new DBRef('experiences', new ObjectId(experience_id)),
+            };
+            return this.collection.insertOne(data);
+        }).then((result) => {
+            return result.insertedId;
+        }).catch((err) => {
+            if (err.code === 11000) {  //E11000 duplicate key error
+                throw new DuplicateKeyError("該篇文章已經被按讚");
+            } else {
+                throw err;
+            }
+        });
     }
 
     /**
