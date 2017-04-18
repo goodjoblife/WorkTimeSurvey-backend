@@ -1,5 +1,6 @@
 const ExperienceModel = require('./experience_model');
 const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
+const ObjectId = require('mongodb').ObjectId;
 
 class ReplyModel {
 
@@ -32,7 +33,7 @@ class ReplyModel {
             }
 
             return this.collection.insertOne({
-                "experience_id": experience_id,
+                "experience_id": new ObjectId(experience_id),
                 "user": user,
                 "created_at": new Date(),
                 "content": content,
