@@ -967,6 +967,42 @@ describe('Workings 工時資訊', function() {
             });
         });
 
+        describe('Checking email field', function() {
+            it('should upload emails fields while uploading worktime related data and email is given', function() {
+                const test_email = "test12345@gmail.com";
+                return request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            email: test_email,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.propertyVal(res.body.working.author, 'email', test_email);
+                        });
+            });
+            it('should upload emails fields while uploading salary related data and email is given', function() {
+                const test_email = "test12345@gmail.com";
+                return request(app).post('/workings')
+                        .send(generateSalaryRelatedPayload({
+                            email: test_email,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.propertyVal(res.body.working.author, 'email', test_email);
+                        });
+            });
+            it('should upload emails fields while uploading all data and email is given', function() {
+                const test_email = "test12345@gmail.com";
+                return request(app).post('/workings')
+                        .send(generateAllPayload({
+                            email: test_email,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.propertyVal(res.body.working.author, 'email', test_email);
+                        });
+            });
+        });
+
         afterEach(function() {
             nock.cleanAll();
         });
