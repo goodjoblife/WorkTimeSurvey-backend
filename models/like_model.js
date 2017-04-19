@@ -9,7 +9,7 @@ class LikeModel {
     constructor(db) {
         this.collection = db.collection('likes');
         this.replies_collection = db.collection('replies');
-        this.experience_model = new ExperienceModel(db);
+        this._db = db;
     }
     /**
      * 新增讚至一篇文章
@@ -24,7 +24,8 @@ class LikeModel {
      *  - reject : ObjectNotExistError / Default Error
      */
     createLikeToExperience(experience_id, user) {
-        return this.experience_model.checkExperiencedIdExist(experience_id).then((is_exist) => {
+        const experience_model = new ExperienceModel(this._db);
+        return experience_model.checkExperiencedIdExist(experience_id).then((is_exist) => {
             if (!is_exist) {
                 throw new ObjectNotExistError("該篇文章不存在");
             }

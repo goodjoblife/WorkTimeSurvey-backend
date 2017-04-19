@@ -52,7 +52,6 @@ describe('Experience Likes Test', function() {
                 .expect(200)
                 .expect(function(res) {
                     assert.deepProperty(res.body, 'success');
-                    assert.deepProperty(res.body, 'id');
                 });
         });
 

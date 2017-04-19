@@ -13,7 +13,6 @@ const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
  * @returns {object}
  *  - {
  *      success : true,
- *      id : "xxxxxx",
  *  }
  */
 router.post('/:id/likes', [
@@ -34,7 +33,6 @@ router.post('/:id/likes', [
         like_model.createLikeToExperience(experience_id, user).then((result) => {
             res.send({
                 success: true,
-                id: result,
             });
         }).catch((err) => {
             if (err instanceof DuplicateKeyError) {
