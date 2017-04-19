@@ -1163,7 +1163,7 @@ mongodb-core@2.1.9:
     bson "~1.0.4"
     require_optional "~1.0.0"
 
-mongodb@^2.0.39, mongodb@^2.0.46, mongodb@^2.2.25:
+mongodb@^2.0.39, mongodb@^2.2.19, mongodb@^2.2.25:
   version "2.2.25"
   resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-2.2.25.tgz#d3b25dad00eda2bdfcbc996210ba082ac686a6b6"
   dependencies:
@@ -1774,13 +1774,13 @@ verror@1.3.6:
   dependencies:
     extsprintf "1.0.2"
 
-winston-mongodb@^1.6.0:
-  version "1.6.6"
-  resolved "https://registry.yarnpkg.com/winston-mongodb/-/winston-mongodb-1.6.6.tgz#66488f1864dcb7af64659c155f9568c9708284e4"
+winston-mongodb@^2.0.8:
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/winston-mongodb/-/winston-mongodb-2.0.8.tgz#79c8e98bb2b09eb222ffe31361967bf912cbf9b9"
   dependencies:
-    mongodb "^2.0.46"
+    mongodb "^2.2.19"
 
-winston@^2.2.0:
+winston@^2.3.1:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/winston/-/winston-2.3.1.tgz#0b48420d978c01804cf0230b648861598225a119"
   dependencies:
