@@ -6,7 +6,7 @@ class ReplyModel {
 
     constructor(db) {
         this.collection = db.collection('replies');
-        this.experience_model = new ExperienceModel(db);
+        this._db = db;
     }
 
     /**
@@ -27,7 +27,8 @@ class ReplyModel {
      *
      */
     createReply(experience_id, user, content) {
-        return this.experience_model.checkExperiencedIdExist(experience_id).then((is_exist) => {
+        const experience_model = new ExperienceModel(this._db);
+        return experience_model.checkExperiencedIdExist(experience_id).then((is_exist) => {
             if (!is_exist) {
                 throw new ObjectNotExistError("該篇文章不存在");
             }
@@ -68,7 +69,8 @@ class ReplyModel {
      *  ]
      */
     getRepliesByExperienceId(experience_id, sort = {created_at: -1}, skip = 0, limit = 10000) {
-        return this.experience_model.checkExperiencedIdExist(experience_id).then((is_exist) => {
+        const experience_model = new ExperienceModel(this._db);
+        return experience_model.checkExperiencedIdExist(experience_id).then((is_exist) => {
             if (!is_exist) {
                 throw new ObjectNotExistError("該篇文章不存在");
             }

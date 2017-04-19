@@ -50,6 +50,13 @@ router.post('/:id/replies', [
  */
 router.get('/:id/replies', function(req, res, next) {
     const experience_id = req.params.id;
+
+    winston.info("Get /experiences/:id/replies", {
+        id: experience_id,
+        ip: req.ip,
+        ips: req.ips,
+    });
+
     const reply_model = new ReplyModel(req.db);
     reply_model.getRepliesByExperienceId(experience_id).then((result) => {
         res.send({
