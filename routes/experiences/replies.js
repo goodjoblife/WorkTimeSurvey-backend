@@ -50,6 +50,8 @@ router.post('/:id/replies', [
  */
 router.get('/:id/replies', function(req, res, next) {
     const experience_id = req.params.id;
+    let limit = parseInt(req.query.limit) || 10000;
+    let start = parseInt(req.query.start) || 0;
 
     winston.info("Get /experiences/:id/replies", {
         id: experience_id,
@@ -58,7 +60,7 @@ router.get('/:id/replies', function(req, res, next) {
     });
 
     const reply_model = new ReplyModel(req.db);
-    reply_model.getRepliesByExperienceId(experience_id).then((result) => {
+    reply_model.getRepliesByExperienceId(experience_id, start, limit).then((result) => {
         res.send({
             replies: _repliesModelToApiModel(result),
         });

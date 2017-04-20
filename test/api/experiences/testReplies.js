@@ -81,6 +81,7 @@ describe('Replies Test', function() {
 
     describe('Get : /experiences/:id/replies', function() {
         let experience_id = undefined;
+        const test_Replies_Count = 200;
 
         before('Create test data', function() {
             return db.collection('experiences').insert({
@@ -92,29 +93,22 @@ describe('Replies Test', function() {
                 status: "published",
             }).then(function(result) {
                 experience_id = result.ops[0]._id;
-                return db.collection('replies').insertMany([{
-                    experience_id: experience_id,
-                    author: {
-                        id: "003",
-                    },
-                    content: "hello test0",
-                }, {
-                    experience_id: experience_id,
-                    author: {
-                        id: "002",
-                    },
-                    content: "hello test1",
-                }, {
-                    experience_id: experience_id,
-                    author: {
-                        id: "003",
-                    },
-                    content: "hello test2",
-                }]);
+                let testDatas = [];
+                for (var i = 0; i < test_Replies_Count; i++) {
+                    testDatas.push({
+                        create_at: new Date(),
+                        experience_id: experience_id,
+                        author: {
+                            id: "man" + i,
+                        },
+                        content: "hello test0",
+                    });
+                }
+                return db.collection('replies').insertMany(testDatas);
             });
         });
 
-        it('Get experiences replies data and expect 3 replies ', function() {
+        it('Get experiences replies data and expect 200 replies ', function() {
             return request(app)
                 .get('/experiences/' + experience_id + '/replies')
                 .expect(200)
@@ -122,7 +116,23 @@ describe('Replies Test', function() {
                     assert.property(res.body, 'replies');
                     assert.notDeepProperty(res.body, 'author');
                     assert.isArray(res.body.replies);
-                    assert.lengthOf(res.body.replies, 3);
+                    assert.lengthOf(res.body.replies, test_Replies_Count);
+                });
+        });
+
+        it('Get experiences replies data by start 0 and limit 10 , expect 10 replies ', function() {
+            return request(app)
+                .get('/experiences/' + experience_id + '/replies')
+                .query({
+                    limit: 100,
+                    start: 0,
+                })
+                .expect(200)
+                .expect(function(res) {
+                    assert.property(res.body, 'replies');
+                    assert.notDeepProperty(res.body, 'author');
+                    assert.isArray(res.body.replies);
+                    assert.lengthOf(res.body.replies, 100);
                 });
         });
 

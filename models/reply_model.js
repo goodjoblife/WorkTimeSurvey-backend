@@ -68,7 +68,7 @@ class ReplyModel {
      *      content : "Hello GoodJob",
      *  ]
      */
-    getRepliesByExperienceId(experience_id, sort = {created_at: -1}, skip = 0, limit = 10000) {
+    getRepliesByExperienceId(experience_id, skip = 0, limit = 10000, sort = {created_at: 1}) {
         const experience_model = new ExperienceModel(this._db);
         return experience_model.checkExperiencedIdExist(experience_id).then((is_exist) => {
             if (!is_exist) {
