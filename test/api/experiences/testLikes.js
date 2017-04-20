@@ -21,9 +21,15 @@ describe('Experience Likes Test', function() {
         let experience_id = undefined;
         let sandbox;
 
-        before('Create test data', function() {
+        beforeEach('Create test data', function() {
 
-            db.collection('likes').createIndex({usesr: 1, ref: 1 }, {unique: true});
+            db.collection('likes').createIndex({
+                usesr: 1,
+                ref: 1,
+            }, {
+                unique: true,
+            });
+
             sandbox = sinon.sandbox.create();
             sandbox.stub(authentication, 'cachedFacebookAuthentication')
                 .withArgs(sinon.match.object, 'fakeaccesstoken')
@@ -31,7 +37,7 @@ describe('Experience Likes Test', function() {
                     id: '-1',
                     name: 'markLin',
                 });
-            return db.collection('experiences').insert({
+            return db.collection('experiences').insertOne({
                 type: 'interview',
                 author: {
                     type: "facebook",
@@ -39,7 +45,7 @@ describe('Experience Likes Test', function() {
                 },
                 status: "published",
             }).then(function(result) {
-                experience_id = result.ops[0]._id.toString();
+                experience_id = result.insertedId.toString();
             });
         });
 
@@ -51,7 +57,7 @@ describe('Experience Likes Test', function() {
                 })
                 .expect(200)
                 .expect(function(res) {
-                    assert.deepProperty(res.body, 'success');
+                    assert.deepPropertyVal(res.body, 'success', true);
                 });
         });
 
@@ -66,23 +72,30 @@ describe('Experience Likes Test', function() {
 
         it('Post 2 times , and expected return 403', function() {
             return request(app).post('/experiences/' + experience_id + '/likes')
-                    .then((response) => {
-                        return request(app)
+                .send({
+                    access_token: 'fakeaccesstoken',
+                })
+                .then((response) => {
+                    return request(app)
                         .post('/experiences/' + experience_id + '/likes')
                         .send({
                             access_token: 'fakeaccesstoken',
                         })
                         .expect(403);
-                    });
+                });
         });
 
-        after(function() {
+        it('User does not login , and expected return code 401', function() {
+            return request(app)
+                    .post('/experiences/' + experience_id + '/likes')
+                    .expect(401);
+        });
+
+        afterEach(function() {
+            sandbox.restore();
             let pro1 = db.collection('likes').drop();
             let pro2 = db.collection('experiences').remove({});
             return Promise.all([pro1, pro2]);
-        });
-        after(function() {
-            sandbox.restore();
         });
 
     });
