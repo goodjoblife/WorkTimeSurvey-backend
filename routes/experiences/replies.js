@@ -31,7 +31,7 @@ router.post('/:id/replies', [
         reply_model.createReply(experience_id, user, content).then((reply) => {
             const result = {
                 reply,
-            }
+            };
 
             // TODO floor
 
