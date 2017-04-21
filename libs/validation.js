@@ -1,11 +1,11 @@
-function required_string(field) {
+function requiredString(field) {
     if (typeof field === 'string') {
         return true;
     }
     return false;
 }
 
-function required_non_empty_string(field) {
+function requiredNonEmptyString(field) {
     if (typeof field === 'string') {
         if (field !== "") {
             return true;
@@ -15,14 +15,14 @@ function required_non_empty_string(field) {
     return false;
 }
 
-function required_number(field) {
+function requiredNumber(field) {
     if (typeof field === 'number') {
         return true;
     }
     return false;
 }
 
-function optional_string(field) {
+function optionalString(field) {
     if (typeof field === 'undefined') {
         return true;
     } else if (typeof field === 'string') {
@@ -31,7 +31,7 @@ function optional_string(field) {
     return false;
 }
 
-function optional_number(field) {
+function optionalNumber(field) {
     if (typeof field === 'undefined') {
         return true;
     } else if (typeof field === 'number') {
@@ -40,15 +40,15 @@ function optional_number(field) {
     return false;
 }
 
-function should_in(field, range) {
+function shouldIn(field, range) {
     return (range.indexOf(field) !== -1);
 }
 
 module.exports = {
-    required_string,
-    required_non_empty_string,
-    required_number,
-    optional_string,
-    optional_number,
-    should_in,
+    requiredString,
+    requiredNonEmptyString,
+    requiredNumber,
+    optionalString,
+    optionalNumber,
+    shouldIn,
 };

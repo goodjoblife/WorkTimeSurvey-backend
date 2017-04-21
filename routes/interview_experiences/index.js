@@ -6,10 +6,10 @@ const ExperienceModel = require('../../models/experience_model');
 const helper = require('../company_helper');
 const authentication = require('../../middlewares/authentication');
 const {
-    required_non_empty_string,
-    required_number,
-    optional_number,
-    should_in,
+    requiredNonEmptyString,
+    requiredNumber,
+    optionalNumber,
+    shouldIn,
 } = require('../../libs/validation');
 
 /**
@@ -99,27 +99,27 @@ function validationInputFields(data) {
 }
 
 function validateCommonInputFields(data) {
-    if (!required_non_empty_string(data.company_query)) {
+    if (!requiredNonEmptyString(data.company_query)) {
         throw new HttpError("公司/單位名稱要填喔！", 422);
     }
-    if (!required_non_empty_string(data.region)) {
+    if (!requiredNonEmptyString(data.region)) {
         throw new HttpError("地區要填喔！", 422);
     }
-    if (!required_non_empty_string(data.job_title)) {
+    if (!requiredNonEmptyString(data.job_title)) {
         throw new HttpError("職稱要填喔！", 422);
     }
-    if (!required_non_empty_string(data.title)) {
+    if (!requiredNonEmptyString(data.title)) {
         throw new HttpError("標題要寫喔！", 422);
     }
     if (!data.sections || !(data.sections instanceof Array)) {
         throw new HttpError("內容要寫喔！", 422);
     }
     data.sections.forEach((section) => {
-        if (!required_non_empty_string(section.subtitle) || !required_non_empty_string(section.content)) {
+        if (!requiredNonEmptyString(section.subtitle) || !requiredNonEmptyString(section.content)) {
             throw new HttpError("內容要寫喔！", 422);
         }
     });
-    if (!optional_number(data.experience_in_year)) {
+    if (!optionalNumber(data.experience_in_year)) {
         throw new HttpError("相關職務工作經驗是數字！", 422);
     }
     if (data.experience_in_year) {
@@ -128,7 +128,7 @@ function validateCommonInputFields(data) {
         }
     }
     if (data.education) {
-        if (!should_in(data.education, ['大學', '碩士', '博士', '高職', '五專', '二專', '二技', '高中', '國中', '國小'])) {
+        if (!shouldIn(data.education, ['大學', '碩士', '博士', '高職', '五專', '二專', '二技', '高中', '國中', '國小'])) {
             throw new HttpError("最高學歷範圍錯誤", 422);
         }
     }
@@ -138,10 +138,10 @@ function validateInterviewInputFields(data) {
     if (!data.interview_time) {
         throw new HttpError("面試時間要填喔！", 422);
     }
-    if (!required_number(data.interview_time.year)) {
+    if (!requiredNumber(data.interview_time.year)) {
         throw new HttpError("面試年份要填喔！", 422);
     }
-    if (!required_number(data.interview_time.month)) {
+    if (!requiredNumber(data.interview_time.month)) {
         throw new HttpError("面試月份要填喔！", 422);
     }
     const now = new Date();
@@ -161,7 +161,7 @@ function validateInterviewInputFields(data) {
             throw new HttpError("面試題目列表要是一個陣列", 422);
         }
         data.interview_qas.forEach((qa) => {
-            if (!required_non_empty_string(qa.question) || !required_non_empty_string(qa.answer)) {
+            if (!requiredNonEmptyString(qa.question) || !requiredNonEmptyString(qa.answer)) {
                 throw new HttpError("內容要寫喔！", 422);
             }
         });
@@ -170,7 +170,7 @@ function validateInterviewInputFields(data) {
         }
     }
 
-    if (!required_non_empty_string(data.interview_result)) {
+    if (!requiredNonEmptyString(data.interview_result)) {
         throw new HttpError("面試結果要填喔！", 422);
     }
 
@@ -180,17 +180,17 @@ function validateInterviewInputFields(data) {
             throw new HttpError("面試中提及的特別問題要是一個陣列", 422);
         }
         data.interview_sensitive_questions.forEach((question) => {
-            if (!required_non_empty_string(question)) {
+            if (!requiredNonEmptyString(question)) {
                 throw new HttpError("面試中提及的特別問題要是 string！", 422);
             }
         });
     }
 
     if (data.salary) {
-        if (!should_in(data.salary.type, ["year", "month", "day", "hour"])) {
+        if (!shouldIn(data.salary.type, ["year", "month", "day", "hour"])) {
             throw new HttpError('薪資種類需為年薪/月薪/日薪/時薪', 422);
         }
-        if (!required_number(data.salary.amount)) {
+        if (!requiredNumber(data.salary.amount)) {
             throw new HttpError('薪資需為數字', 422);
         }
         if (data.salary.amount < 0) {
@@ -198,11 +198,11 @@ function validateInterviewInputFields(data) {
         }
     }
 
-    if (!required_number(data.overall_rating)) {
+    if (!requiredNumber(data.overall_rating)) {
         throw new HttpError("這次面試你給幾分？", 422);
     }
 
-    if (!should_in(data.overall_rating, [1, 2, 3, 4, 5])) {
+    if (!shouldIn(data.overall_rating, [1, 2, 3, 4, 5])) {
         throw new HttpError('面試分數有誤', 422);
     }
 }
