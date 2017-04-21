@@ -52,10 +52,8 @@ describe('Replies Test', function() {
                 .expect(200)
                 .expect(function(res) {
                     assert.property(res.body, 'reply');
-                    assert.deepProperty(res.body, 'reply.id');
+                    assert.deepProperty(res.body, 'reply._id');
                     assert.deepProperty(res.body, 'reply.content');
-                    assert.deepProperty(res.body, 'reply.like_count');
-                    assert.deepProperty(res.body, 'reply.floor');
                 });
         });
 

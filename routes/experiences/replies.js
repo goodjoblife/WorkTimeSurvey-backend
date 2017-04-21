@@ -28,7 +28,13 @@ router.post('/:id/replies', [
             data: req.body,
         });
 
-        reply_model.createReply(experience_id, user, content).then((result) => {
+        reply_model.createReply(experience_id, user, content).then((reply) => {
+            const result = {
+                reply,
+            }
+
+            // TODO floor
+
             res.send(result);
         }).catch((err) => {
             if (err instanceof ObjectNotExistError) {
