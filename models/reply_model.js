@@ -28,7 +28,7 @@ class ReplyModel {
      */
     createReply(experience_id, user, content) {
         const experience_model = new ExperienceModel(this._db);
-        return experience_model.checkExperiencedIdExist(experience_id).then((is_exist) => {
+        return experience_model.isExist(experience_id).then((is_exist) => {
             if (!is_exist) {
                 throw new ObjectNotExistError("該篇文章不存在");
             }
@@ -70,7 +70,7 @@ class ReplyModel {
      */
     getRepliesByExperienceId(experience_id, skip = 0, limit = 10000, sort = {created_at: 1}) {
         const experience_model = new ExperienceModel(this._db);
-        return experience_model.checkExperiencedIdExist(experience_id).then((is_exist) => {
+        return experience_model.isExist(experience_id).then((is_exist) => {
             if (!is_exist) {
                 throw new ObjectNotExistError("該篇文章不存在");
             }
