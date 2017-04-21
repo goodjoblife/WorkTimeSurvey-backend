@@ -3,16 +3,26 @@ const assert = chai.assert;
 const request = require('supertest');
 const app = require('../app');
 const MongoClient = require('mongodb').MongoClient;
-const nock = require('nock');
+const sinon = require('sinon');
+require('sinon-as-promised');
+const facebook = require('../libs/facebook');
 const ObjectId = require('mongodb').ObjectId;
 
 describe('Workings 工時資訊', function() {
     var db = undefined;
+    let sandbox;
+    let accessTokenAuth;
 
     before('DB: Setup', function() {
         return MongoClient.connect(process.env.MONGODB_URI).then(function(_db) {
             db = _db;
         });
+    });
+
+    beforeEach(function() {
+        sandbox = sinon.sandbox.create();
+        accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
+            .resolves({id: '-1', name: 'test'});
     });
 
     describe('POST /workings', function() {
@@ -33,39 +43,47 @@ describe('Workings 工時資訊', function() {
             ]);
         });
 
-        beforeEach('Mock the request to FB', function() {
-            nock('https://graph.facebook.com:443')
-                .get('/v2.6/me')
-                .query(true)
-                .reply(200, {id: '-1', name: 'test'});
-        });
-
         describe('Authentication & Authorization Part', function () {
             it('需要回傳 401 如果沒有 access_token', function() {
+                sandbox.restore();
+                const accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
+                    .rejects(new Error('access_token is invalid'));
+
                 return request(app).post('/workings')
-                    .expect(401);
+                    .expect(401)
+                    .then(function(res) {
+                        sinon.assert.calledOnce(accessTokenAuth);
+                    });
             });
 
             it('需要回傳 401 如果 access_token 為空', function() {
+                sandbox.restore();
+                const accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
+                    .rejects(new Error('access_token is invalid'));
+
                 return request(app).post('/workings')
                     .send({
                         access_token: "",
                     })
-                    .expect(401);
+                    .expect(401)
+                    .then(function(res) {
+                        sinon.assert.calledOnce(accessTokenAuth);
+                    });
             });
 
             it('需要回傳 401 如果不能 FB 登入', function() {
-                nock.cleanAll();
-                nock('https://graph.facebook.com:443')
-                    .get('/v2.6/me')
-                    .query(true)
-                    .reply(200, {error: 'error'});
+                sandbox.restore();
+                const accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
+                    .rejects(new Error('access_token is invalid'));
 
                 return request(app).post('/workings')
                     .send({
                         access_token: 'random',
                     })
-                    .expect(401);
+                    .expect(401)
+                    .then(function(res) {
+                        sinon.assert.calledOnce(accessTokenAuth);
+                    });
             });
         });
 
@@ -901,13 +919,6 @@ describe('Workings 工時資訊', function() {
 
         describe('Quota Check Part', function() {
             it('只能新增 5 筆資料', function() {
-                nock.cleanAll();
-                nock('https://graph.facebook.com:443')
-                    .get('/v2.6/me')
-                    .times(6)
-                    .query(true)
-                    .reply(200, {id: '-1', name: 'test'});
-
                 const count = 5;
 
                 var requestPromiseStack = [];
@@ -931,17 +942,13 @@ describe('Workings 工時資訊', function() {
                             company_id: '00000001',
                         }))
                         .expect(429);
+                })
+                .then(function() {
+                    sinon.assert.callCount(accessTokenAuth, 6);
                 });
             });
 
             it('新增 2 筆資料，quries_count 會顯示 2', function() {
-                nock.cleanAll();
-                nock('https://graph.facebook.com:443')
-                    .get('/v2.6/me')
-                    .times(2)
-                    .query(true)
-                    .reply(200, {id: '-1', name: 'test'});
-
                 return request(app).post('/workings')
                     .send(generateWorkingTimeRelatedPayload({
                         company_id: '00000001',
@@ -963,12 +970,51 @@ describe('Workings 工時資訊', function() {
                                 assert.equal(res.body.working.company.id, '00000001');
                                 assert.equal(res.body.working.company.name, 'GOODJOB');
                             });
+                    })
+                    .then(function() {
+                        sinon.assert.callCount(accessTokenAuth, 2);
                     });
             });
         });
 
+        describe('Checking email field', function() {
+            it('should upload emails fields while uploading worktime related data and email is given', function() {
+                const test_email = "test12345@gmail.com";
+                return request(app).post('/workings')
+                        .send(generateWorkingTimeRelatedPayload({
+                            email: test_email,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.propertyVal(res.body.working.author, 'email', test_email);
+                        });
+            });
+            it('should upload emails fields while uploading salary related data and email is given', function() {
+                const test_email = "test12345@gmail.com";
+                return request(app).post('/workings')
+                        .send(generateSalaryRelatedPayload({
+                            email: test_email,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.propertyVal(res.body.working.author, 'email', test_email);
+                        });
+            });
+            it('should upload emails fields while uploading all data and email is given', function() {
+                const test_email = "test12345@gmail.com";
+                return request(app).post('/workings')
+                        .send(generateAllPayload({
+                            email: test_email,
+                        }))
+                        .expect(200)
+                        .expect(function(res) {
+                            assert.propertyVal(res.body.working.author, 'email', test_email);
+                        });
+            });
+        });
+
         afterEach(function() {
-            nock.cleanAll();
+            sandbox.restore();
         });
 
         afterEach(function() {
