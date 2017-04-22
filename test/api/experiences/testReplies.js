@@ -57,7 +57,7 @@ describe('Replies Test', function() {
                     assert.deepPropertyVal(res.body, 'reply.content', '你好我是大留言');
                     assert.deepPropertyVal(res.body, 'reply.floor', 0);
                     assert.deepPropertyVal(res.body, 'reply.experience_id', experience_id);
-                    assert.deepPropertyVal(res.body, 'like_count', 0);
+                    assert.deepPropertyVal(res.body, 'reply.like_count', 0);
                     assert.deepEqual(res.body.reply.user, {id: '-1', type: 'facebook'});
                 });
         });
