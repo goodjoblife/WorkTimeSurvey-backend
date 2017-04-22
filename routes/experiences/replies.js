@@ -40,8 +40,43 @@ router.post('/:id/replies', [
     },
 ]);
 
+/**
+ * @returns {object} - {
+ *  replies : [
+ *      { id: "abcdefg", content: "hello goodjob", like_count: 10 }
+ *      { id: "xxxxxxx", content: "hello mark", like_count: 10 }
+ *  ]
+ * }
+ */
 router.get('/:id/replies', function(req, res, next) {
-    res.send('Yo! you are in GET /experiences/:id/replies');
+    const experience_id = req.params.id;
+    let limit = parseInt(req.query.limit) || 10000;
+    let start = parseInt(req.query.start) || 0;
+
+    winston.info("Get /experiences/:id/replies", {
+        id: experience_id,
+        ip: req.ip,
+        ips: req.ips,
+    });
+
+    const reply_model = new ReplyModel(req.db);
+    reply_model.getRepliesByExperienceId(experience_id, start, limit).then((result) => {
+        res.send({
+            replies: _repliesModelToApiModel(result),
+        });
+    }).catch((err) => {
+        if (err instanceof ObjectNotExistError) {
+            next(new HttpError(err.message, 404));
+        } else {
+            next(new HttpError("Internal Server Error", 500));
+        }
+    });
 });
+
+function _repliesModelToApiModel(replies) {
+    return replies.map((reply) => {
+        delete reply.author;
+    });
+}
 
 module.exports = router;

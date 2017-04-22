@@ -78,4 +78,74 @@ describe('Replies Test', function() {
             sandbox.restore();
         });
     });
+
+    describe('Get : /experiences/:id/replies', function() {
+        let experience_id = undefined;
+        const test_Replies_Count = 200;
+
+        before('Create test data', function() {
+            return db.collection('experiences').insert({
+                type: 'interview',
+                author: {
+                    type: "facebook",
+                    _id: "123",
+                },
+                status: "published",
+            }).then(function(result) {
+                experience_id = result.ops[0]._id;
+                let testDatas = [];
+                for (var i = 0; i < test_Replies_Count; i++) {
+                    testDatas.push({
+                        create_at: new Date(),
+                        experience_id: experience_id,
+                        author: {
+                            id: "man" + i,
+                        },
+                        content: "hello test0",
+                    });
+                }
+                return db.collection('replies').insertMany(testDatas);
+            });
+        });
+
+        it('Get experiences replies data and expect 200 replies ', function() {
+            return request(app)
+                .get('/experiences/' + experience_id + '/replies')
+                .expect(200)
+                .expect(function(res) {
+                    assert.property(res.body, 'replies');
+                    assert.notDeepProperty(res.body, 'author');
+                    assert.isArray(res.body.replies);
+                    assert.lengthOf(res.body.replies, test_Replies_Count);
+                });
+        });
+
+        it('Get experiences replies data by start 0 and limit 10 , expect 10 replies ', function() {
+            return request(app)
+                .get('/experiences/' + experience_id + '/replies')
+                .query({
+                    limit: 100,
+                    start: 0,
+                })
+                .expect(200)
+                .expect(function(res) {
+                    assert.property(res.body, 'replies');
+                    assert.notDeepProperty(res.body, 'author');
+                    assert.isArray(res.body.replies);
+                    assert.lengthOf(res.body.replies, 100);
+                });
+        });
+
+        it('Set error replies and expect error code 404', function() {
+            return request(app)
+                .get('/experiences/1111/replies')
+                .expect(404);
+        });
+        after(function() {
+            let pro1 = db.collection('replies').remove({});
+            let pro2 = db.collection('experiences').remove({});
+            return Promise.all([pro1, pro2]);
+        });
+
+    });
 });

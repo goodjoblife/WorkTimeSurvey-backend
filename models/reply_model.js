@@ -1,11 +1,12 @@
 const ExperienceModel = require('./experience_model');
 const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
+const ObjectId = require('mongodb').ObjectId;
 
 class ReplyModel {
 
     constructor(db) {
         this.collection = db.collection('replies');
-        this.experience_model = new ExperienceModel(db);
+        this._db = db;
     }
 
     /**
@@ -26,13 +27,14 @@ class ReplyModel {
      *
      */
     createReply(experience_id, user, content) {
-        return this.experience_model.checkExperiencedIdExist(experience_id).then((is_exist) => {
+        const experience_model = new ExperienceModel(this._db);
+        return experience_model.isExist(experience_id).then((is_exist) => {
             if (!is_exist) {
                 throw new ObjectNotExistError("該篇文章不存在");
             }
 
             return this.collection.insertOne({
-                "experience_id": experience_id,
+                "experience_id": new ObjectId(experience_id),
                 "user": user,
                 "created_at": new Date(),
                 "content": content,
@@ -47,6 +49,36 @@ class ReplyModel {
                     "floor": 1,
                 },
             };
+        }).catch((err) => {
+            throw err;
+        });
+    }
+
+    /**
+     * 根據經驗文章id，取得文章留言
+     * @param {string} experience_id - experience's id
+     * @returns {Promise}
+     *  - [
+     *      _id : ObjectId,
+     *      experience_id : ObjectId,
+     *      author : {
+     *          id : ObjectId,
+     *      },
+     *      created_at : new Date(),
+     *      content : "Hello GoodJob",
+     *  ]
+     */
+    getRepliesByExperienceId(experience_id, skip = 0, limit = 10000, sort = {created_at: 1}) {
+        const experience_model = new ExperienceModel(this._db);
+        return experience_model.isExist(experience_id).then((is_exist) => {
+            if (!is_exist) {
+                throw new ObjectNotExistError("該篇文章不存在");
+            }
+
+            return this.collection.find({
+                experience_id: new ObjectId(experience_id),
+            }).sort(sort).skip(skip).limit(limit).toArray();
+
         }).catch((err) => {
             throw err;
         });
