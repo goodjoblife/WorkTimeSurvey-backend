@@ -19,7 +19,7 @@ function collectData(req, res) {
         created_at: new Date(),
     };
 
-    if (checkBodyField(req, 'main')) {
+    if (checkBodyField(req, 'email')) {
         author.email = req.body.email;
     }
 
