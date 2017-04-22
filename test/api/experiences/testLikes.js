@@ -23,13 +23,6 @@ describe('Experience Likes Test', function() {
 
         beforeEach('Create test data', function() {
 
-            db.collection('likes').createIndex({
-                usesr: 1,
-                ref: 1,
-            }, {
-                unique: true,
-            });
-
             sandbox = sinon.sandbox.create();
             sandbox.stub(authentication, 'cachedFacebookAuthentication')
                 .withArgs(sinon.match.object, 'fakeaccesstoken')
@@ -93,7 +86,7 @@ describe('Experience Likes Test', function() {
 
         afterEach(function() {
             sandbox.restore();
-            let pro1 = db.collection('likes').drop();
+            let pro1 = db.collection('likes').remove();
             let pro2 = db.collection('experiences').remove({});
             return Promise.all([pro1, pro2]);
         });
