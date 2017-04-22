@@ -55,14 +55,20 @@ router.post('/', [
         }
 
         const experience = {};
-        experience.type = "interview";
-        experience.author = {
-            id: req.user.id,
-            type: req.user.type,
-        };
-        experience.company = {};
+        Object.assign(experience, {
+            type: "interview",
+            author: {
+                id: req.user.id,
+                type: req.user.type,
+            },
+            // company 後面決定
+            company: {},
+            like_count: 0,
+            reply_count: 0,
+            // TODO 瀏覽次數？檢舉數？
+            created_at: new Date(),
+        });
         Object.assign(experience, pickupInterviewExperience(req.body));
-        experience.created_at = new Date();
 
         const experience_model = new ExperienceModel(req.db);
 
