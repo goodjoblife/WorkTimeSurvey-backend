@@ -42,6 +42,7 @@ class ReplyModel {
             Object.assign(partial_reply, {
                 experience_id: new ObjectId(experience_id),
                 floor: reply_count - 1,
+                like_count: 0,
                 created_at: new Date(),
             });
 
