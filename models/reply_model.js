@@ -27,26 +27,26 @@ class ReplyModel {
      *  - reject : defaultError/ObjectNotExistError
      *
      */
-    createReply(experience_id, user, content) {
+    createReply(experience_id, partial_reply) {
         const experience_model = new ExperienceModel(this._db);
         return experience_model.checkExperiencedIdExist(experience_id).then((is_exist) => {
             if (!is_exist) {
                 throw new ObjectNotExistError("該篇文章不存在");
             }
 
-            return this.collection.insertOne({
+            return experience_model.incrementReplyCount(experience_id).then(result => result.value.reply_count);
+        }).then(reply_count => {
+            // 如果原本的 reply_count = 95，代表新增完這個留言後， reply_count = 96，則
+            // 這個留言的 floor 是 95 （樓層數從 0 開始）
+
+            Object.assign(partial_reply, {
                 experience_id: new ObjectId(experience_id),
-                user: user,
+                floor: reply_count - 1,
                 created_at: new Date(),
-                content: content,
-                status: "published",
             });
-        }).then((result) => {
-            return {
-                _id: result.insertedId,
-                content: content,
-            };
-        });
+
+            return this.collection.insertOne(partial_reply);
+        }).then(() => partial_reply);
     }
 
     /**

@@ -134,6 +134,37 @@ class ExperienceModel {
         return this.collection.insert(experience);
     }
 
+    /**
+     * 使用experience Id 來取得單篇文章
+     * @param   {string} id - erperiences's id
+     * @returns {Promise}
+     *  - resolved : {
+     *        value: {
+     *            reply_count: Current Reply Count (after increment 1)
+     *        }
+     *    }
+     *
+     *  - reject : ObjectNotExistError/Default Error
+     */
+    incrementReplyCount(id) {
+        if (!mongo.ObjectId.isValid(id)) {
+            throw new ObjectNotExistError("該文章不存在");
+        }
+
+        return this.collection.findOneAndUpdate({_id: new mongo.ObjectId(id)},
+            {
+                $inc: {
+                    reply_count: 1,
+                },
+            },
+            {
+                projection: {
+                    reply_count: 1,
+                },
+                returnOriginal: false,
+            }
+        );
+    }
 }
 
 module.exports = ExperienceModel;
