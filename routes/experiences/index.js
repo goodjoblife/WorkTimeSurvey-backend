@@ -46,10 +46,12 @@ router.get('/', function(req, res, next) {
 
     if (!_isValidSearchByField(req.query.search_by)) {
         next(new HttpError("search by 格式錯誤", 422));
+        return;
     }
     const sort_field = req.query.sort || "created_at";
     if (!_isValidSortField(sort_field)) {
         next(new HttpError("sort by 格式錯誤", 422));
+        return;
     }
     const query = _queryToDBQuery(req.query.search_query, req.query.search_by);
     const sort = {
