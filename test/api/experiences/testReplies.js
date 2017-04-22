@@ -10,14 +10,14 @@ const authentication = require('../../../libs/authentication');
 describe('Replies Test', function() {
 
     let db = undefined;
+
     before(function() {
         return MongoClient.connect(process.env.MONGODB_URI).then(function(_db) {
             db = _db;
         });
     });
 
-
-    describe('Post : /experiences/:id/replies', function() {
+    describe('Post /experiences/:id/replies', function() {
         let experience_id = undefined;
         let sandbox;
 
@@ -30,15 +30,16 @@ describe('Replies Test', function() {
                     id: '-1',
                     name: 'markLin',
                 });
-            return db.collection('experiences').insert({
+
+            return db.collection('experiences').insertOne({
                 type: 'interview',
                 author: {
                     type: "facebook",
                     _id: "123",
                 },
-                status: "published",
+                reply_count: 0,
             }).then(function(result) {
-                experience_id = result.ops[0]._id.toString();
+                experience_id = result.insertedId.toString();
             });
         });
 
@@ -53,7 +54,10 @@ describe('Replies Test', function() {
                 .expect(function(res) {
                     assert.property(res.body, 'reply');
                     assert.deepProperty(res.body, 'reply._id');
-                    assert.deepProperty(res.body, 'reply.content');
+                    assert.deepPropertyVal(res.body, 'reply.content', '你好我是大留言');
+                    assert.deepPropertyVal(res.body, 'reply.floor', 0);
+                    assert.deepPropertyVal(res.body, 'reply.experience_id', experience_id);
+                    assert.deepEqual(res.body.reply.user, {id: '-1', type: 'facebook'});
                 });
         });
 
