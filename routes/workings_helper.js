@@ -84,7 +84,7 @@ function checkAndUpdateQuota(db, author) {
                 upsert: true,
                 returnOriginal: false,
             }
-        )
+        );
     }
 
     function decrementWithoutError() {
