@@ -15,6 +15,19 @@ function requiredNonEmptyString(field) {
     return false;
 }
 
+function stringRequireLength(field, min, max) {
+    if (typeof field !== 'string') {
+        return false;
+    }
+    if (min && field.length < min) {
+        return false;
+    }
+    if (max && field.length > max) {
+        return false;
+    }
+    return true;
+}
+
 function requiredNumber(field) {
     if (typeof field === 'number') {
         return true;
@@ -51,4 +64,5 @@ module.exports = {
     optionalString,
     optionalNumber,
     shouldIn,
+    stringRequireLength,
 };
