@@ -47,7 +47,6 @@ describe('experiences 面試和工作經驗資訊', function() {
             it('generateInterViewExperiencePayload', function() {
                 return request(app).post('/interview_experiences')
                     .send(generateInterviewExperiencePayload())
-                    .expect(res => console.log(res.body))
                     .expect(200);
             });
         });
