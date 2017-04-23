@@ -3,6 +3,7 @@ const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 const assert = chai.assert;
 const MongoClient = require('mongodb').MongoClient;
+const config = require('config');
 const HttpError = require('../libs/errors').HttpError;
 const helper = require('../routes/workings_helper');
 
@@ -11,7 +12,7 @@ describe('Workings Helper', function() {
         let db = undefined;
 
         before('DB: Setup', function() {
-            return MongoClient.connect(process.env.MONGODB_URI).then(function(_db) {
+            return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
                 db = _db;
             });
         });
@@ -73,7 +74,7 @@ describe('Workings Helper', function() {
         let db;
 
         before('MongoDB: Setup', function() {
-            return MongoClient.connect(process.env.MONGODB_URI).then(function(_db) {
+            return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
                 db = _db;
             });
         });
@@ -110,4 +111,3 @@ describe('Workings Helper', function() {
         });
     });
 });
-

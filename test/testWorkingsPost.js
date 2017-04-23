@@ -5,6 +5,7 @@ const app = require('../app');
 const MongoClient = require('mongodb').MongoClient;
 const sinon = require('sinon');
 require('sinon-as-promised');
+const config = require('config');
 const facebook = require('../libs/facebook');
 const ObjectId = require('mongodb').ObjectId;
 
@@ -14,7 +15,7 @@ describe('Workings 工時資訊', function() {
     let accessTokenAuth;
 
     before('DB: Setup', function() {
-        return MongoClient.connect(process.env.MONGODB_URI).then(function(_db) {
+        return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
             db = _db;
         });
     });

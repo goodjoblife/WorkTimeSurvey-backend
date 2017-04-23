@@ -2,12 +2,13 @@ const assert = require('chai').assert;
 const request = require('supertest');
 const app = require('../app');
 const MongoClient = require('mongodb').MongoClient;
+const config = require('config');
 
 describe('jobs', function() {
     var db = undefined;
 
     before(function() {
-        return MongoClient.connect(process.env.MONGODB_URI).then(function(_db) {
+        return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
             db = _db;
         });
     });
@@ -65,4 +66,3 @@ describe('jobs', function() {
         });
     });
 });
-

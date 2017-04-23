@@ -5,19 +5,20 @@ const MongoClient = require('mongodb').MongoClient;
 const redis = require('redis');
 const HttpError = require('../libs/errors').HttpError;
 const authorization = require('../middlewares/authorization');
+const config = require('config');
 
 describe('Authorization middleware', function() {
     let db;
     let redis_client;
 
     before('Setup MongoDB', function() {
-        return MongoClient.connect(process.env.MONGODB_URI).then(function(_db) {
+        return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
             db = _db;
         });
     });
 
     before('Setup Redis', function() {
-        redis_client = redis.createClient({'url': process.env.REDIS_URL});
+        redis_client = redis.createClient({'url': config.get('REDIS_URL')});
     });
 
     // generate test data for count combinations
@@ -191,4 +192,3 @@ describe('Authorization middleware', function() {
         });
     });
 });
-

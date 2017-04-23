@@ -3,6 +3,7 @@ chai.use(require("chai-as-promised"));
 const assert = chai.assert;
 const MongoClient = require('mongodb').MongoClient;
 const ObjectId = require('mongodb').ObjectId;
+const config = require('config');
 
 const recommendation = require('../libs/recommendation');
 
@@ -11,7 +12,7 @@ describe('Recommendation Library', function() {
         let db;
 
         before(function() {
-            return MongoClient.connect(process.env.MONGODB_URI).then((_db) => {
+            return MongoClient.connect(config.get('MONGODB_URI')).then((_db) => {
                 db = _db;
             });
         });
@@ -74,7 +75,7 @@ describe('Recommendation Library', function() {
         let db;
 
         before(function() {
-            return MongoClient.connect(process.env.MONGODB_URI).then((_db) => {
+            return MongoClient.connect(config.get('MONGODB_URI')).then((_db) => {
                 db = _db;
             });
         });

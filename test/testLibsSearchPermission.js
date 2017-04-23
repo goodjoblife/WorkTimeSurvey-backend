@@ -2,13 +2,14 @@ const chai = require('chai');
 chai.use(require("chai-as-promised"));
 const assert = chai.assert;
 const MongoClient = require('mongodb').MongoClient;
+const config = require('config');
 const permission = require('../libs/search-permission');
 
 describe('Permission Library', function() {
     let db;
 
     before('Setup MongoDB', function() {
-        return MongoClient.connect(process.env.MONGODB_URI).then(function(_db) {
+        return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
             db = _db;
         });
     });
@@ -66,4 +67,3 @@ describe('Permission Library', function() {
         });
     });
 });
-

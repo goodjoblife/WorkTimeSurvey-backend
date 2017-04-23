@@ -13,6 +13,8 @@ var cors = require('cors');
 var winston = require('winston');
 require('winston-mongodb').MongoDB;
 
+const config = require('config');
+
 var app = express();
 
 app.set('trust proxy', 1);
@@ -22,7 +24,7 @@ app.use(compression());
 // winston logging setup
 if (app.get('env') !== 'test') {
     winston.add(winston.transports.MongoDB, {
-        db: process.env.MONGODB_URI,
+        db: config.get('MONGODB_URI'),
     });
 }
 if (app.get('env') === 'test') {
@@ -36,8 +38,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(expressMongoDb(process.env.MONGODB_URI));
-app.use(require('./middlewares').expressRedisDb(process.env.REDIS_URL));
+app.use(expressMongoDb(config.get('MONGODB_URI')));
+app.use(require('./middlewares').expressRedisDb(config.get('REDIS_URL')));
 
 app.use(cors({
     origin: [

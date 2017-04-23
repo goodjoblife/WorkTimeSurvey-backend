@@ -1,6 +1,7 @@
 const co = require('co');
 const MongoClient = require('mongodb').MongoClient;
 const migrations = require('./migrations');
+const config = require('config');
 const collection_name = 'migrations';
 
 function isMigrated(db, name) {
@@ -37,7 +38,7 @@ function migrate(db, name) {
 }
 
 const main = co.wrap(function* () {
-    const db = yield MongoClient.connect(process.env.MONGODB_URI);
+    const db = yield MongoClient.connect(config.get('MONGODB_URI'));
 
     try {
         for (let name of migrations) {
