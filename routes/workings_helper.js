@@ -70,30 +70,46 @@ function checkAndUpdateQuota(db, author) {
     const collection = db.collection('authors');
     const quota = 5;
 
-    return collection.findAndModify(
-        {
-            _id: author,
-            queries_count: {$lt: quota},
-        },
-        [
-        ],
-        {
-            $inc: { queries_count: 1 },
-        },
-        {
-            upsert: true,
-            new: true,
-        }
-    ).then(result => {
-        if (result.value.queries_count > quota) {
-            throw new HttpError(`您已經上傳${quota}次，已達最高上限`, 429);
-        }
+    const filter = {
+        _id: author,
+    };
 
-        return result.value.queries_count;
-    }, err => {
-        throw new HttpError(`您已經上傳${quota}次，已達最高上限`, 429);
-    });
+    function increment() {
+        return collection.findOneAndUpdate(
+            filter,
+            {
+                $inc: { queries_count: 1 },
+            },
+            {
+                upsert: true,
+                returnOriginal: false,
+            }
+        )
+    }
 
+    function decrementWithoutError() {
+        return collection.updateOne(filter, {$inc: { queries_count: -1 }})
+            .catch(() => {});
+    }
+
+    return increment()
+        .catch(err => {
+            if (err.code === 11000) { // E11000 duplicate key err
+                return increment();
+            }
+
+            throw new HttpError(`上傳資料發生點問題`, 500);
+        })
+        .then(result => {
+            if (result.value.queries_count > quota) {
+                return decrementWithoutError()
+                    .then(() => {
+                        throw new HttpError(`您已經上傳${quota}次，已達最高上限`, 429);
+                    });
+            }
+
+            return result.value.queries_count;
+        });
 }
 
 function calculateEstimatedHourlyWage(working) {
