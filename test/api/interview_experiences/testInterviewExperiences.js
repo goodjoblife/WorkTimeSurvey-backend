@@ -47,6 +47,7 @@ describe('experiences 面試和工作經驗資訊', function() {
             it('generateInterViewExperiencePayload', function() {
                 return request(app).post('/interview_experiences')
                     .send(generateInterviewExperiencePayload())
+                    .expect(res => console.log(res.body))
                     .expect(200);
             });
         });
@@ -272,7 +273,7 @@ function generateInterviewExperiencePayload(opt) {
     opt = opt || {};
     const valid = {
         company_query: '00000001',
-        region: "Taipei",
+        region: "臺北市",
         job_title: 'job_title_example',
         title: "title_example",
         sections: [
