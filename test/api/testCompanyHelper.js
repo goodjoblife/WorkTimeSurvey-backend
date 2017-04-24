@@ -70,3 +70,4 @@ describe('company Helper', function() {
     });
 
 });
+
