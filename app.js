@@ -1,24 +1,21 @@
-var express = require('express');
-var compression = require('compression');
-var path = require('path');
-var logger = require('morgan');
-var bodyParser = require('body-parser');
-
-var routes = require('./routes/index');
-var expressMongoDb = require('express-mongo-db');
-
-var cors = require('cors');
-
-// Logging
-var winston = require('winston');
+const bodyParser = require('body-parser');
+const compression = require('compression');
+const config = require('config');
+const cors = require('cors');
+const express = require('express');
+const expressMongoDb = require('express-mongo-db');
+const logger = require('morgan');
+const winston = require('winston');
 require('winston-mongodb').MongoDB;
 
-const config = require('config');
+const routes = require('./routes/index');
 
-var app = express();
+const app = express();
 
+// We are behind the proxy
 app.set('trust proxy', 1);
 
+// Enable compress the traffic
 app.use(compression());
 
 // winston logging setup
@@ -36,8 +33,6 @@ if (app.get('env') !== 'test') {
 }
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, 'public')));
-
 app.use(expressMongoDb(config.get('MONGODB_URI')));
 app.use(require('./middlewares').expressRedisDb(config.get('REDIS_URL')));
 
@@ -67,9 +62,9 @@ app.use('/clairvoyance/search', cors(corsOption), require('./routes/clairvoyance
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+    const err = new Error('Not Found');
+    err.status = 404;
+    next(err);
 });
 
 // error handlers
@@ -77,24 +72,23 @@ app.use(function(req, res, next) {
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
-  app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    res.send({
-      message: err.message,
-      error: err
+    app.use(function(err, req, res, next) {
+        res.status(err.status || 500);
+        res.send({
+            message: err.message,
+            error: err,
+        });
     });
-  });
 }
 
 // production error handler
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
-  res.status(err.status || 500);
-  res.send({
-    message: err.message,
-    error: {}
-  });
+    res.status(err.status || 500);
+    res.send({
+        message: err.message,
+        error: {},
+    });
 });
-
 
 module.exports = app;
