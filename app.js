@@ -53,6 +53,7 @@ app.use('/', routes);
 app.use('/companies', require('./routes/companies'));
 app.use('/workings', require('./routes/workings'));
 app.use('/jobs', require('./routes/jobs'));
+app.use('/', require('./routes/experiences'));
 
 const corsOption = {
     origin: [
