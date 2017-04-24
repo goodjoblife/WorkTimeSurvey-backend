@@ -4,7 +4,8 @@
   "description": "GoodJob",
   "scripts": {
     "start": "node ./bin/www",
-    "test": "mocha --recursive",
+    "test": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec --recursive ",
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "lint": "eslint libs/ routes/ test/ middlewares/",
     "migrate": "node ./bin/migrate"
   },
@@ -37,7 +38,9 @@
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
     "chai-datetime": "^1.4.1",
+    "coveralls": "^2.13.0",
     "eslint": "^3.5.0",
+    "istanbul": "^0.4.5",
     "mocha": "^3.2.0",
     "nock": "^8.0.0",
     "sinon": "^1.17.6",

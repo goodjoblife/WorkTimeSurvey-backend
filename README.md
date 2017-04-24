@@ -2,6 +2,7 @@ WorkTimeSurvey Backend
 =====================
 
 [![Build Status](https://travis-ci.org/goodjoblife/WorkTimeSurvey-backend.svg?branch=master)](https://travis-ci.org/goodjoblife/WorkTimeSurvey-backend)
+[![Coverage Status](https://coveralls.io/repos/github/goodjoblife/WorkTimeSurvey-backend/badge.svg?branch=master)](https://coveralls.io/github/goodjoblife/WorkTimeSurvey-backend?branch=master)
 
 * Environment: nodejs 6
 * DB: mongodb, redis
