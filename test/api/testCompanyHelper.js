@@ -3,6 +3,7 @@ const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 const assert = chai.assert;
 const MongoClient = require('mongodb').MongoClient;
+const config = require('config');
 const helper = require('../../routes/company_helper');
 
 describe('company Helper', function() {
@@ -10,7 +11,7 @@ describe('company Helper', function() {
         let db = undefined;
 
         before('DB: Setup', function() {
-            return MongoClient.connect(process.env.MONGODB_URI).then(function(_db) {
+            return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
                 db = _db;
             });
         });
@@ -69,4 +70,3 @@ describe('company Helper', function() {
     });
 
 });
-

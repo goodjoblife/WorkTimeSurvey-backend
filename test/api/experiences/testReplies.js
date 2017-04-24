@@ -4,6 +4,7 @@ const app = require('../../../app');
 const MongoClient = require('mongodb').MongoClient;
 const sinon = require('sinon');
 require('sinon-as-promised');
+const config = require('config');
 
 const authentication = require('../../../libs/authentication');
 
@@ -11,7 +12,7 @@ describe('Replies Test', function() {
 
     let db = undefined;
     before(function() {
-        return MongoClient.connect(process.env.MONGODB_URI).then(function(_db) {
+        return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
             db = _db;
         });
     });

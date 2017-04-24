@@ -5,13 +5,14 @@ const app = require('../../../app');
 const MongoClient = require('mongodb').MongoClient;
 const sinon = require('sinon');
 require('sinon-as-promised');
+const config = require('config');
 const authentication = require('../../../libs/authentication');
 
 describe('experiences 面試和工作經驗資訊', function() {
     let db = undefined;
 
     before('DB: Setup', function() {
-        return MongoClient.connect(process.env.MONGODB_URI).then(function(_db) {
+        return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
             db = _db;
         });
     });
