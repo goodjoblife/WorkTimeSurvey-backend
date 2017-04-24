@@ -28,5 +28,4 @@ install:
 
 script:
     - npm test -- --timeout 30s
-    - npm run coveralls 
     - npm run lint
