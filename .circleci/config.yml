@@ -24,6 +24,9 @@ jobs:
                 name: Unit test and API test
                 command: npm test -- --timeout 30s
             - run:
+                name: Coverage
+                command: npm run coveralls 
+            - run:
                 name: Lint
                 command: npm run lint
             - save_cache:
