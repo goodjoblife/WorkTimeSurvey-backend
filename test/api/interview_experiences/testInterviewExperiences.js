@@ -74,7 +74,7 @@ describe('experiences 面試和工作經驗資訊', function() {
                                 assert.deepEqual(experience.reply_count, 0);
                                 assert.property(experience, 'created_at');
                             });
-                    })
+                    });
             });
         });
 
