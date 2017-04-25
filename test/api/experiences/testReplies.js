@@ -1,7 +1,7 @@
 const assert = require('chai').assert;
 const request = require('supertest');
 const app = require('../../../app');
-const MongoClient = require('mongodb').MongoClient;
+const { MongoClient, ObjectId } = require('mongodb');
 const sinon = require('sinon');
 require('sinon-as-promised');
 
@@ -59,6 +59,23 @@ describe('Replies Test', function() {
                     assert.deepPropertyVal(res.body, 'reply.experience_id', experience_id);
                     assert.deepPropertyVal(res.body, 'reply.like_count', 0);
                     assert.deepEqual(res.body.reply.user, {id: '-1', type: 'facebook'});
+
+                    return ObjectId(res.body.reply._id);
+                })
+                .expect(() => {
+                    // experience part
+                    return db.collection('experiences').findOne({_id: ObjectId(experience_id)})
+                        .then(experience => {
+                            assert.equal(experience.reply_count, 1);
+                        });
+                })
+                .expect(res => {
+                    // reply part
+                    return db.collection('replies').findOne({_id: res.body.reply._id})
+                        .then(reply => {
+                            assert.deepEqual(reply.experience_id, ObjectId(experience_id));
+                            assert.deepEqual(reply.user, {id: '-1', type: 'facebook'});
+                        });
                 });
         });
 
