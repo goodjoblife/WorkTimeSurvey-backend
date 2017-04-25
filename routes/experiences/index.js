@@ -8,15 +8,13 @@ const ExperienceModel = require('../../models/experience_model');
 
 /**
  * Get /experiences api
- * @param {object} req.query
- *  - {
- *      search_query = "GoodJob".
- *      search_by = "compnay",
- *      sort = "created_at",
- *      page = 0,
- *      limit = 20,
- *      type = "interview"
- *  }
+ * @param {string} search_query - "goodjob"
+ * @param {string} search_by - "compnay"/"job_title"
+ * @param {string} sort - "created_at"
+ * @param {string} page - "0"
+ * @param {string} limit - "20"
+ * @param {string} type - "interview"/"work"
+ *
  * @returns {object}
  *  - {
  *      total_pages : 1,
