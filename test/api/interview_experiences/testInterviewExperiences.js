@@ -1,8 +1,11 @@
-//const chai = require('chai');
-//const assert = chai.assert;
+const chai = require('chai');
+const chaiAsPromised = require("chai-as-promised");
+chai.use(chaiAsPromised);
+const assert = chai.assert;
 const request = require('supertest');
 const app = require('../../../app');
 const MongoClient = require('mongodb').MongoClient;
+const ObjectId = require('mongodb').ObjectId;
 const sinon = require('sinon');
 require('sinon-as-promised');
 const authentication = require('../../../libs/authentication');
@@ -47,7 +50,31 @@ describe('experiences 面試和工作經驗資訊', function() {
             it('generateInterViewExperiencePayload', function() {
                 return request(app).post('/interview_experiences')
                     .send(generateInterviewExperiencePayload())
-                    .expect(200);
+                    .expect(200)
+                    .then(res => {
+                        return db.collection('experiences').findOne({_id: ObjectId(res.body.experience._id)})
+                            .then(experience => {
+                                // expected fields in db
+                                assert.equal(experience.type, 'interview');
+                                assert.deepEqual(experience.author, {id: '-1', type: 'facebook'});
+                                assert.deepEqual(experience.company, {id: '00000001', name: 'GOODJOB'});
+                                assert.equal(experience.region, '臺北市');
+                                assert.equal(experience.job_title, 'JOB_TITLE_EXAMPLE');
+                                assert.equal(experience.title, 'title_example');
+                                assert.deepEqual(experience.sections, [{subtitle: "subtitle1", content: "content1"}]);
+                                assert.equal(experience.experience_in_year, 10);
+                                assert.equal(experience.education, '大學');
+                                assert.deepEqual(experience.interview_time, {year: 2017, month: 3});
+                                assert.deepEqual(experience.interview_qas, [{question: "qas1", answer: "ans1"}]);
+                                assert.deepEqual(experience.interview_result, 'up');
+                                assert.deepEqual(experience.interview_sensitive_questions, []);
+                                assert.deepEqual(experience.salary, {type: 'year', amount: 10000});
+                                assert.deepEqual(experience.overall_rating, 5);
+                                assert.deepEqual(experience.like_count, 0);
+                                assert.deepEqual(experience.reply_count, 0);
+                                assert.property(experience, 'created_at');
+                            });
+                    })
             });
         });
 

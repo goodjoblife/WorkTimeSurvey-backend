@@ -86,6 +86,9 @@ router.post('/', [
 
             res.send({
                 success: true,
+                experience: {
+                    _id: experience._id,
+                }
             });
         }).catch(err => {
             winston.info("experiences insert data fail", {
