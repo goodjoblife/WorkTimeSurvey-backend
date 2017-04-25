@@ -41,6 +41,7 @@ class ExperienceModel {
         const opt = {
             author: 0,
             education: 0,
+            experience_in_year: 0,
         };
 
         return this.collection.find(query, opt).sort(sort).skip(skip).limit(limit).toArray()
