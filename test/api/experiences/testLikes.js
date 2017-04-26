@@ -38,6 +38,7 @@ describe('Experience Likes Test', function() {
                     _id: "123",
                 },
                 status: "published",
+                like_count: 0,
             }).then(function(result) {
                 experience_id = result.insertedId.toString();
             });
@@ -83,6 +84,25 @@ describe('Experience Likes Test', function() {
             return request(app)
                     .post('/experiences/' + experience_id + '/likes')
                     .expect(401);
+        });
+
+        it('Post like and get experience , and expected experience like_count will 1 ', function() {
+            return request(app).post('/experiences/' + experience_id + '/likes')
+                .send({
+                    access_token: 'fakeaccesstoken',
+                })
+                .then((res) => {
+                    return request(app)
+                        .get('/experiences/' + experience_id)
+                        .send({
+                            access_token: 'fakeaccesstoken',
+                        })
+                        .expect(200)
+                        .expect((res ) => {
+                            const experience = res.body;
+                            assert.equal(experience.like_count, 1);
+                        });
+                });
         });
 
         afterEach(function() {

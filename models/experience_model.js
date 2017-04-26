@@ -132,7 +132,7 @@ class ExperienceModel {
     }
 
     /**
-     * 使用experience Id 來取得單篇文章
+     * 根據id更新experience的reply_count
      * @param   {string} id - erperiences's id
      * @returns {Promise}
      *  - resolved : {
@@ -144,6 +144,28 @@ class ExperienceModel {
      *  - reject : ObjectNotExistError/Default Error
      */
     incrementReplyCount(id) {
+        const field = "reply_count";
+        return this._incrementField(field, id);
+    }
+
+    /**
+     * 根據id更新experience的like_count
+     * @param   {string} id - erperiences's id
+     * @returns {Promise}
+     *  - resolved : {
+     *        value: {
+     *            like_count: Current Like Count (after increment 1)
+     *        }
+     *    }
+     *
+     *  - reject : ObjectNotExistError/Default Error
+     */
+    incrementLikeCount(id) {
+        const field = "like_count";
+        return this._incrementField(field, id);
+    }
+
+    _incrementField(field, id) {
         if (!mongo.ObjectId.isValid(id)) {
             throw new ObjectNotExistError("該文章不存在");
         }
@@ -151,12 +173,12 @@ class ExperienceModel {
         return this.collection.findOneAndUpdate({_id: new mongo.ObjectId(id)},
             {
                 $inc: {
-                    reply_count: 1,
+                    [field]: 1,
                 },
             },
             {
                 projection: {
-                    reply_count: 1,
+                    [field]: 1,
                 },
                 returnOriginal: false,
             }

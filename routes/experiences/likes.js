@@ -2,6 +2,7 @@ const express = require('express');
 const winston = require('winston');
 const router = express.Router();
 const LikeModel = require('../../models/like_model');
+const ExperienceModel = require('../../models/experience_model');
 const authentication = require('../../middlewares/authentication');
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const HttpError = require('../../libs/errors').HttpError;
@@ -29,8 +30,11 @@ router.post('/:id/likes', [
         };
         const experience_id = req.params.id;
         const like_model = new LikeModel(req.db);
+        const experience_model = new ExperienceModel(req.db);
 
         like_model.createLikeToExperience(experience_id, user).then((result) => {
+            return experience_model.incrementLikeCount(experience_id);
+        }).then((result) => {
             res.send({
                 success: true,
             });
