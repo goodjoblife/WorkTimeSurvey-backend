@@ -314,7 +314,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(422);
         });
 
-        it('沒有query的搜尋，驗驗面試經驗回傳欄位', function() {
+        it('沒有query的搜尋，驗證『面試經驗』回傳欄位', function() {
             return request(app).get('/experiences')
                 .expect(200)
                 .expect(function(res) {
@@ -343,7 +343,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it('沒有query的搜尋，驗驗工作經驗回傳欄位', function() {
+        it('沒有query的搜尋，驗證『工作經驗』回傳欄位', function() {
             return request(app).get('/experiences')
                 .expect(200)
                 .expect(function(res) {
