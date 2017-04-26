@@ -43,10 +43,24 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     content: "被洗到好慘",
                 }],
                 education: "碩士",
+                interview_time: {
+                    year: 10,
+                    month: 1,
+                },
+                interview_qas: [
+                    { question: "What your name?", answer: "I'm Mark" },
+                ],
+                interview_result: "Sorry ~ ",
+                interview_sensitive_questions: [
+                    "Are you a yacht boy ?",
+                ],
+                salary: {
+                    type: "year",
+                    amount: 1000000,
+                },
                 status: "draft",
                 like_count: 1,
                 reply_count: 1,
-                share_count: 1,
             }).then(function(result) {
                 testId = result.ops[0]._id;
             });
@@ -73,16 +87,15 @@ describe('Experiences 面試和工作經驗資訊', function() {
         before('Seeding some experiences', function() {
             return db.collection('experiences').insertMany([
                 {
+                    type: "interview",
                     created_at: new Date("2017-03-20T10:00:00.929Z"),
                     company: {
                         name: "GOODJOB1",
                         id: "123",
                     },
                     area: "台北",
+                    title: "Good面試",
                     job_title: "SW ENGINEER",
-                    interview_time_year: "2017",
-                    interview_time_month: "3",
-                    // interview_result: ???,
                     overall_rating: "5",
                     sections: [
                         {
@@ -90,23 +103,42 @@ describe('Experiences 面試和工作經驗資訊', function() {
                             content: "很開心",
                         },
                     ],
+                    interview_time: {
+                        year: 10,
+                        month: 1,
+                    },
+                    interview_qas: [
+                        { question: "What your name?", answer: "I'm Mark" },
+                    ],
+                    interview_result: "Sorry ~ ",
+                    interview_sensitive_questions: [
+                        "Are you a yacht boy ?",
+                    ],
+                    salary: {
+                        type: "year",
+                        amount: 1000000,
+                    },
                     experience_in_year: "1",
                     education: "bachelor",
                     salary_type: "month",
                     salary_amount: "66666",
+                    like_count: 1,
+                    reply_count: 1,
                 },
                 {
+                    type: "work",
+                    author: {
+                        type: "facebook",
+                        _id: "abcde",
+                    },
                     created_at: new Date("2017-03-21T10:00:00.929Z"),
                     company: {
                         name: "GOODJOB2",
                         id: "123",
                     },
-                    area: "台北",
+                    region: "台北",
                     job_title: "ENGINEER",
-                    interview_time_year: "2017",
-                    interview_time_month: "3",
-                    // interview_result: ???,
-                    overall_rating: "5",
+                    title: "Facebook Work",
                     sections: [
                         {
                             subtitle: "面試過程",
@@ -115,8 +147,23 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     ],
                     experience_in_year: "1",
                     education: "bachelor",
-                    salary_type: "month",
-                    salary_amount: "66666",
+                    is_currently_employed: "yes",
+                    job_ending_time: {
+                        year: 2017,
+                        month: 1,
+                    },
+                    salary: {
+                        type: "month",
+                        amount: 100000,
+                    },
+                    week_work_time: 40,
+                    recommend_to_others: "yes",
+                    data_time: {
+                        year: 2017,
+                        month: 1,
+                    },
+                    like_count: 1,
+                    reply_count: 1,
                 },
                 {
                     created_at: new Date("2017-03-22T10:00:00.929Z"),
@@ -265,6 +312,63 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     sort: "xxxxx",
                 })
                 .expect(422);
+        });
+
+        it('沒有query的搜尋，驗驗面試經驗回傳欄位', function() {
+            return request(app).get('/experiences')
+                .expect(200)
+                .expect(function(res) {
+                    assert.property(res.body, 'total_pages');
+                    assert.property(res.body, 'page');
+                    assert.property(res.body, 'experiences');
+                    const experience = res.body.experiences[2];
+                    assert.property(experience, '_id');
+                    assert.property(experience, 'type');
+                    assert.property(experience, 'created_at');
+                    assert.property(experience, 'company');
+                    assert.property(experience, 'job_title');
+                    assert.property(experience, 'title');
+                    assert.property(experience, 'preview');
+                    assert.property(experience, 'like_count');
+                    assert.property(experience, 'reply_count');
+
+                    assert.notProperty(experience, 'author');
+                    assert.notProperty(experience, 'sections');
+                    assert.notProperty(experience, 'experience_in_year');
+                    assert.notProperty(experience, 'education');
+                    assert.notProperty(experience, 'interview_time');
+                    assert.notProperty(experience, 'interview_qas');
+                    assert.notProperty(experience, 'interview_result');
+                    assert.notProperty(experience, 'interview_sensitive_questions');
+                });
+        });
+
+        it('沒有query的搜尋，驗驗工作經驗回傳欄位', function() {
+            return request(app).get('/experiences')
+                .expect(200)
+                .expect(function(res) {
+                    assert.property(res.body, 'total_pages');
+                    assert.property(res.body, 'page');
+                    assert.property(res.body, 'experiences');
+                    const experience = res.body.experiences[1];
+                    assert.property(experience, '_id');
+                    assert.property(experience, 'type');
+                    assert.property(experience, 'created_at');
+                    assert.property(experience, 'company');
+                    assert.property(experience, 'region');
+                    assert.property(experience, 'job_title');
+                    assert.property(experience, 'title');
+                    assert.property(experience, 'preview');
+                    assert.property(experience, 'salary');
+                    assert.property(experience, 'week_work_time');
+                    assert.property(experience, 'like_count');
+                    assert.property(experience, 'reply_count');
+
+                    assert.notProperty(experience, 'author');
+                    assert.notProperty(experience, 'sections');
+                    assert.notProperty(experience, 'experience_in_year');
+                    assert.notProperty(experience, 'education');
+                });
         });
         after(function() {
             return db.collection('experiences').remove({});
