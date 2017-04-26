@@ -323,7 +323,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.property(res.body, 'experiences');
                     const experience = res.body.experiences[2];
                     assert.property(experience, '_id');
-                    assert.property(experience, 'type');
+                    assert.propertyVal(experience, 'type', 'interview');
                     assert.property(experience, 'created_at');
                     assert.property(experience, 'company');
                     assert.property(experience, 'job_title');
@@ -352,7 +352,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.property(res.body, 'experiences');
                     const experience = res.body.experiences[1];
                     assert.property(experience, '_id');
-                    assert.property(experience, 'type');
+                    assert.propertyVal(experience, 'type', 'work');
                     assert.property(experience, 'created_at');
                     assert.property(experience, 'company');
                     assert.property(experience, 'region');
