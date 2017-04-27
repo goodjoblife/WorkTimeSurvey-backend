@@ -123,11 +123,11 @@ function _queryToDBQuery(search_query, search_by, type) {
     }
 
     if (type) {
-        let types = type.split(',');
+        const types = type.split(',');
         if (types.length == 1) {
-            query["type"] = types[0];
+            query.type = types[0];
         } else {
-            query["type"] = {
+            query.type = {
                 $in: types,
             };
         }

@@ -406,6 +406,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body.experiences, 2);
+                    assert.propertyVal(res.body.experiences[0], 'type', 'interview');
                 });
         });
 
@@ -418,6 +419,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body.experiences, 2);
+                    assert.propertyVal(res.body.experiences[0], 'type', 'work');
                 });
         });
 
@@ -448,7 +450,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it(' type = "work,interview" ，預期回傳4筆資料', function() {
+        it('type = "work,interview" ，預期回傳4筆資料', function() {
 
             return request(app).get('/experiences')
                 .query({
