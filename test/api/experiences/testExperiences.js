@@ -166,6 +166,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     reply_count: 1,
                 },
                 {
+                    type: "interview",
                     created_at: new Date("2017-03-22T10:00:00.929Z"),
                     company: {
                         name: "BADJOB",
@@ -173,6 +174,30 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     },
                     area: "台北",
                     job_title: "HW ENGINEER",
+                    interview_time_year: "2017",
+                    interview_time_month: "3",
+                    // interview_result: ???,
+                    overall_rating: "5",
+                    sections: [
+                        {
+                            subtitle: "面試過程",
+                            content: "很開心",
+                        },
+                    ],
+                    experience_in_year: "1",
+                    education: "bachelor",
+                    salary_type: "month",
+                    salary_amount: "77777",
+                },
+                {
+                    type: "work",
+                    created_at: new Date("2017-03-25T10:00:00.929Z"),
+                    company: {
+                        name: "GOODJOB1",
+                        id: "321",
+                    },
+                    area: "台北",
+                    job_title: "F2E",
                     interview_time_year: "2017",
                     interview_time_month: "3",
                     // interview_result: ???,
@@ -199,8 +224,8 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(function(res) {
                     assert.propertyVal(res.body, 'total_pages', 1);
                     assert.property(res.body, 'experiences');
-                    assert.lengthOf(res.body.experiences, 3);
-                    assert.deepPropertyVal(res.body.experiences[0], 'company.name', 'BADJOB');
+                    assert.lengthOf(res.body.experiences, 4);
+                    assert.deepPropertyVal(res.body.experiences[0], 'company.name', 'GOODJOB1');
                 });
         });
 
@@ -245,7 +270,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 })
                 .expect(200)
                 .expect(function(res) {
-                    assert.lengthOf(res.body.experiences, 1);
+                    assert.lengthOf(res.body.experiences, 2);
                     assert.deepPropertyVal(res.body.experiences[0], 'company.name', 'GOODJOB1');
                 });
         });
@@ -259,9 +284,9 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 })
                 .expect(200)
                 .expect(function(res) {
-                    assert.lengthOf(res.body.experiences, 2);
-                    assert.deepPropertyVal(res.body.experiences[0], 'company.name', 'GOODJOB2');
-                    assert.deepPropertyVal(res.body.experiences[1], 'company.name', 'GOODJOB1');
+                    assert.lengthOf(res.body.experiences, 3);
+                    assert.deepPropertyVal(res.body.experiences[0], 'company.name', 'GOODJOB1');
+                    assert.deepPropertyVal(res.body.experiences[1], 'company.name', 'GOODJOB2');
                 });
         });
 
@@ -273,10 +298,11 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 })
                 .expect(200)
                 .expect(function(res) {
-                    assert.lengthOf(res.body.experiences, 3);
-                    assert.deepPropertyVal(res.body.experiences[0], 'company.name', 'BADJOB');
-                    assert.deepPropertyVal(res.body.experiences[1], 'company.name', 'GOODJOB2');
-                    assert.deepPropertyVal(res.body.experiences[2], 'company.name', 'GOODJOB1');
+                    assert.lengthOf(res.body.experiences, 4);
+                    assert.deepPropertyVal(res.body.experiences[0], 'company.name', 'GOODJOB1');
+                    assert.deepPropertyVal(res.body.experiences[1], 'company.name', 'BADJOB');
+                    assert.deepPropertyVal(res.body.experiences[2], 'company.name', 'GOODJOB2');
+                    assert.deepPropertyVal(res.body.experiences[3], 'company.name', 'GOODJOB1');
                 });
         });
 
@@ -289,7 +315,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 })
                 .expect(200)
                 .expect(function(res) {
-                    assert.lengthOf(res.body.experiences, 1);
+                    assert.lengthOf(res.body.experiences, 2);
                     assert.deepPropertyVal(res.body.experiences[0], 'company.id', '321');
                 });
         });
@@ -321,7 +347,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.property(res.body, 'total_pages');
                     assert.property(res.body, 'page');
                     assert.property(res.body, 'experiences');
-                    const experience = res.body.experiences[2];
+                    const experience = res.body.experiences[3];
                     assert.property(experience, '_id');
                     assert.propertyVal(experience, 'type', 'interview');
                     assert.property(experience, 'created_at');
@@ -350,7 +376,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.property(res.body, 'total_pages');
                     assert.property(res.body, 'page');
                     assert.property(res.body, 'experiences');
-                    const experience = res.body.experiences[1];
+                    const experience = res.body.experiences[2];
                     assert.property(experience, '_id');
                     assert.propertyVal(experience, 'type', 'work');
                     assert.property(experience, 'created_at');
@@ -368,6 +394,81 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.notProperty(experience, 'sections');
                     assert.notProperty(experience, 'experience_in_year');
                     assert.notProperty(experience, 'education');
+                });
+        });
+
+        it('使用type的interview進行搜尋，預期回傳2筆資料', function() {
+
+            return request(app).get('/experiences')
+                .query({
+                    type: "interview",
+                })
+                .expect(200)
+                .expect(function(res) {
+                    assert.lengthOf(res.body.experiences, 2);
+                });
+        });
+
+        it(' type = "work"，預期回傳2筆資料', function() {
+
+            return request(app).get('/experiences')
+                .query({
+                    type: "work",
+                })
+                .expect(200)
+                .expect(function(res) {
+                    assert.lengthOf(res.body.experiences, 2);
+                });
+        });
+
+        it('search_query = "GoodJob1" search_by = "company" type = "interview" ，預期回傳1筆資料', function() {
+
+            return request(app).get('/experiences')
+                .query({
+                    search_query: "GOODJOB1",
+                    search_by: "company",
+                    type: "interview",
+                })
+                .expect(200)
+                .expect(function(res) {
+                    assert.lengthOf(res.body.experiences, 1);
+                });
+        });
+
+        it('search_query = "GoodJob1"  type = "interview" ，預期回傳1筆資料', function() {
+
+            return request(app).get('/experiences')
+                .query({
+                    search_query: "GOODJOB1",
+                    type: "interview",
+                })
+                .expect(200)
+                .expect(function(res) {
+                    assert.lengthOf(res.body.experiences, 1);
+                });
+        });
+
+        it(' type = "work,interview" ，預期回傳4筆資料', function() {
+
+            return request(app).get('/experiences')
+                .query({
+                    type: "work,interview",
+                })
+                .expect(200)
+                .expect(function(res) {
+                    assert.lengthOf(res.body.experiences, 4);
+                });
+        });
+
+        it('search_by="company" type="interview" ，預期回傳2筆資料', function() {
+
+            return request(app).get('/experiences')
+                .query({
+                    type: "interview",
+                })
+                .expect(200)
+                .expect(function(res) {
+                    assert.lengthOf(res.body.experiences, 2);
                 });
         });
         after(function() {

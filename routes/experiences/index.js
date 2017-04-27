@@ -51,7 +51,7 @@ router.get('/', function(req, res, next) {
         next(new HttpError("sort by 格式錯誤", 422));
         return;
     }
-    const query = _queryToDBQuery(req.query.search_query, req.query.search_by);
+    const query = _queryToDBQuery(req.query.search_query, req.query.search_by, req.query.type);
     const sort = {
         [sort_field]: -1,
     };
@@ -96,23 +96,45 @@ function _isValidSortField(sort_by) {
     return Default_Field.includes(sort_by);
 }
 
-function _queryToDBQuery(search_query, search_by) {
+/**
+ * _queryToDBQuery
+ *
+ * @param {string} search_query - search text
+ * @param {string} search_by - "company" / "job_title"
+ * @param {string} type - "interview" / "work"
+ * @returns {object} - mongodb find object
+ */
+function _queryToDBQuery(search_query, search_by, type) {
     let query = {};
-    if (!(search_by && search_query)) {
+    if (!(search_by && search_query || type)) {
         return query;
     }
 
-    if (search_by == "company") {
-        query["$or"] = [{
-            'company.name': new RegExp(lodash.escapeRegExp(search_query.toUpperCase())),
-        }, {
-            'company.id': search_query,
-        }];
-    } else if (search_by == "job_title") {
+    if (search_by == "job_title") {
         query.job_title = new RegExp(lodash.escapeRegExp(search_query.toUpperCase()));
+    } else {
+        if (search_query) {
+            query["$or"] = [{
+                'company.name': new RegExp(lodash.escapeRegExp(search_query.toUpperCase())),
+            }, {
+                'company.id': search_query,
+            }];
+        }
+    }
+
+    if (type) {
+        let types = type.split(',');
+        if (types.length == 1) {
+            query["type"] = types[0];
+        } else {
+            query["type"] = {
+                $in: types,
+            };
+        }
     }
     return query;
 }
+
 router.get('/:id', function(req, res, next) {
     const id = req.params.id;
     winston.info('experiences/id', {
