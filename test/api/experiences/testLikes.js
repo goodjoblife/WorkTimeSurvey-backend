@@ -66,7 +66,7 @@ describe('Experience Likes Test', function() {
                 .expect(404);
         });
 
-        it('(! Need index) Post 2 times , and expected return 403', function() {
+        it('Have index state, Post like 2 times , and expected return 403', function() {
             return request(app).post('/experiences/' + experience_id + '/likes')
                 .send({
                     access_token: 'fakeaccesstoken',
@@ -78,6 +78,21 @@ describe('Experience Likes Test', function() {
                             access_token: 'fakeaccesstoken',
                         })
                         .expect(403);
+                });
+        });
+
+        it('No index state, Post like 2 times , and expected return 200', function() {
+            return request(app).post('/experiences/' + experience_id + '/likes')
+                .send({
+                    access_token: 'fakeaccesstoken',
+                })
+                .then((response) => {
+                    return request(app)
+                        .post('/experiences/' + experience_id + '/likes')
+                        .send({
+                            access_token: 'fakeaccesstoken',
+                        })
+                        .expect(200);
                 });
         });
 
@@ -102,7 +117,7 @@ describe('Experience Likes Test', function() {
                 });
         });
 
-        it('(! Need index) Post like 2 times (same user) and get experience , and expected experience like_count will 1 ', function() {
+        it('Have index state, Post like 2 times (same user) and get experience , and expected experience like_count will 1 ', function() {
             const uri = '/experiences/' + experience_id + '/likes';
             return request(app).post(uri)
                 .send({
@@ -124,6 +139,27 @@ describe('Experience Likes Test', function() {
                 });
         });
 
+        it('No index state, Post like 2 times (same user) and get experience , and expected experience like_count will 2 ', function() {
+            const uri = '/experiences/' + experience_id + '/likes';
+            return request(app).post(uri)
+                .send({
+                    access_token: 'fakeaccesstoken',
+                })
+                .then((res) => {
+                    return request(app).post(uri)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                    });
+                })
+                .then((res) => {
+                    return db.collection("experiences")
+                        .find({ _id: new mongo.ObjectId(experience_id)})
+                        .toArray();
+                })
+                .then((result) => {
+                    assert.equal(result[0].like_count, 2);
+                });
+        });
         it('Post like 2 times(different user) and get experience , and expected experience like_count will 2 ', function() {
             const uri = '/experiences/' + experience_id + '/likes';
             return request(app).post(uri)
