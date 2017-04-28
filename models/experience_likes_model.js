@@ -6,11 +6,10 @@ class ExperienceLikeModel {
 
     constructor(db) {
         this.collection = db.collection('experience_likes');
-        this.replies_collection = db.collection('replies');
         this._db = db;
     }
     /**
-     * 新增讚至一篇文章
+     * 新增讚至一篇經驗
      * @param {string} experience_id - experience's id
      * @param {object} user -
      * {
