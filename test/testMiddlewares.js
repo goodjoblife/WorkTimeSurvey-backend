@@ -33,21 +33,19 @@ describe('Authentication Middleware', function() {
             sandbox = sinon.sandbox.create();
         });
 
-        it('get property facebook if success', function(done) {
+        it('get property user if success', function(done) {
             const req = {
                 redis_client: {},
                 body: {
                     access_token: "random",
                 },
             };
-            const stub = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves({id: "-1", name: "test"});
+            const stub = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves({facebook_id: '-1'});
 
             authentication.cachedFacebookAuthenticationMiddleware(req, {}, function(err) {
                 try {
                     assert.isUndefined(err);
-                    assert.property(req, 'facebook');
                     assert.property(req, 'user');
-                    assert.deepEqual(req.facebook, {id: "-1", name: "test"});
                     assert.deepEqual(req.user, {id: "-1", type: "facebook"});
                     sinon.assert.calledOnce(stub);
                     done();

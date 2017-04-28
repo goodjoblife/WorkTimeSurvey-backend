@@ -3,6 +3,8 @@ chai.use(require("chai-as-promised"));
 const assert = chai.assert;
 const sinon = require('sinon');
 require('sinon-as-promised');
+const config = require('config');
+const MongoClient = require('mongodb').MongoClient;
 
 const authentication = require('../libs/authentication');
 const facebook = require('../libs/facebook');
@@ -13,22 +15,44 @@ const cachedFacebookAuthentication = authentication.cachedFacebookAuthentication
 describe('Authentication Library', function() {
     describe('cachedFacebookAuthentication', function() {
         let sandbox;
+        let db;
+        let user;
+
+        before('connect MongoDB', function() {
+            return MongoClient.connect(config.get('MONGODB_URI')).then((_db) => {
+                db = _db;
+            });
+        });
+
+        before('Seed users', function() {
+            return db.collection('users').insertOne({
+                facebook_id: '1',
+                facebook: {
+                    'id': '1',
+                    'name': 'helloworld',
+                },
+            })
+            .then(result => db.collection('users').findOne({_id: result.insertedId}))
+            .then(_user => {
+                user = _user;
+            });
+        });
 
         beforeEach(function() {
             sandbox = sinon.sandbox.create();
         });
 
         it('resolve if cached', function() {
-            const db = {};
+            const redis_client = {};
             const response = {id: '1', name: 'helloworld'};
 
             const redisGetFB = sandbox.stub(_redis, 'redisGetFB')
-                .withArgs(db, 'fake_accesstoken')
+                .withArgs(redis_client, 'fake_accesstoken')
                 .resolves(response);
 
-            const main = cachedFacebookAuthentication(db, 'fake_accesstoken');
+            const main = cachedFacebookAuthentication(db, redis_client, 'fake_accesstoken');
             return Promise.all([
-                assert.becomes(main, response),
+                assert.becomes(main, user),
                 main.then(() => {
                     sinon.assert.calledOnce(redisGetFB);
                 }),
@@ -36,11 +60,11 @@ describe('Authentication Library', function() {
         });
 
         it('resolve if not cached but access_token is valid', function() {
-            const db = {};
+            const redis_client = {};
             const response = {id: '1', name: 'helloworld'};
 
             const redisGetFB = sandbox.stub(_redis, 'redisGetFB')
-                .withArgs(db, 'fake_accesstoken')
+                .withArgs(redis_client, 'fake_accesstoken')
                 .resolves(null);
 
             const accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
@@ -49,9 +73,9 @@ describe('Authentication Library', function() {
             const redisSetFB = sandbox.stub(_redis, 'redisSetFB')
                 .resolves();
 
-            const main = cachedFacebookAuthentication(db, 'fake_accesstoken');
+            const main = cachedFacebookAuthentication(db, redis_client, 'fake_accesstoken');
             return Promise.all([
-                assert.becomes(main, response),
+                assert.becomes(main, user),
                 main.then(() => {
                     sinon.assert.calledOnce(redisGetFB);
                     sinon.assert.calledOnce(accessTokenAuth);
@@ -61,11 +85,11 @@ describe('Authentication Library', function() {
         });
 
         it('resolve if cache error but access_token is valid', function() {
-            const db = {};
+            const redis_client = {};
             const response = {id: '1', name: 'helloworld'};
 
             const redisGetFB = sandbox.stub(_redis, 'redisGetFB')
-                .withArgs(db, 'fake_accesstoken')
+                .withArgs(redis_client, 'fake_accesstoken')
                 .rejects();
 
             const accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
@@ -74,9 +98,9 @@ describe('Authentication Library', function() {
             const redisSetFB = sandbox.stub(_redis, 'redisSetFB')
                 .resolves();
 
-            const main = cachedFacebookAuthentication(db, 'fake_accesstoken');
+            const main = cachedFacebookAuthentication(db, redis_client, 'fake_accesstoken');
             return Promise.all([
-                assert.becomes(main, response),
+                assert.becomes(main, user),
                 main.then(() => {
                     sinon.assert.calledOnce(redisGetFB);
                     sinon.assert.calledOnce(accessTokenAuth);
@@ -86,10 +110,10 @@ describe('Authentication Library', function() {
         });
 
         it('reject if not cached and access_token is not valid', function() {
-            const db = {};
+            const redis_client = {};
 
             const redisGetFB = sandbox.stub(_redis, 'redisGetFB')
-                .withArgs(db, 'fake_accesstoken')
+                .withArgs(redis_client, 'fake_accesstoken')
                 .resolves(null);
 
             const accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
@@ -98,7 +122,7 @@ describe('Authentication Library', function() {
             const redisSetFB = sandbox.stub(_redis, 'redisSetFB')
                 .resolves();
 
-            const main = cachedFacebookAuthentication(db, 'fake_accesstoken');
+            const main = cachedFacebookAuthentication(db, redis_client, 'fake_accesstoken');
             return Promise.all([
                 assert.isRejected(main),
                 main.catch(() => {
@@ -109,8 +133,50 @@ describe('Authentication Library', function() {
             ]);
         });
 
+        it('resolve a new user if access_token presents a new user', function() {
+            const redis_client = {};
+            const fake_fb_account = {id: '2', name: 'Mark Chen'};
+
+            const redisGetFB = sandbox.stub(_redis, 'redisGetFB')
+                .withArgs(redis_client, 'fake_accesstoken')
+                .resolves(null);
+
+            const accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
+                .resolves(fake_fb_account);
+
+            const redisSetFB = sandbox.stub(_redis, 'redisSetFB')
+                .resolves();
+
+            const main = cachedFacebookAuthentication(db, redis_client, 'fake_accesstoken');
+            return Promise.all([
+                main.then(user => {
+                    assert.propertyVal(user, 'facebook_id', '2');
+                    assert.deepPropertyVal(user, 'facebook.id', '2');
+                    assert.deepPropertyVal(user, 'facebook.name', 'Mark Chen');
+                }),
+                main.then(() => {
+                    sinon.assert.calledOnce(redisGetFB);
+                    sinon.assert.calledOnce(accessTokenAuth);
+                    sinon.assert.calledOnce(redisSetFB);
+                }),
+                main.then(() => {
+                    // a new user not null in DB
+                    return db.collection('users').findOne({facebook_id: '2'})
+                        .then(user => {
+                            assert.propertyVal(user, 'facebook_id', '2');
+                            assert.deepPropertyVal(user, 'facebook.id', '2');
+                            assert.deepPropertyVal(user, 'facebook.name', 'Mark Chen');
+                        });
+                }),
+            ]);
+        });
+
         afterEach(function() {
             sandbox.restore();
+        });
+
+        after(function() {
+            return db.collection('users').remove({});
         });
     });
 });
