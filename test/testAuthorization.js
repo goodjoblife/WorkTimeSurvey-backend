@@ -23,14 +23,14 @@ describe('Authorization middleware', function() {
 
     // generate test data for count combinations
     const test_data = [{counts: null, expected: false}];
-    [1, 0, undefined].forEach(function(queries_count) {
+    [1, 0, undefined].forEach(function(time_and_salary_count) {
         [1, 0, undefined].forEach(function(reference_count) {
             test_data.push({
                 counts: {
-                    queries_count,
+                    time_and_salary_count,
                     reference_count,
                 },
-                expected: (queries_count || 0) + (reference_count || 0) > 0,
+                expected: (time_and_salary_count || 0) + (reference_count || 0) > 0,
             });
         });
     });
@@ -40,12 +40,9 @@ describe('Authorization middleware', function() {
             before(function() {
                 // insert test data into db
                 if (data.counts) {
-                    return db.collection('authors').insert({
-                        _id: {
-                            id: 'peter.shih',
-                            type: 'facebook',
-                        },
-                        queries_count: data.counts.queries_count,
+                    return db.collection('users').insert({
+                        facebook_id: 'peter.shih',
+                        time_and_salary_count: data.counts.time_and_salary_count,
                     }).then(() => db.collection('recommendations').insert({
                         user: {
                             id: 'peter.shih',
@@ -85,7 +82,7 @@ describe('Authorization middleware', function() {
             });
 
             after(function() {
-                return db.collection('authors').remove({});
+                return db.collection('users').remove({});
             });
 
             after(function() {
@@ -104,20 +101,14 @@ describe('Authorization middleware', function() {
         });
 
         before(function() {
-            return db.collection('authors').insertMany([
+            return db.collection('users').insertMany([
                 {
-                    _id: {
-                        id: 'mark86092',
-                        type: 'facebook',
-                    },
-                    queries_count: 1,
+                    facebook_id: 'mark86092',
+                    time_and_salary_count: 1,
                 },
                 {
-                    _id: {
-                        id: 'test',
-                        type: 'facebook',
-                    },
-                    queries_count: 0,
+                    facebook_id: 'test',
+                    time_and_salary_count: 0,
                 },
             ]);
         });
@@ -188,7 +179,7 @@ describe('Authorization middleware', function() {
         });
 
         after(function() {
-            return db.collection('authors').remove({});
+            return db.collection('users').remove({});
         });
     });
 });

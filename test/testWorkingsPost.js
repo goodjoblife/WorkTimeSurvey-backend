@@ -1019,7 +1019,7 @@ describe('Workings 工時資訊', function() {
         });
 
         afterEach(function() {
-            return db.collection('authors').remove({});
+            return db.collection('users').remove({});
         });
 
         after('DB: 清除 workings', function() {

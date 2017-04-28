@@ -80,20 +80,14 @@ describe('Workings Helper', function() {
         });
 
         before('Seeding', function() {
-            return db.collection('authors').insertMany([
+            return db.collection('users').insertMany([
                 {
-                    _id: {
-                        id: '001',
-                        type: 'facebook',
-                    },
-                    queries_count: 4,
+                    facebook_id: '001',
+                    time_and_salary_count: 4,
                 },
                 {
-                    _id: {
-                        id: '002',
-                        type: 'facebook',
-                    },
-                    queries_count: 5,
+                    facebook_id: '002',
+                    time_and_salary_count: 5,
                 },
             ]);
         });
@@ -107,7 +101,7 @@ describe('Workings Helper', function() {
         });
 
         after(function() {
-            return db.collection('authors').remove({});
+            return db.collection('users').remove({});
         });
     });
 });
