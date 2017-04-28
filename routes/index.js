@@ -9,10 +9,13 @@ const recommendation = require('../libs/recommendation');
 router.post('/me/recommendations', [
     authentication.cachedFacebookAuthenticationMiddleware,
     function(req, res, next) {
-        const user = req.user;
-        recommendation.getRecommendationString(req.db, user).then(recommendation_string => {
+        const olduser = {
+            id: req.user.facebook_id,
+            type: 'facebook',
+        };
+        recommendation.getRecommendationString(req.db, olduser).then(recommendation_string => {
             res.send({
-                user: user,
+                user: olduser,
                 recommendation_string: recommendation_string,
             });
         }).catch(err => {

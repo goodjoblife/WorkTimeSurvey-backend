@@ -64,11 +64,14 @@ function checkSearchPermission(req, res, next) {
     } else {
         authenticationLib.cachedFacebookAuthentication(req.db, redis_client, access_token)
             .then(user => {
-                req.user = {
-                    id: user.facebook_id,
+                req.user = user;
+
+                const olduser = {
+                    id: req.user.facebook_id,
                     type: 'facebook',
                 };
-                return authorizationLib.cachedSearchPermissionAuthorization(req.db, redis_client, req.user);
+
+                return authorizationLib.cachedSearchPermissionAuthorization(req.db, redis_client, olduser);
             })
             .then(() => {
                 // the client has permission
