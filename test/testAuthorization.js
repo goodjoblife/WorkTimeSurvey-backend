@@ -1,7 +1,7 @@
 const chai = require('chai');
 chai.use(require("chai-as-promised"));
 const assert = chai.assert;
-const MongoClient = require('mongodb').MongoClient;
+const { MongoClient, ObjectId } = require('mongodb');
 const redis = require('redis');
 const HttpError = require('../libs/errors').HttpError;
 const authorization = require('../middlewares/authorization');
@@ -37,10 +37,12 @@ describe('Authorization middleware', function() {
 
     test_data.forEach(function(data) {
         describe(`correctly authorize user with ${JSON.stringify(data)}`, function() {
+            let user_id = new ObjectId();
             before(function() {
                 // insert test data into db
                 if (data.counts) {
                     return db.collection('users').insert({
+                        _id: user_id,
                         facebook_id: 'peter.shih',
                         time_and_salary_count: data.counts.time_and_salary_count,
                     }).then(() => db.collection('recommendations').insert({
@@ -57,8 +59,8 @@ describe('Authorization middleware', function() {
                 // build the fake request
                 const req = {
                     user: {
-                        id: 'peter.shih',
-                        type: 'facebook',
+                        _id: user_id,
+                        facebook_id: 'peter.shih',
                     },
                     db: db,
                     redis_client: redis_client,
@@ -96,6 +98,8 @@ describe('Authorization middleware', function() {
     });
 
     describe('redis cached', function() {
+        let user_ids = [new ObjectId(), new ObjectId()];
+
         before(function(done) {
             redis_client.set('permission_facebook_peter.shih', '1', done);
         });
@@ -103,10 +107,12 @@ describe('Authorization middleware', function() {
         before(function() {
             return db.collection('users').insertMany([
                 {
+                    _id: user_ids[0],
                     facebook_id: 'mark86092',
                     time_and_salary_count: 1,
                 },
                 {
+                    _id: user_ids[1],
                     facebook_id: 'test',
                     time_and_salary_count: 0,
                 },
@@ -116,8 +122,8 @@ describe('Authorization middleware', function() {
         it('success if redis cached', function(done) {
             const req = {
                 user: {
-                    id: 'peter.shih',
-                    type: 'facebook',
+                    _id: new ObjectId(),
+                    facebook_id: 'peter.shih',
                 },
                 db: db,
                 redis_client: redis_client,
@@ -136,8 +142,9 @@ describe('Authorization middleware', function() {
         it('lookup mongo success if redis is not cached', function(done) {
             const req = {
                 user: {
-                    id: 'mark86092',
-                    type: 'facebook',
+                    _id: user_ids[0],
+                    facebook_id: 'mark86092',
+                    time_and_salary_count: 1,
                 },
                 db: db,
                 redis_client: redis_client,
@@ -156,8 +163,9 @@ describe('Authorization middleware', function() {
         it('fail if lookup mongo fail and redis is not cached', function(done) {
             const req = {
                 user: {
-                    id: 'test',
-                    type: 'facebook',
+                    _id: user_ids[1],
+                    facebook_id: 'test',
+                    time_and_salary_count: 0,
                 },
                 db: db,
                 redis_client: redis_client,
