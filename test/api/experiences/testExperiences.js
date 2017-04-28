@@ -473,6 +473,20 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.lengthOf(res.body.experiences, 2);
                 });
         });
+
+        it('limit = 2, page =0 ，預期回傳2筆資料', function() {
+
+            return request(app).get('/experiences')
+                .query({
+                    limit: 2,
+                    page: 0,
+                })
+                .expect(200)
+                .expect(function(res) {
+                    assert.lengthOf(res.body.experiences, 2);
+                });
+        });
+
         after(function() {
             return db.collection('experiences').remove({});
         });

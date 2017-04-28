@@ -56,7 +56,7 @@ router.get('/', function(req, res, next) {
         [sort_field]: -1,
     };
     const page = parseInt(req.query.page) || 0;
-    const limit = req.query.limit || 25;
+    const limit = parseInt(req.query.limit) || 25;
     const skip = limit * page;
 
     let result = {};
