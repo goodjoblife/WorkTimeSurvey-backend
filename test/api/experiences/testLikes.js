@@ -66,7 +66,7 @@ describe('Experience Likes Test', function() {
                 .expect(404);
         });
 
-        it('Post 2 times , and expected return 403', function() {
+        it('(! Need index) Post 2 times , and expected return 403', function() {
             return request(app).post('/experiences/' + experience_id + '/likes')
                 .send({
                     access_token: 'fakeaccesstoken',
@@ -102,7 +102,7 @@ describe('Experience Likes Test', function() {
                 });
         });
 
-        it('Post like 2 times (same user) and get experience , and expected experience like_count will 1 ', function() {
+        it('(! Need index) Post like 2 times (same user) and get experience , and expected experience like_count will 1 ', function() {
             const uri = '/experiences/' + experience_id + '/likes';
             return request(app).post(uri)
                 .send({
