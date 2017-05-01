@@ -3,9 +3,7 @@ module.exports = (db) => {
         .then((authors) => {
             const user_collection = db.collection('users');
 
-            let promise_chain = Promise.resolve();
-
-            for (let author of authors) {
+            const users = authors.map(author => {
                 const time_and_salary_count = author.queries_count;
                 const id = author._id.id;
 
@@ -20,11 +18,9 @@ module.exports = (db) => {
                     user.time_and_salary_count = time_and_salary_count;
                 }
 
-                promise_chain.then(() => {
-                    return user_collection.insertOne(user);
-                });
-            }
+                return user;
+            });
 
-            return promise_chain;
+            return user_collection.insertMany(users);
         });
 };
