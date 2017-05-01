@@ -4,7 +4,7 @@ const HttpError = require('../../libs/errors').HttpError;
 const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const winston = require('winston');
-const ReplyLikeModel = require('../../models/reply_likes_model');
+const ReplyLikeModel = require('../../models/reply_like_model');
 const authentication = require('../../middlewares/authentication');
 
 /*

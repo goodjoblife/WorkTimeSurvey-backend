@@ -1,6 +1,7 @@
 const DuplicateKeyError = require('../libs/errors').DuplicateKeyError;
 const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
 const ReplyModel = require('./reply_model');
+const ObjectId = require('mongodb').ObjectId;
 
 class ReplyLikeModel {
 
@@ -27,9 +28,9 @@ class ReplyLikeModel {
             const data = {
                 user: user,
                 created_at: new Date(),
-                reply_time: new Date(),
-                reply_id: reply_id,
-                experience_id: reply.experience_id,
+                reply_time: reply.created_at,
+                reply_id: new ObjectId(reply_id),
+                experience_id: new ObjectId(reply.experience_id),
             };
 
             return this.collection.insertOne(data);

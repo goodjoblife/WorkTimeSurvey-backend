@@ -1,6 +1,7 @@
 const DuplicateKeyError = require('../libs/errors').DuplicateKeyError;
 const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
 const ExperienceModel = require('./experience_model');
+const ObjectId = require('mongodb').ObjectId;
 
 class ExperienceLikeModel {
 
@@ -29,8 +30,8 @@ class ExperienceLikeModel {
 
             const data = {
                 user: user,
-                created: new Date(),
-                experience_id: experience_id,
+                created_at: new Date(),
+                experience_id: new ObjectId(experience_id),
             };
             return this.collection.insertOne(data);
         }).then((result) => {
