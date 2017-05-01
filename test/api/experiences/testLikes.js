@@ -87,7 +87,7 @@ describe('Experience Likes Test', function() {
                     .expect(401);
         });
 
-        it('Post like and get experience , and expected experience like_count will 1 ', function() {
+        it('Post like and get experience , and expected like_count of experience should be 1 ', function() {
             return request(app).post('/experiences/' + experience_id + '/likes')
                 .send({
                     access_token: 'fakeaccesstoken',
@@ -102,7 +102,7 @@ describe('Experience Likes Test', function() {
                 });
         });
 
-        it('(! Need Index), Post like 2 times (same user) and get experience , and expected experience like_count will 1 ', function() {
+        it('(! Need Index), Post like 2 times (same user) and get experience , and like_count of experience should be 1 ', function() {
             const uri = '/experiences/' + experience_id + '/likes';
             return request(app).post(uri)
                 .send({
@@ -124,7 +124,7 @@ describe('Experience Likes Test', function() {
                 });
         });
 
-        it('Post like 2 times(different user) and get experience , and expected experience like_count will 2 ', function() {
+        it('Post like 2 times(different user) and get experience , and expected like_count of experience should be 2 ', function() {
             const uri = '/experiences/' + experience_id + '/likes';
             return request(app).post(uri)
                 .send({

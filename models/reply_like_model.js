@@ -30,7 +30,7 @@ class ReplyLikeModel {
                 created_at: new Date(),
                 reply_time: reply.created_at,
                 reply_id: new ObjectId(reply_id),
-                experience_id: new ObjectId(reply.experience_id),
+                experience_id: reply.experience_id,
             };
 
             return this.collection.insertOne(data);

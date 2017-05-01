@@ -39,6 +39,13 @@ router.post('/:id/likes', [
                 success: true,
             });
         }).catch((err) => {
+            winston.info(req.originalUrl, {
+                id: experience_id,
+                ip: req.ip,
+                ips: req.ips,
+                err: err.message,
+            });
+
             if (err instanceof DuplicateKeyError) {
                 next(new HttpError(err.message, 403));
             } else if (err instanceof ObjectNotExistError) {
