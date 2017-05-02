@@ -4,7 +4,7 @@ const HttpError = require('../../libs/errors').HttpError;
 const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const winston = require('winston');
-const LikeModel = require('../../models/like_model');
+const ReplyLikeModel = require('../../models/reply_like_model');
 const authentication = require('../../middlewares/authentication');
 
 /*
@@ -32,9 +32,9 @@ router.post('/:id/likes', (req, res, next) => {
         author.type = "test";
     }
 
-    const like_model = new LikeModel(req.db);
+    const reply_like_model = new ReplyLikeModel(req.db);
 
-    like_model.createLikeToReply(id, author).then(value => {
+    reply_like_model.createLike(id, author).then(value => {
         winston.info("user likes a reply successfully", {id: value, ip: req.ip, ips: req.ips});
         res.send({success: true});
     }).catch(reason => {
