@@ -4,6 +4,7 @@ const config = require('config');
 const cors = require('cors');
 const express = require('express');
 const expressMongoDb = require('express-mongo-db');
+const { HttpError } = require('./libs/errors');
 const logger = require('morgan');
 const winston = require('winston');
 require('winston-mongodb').MongoDB;
@@ -44,6 +45,13 @@ app.use(cors({
     ],
 }));
 
+app.use((req, res, next) => {
+    winston.info(req.originalUrl, {
+        ip: req.ip,
+        ips: req.ips,
+    });
+    next();
+});
 app.use('/', routes);
 app.use('/companies', require('./routes/companies'));
 app.use('/workings', require('./routes/workings'));
@@ -62,12 +70,27 @@ app.use('/clairvoyance/search', cors(corsOption), require('./routes/clairvoyance
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-    const err = new Error('Not Found');
-    err.status = 404;
-    next(err);
+    next(new HttpError('Not Found', 404));
 });
 
 // error handlers
+
+// logging any error except HttpError
+app.use((err, req, res, next) => {
+    if (err instanceof HttpError) {
+        next(err);
+        return;
+    }
+
+    winston.warn(req.originalUrl, {
+        ip: req.ip,
+        ips: req.ips,
+        message: err.message,
+        error: err,
+    });
+
+    next(err);
+});
 
 // development error handler
 // will print stacktrace
