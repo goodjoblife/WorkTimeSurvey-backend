@@ -113,7 +113,7 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .expect(422);
             });
 
-            it('Region is illegal Field, expected return 422', function() {
+            it('region is illegal Field, expected return 422', function() {
                 let sendData = generateInterviewExperiencePayload();
                 sendData.region = "你好市";
                 return request(app).post('/interview_experiences')
@@ -121,7 +121,7 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .expect(422);
             });
 
-            it('Title of word is more than 25 char , expected return 422', function() {
+            it('title of word is more than 25 char , expected return 422', function() {
                 let sendData = generateInterviewExperiencePayload();
                 sendData.title = "今今天天氣真是好今天天氣真是好今天天氣真是好天天氣真是好~喝喝喝喝喝~";
                 return request(app).post('/interview_experiences')
@@ -129,7 +129,7 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .expect(422);
             });
 
-            it('Sections is empty, expected return 422', function() {
+            it('sections is empty, expected return 422', function() {
                 let sendData = generateInterviewExperiencePayload();
                 sendData.sections = null;
                 return request(app).post('/interview_experiences')
@@ -137,7 +137,7 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .expect(422);
             });
 
-            it('Sections is not array, expected return 422', function() {
+            it('sections is not array, expected return 422', function() {
                 let sendData = generateInterviewExperiencePayload();
                 sendData.sections = "abcde";
                 return request(app).post('/interview_experiences')
@@ -145,7 +145,7 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .expect(422);
             });
 
-            it('Subsection of title and content is empty, expected return 422', function() {
+            it('subsection of title and content is empty, expected return 422', function() {
                 let sendData = generateInterviewExperiencePayload();
                 sendData.sections[0].subtitle = null;
                 sendData.sections[0].content = null;
@@ -154,7 +154,7 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .expect(422);
             });
 
-            it('Subcontent of word is more then 5000 char, expected return 422', function() {
+            it('subcontent of word is more then 5000 char, expected return 422', function() {
                 let sendData = generateInterviewExperiencePayload();
                 const words = new Array(6000).join("好");
                 sendData.sections[0].content = words;
@@ -163,7 +163,7 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .expect(422);
             });
 
-            it('Education is illegal , expected return 422', function() {
+            it('education is illegal , expected return 422', function() {
                 let sendData = generateInterviewExperiencePayload();
                 sendData.education = "無業遊名";
                 return request(app).post('/interview_experiences')
