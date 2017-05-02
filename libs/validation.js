@@ -36,7 +36,7 @@ function requiredNumber(field) {
 }
 
 function requiredNumberInRange(field, max, min) {
-    if (typeof field !== 'number' ) {
+    if (typeof field !== 'number' || isNaN(field)) {
         return false;
     }
     if (isNaN(min) || field < min) {
@@ -49,7 +49,7 @@ function requiredNumberInRange(field, max, min) {
 }
 
 function requiredNumberGreaterThanOrEqualTo(field, min) {
-    if (typeof field !== 'number') {
+    if (typeof field !== 'number' || isNaN(field)) {
         return false;
     }
     if (isNaN(min) || field < min) {

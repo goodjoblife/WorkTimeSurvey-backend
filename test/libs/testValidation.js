@@ -85,6 +85,10 @@ describe('Validation Library', function() {
         it('should return false if max=10, min=0, field=11 ', function() {
             assert.isFalse(validation.requiredNumberInRange(11, 10, 0));
         });
+
+        it('should return false if max=10, min=0, field=NaN ', function() {
+            assert.isFalse(validation.requiredNumberInRange(NaN, 10, 0));
+        });
     });
 
     describe('#requiredNumberGreaterThanOrEqualTo(field,min)', function() {
@@ -104,6 +108,9 @@ describe('Validation Library', function() {
             assert.isFalse(validation.requiredNumberGreaterThanOrEqualTo(-1, 0));
         });
 
+        it('should return false if min=0 field=NaN', function() {
+            assert.isFalse(validation.requiredNumberGreaterThanOrEqualTo(NaN, 0));
+        });
     });
 
     describe('#optionalNumber()', function() {
