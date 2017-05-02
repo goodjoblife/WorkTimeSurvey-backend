@@ -1,4 +1,3 @@
-debugger;
 const chai = require('chai');
 chai.use(require('chai-datetime'));
 const assert = chai.assert;
