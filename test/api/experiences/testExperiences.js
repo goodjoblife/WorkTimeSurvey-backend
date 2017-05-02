@@ -1,3 +1,4 @@
+debugger;
 const chai = require('chai');
 chai.use(require('chai-datetime'));
 const assert = chai.assert;
@@ -485,6 +486,33 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(function(res) {
                     assert.lengthOf(res.body.experiences, 2);
                 });
+        });
+
+        it('limit = 0，預期回傳422傳誤', function() {
+
+            return request(app).get('/experiences')
+                .query({
+                    limit: 0,
+                })
+                .expect(422);
+        });
+
+        it('limit = -1，預期回傳422傳誤', function() {
+
+            return request(app).get('/experiences')
+                .query({
+                    limit: 0,
+                })
+                .expect(422);
+        });
+
+        it('page = -1，預期回傳422傳誤', function() {
+
+            return request(app).get('/experiences')
+                .query({
+                    page: -1,
+                })
+                .expect(422);
         });
 
         after(function() {
