@@ -1,7 +1,7 @@
 const express = require('express');
 const winston = require('winston');
 const router = express.Router();
-const LikeModel = require('../../models/like_model');
+const ExperienceLikeModel = require('../../models/experience_like_model');
 const ExperienceModel = require('../../models/experience_model');
 const authentication = require('../../middlewares/authentication');
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
@@ -29,16 +29,23 @@ router.post('/:id/likes', [
             type: req.user.type,
         };
         const experience_id = req.params.id;
-        const like_model = new LikeModel(req.db);
+        const experience_like_model = new ExperienceLikeModel(req.db);
         const experience_model = new ExperienceModel(req.db);
 
-        like_model.createLikeToExperience(experience_id, user).then((result) => {
+        experience_like_model.createLike(experience_id, user).then((result) => {
             return experience_model.incrementLikeCount(experience_id);
         }).then((result) => {
             res.send({
                 success: true,
             });
         }).catch((err) => {
+            winston.info(req.originalUrl, {
+                id: experience_id,
+                ip: req.ip,
+                ips: req.ips,
+                err: err.message,
+            });
+
             if (err instanceof DuplicateKeyError) {
                 next(new HttpError(err.message, 403));
             } else if (err instanceof ObjectNotExistError) {
