@@ -69,6 +69,50 @@ describe('Validation Library', function() {
         });
     });
 
+    describe('#requiredNumberInRange(field,max,min)', function() {
+        it('should return true if max=10, min=0, field=5 ', function() {
+            assert.isTrue(validation.requiredNumberInRange(5, 10, 0));
+        });
+
+        it('should return true if max=10, min=0, field=0', function() {
+            assert.isTrue(validation.requiredNumberInRange(0, 10, 0));
+        });
+
+        it('should return true if max=10, min=0, field=10 ', function() {
+            assert.isTrue(validation.requiredNumberInRange(10, 10, 0));
+        });
+
+        it('should return false if max=10, min=0, field=11 ', function() {
+            assert.isFalse(validation.requiredNumberInRange(11, 10, 0));
+        });
+
+        it('should return false if max=10, min=0, field=NaN ', function() {
+            assert.isFalse(validation.requiredNumberInRange(NaN, 10, 0));
+        });
+    });
+
+    describe('#requiredNumberGreaterThanOrEqualTo(field,min)', function() {
+        it('should return true if min=0, field=5 ', function() {
+            assert.isTrue(validation.requiredNumberGreaterThanOrEqualTo(5, 0));
+        });
+
+        it('should return true if  min=0, field=0 ', function() {
+            assert.isTrue(validation.requiredNumberGreaterThanOrEqualTo(0, 0));
+        });
+
+        it('should return false if min=5 field=0', function() {
+            assert.isFalse(validation.requiredNumberGreaterThanOrEqualTo(0, 5));
+        });
+
+        it('should return false if min=0 field=-1', function() {
+            assert.isFalse(validation.requiredNumberGreaterThanOrEqualTo(-1, 0));
+        });
+
+        it('should return false if min=0 field=NaN', function() {
+            assert.isFalse(validation.requiredNumberGreaterThanOrEqualTo(NaN, 0));
+        });
+    });
+
     describe('#optionalNumber()', function() {
         it('should return true if number provided', function() {
             assert.isTrue(validation.optionalNumber(1));

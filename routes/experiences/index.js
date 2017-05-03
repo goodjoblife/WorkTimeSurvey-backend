@@ -5,6 +5,10 @@ const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const lodash = require('lodash');
 const winston = require('winston');
 const ExperienceModel = require('../../models/experience_model');
+const {
+    requiredNumberInRange,
+    requiredNumberGreaterThanOrEqualTo,
+} = require('../../libs/validation');
 
 /**
  * Get /experiences api
@@ -51,12 +55,22 @@ router.get('/', function(req, res, next) {
         next(new HttpError("sort by 格式錯誤", 422));
         return;
     }
+
     const query = _queryToDBQuery(req.query.search_query, req.query.search_by, req.query.type);
     const sort = {
         [sort_field]: -1,
     };
     const page = parseInt(req.query.page) || 0;
-    const limit = req.query.limit || 25;
+    const limit = Number(req.query.limit || 20);
+
+    if (!requiredNumberGreaterThanOrEqualTo(page, 0)) {
+        next(new HttpError("page 格式錯誤", 422));
+        return;
+    }
+    if (!requiredNumberInRange(limit, 20, 1)) {
+        next(new HttpError("limit 格式錯誤", 422));
+        return;
+    }
     const skip = limit * page;
 
     let result = {};
