@@ -170,7 +170,7 @@ describe('experiences 面試和工作經驗資訊', function() {
         });
 
         describe('Interview Validation Part', function() {
-            it('interview_time_month is required', function() {
+            it('interview_time is required', function() {
                 return request(app).post('/interview_experiences')
                     .send(generateInterviewExperiencePayload({
                         interview_time: -1,
@@ -367,7 +367,7 @@ describe('experiences 面試和工作經驗資訊', function() {
                     return request(app).post('/interview_experiences')
                         .send(generateInterviewExperiencePayload({
                             interview_time: {
-                                year: nextYear.getFullYear().toString(),
+                                year: nextYear.getFullYear(),
                                 month: 3,
                             },
                         }))
@@ -378,7 +378,7 @@ describe('experiences 面試和工作經驗資訊', function() {
                     return request(app).post('/interview_experiences')
                         .send(generateInterviewExperiencePayload({
                             interview_time: {
-                                year: ((new Date()).getFullYear() - 10).toString(),
+                                year: ((new Date()).getFullYear() - 10),
                                 month: 3,
                             },
                         }))
@@ -402,8 +402,8 @@ describe('experiences 面試和工作經驗資訊', function() {
                     return request(app).post('/interview_experiences')
                         .send(generateInterviewExperiencePayload({
                             interview_time: {
-                                year: now.getFullYear().toString(),
-                                month: (now.getMonth() + 2).toString(),
+                                year: now.getFullYear(),
+                                month: (now.getMonth() + 2),
                             },
                         }))
                         .expect(422);
