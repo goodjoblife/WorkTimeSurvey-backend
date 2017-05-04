@@ -23,7 +23,7 @@ describe('experiences 面試和工作經驗資訊', function() {
 
     describe('POST /interview_experiences', function() {
         let sandbox;
-        before('Seed companies', function() {
+        beforeEach('Seed companies', function() {
             sandbox = sinon.sandbox.create();
             sandbox.stub(authentication, 'cachedFacebookAuthentication')
                 .withArgs(sinon.match.object, 'fakeaccesstoken')
@@ -146,11 +146,8 @@ describe('experiences 面試和工作經驗資訊', function() {
             });
 
             it('subsection of title and content is empty, expected return 422', function() {
-                let sendData = generateInterviewExperiencePayload();
-                sendData.sections[0].subtitle = null;
-                sendData.sections[0].content = null;
                 return request(app).post('/interview_experiences')
-                    .send(sendData)
+                    .send(generateInterviewExperiencePayload({ sections: [{subtitle: null, content: null}] }))
                     .expect(422);
             });
 
@@ -488,15 +485,24 @@ describe('experiences 面試和工作經驗資訊', function() {
             }
         });
 
-        after('DB: 清除 experiences', function() {
+        describe('No Login status', function() {
+            it('no login status create interview experience , and expected return erro code 401', function() {
+                sandbox.restore();
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload())
+                    .expect(401);
+            });
+        });
+
+        afterEach('DB: 清除 experiences', function() {
             return db.collection('experiences').remove({});
         });
 
-        after('DB: 清除 companies', function() {
+        afterEach('DB: 清除 companies', function() {
             return db.collection('companies').remove({});
         });
 
-        after(function() {
+        afterEach(function() {
             sandbox.restore();
         });
     });
