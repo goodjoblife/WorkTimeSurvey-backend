@@ -23,14 +23,7 @@ describe('experiences 面試和工作經驗資訊', function() {
 
     describe('POST /interview_experiences', function() {
         let sandbox;
-        beforeEach('Seed companies', function() {
-            sandbox = sinon.sandbox.create();
-            sandbox.stub(authentication, 'cachedFacebookAuthentication')
-                .withArgs(sinon.match.object, 'fakeaccesstoken')
-                .resolves({
-                    id: '-1',
-                    name: 'markLin',
-                });
+        before('Seed companies', function() {
             return db.collection('companies').insertMany([
                 {
                     id: '00000001',
@@ -45,6 +38,16 @@ describe('experiences 面試和工作經驗資訊', function() {
                     name: 'GOODJOBGREAT',
                 },
             ]);
+        });
+
+        beforeEach('Stub cachedFacebookAuthentication', function() {
+            sandbox = sinon.sandbox.create();
+            sandbox.stub(authentication, 'cachedFacebookAuthentication')
+                .withArgs(sinon.match.object, 'fakeaccesstoken')
+                .resolves({
+                    id: '-1',
+                    name: 'markLin',
+                });
         });
 
         describe('generate payload', function() {
@@ -151,6 +154,13 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .expect(422);
             });
 
+            it('subtitle of word is more than 25 char, expected return 422', function() {
+                const words = new Array(40).join("慘");
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({ sections: [{subtitle: words, content: "喝喝面試官"}] }))
+                    .expect(422);
+            });
+
             it('subcontent of word is more then 5000 char, expected return 422', function() {
                 let sendData = generateInterviewExperiencePayload();
                 const words = new Array(6000).join("好");
@@ -206,14 +216,6 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .expect(422);
             });
 
-            it('interview_qas is array', function() {
-                return request(app).post('/interview_experiences')
-                    .send(generateInterviewExperiencePayload({
-                        interview_qas: {},
-                    }))
-                    .expect(422);
-            });
-
             it('interview_qas of question and answer  is required', function() {
                 return request(app).post('/interview_experiences')
                     .send(generateInterviewExperiencePayload({
@@ -234,6 +236,7 @@ describe('experiences 面試和工作經驗資訊', function() {
                         interview_qas: [
                             {
                                 question: question,
+                                answer: "我想寫個慘字",
                             },
                         ],
                     }))
@@ -246,6 +249,7 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .send(generateInterviewExperiencePayload({
                         interview_qas: [
                             {
+                                question: "我還是想寫個慘字",
                                 answer: answer,
                             },
                         ],
@@ -254,7 +258,11 @@ describe('experiences 面試和工作經驗資訊', function() {
             });
 
             it('number of question count  is less than 30', function() {
-                const interview_qas = new Array(40).join('0').split('');
+                const qas = { question: "慘啊", answer: "給我寫個慘" };
+                let interview_qas = [];
+                for (var i=0;i<=40;i++) {
+                    interview_qas.push(qas);
+                }
                 return request(app).post('/interview_experiences')
                     .send(generateInterviewExperiencePayload({
                         interview_qas: interview_qas,
@@ -263,10 +271,10 @@ describe('experiences 面試和工作經驗資訊', function() {
             });
 
             it('number of interview_result word  is less than 10', function() {
-                const interview_qas = new Array(20).join('慘');
+                const interview_result = new Array(20).join('慘');
                 return request(app).post('/interview_experiences')
                     .send(generateInterviewExperiencePayload({
-                        interview_qas: interview_qas,
+                        interview_result: interview_result,
                     }))
                     .expect(422);
             });
@@ -487,18 +495,19 @@ describe('experiences 面試和工作經驗資訊', function() {
 
         describe('No Login status', function() {
             it('no login status create interview experience , and expected return erro code 401', function() {
-                sandbox.restore();
+                let sendData = generateInterviewExperiencePayload();
+                sendData.access_token = undefined;
                 return request(app).post('/interview_experiences')
-                    .send(generateInterviewExperiencePayload())
+                    .send(sendData)
                     .expect(401);
             });
         });
 
-        afterEach('DB: 清除 experiences', function() {
+        after('DB: 清除 experiences', function() {
             return db.collection('experiences').remove({});
         });
 
-        afterEach('DB: 清除 companies', function() {
+        after('DB: 清除 companies', function() {
             return db.collection('companies').remove({});
         });
 
