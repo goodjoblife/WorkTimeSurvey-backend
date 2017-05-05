@@ -60,7 +60,7 @@ router.post('/:id/replies', [
  */
 router.get('/:id/replies', function(req, res, next) {
     const experience_id = req.params.id;
-    let limit = parseInt(req.query.limit) || 10000;
+    let limit = parseInt(req.query.limit) || 1000;
     let start = parseInt(req.query.start) || 0;
 
     winston.info("Get /experiences/:id/replies", {
@@ -71,8 +71,9 @@ router.get('/:id/replies', function(req, res, next) {
 
     const reply_model = new ReplyModel(req.db);
     reply_model.getRepliesByExperienceId(experience_id, start, limit).then((result) => {
+        _repliesModelToApiModel(result);
         res.send({
-            replies: _repliesModelToApiModel(result),
+            replies: result,
         });
     }).catch((err) => {
         if (err instanceof ObjectNotExistError) {
@@ -84,7 +85,7 @@ router.get('/:id/replies', function(req, res, next) {
 });
 
 function _repliesModelToApiModel(replies) {
-    return replies.map((reply) => {
+    return replies.forEach((reply) => {
         delete reply.author;
     });
 }

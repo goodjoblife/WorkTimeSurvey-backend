@@ -44,7 +44,7 @@ describe('Replies Test', function() {
             });
         });
 
-        it('Success, and expected return data', function() {
+        it('post a normal experience reply, and expected return data', function() {
             return request(app)
                 .post('/experiences/' + experience_id + '/replies')
                 .send({
@@ -80,7 +80,7 @@ describe('Replies Test', function() {
                 });
         });
 
-        it('Fail, and expected return experiencedId does not exit', function() {
+        it('post a error experience_id reply, and expected return experiencedId does not exit', function() {
             return request(app)
                 .post('/experiences/1111/replies')
                 .send({
@@ -101,7 +101,7 @@ describe('Replies Test', function() {
     });
 
     describe('Get : /experiences/:id/replies', function() {
-        let experience_id = undefined;
+        let experience_id = null;
         const test_Replies_Count = 200;
 
         before('Create test data', function() {
@@ -117,19 +117,39 @@ describe('Replies Test', function() {
                 let testDatas = [];
                 for (var i = 0; i < test_Replies_Count; i++) {
                     testDatas.push({
-                        create_at: new Date(),
+                        created_at: new Date(),
                         experience_id: experience_id,
                         author: {
                             id: "man" + i,
                         },
                         content: "hello test0",
+                        like_count: 0,
+                        report_count: 0,
+                        floor: 1,
                     });
                 }
                 return db.collection('replies').insertMany(testDatas);
+            }).then(function(result) {
+                let reply1 = result.ops[0];
+                let reply2 = result.ops[1];
+                let testLikes = [{
+                    user: reply1.author,
+                    reply_id: reply1._id,
+                    experience_id: reply1.experience_id,
+                }, {
+                    user: reply2.author,
+                    reply_id: reply1._id,
+                    experience_id: reply1.experience_id,
+                }, {
+                    user: reply1.author,
+                    reply_id: reply2._id,
+                    experience_id: reply2.experience_id,
+                }];
+                return db.collection('reply_likes').insertMany(testLikes);
             });
         });
 
-        it('Get experiences replies data and expect 200 replies ', function() {
+        it('get experiences replies data and expect 200 replies ', function() {
             return request(app)
                 .get('/experiences/' + experience_id + '/replies')
                 .expect(200)
@@ -141,7 +161,20 @@ describe('Replies Test', function() {
                 });
         });
 
-        it('Get experiences replies data by start 0 and limit 10 , expect 10 replies ', function() {
+        it('get experiences replies, and check replies liked field expect two reply is liked  ', function() {
+            return request(app)
+                .get('/experiences/' + experience_id + '/replies')
+                .expect(200)
+                .expect(function(res) {
+                    assert.property(res.body, 'replies');
+                    assert.notDeepProperty(res.body, 'author');
+                    assert.isArray(res.body.replies);
+                    let reply = res.body.replies[0];
+                    assert.isTrue(reply.liked);
+                });
+        });
+
+        it('get experiences replies data by start 0 and limit 100 , expect 10 replies ', function() {
             return request(app)
                 .get('/experiences/' + experience_id + '/replies')
                 .query({
@@ -157,15 +190,40 @@ describe('Replies Test', function() {
                 });
         });
 
-        it('Set error replies and expect error code 404', function() {
+        it('set error replies and expect error code 404', function() {
             return request(app)
                 .get('/experiences/1111/replies')
                 .expect(404);
         });
+
+        it('get one experiences replies , and validate return field', function() {
+            return request(app)
+                .get('/experiences/' + experience_id + '/replies')
+                .query({
+                    limit: 1,
+                    start: 0,
+                })
+                .expect(200)
+                .expect(function(res) {
+                    assert.property(res.body, 'replies');
+                    assert.notDeepProperty(res.body.replies[0], 'author');
+
+                    assert.deepProperty(res.body.replies[0], '_id');
+                    assert.deepProperty(res.body.replies[0], 'content');
+                    assert.deepProperty(res.body.replies[0], 'like_count');
+                    assert.deepProperty(res.body.replies[0], 'report_count');
+                    assert.deepProperty(res.body.replies[0], 'liked');
+                    assert.deepProperty(res.body.replies[0], 'created_at');
+                    assert.deepProperty(res.body.replies[0], 'floor');
+
+                });
+        });
+
         after(function() {
             let pro1 = db.collection('replies').remove({});
             let pro2 = db.collection('experiences').remove({});
-            return Promise.all([pro1, pro2]);
+            let pro3 = db.collection('reply_likes').remove({});
+            return Promise.all([pro1, pro2, pro3]);
         });
 
     });

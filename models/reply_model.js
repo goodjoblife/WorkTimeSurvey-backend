@@ -56,6 +56,9 @@ class ReplyModel {
     /**
      * 根據經驗文章id，取得文章留言
      * @param {string} experience_id - experience's id
+     * @param {number} skip - start index (Default: 0)
+     * @param {number} limit - limit (Default: 1000)
+     * @param {object} sort - mongodb sort object (Default: { created_at:1 })
      * @returns {Promise}
      *  - [
      *      _id : ObjectId,
@@ -65,19 +68,56 @@ class ReplyModel {
      *      },
      *      created_at : new Date(),
      *      content : "Hello GoodJob",
+     *      floor: 1,
+     *      like_count: 0,
+     *      report_count: 0,
+     *      liked: true/false,
      *  ]
      */
-    getRepliesByExperienceId(experience_id, skip = 0, limit = 10000, sort = {created_at: 1}) {
+    getRepliesByExperienceId(experience_id, skip = 0, limit = 1000, sort = {
+        created_at: 1,
+    }) {
         const experience_model = new ExperienceModel(this._db);
         return experience_model.isExist(experience_id).then((is_exist) => {
             if (!is_exist) {
                 throw new ObjectNotExistError("該篇文章不存在");
             }
 
-            return this.collection.find({
-                experience_id: new ObjectId(experience_id),
-            }).sort(sort).skip(skip).limit(limit).toArray();
-
+            return this.collection.aggregate([{
+                $match: { experience_id: new ObjectId(experience_id)},
+            }, {
+                $sort: sort,
+            }, {
+                $skip: skip,
+            }, {
+                $limit: limit,
+            }, {
+                $lookup: {
+                    from: "reply_likes",
+                    localField: "_id",
+                    foreignField: "reply_id",
+                    as: "likes",
+                },
+            }, {
+                $project: {
+                    experience_id: 1,
+                    author: 1,
+                    created_at: 1,
+                    content: 1,
+                    floor: 1,
+                    like_count: 1,
+                    report_count: 1,
+                    liked: {
+                        $cond: {
+                            if: {
+                                $gte: [{ $indexOfArray: ["$likes.user", "$author"]}, 0],
+                            },
+                            then: true,
+                            else: false,
+                        },
+                    },
+                },
+            }]).toArray();
         });
     }
 
