@@ -21,6 +21,10 @@ module.exports = (db) => {
                 return user;
             });
 
+            if (users.length === 0) {
+                return Promise.resolve();
+            }
+
             return user_collection.insertMany(users);
         });
 };
