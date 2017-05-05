@@ -60,24 +60,20 @@ describe('Replies Test', function() {
                     assert.deepPropertyVal(res.body, 'reply.experience_id', experience_id);
                     assert.deepPropertyVal(res.body, 'reply.like_count', 0);
                     assert.deepEqual(res.body.reply.user, {id: '-1', type: 'facebook'});
-
-                    return ObjectId(res.body.reply._id);
                 })
-                .expect(() => {
+                .then(res => Promise.all([
                     // experience part
-                    return db.collection('experiences').findOne({_id: ObjectId(experience_id)})
+                    db.collection('experiences').findOne({_id: ObjectId(experience_id)})
                         .then(experience => {
                             assert.equal(experience.reply_count, 1);
-                        });
-                })
-                .expect(res => {
+                        }),
                     // reply part
-                    return db.collection('replies').findOne({_id: res.body.reply._id})
+                    db.collection('replies').findOne({_id: ObjectId(res.body.reply._id)})
                         .then(reply => {
                             assert.deepEqual(reply.experience_id, ObjectId(experience_id));
                             assert.deepEqual(reply.user, {id: '-1', type: 'facebook'});
-                        });
-                });
+                        }),
+                ]));
         });
 
         it('Fail, and expected return experiencedId does not exit', function() {
