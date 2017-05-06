@@ -1,3 +1,4 @@
+debugger;
 const assert = require('chai').assert;
 const request = require('supertest');
 const app = require('../../../app');
@@ -120,7 +121,7 @@ describe('Replies Test', function() {
                         created_at: new Date(),
                         experience_id: experience_id,
                         author: {
-                            id: "man" + i,
+                            _id: new ObjectId(),
                         },
                         content: "hello test0",
                         like_count: 0,
@@ -138,10 +139,6 @@ describe('Replies Test', function() {
                     experience_id: reply1.experience_id,
                 }, {
                     user: reply2.author,
-                    reply_id: reply1._id,
-                    experience_id: reply1.experience_id,
-                }, {
-                    user: reply1.author,
                     reply_id: reply2._id,
                     experience_id: reply2.experience_id,
                 }];
@@ -152,6 +149,9 @@ describe('Replies Test', function() {
         it('get experiences replies data and expect 200 replies ', function() {
             return request(app)
                 .get('/experiences/' + experience_id + '/replies')
+                .query({
+                    limit: 200,
+                })
                 .expect(200)
                 .expect(function(res) {
                     assert.property(res.body, 'replies');
@@ -194,6 +194,15 @@ describe('Replies Test', function() {
             return request(app)
                 .get('/experiences/1111/replies')
                 .expect(404);
+        });
+
+        it('post a 2000 limit and expect error code 402', function() {
+            return request(app)
+                .get('/experiences/' + experience_id + '/replies')
+                .query({
+                    limit: 2000,
+                })
+                .expect(422);
         });
 
         it('get one experiences replies , and validate return field', function() {

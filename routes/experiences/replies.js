@@ -3,8 +3,12 @@ const express = require('express');
 const HttpError = require('../../libs/errors').HttpError;
 const router = express.Router();
 const ReplyModel = require('../../models/reply_model');
+const ReplyLikeModel = require('../../models/reply_like_model');
 const authentication = require('../../middlewares/authentication');
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
+const {
+    requiredNumberInRange,
+} = require('../../libs/validation');
 
 router.post('/:id/replies', [
     authentication.cachedFacebookAuthenticationMiddleware,
@@ -60,8 +64,12 @@ router.post('/:id/replies', [
  */
 router.get('/:id/replies', function(req, res, next) {
     const experience_id = req.params.id;
-    let limit = parseInt(req.query.limit) || 1000;
+    let limit = parseInt(req.query.limit) || 20;
     let start = parseInt(req.query.start) || 0;
+
+    if (!requiredNumberInRange(limit, 1000, 0)) {
+        throw new HttpError("limit 格式錯誤", 422);
+    }
 
     winston.info("Get /experiences/:id/replies", {
         id: experience_id,
@@ -70,7 +78,17 @@ router.get('/:id/replies', function(req, res, next) {
     });
 
     const reply_model = new ReplyModel(req.db);
-    reply_model.getRepliesByExperienceId(experience_id, start, limit).then((result) => {
+    const reply_like_model = new ReplyLikeModel(req.db);
+    let result = null;
+
+    reply_model.getRepliesByExperienceId(experience_id, start, limit).then((replies) => {
+        result = replies;
+        const replies_ids = replies.map((reply) => {
+            return reply._id;
+        });
+        return reply_like_model.getRepliesLikesByRepliesIds(replies_ids);
+    }).then((likes) => {
+        _createLikesField(result, likes);
         _repliesModelToApiModel(result);
         res.send({
             replies: result,
@@ -83,6 +101,21 @@ router.get('/:id/replies', function(req, res, next) {
         }
     });
 });
+
+function _createLikesField(replies, likes) {
+    replies.forEach((reply) => {
+        reply.liked = _isExistAuthorLiked(reply._id, reply.author, likes);
+    });
+}
+
+function _isExistAuthorLiked(reply_id, author, likes) {
+    const result = likes.find((like) => {
+        if (like.reply_id.equals(reply_id) && like.user._id.equals(author._id)) {
+            return like;
+        }
+    });
+    return (result) ? true : false;
+}
 
 function _repliesModelToApiModel(replies) {
     return replies.forEach((reply) => {

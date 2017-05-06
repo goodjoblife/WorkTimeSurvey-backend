@@ -44,6 +44,27 @@ class ReplyLikeModel {
             }
         });
     }
+
+    /**
+     * Get replies likes
+     * @param {array} ids - replies ids
+     * @returns {Promise}
+     *  - resolve : [{
+     *     _id: ObjectId,
+     *     created_at: new Date,
+     *     user: user model,
+     *     reply_time: new Date,
+     *     reply_id: ObjectId,
+     *     experience_id: ObjectId,
+     *  }
+     */
+    getRepliesLikesByRepliesIds(ids) {
+        return this.collection.find({
+            reply_id: {
+                $in: ids,
+            },
+        }).toArray();
+    }
 }
 
 module.exports = ReplyLikeModel;
