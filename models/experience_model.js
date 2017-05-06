@@ -170,6 +170,23 @@ class ExperienceModel {
         return this._incrementField(field, id);
     }
 
+    /**
+     * 根據id減少experience的like_count
+     * @param {string} id - experiences of id
+     * @returns {Promise}
+     *  - resolved : {
+     *        value: {
+     *            like_count: Current Like Count (after decrement 1)
+     *        }
+     *    }
+     *
+     *  - reject : ObjectNotExistError/Default Error
+     */
+    decrementLikeCount(id) {
+        const field = "like_count";
+        return this._decrementField(field, id);
+    }
+
     _incrementField(field, id) {
         if (!mongo.ObjectId.isValid(id)) {
             throw new ObjectNotExistError("該文章不存在");
@@ -179,6 +196,31 @@ class ExperienceModel {
             {
                 $inc: {
                     [field]: 1,
+                },
+            },
+            {
+                projection: {
+                    [field]: 1,
+                },
+                returnOriginal: false,
+            }
+        );
+    }
+
+    _decrementField(field, id) {
+        if (!mongo.ObjectId.isValid(id)) {
+            throw new ObjectNotExistError("該文章不存在");
+        }
+
+        return this.collection.findOneAndUpdate({
+            _id: new mongo.ObjectId(id),
+            [field]: {
+                $gt: 0,
+            },
+        },
+            {
+                $inc: {
+                    [field]: -1,
                 },
             },
             {

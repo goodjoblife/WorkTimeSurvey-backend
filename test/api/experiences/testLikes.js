@@ -1,5 +1,7 @@
+debugger;
 const assert = require('chai').assert;
 const mongo = new require('mongodb');
+const ObjectId = new require('mongodb').ObjectId;
 const request = require('supertest');
 const app = require('../../../app');
 const MongoClient = require('mongodb').MongoClient;
@@ -83,8 +85,8 @@ describe('Experience Likes Test', function() {
 
         it('User does not login , and expected return code 401', function() {
             return request(app)
-                    .post('/experiences/' + experience_id + '/likes')
-                    .expect(401);
+                .post('/experiences/' + experience_id + '/likes')
+                .expect(401);
         });
 
         it('Post like and get experience , and expected like_count of experience should be 1 ', function() {
@@ -94,11 +96,13 @@ describe('Experience Likes Test', function() {
                 })
                 .then((res) => {
                     return db.collection("experiences")
-                    .find({ _id: new mongo.ObjectId(experience_id)})
-                    .toArray()
-                    .then((result) => {
-                        assert.equal(result[0].like_count, 1);
-                    });
+                        .find({
+                            _id: new mongo.ObjectId(experience_id),
+                        })
+                        .toArray()
+                        .then((result) => {
+                            assert.equal(result[0].like_count, 1);
+                        });
                 });
         });
 
@@ -110,13 +114,15 @@ describe('Experience Likes Test', function() {
                 })
                 .then((res) => {
                     return request(app).post(uri)
-                    .send({
-                        access_token: 'fakeaccesstoken',
-                    });
+                        .send({
+                            access_token: 'fakeaccesstoken',
+                        });
                 })
                 .then((res) => {
                     return db.collection("experiences")
-                        .find({ _id: new mongo.ObjectId(experience_id)})
+                        .find({
+                            _id: new mongo.ObjectId(experience_id),
+                        })
                         .toArray();
                 })
                 .then((result) => {
@@ -139,13 +145,15 @@ describe('Experience Likes Test', function() {
                             name: 'markLin002',
                         });
                     return request(app).post(uri)
-                    .send({
-                        access_token: 'fakeaccesstoken',
-                    });
+                        .send({
+                            access_token: 'fakeaccesstoken',
+                        });
                 })
                 .then((res) => {
                     return db.collection("experiences")
-                        .find({ _id: new mongo.ObjectId(experience_id)})
+                        .find({
+                            _id: new mongo.ObjectId(experience_id),
+                        })
                         .toArray();
                 })
                 .then((result) => {
@@ -164,10 +172,104 @@ describe('Experience Likes Test', function() {
 
         afterEach(function() {
             sandbox.restore();
-            let pro1 = db.collection('likes').remove();
+            let pro1 = db.collection('experience_likes').remove();
             let pro2 = db.collection('experiences').remove({});
             return Promise.all([pro1, pro2]);
         });
 
+    });
+
+    describe('Delete : /experiences/:id/likes', function() {
+        let experience_id = undefined;
+        let sandbox;
+
+        beforeEach('Create test data', function() {
+
+            sandbox = sinon.sandbox.create();
+            sandbox.stub(authentication, 'cachedFacebookAuthentication')
+                .withArgs(sinon.match.object, 'fakeaccesstoken')
+                .resolves({
+                    id: '-1',
+                    name: 'markLin',
+                });
+            return db.collection('experiences').insertOne({
+                type: 'interview',
+                author: {
+                    type: "facebook",
+                    _id: "123",
+                },
+                status: "published",
+                like_count: 2,
+            }).then(function(result) {
+                experience_id = result.insertedId.toString();
+                return db.collection('experience_likes').insertMany([{
+                    created_at: new Date(),
+                    user: {
+                        id: '-1',
+                        type: 'facebook',
+                    },
+                    experience_id: result.insertedId,
+                }, {
+                    created_at: new Date(),
+                    user: {
+                        id: '-2',
+                        type: 'facebook',
+                    },
+                    experience_id: result.insertedId,
+
+                }]);
+            });
+        });
+
+        it('delete experiences of like and find it  , expected the like can not find and experience of like_count should be 1(before number is 2) ', function() {
+            return request(app)
+                .delete('/experiences/' + experience_id + '/likes')
+                .send({
+                    access_token: 'fakeaccesstoken',
+                })
+                .expect(200)
+                .then((res) => {
+                    return db.collection('experience_likes').find({
+                        experience_id: new ObjectId(experience_id),
+                        user: {
+                            id: '-1',
+                            name: 'markLin',
+                        },
+                    }).toArray();
+                }).then((result) => {
+                    assert.lengthOf(result, 0);
+                    return db.collection('experiences').find({
+                        _id: new ObjectId(experience_id),
+                    }).toArray();
+                }).then((result) => {
+                    assert.equal(result[0].like_count, 1);
+                });
+        });
+
+        it('delete experiences of like (but the like is not exist) and find it  , expected return code 404 and experience of like_count should be 2 (before number is 2) ', function() {
+            return db.collection('experience_likes').remove().then((result) => {
+                return request(app)
+                    .delete('/experiences/' + experience_id + '/likes')
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                    })
+                    .expect(404);
+            }).then((res) => {
+                return db.collection('experiences').find({
+                    _id: new ObjectId(experience_id),
+                }).toArray();
+
+            }).then((result) => {
+                assert.equal(result[0].like_count, 2);
+            });
+        });
+
+
+        afterEach(function() {
+            sandbox.restore();
+            let pro1 = db.collection('experience_likes').remove();
+            let pro2 = db.collection('experiences').remove({});
+            return Promise.all([pro1, pro2]);
+        });
     });
 });
