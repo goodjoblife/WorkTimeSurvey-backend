@@ -1,4 +1,3 @@
-debugger;
 const assert = require('chai').assert;
 const mongo = new require('mongodb');
 const ObjectId = new require('mongodb').ObjectId;

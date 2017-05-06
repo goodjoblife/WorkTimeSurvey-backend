@@ -51,7 +51,7 @@ class ExperienceLikeModel {
      * @param {string} experience_id - experience id
      * @param {object} user - user object
      * @returns {promise}
-     *  - resolve : true/false
+     *  - resolve : true
      *  - reject : DuplicateKeyError/Default Error
      */
     deleteLike(experience_id, user) {
@@ -69,13 +69,7 @@ class ExperienceLikeModel {
             if (result.deletedCount == 0) {
                 throw new ObjectNotExistError("此讚不存在");
             } else {
-                return result.deletedCount == 1;
-            }
-        }).catch((err) => {
-            if (err.code === 11000) { //E11000 duplicate key error
-                throw new DuplicateKeyError("該篇文章已經被按讚");
-            } else {
-                throw err;
+                return true;
             }
         });
     }
