@@ -67,6 +67,7 @@ router.post('/', [
             company: {},
             like_count: 0,
             reply_count: 0,
+            report_count: 0,
             // TODO 瀏覽次數？檢舉數？
             created_at: new Date(),
         });
@@ -195,6 +196,9 @@ function validateWorkInputFields(data) {
     }
 
     if (data.is_currently_employed === "no") {
+        if (!data.job_ending_time) {
+            throw new HttpError("離職年、月份要填喔！", 422);
+        }
         if (!requiredNumber(data.job_ending_time.year)) {
             throw new HttpError("離職年份要填喔！", 422);
         }
@@ -212,24 +216,6 @@ function validateWorkInputFields(data) {
             data.job_ending_time.year > now.getFullYear()) {
             throw new HttpError('離職月份不可能比現在時間晚', 422);
         }
-    }
-
-    if (!requiredNumber(data.interview_time.year)) {
-        throw new HttpError("面試年份要填喔！", 422);
-    }
-    if (!requiredNumber(data.interview_time.month)) {
-        throw new HttpError("面試月份要填喔！", 422);
-    }
-    const now = new Date();
-    if (data.interview_time.year <= now.getFullYear() - 10) {
-        throw new HttpError('面試年份需在10年內', 422);
-    }
-    if (data.interview_time.month < 1 || data.interview_time.month > 12) {
-        throw new HttpError('面試月份需在1~12月', 422);
-    }
-    if ((data.interview_time.year === now.getFullYear() && data.interview_time.month > (now.getMonth() + 1)) ||
-        data.interview_time.year > now.getFullYear()) {
-        throw new HttpError('面試月份不可能比現在時間晚', 422);
     }
 
     if (data.salary) {
