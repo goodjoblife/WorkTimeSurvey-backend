@@ -76,6 +76,7 @@ describe('experiences 面試和工作經驗資訊', function() {
                                 assert.deepEqual(experience.overall_rating, 5);
                                 assert.deepEqual(experience.like_count, 0);
                                 assert.deepEqual(experience.reply_count, 0);
+                                assert.deepEqual(experience.report_count, 0);
                                 assert.property(experience, 'created_at');
                             });
                     });
@@ -426,23 +427,26 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .expect(422);
             });
 
-            it.skip('interview_result could not be others', function() {
+            it('interview_result could not be a string length > 10', function() {
                 return request(app).post('/interview_experiences')
                     .send(generateInterviewExperiencePayload({
-                        interview_result: "invalid",
+                        interview_result: "12345678901",
                     }))
                     .expect(422);
             });
 
-            for (let result of [""]) {
-                it.skip(`interview_result should be ${result}`, function() {
+            for (let result of ["錄取", "未錄取", "未通知", "other"]) {
+                it(`interview_result should be ${result}`, function() {
                     return request(app).post('/interview_experiences')
                         .send(generateInterviewExperiencePayload({
                             interview_result: result,
                         }))
                         .expect(200)
-                        .expect(function(res) {
-                            // todo
+                        .then(res => {
+                            return db.collection('experiences').findOne({_id: ObjectId(res.body.experience._id)})
+                                .then(experience => {
+                                    assert.equal(experience.interview_result, result);
+                                });
                         });
                 });
             }
@@ -479,15 +483,18 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .expect(422);
             });
 
-            for (let input of [""]) {
-                it.skip(`education should be ${input}`, function() {
+            for (let input of ["大學", "高中", "國中"]) {
+                it(`education should be ${input}`, function() {
                     return request(app).post('/interview_experiences')
                         .send(generateInterviewExperiencePayload({
                             education: input,
                         }))
                         .expect(200)
-                        .expect(function(res) {
-                            // todo
+                        .then(res => {
+                            return db.collection('experiences').findOne({_id: ObjectId(res.body.experience._id)})
+                                .then(experience => {
+                                    assert.equal(experience.education, input);
+                                });
                         });
                 });
             }

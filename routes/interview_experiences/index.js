@@ -66,6 +66,7 @@ router.post('/', [
             company: {},
             like_count: 0,
             reply_count: 0,
+            report_count: 0,
             // TODO 瀏覽次數？檢舉數？
             created_at: new Date(),
         });
@@ -78,7 +79,7 @@ router.post('/', [
         }).then(() => {
             return experience_model.createExperience(experience);
         }).then(() => {
-            winston.info("experiences insert data success", {
+            winston.info("interview experiences insert data success", {
                 id: experience._id,
                 ip: req.ip,
                 ips: req.ips,
@@ -91,7 +92,7 @@ router.post('/', [
                 },
             });
         }).catch(err => {
-            winston.info("experiences insert data fail", {
+            winston.info("interview experiences insert data fail", {
                 id: experience._id,
                 ip: req.ip,
                 ips: req.ips,
