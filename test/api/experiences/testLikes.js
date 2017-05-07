@@ -166,7 +166,8 @@ describe('Experience Likes Test', function() {
             sandbox.restore();
             let pro1 = db.collection('likes').remove();
             let pro2 = db.collection('experiences').remove({});
-            return Promise.all([pro1, pro2]);
+            let pro3 = db.collection('experience_likes').remove({});
+            return Promise.all([pro1, pro2, pro3]);
         });
 
     });
