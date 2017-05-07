@@ -15,7 +15,7 @@ router.post('/me/recommendations', [
         };
         recommendation.getRecommendationString(req.db, old_user).then(recommendation_string => {
             res.send({
-                user: olduser,
+                user: old_user,
                 recommendation_string: recommendation_string,
             });
         }).catch(err => {
