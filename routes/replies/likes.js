@@ -5,6 +5,7 @@ const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const winston = require('winston');
 const ReplyLikeModel = require('../../models/reply_like_model');
+const ReplyModel = require('../../models/reply_model');
 const authentication = require('../../middlewares/authentication');
 
 router.post('/:reply_id/likes', authentication.cachedFacebookAuthenticationMiddleware);
@@ -26,9 +27,11 @@ router.post('/:reply_id/likes', (req, res, next) => {
     // const user_id = req.user._id;
 
     const reply_like_model = new ReplyLikeModel(req.db);
+    const reply_model = new ReplyModel(req.db);
 
-    // TODO like_count
-    reply_like_model.createLike(reply_id, user).then(value => {
+    reply_like_model.createLike(reply_id, user).then(() =>
+        reply_model.incrementLikeCount(reply_id)
+    ).then(() => {
         res.send({success: true});
     }).catch(err => {
         if (err instanceof DuplicateKeyError) {
