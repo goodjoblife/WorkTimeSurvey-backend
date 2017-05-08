@@ -20,6 +20,7 @@ describe('POST /replies/:id/likes', function() {
         facebook: {id: '2', name: 'Mark Chen'},
     };
     let reply_id_string;
+    const experience_id = new ObjectId();
     let sandbox;
 
     before('DB: Setup', function() {
@@ -30,7 +31,7 @@ describe('POST /replies/:id/likes', function() {
 
     beforeEach('Seed reply', function() {
         const reply = {
-            experience_id: new ObjectId('123456789012'),
+            experience_id,
             content: 'Hello',
             user: {
                 type: "facebook",
@@ -88,7 +89,7 @@ describe('POST /replies/:id/likes', function() {
             .then(record => {
                 assert.isNotNull(record, 'expect record is trieved in db');
                 assert.deepEqual(record.reply_id, new ObjectId(reply_id_string));
-                assert.deepEqual(record.experience_id, new ObjectId('123456789012'));
+                assert.deepEqual(record.experience_id, experience_id);
             });
 
         const check_replies_collection = req
