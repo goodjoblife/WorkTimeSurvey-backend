@@ -194,21 +194,19 @@ describe('Experience Likes Test', function() {
         let experience_id = undefined;
         let sandbox;
 
-        beforeEach('Create test data', function() {
-
+        beforeEach('create user', function() {
             sandbox = sinon.sandbox.create();
             sandbox.stub(authentication, 'cachedFacebookAuthentication')
-                .withArgs(sinon.match.object, 'fakeaccesstoken')
-                .resolves({
-                    id: '-1',
-                    name: 'markLin',
-                });
+                .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
+                .resolves(fake_user);
+
+        });
+
+        beforeEach('create test data', function() {
+
             return db.collection('experiences').insertOne({
                 type: 'interview',
-                author: {
-                    type: "facebook",
-                    _id: "123",
-                },
+                author: fake_user.facebook,
                 status: "published",
                 like_count: 2,
             }).then(function(result) {

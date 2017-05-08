@@ -66,8 +66,8 @@ router.delete('/:id/likes', [
         });
 
         const user = {
-            id: req.user.id,
-            type: req.user.type,
+            id: req.user.facebook_id,
+            type: 'facebook',
         };
         const experience_id = req.params.id;
         const experience_like_model = new ExperienceLikeModel(req.db);
