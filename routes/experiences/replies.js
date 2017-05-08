@@ -71,8 +71,8 @@ router.get('/:id/replies', [
             ips: req.ips,
         });
         const user = {
-            _id: req.user.id,
-            type: req.user.type,
+            id: req.user.facebook_id,
+            type: 'facebook',
         };
 
         const reply_model = new ReplyModel(req.db);
@@ -109,7 +109,7 @@ function _createLikesField(replies, likes, user) {
 
 function _isExistUserLiked(reply_id, user, likes) {
     const result = likes.find((like) => {
-        if (like.reply_id.equals(reply_id) && like.user._id.equals(user._id)) {
+        if (like.reply_id.equals(reply_id) && like.user.id == user.id) {
             return like;
         }
     });

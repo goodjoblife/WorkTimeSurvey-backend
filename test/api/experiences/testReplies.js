@@ -1,3 +1,4 @@
+debugger;
 const assert = require('chai').assert;
 const request = require('supertest');
 const app = require('../../../app');
@@ -104,27 +105,19 @@ describe('Replies Test', function() {
     describe('Get : /experiences/:id/replies', function() {
         let experience_id = null;
         let sandbox = null;
-        let user = null;
         const test_Replies_Count = 200;
 
         before('create user', function() {
-            user = {
-                type: "facebook",
-                _id: new ObjectId(),
-            };
             sandbox = sinon.sandbox.create();
             sandbox.stub(authentication, 'cachedFacebookAuthentication')
-                .withArgs(sinon.match.object, 'fakeaccesstoken')
-                .resolves({
-                    id: user._id,
-                    name: 'markLin',
-                });
+                .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
+                .resolves(fake_user);
         });
 
         before('create test data', function() {
             return db.collection('experiences').insert({
                 type: 'interview',
-                author: user,
+                author: fake_user.facebook,
                 status: "published",
             }).then(function(result) {
                 experience_id = result.ops[0]._id;
@@ -133,7 +126,7 @@ describe('Replies Test', function() {
                     testDatas.push({
                         created_at: new Date(),
                         experience_id: experience_id,
-                        author: user,
+                        author: fake_user.facebook,
                         content: "hello test0",
                         like_count: 0,
                         report_count: 0,
