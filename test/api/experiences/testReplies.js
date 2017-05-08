@@ -11,6 +11,14 @@ const authentication = require('../../../libs/authentication');
 describe('Replies Test', function() {
 
     let db = undefined;
+    let fake_user = {
+        _id: new ObjectId(),
+        facebook_id: '-1',
+        facebook: {
+            id: '-1',
+            name: 'markLin',
+        },
+    };
 
     before(function() {
         return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
@@ -26,11 +34,8 @@ describe('Replies Test', function() {
 
             sandbox = sinon.sandbox.create();
             sandbox.stub(authentication, 'cachedFacebookAuthentication')
-                .withArgs(sinon.match.object, 'fakeaccesstoken')
-                .resolves({
-                    id: '-1',
-                    name: 'markLin',
-                });
+                .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
+                .resolves(fake_user);
 
             return db.collection('experiences').insertOne({
                 type: 'interview',

@@ -24,9 +24,9 @@ router.post('/:id/likes', (req, res, next) => {
     }
 
     const author = {};
-    if (req.user && req.user.id && req.user.type) {
-        author.id = req.user.id;
-        author.type = req.user.type;
+    if (req.user) {
+        author.id = req.user.facebook_id;
+        author.type = 'facebook';
     } else {
         author.id = "-1";
         author.type = "test";

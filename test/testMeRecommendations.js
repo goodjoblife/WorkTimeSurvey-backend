@@ -18,8 +18,8 @@ describe('POST /me/recommendations 取得使用者推薦字串', function() {
 
     it('get recommendation string success', function() {
         const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication')
-            .withArgs(sinon.match.object, 'fakeaccesstoken')
-            .resolves({id: '-1', name: 'mark86092'});
+            .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
+            .resolves({facebook_id: '-1'});
 
         const getRecommendationString = sandbox.stub(recommendation, 'getRecommendationString')
             .withArgs(sinon.match.object, {id: '-1', type: 'facebook'})
@@ -47,7 +47,7 @@ describe('POST /me/recommendations 取得使用者推薦字串', function() {
 
     it('fail if getRecommendationString fail', function() {
         sandbox.stub(authentication, 'cachedFacebookAuthentication')
-            .resolves({id: '-1', name: 'mark86092'});
+            .resolves({_id: {id: '-1', type: 'facebook'}});
         sandbox.stub(recommendation, 'getRecommendationString').rejects();
 
         return request(app).post('/me/recommendations')

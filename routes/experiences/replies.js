@@ -11,8 +11,8 @@ router.post('/:id/replies', [
     function(req, res, next) {
         const MAX_CONTENT_SIZE = 1000;
         const user = {
-            id: req.user.id,
-            type: req.user.type,
+            id: req.user.facebook_id,
+            type: 'facebook',
         };
         const experience_id = req.params.id;
         const content = req.body.content;

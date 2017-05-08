@@ -3,6 +3,7 @@ chai.use(require("chai-as-promised"));
 const assert = chai.assert;
 const sinon = require('sinon');
 require('sinon-as-promised');
+const { ObjectId } = require('mongodb');
 
 const HttpError = require('../libs/errors').HttpError;
 const middlewares = require('../middlewares');
@@ -33,22 +34,26 @@ describe('Authentication Middleware', function() {
             sandbox = sinon.sandbox.create();
         });
 
-        it('get property facebook if success', function(done) {
+        it('get property user if success', function(done) {
             const req = {
                 redis_client: {},
                 body: {
                     access_token: "random",
                 },
             };
-            const stub = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves({id: "-1", name: "test"});
+
+            const fake_user = {
+                _id: new ObjectId(),
+                facebook_id: '-1',
+            };
+
+            const stub = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves(fake_user);
 
             authentication.cachedFacebookAuthenticationMiddleware(req, {}, function(err) {
                 try {
                     assert.isUndefined(err);
-                    assert.property(req, 'facebook');
                     assert.property(req, 'user');
-                    assert.deepEqual(req.facebook, {id: "-1", name: "test"});
-                    assert.deepEqual(req.user, {id: "-1", type: "facebook"});
+                    assert.deepEqual(req.user, fake_user);
                     sinon.assert.calledOnce(stub);
                     done();
                 } catch (e) {

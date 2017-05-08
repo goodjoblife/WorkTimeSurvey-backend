@@ -59,8 +59,8 @@ router.post('/', [
         Object.assign(experience, {
             type: "interview",
             author: {
-                id: req.user.id,
-                type: req.user.type,
+                id: req.user.facebook_id,
+                type: 'facebook',
             },
             // company 後面決定
             company: {},
