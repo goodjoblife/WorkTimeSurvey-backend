@@ -220,32 +220,40 @@ describe('Experience Likes Test', function() {
             });
         });
 
-        it('delete experiences of like and find it  , expected the like can not find and experience of like_count should be 1(before number is 2) ', function() {
-            return request(app)
+        it('should delete the record, and return success', function() {
+            const req = request(app)
                 .delete('/experiences/' + experience_id + '/likes')
                 .send({
                     access_token: 'fakeaccesstoken',
                 })
-                .expect(200)
-                .then((res) => {
-                    return db.collection('experience_likes').find({
+                .expect(200);
+
+            return Promise.all([
+                req.then((res) => {
+                    return db.collection('experience_likes').findOne({
                         experience_id: new ObjectId(experience_id),
                         user: {
                             id: '-1',
                             name: 'markLin',
                         },
-                    }).toArray();
-                }).then((result) => {
-                    assert.lengthOf(result, 0);
-                    return db.collection('experiences').find({
+                    });
+                })
+                .then((result) => {
+                    assert.equal(result, null, 'No record in experience_likes');
+                }),
+                req.then((res) => {
+                    return db.collection('experiences').findOne({
                         _id: new ObjectId(experience_id),
-                    }).toArray();
-                }).then((result) => {
-                    assert.equal(result[0].like_count, 1);
-                });
+                    });
+                })
+                .then((experience) => {
+                    assert.equal(experience.like_count, 1, 'the like_count should be 1 instead of 2');
+                }),
+            ]);
         });
 
-        it('delete experiences of like (but the like is not exist) and find it  , expected return code 404 and experience of like_count should be 2 (before number is 2) ', function() {
+
+        it('should delete the record(but the like is not exist) ,and return 404', function() {
             return db.collection('experience_likes').remove().then((result) => {
                 return request(app)
                     .delete('/experiences/' + experience_id + '/likes')
@@ -254,12 +262,11 @@ describe('Experience Likes Test', function() {
                     })
                     .expect(404);
             }).then((res) => {
-                return db.collection('experiences').find({
+                return db.collection('experiences').findOne({
                     _id: new ObjectId(experience_id),
-                }).toArray();
-
-            }).then((result) => {
-                assert.equal(result[0].like_count, 2);
+                });
+            }).then((experience) => {
+                assert.equal(experience.like_count, 2, 'the like_count should be 2 (it can not change)');
             });
         });
 
