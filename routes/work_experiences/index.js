@@ -27,14 +27,13 @@ router.post('/', [
         Object.assign(experience, {
             type: "work",
             author: {
-                id: req.user.id,
-                type: req.user.type,
+                id: req.user.facebook_id,
+                type: 'facebook',
             },
             // company 後面決定
             company: {},
             like_count: 0,
             reply_count: 0,
-            report_count: 0,
             // TODO 瀏覽次數？檢舉數？
             created_at: new Date(),
         });
