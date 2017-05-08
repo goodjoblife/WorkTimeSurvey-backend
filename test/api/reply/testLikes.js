@@ -77,7 +77,7 @@ describe('POST /replies/:id/likes', function() {
                 assert.deepEqual(res.body, {'success': true});
             });
 
-        const check1 = req
+        const check_reply_likes_collection = req
             .then(() => db.collection('reply_likes').findOne({
                 reply_id: new ObjectId(reply_id_string),
                 user: {
@@ -90,17 +90,20 @@ describe('POST /replies/:id/likes', function() {
                 assert.deepEqual(record.reply_id, new ObjectId(reply_id_string));
             });
 
-        const check2 = req
+        const check_replies_collection = req
             .then(() => db.collection('replies').findOne({
                 _id: new ObjectId(reply_id_string),
             }))
             .then(reply => {
-                assert.isNotNull(reply, 'expect reply is trieved in db');
+                assert.isNotNull(reply, 'expect reply is retrieved in db');
                 // TODO
                 // assert.propertyVal(reply, 'like_count', 1);
             });
 
-        return Promise.all([check1, check2]);
+        return Promise.all([
+            check_reply_likes_collection,
+            check_replies_collection,
+        ]);
     });
 
 
@@ -124,7 +127,7 @@ describe('POST /replies/:id/likes', function() {
                 _id: new ObjectId(reply_id_string),
             }))
             .then(reply => {
-                assert.isNotNull(reply, 'expect reply is trieved in db');
+                assert.isNotNull(reply, 'expect reply is retrieved in db');
                 // TODO
                 // assert.propertyVal(reply, 'like_count', 2);
             });
