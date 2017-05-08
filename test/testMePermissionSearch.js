@@ -18,8 +18,8 @@ describe('GET /me/permission/search 確認使用者查詢資訊權限', function
 
     it('hasSearchPermission is true', function() {
         const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication')
-            .withArgs(sinon.match.object, 'fakeaccesstoken')
-            .resolves({id: '-1', name: 'LittleWhiteYA'});
+            .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
+            .resolves({facebook_id: '-1'});
 
         const cachedSearchPermissionAuthorization = sandbox.stub(authorization, 'cachedSearchPermissionAuthorization')
             .withArgs(sinon.match.object, sinon.match.object, {id: '-1', type: 'facebook'})
@@ -53,8 +53,8 @@ describe('GET /me/permission/search 確認使用者查詢資訊權限', function
 
     it('hasSearchPermission is false if authorization fail', function() {
         const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication')
-            .withArgs(sinon.match.object, 'fakeaccesstoken')
-            .resolves({id: '-1', name: 'LittleWhiteYA'});
+            .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
+            .resolves({facebook_id: '-1'});
         sandbox.stub(authorization, 'cachedSearchPermissionAuthorization').rejects();
 
         return request(app).get('/me/permissions/search')

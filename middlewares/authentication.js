@@ -19,13 +19,9 @@ function cachedFacebookAuthenticationMiddleware(req, res, next) {
     if (typeof access_token !== "string") {
         next(new HttpError('Unauthorized', 401));
     } else {
-        authentication.cachedFacebookAuthentication(db, access_token)
-            .then(account => {
-                req.facebook = account;
-                req.user = {
-                    id: account.id,
-                    type: 'facebook',
-                };
+        authentication.cachedFacebookAuthentication(req.db, db, access_token)
+            .then(user => {
+                req.user = user;
             })
             .then(() => {
                 next();

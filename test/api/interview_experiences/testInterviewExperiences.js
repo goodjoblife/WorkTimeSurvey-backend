@@ -13,6 +13,14 @@ const authentication = require('../../../libs/authentication');
 
 describe('experiences 面試和工作經驗資訊', function() {
     let db = undefined;
+    let fake_user = {
+        _id: new ObjectId(),
+        facebook_id: '-1',
+        facebook: {
+            id: '-1',
+            name: 'markLin',
+        },
+    };
 
     before('DB: Setup', function() {
         return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
@@ -43,11 +51,8 @@ describe('experiences 面試和工作經驗資訊', function() {
         beforeEach('Stub cachedFacebookAuthentication', function() {
             sandbox = sinon.sandbox.create();
             sandbox.stub(authentication, 'cachedFacebookAuthentication')
-                .withArgs(sinon.match.object, 'fakeaccesstoken')
-                .resolves({
-                    id: '-1',
-                    name: 'markLin',
-                });
+                .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
+                .resolves(fake_user);
         });
 
         describe('generate payload', function() {

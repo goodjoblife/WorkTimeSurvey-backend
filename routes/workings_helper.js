@@ -11,18 +11,20 @@ const HttpError = require('../libs/errors').HttpError;
  * Rejected with HttpError
  */
 function checkAndUpdateQuota(db, author) {
-    const collection = db.collection('authors');
+    const collection = db.collection('users');
     const quota = 5;
 
+    const provider = `${author.type}_id`;
+
     const filter = {
-        _id: author,
+        [provider]: author.id,
     };
 
     function increment() {
         return collection.findOneAndUpdate(
             filter,
             {
-                $inc: { queries_count: 1 },
+                $inc: { time_and_salary_count: 1 },
             },
             {
                 upsert: true,
@@ -32,7 +34,7 @@ function checkAndUpdateQuota(db, author) {
     }
 
     function decrementWithoutError() {
-        return collection.updateOne(filter, {$inc: { queries_count: -1 }})
+        return collection.updateOne(filter, {$inc: { time_and_salary_count: -1 }})
             .catch(() => {});
     }
 
@@ -45,14 +47,14 @@ function checkAndUpdateQuota(db, author) {
             throw new HttpError(`上傳資料發生點問題`, 500);
         })
         .then(result => {
-            if (result.value.queries_count > quota) {
+            if (result.value.time_and_salary_count > quota) {
                 return decrementWithoutError()
                     .then(() => {
                         throw new HttpError(`您已經上傳${quota}次，已達最高上限`, 429);
                     });
             }
 
-            return result.value.queries_count;
+            return result.value.time_and_salary_count;
         });
 }
 

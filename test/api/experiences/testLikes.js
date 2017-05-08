@@ -2,7 +2,7 @@ const assert = require('chai').assert;
 const mongo = new require('mongodb');
 const request = require('supertest');
 const app = require('../../../app');
-const MongoClient = require('mongodb').MongoClient;
+const { MongoClient, ObjectId } = require('mongodb');
 const sinon = require('sinon');
 require('sinon-as-promised');
 const config = require('config');
@@ -12,6 +12,23 @@ const authentication = require('../../../libs/authentication');
 describe('Experience Likes Test', function() {
 
     let db = undefined;
+    let fake_user = {
+        _id: new ObjectId(),
+        facebook_id: '-1',
+        facebook: {
+            id: '-1',
+            name: 'markLin',
+        },
+    };
+    let fake_other_user = {
+        _id: new ObjectId(),
+        facebook_id: '-2',
+        facebook: {
+            id: '-2',
+            name: 'markLin002',
+        },
+    };
+
     before(function() {
         return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
             db = _db;
@@ -26,12 +43,14 @@ describe('Experience Likes Test', function() {
         beforeEach('Create test data', function() {
 
             sandbox = sinon.sandbox.create();
-            sandbox.stub(authentication, 'cachedFacebookAuthentication')
-                .withArgs(sinon.match.object, 'fakeaccesstoken')
-                .resolves({
-                    id: '-1',
-                    name: 'markLin',
-                });
+            const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication')
+                .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
+                .resolves(fake_user);
+
+            cachedFacebookAuthentication
+                .withArgs(sinon.match.object, sinon.match.object, 'other_fakeaccesstoken')
+                .resolves(fake_other_user);
+
             return db.collection('experiences').insertOne({
                 type: 'interview',
                 author: {
@@ -131,16 +150,9 @@ describe('Experience Likes Test', function() {
                     access_token: 'fakeaccesstoken',
                 })
                 .then((res) => {
-                    sandbox.restore();
-                    sandbox.stub(authentication, 'cachedFacebookAuthentication')
-                        .withArgs(sinon.match.object, 'fakeaccesstoken')
-                        .resolves({
-                            id: '-2',
-                            name: 'markLin002',
-                        });
                     return request(app).post(uri)
                     .send({
-                        access_token: 'fakeaccesstoken',
+                        access_token: 'other_fakeaccesstoken',
                     });
                 })
                 .then((res) => {
