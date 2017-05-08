@@ -24,13 +24,6 @@ describe('experiences 面試和工作經驗資訊', function() {
     describe('POST /interview_experiences', function() {
         let sandbox;
         before('Seed companies', function() {
-            sandbox = sinon.sandbox.create();
-            sandbox.stub(authentication, 'cachedFacebookAuthentication')
-                .withArgs(sinon.match.object, 'fakeaccesstoken')
-                .resolves({
-                    id: '-1',
-                    name: 'markLin',
-                });
             return db.collection('companies').insertMany([
                 {
                     id: '00000001',
@@ -45,6 +38,16 @@ describe('experiences 面試和工作經驗資訊', function() {
                     name: 'GOODJOBGREAT',
                 },
             ]);
+        });
+
+        beforeEach('Stub cachedFacebookAuthentication', function() {
+            sandbox = sinon.sandbox.create();
+            sandbox.stub(authentication, 'cachedFacebookAuthentication')
+                .withArgs(sinon.match.object, 'fakeaccesstoken')
+                .resolves({
+                    id: '-1',
+                    name: 'markLin',
+                });
         });
 
         describe('generate payload', function() {
@@ -112,9 +115,79 @@ describe('experiences 面試和工作經驗資訊', function() {
                     }))
                     .expect(422);
             });
+
+            it('region is illegal Field, expected return 422', function() {
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        region: "你好市",
+                    }))
+                    .expect(422);
+            });
+
+            it('title of word is more than 25 char , expected return 422', function() {
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        title: new Array(30).join("今"),
+                    }))
+                    .expect(422);
+            });
+
+            it('sections is empty, expected return 422', function() {
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        sections: null,
+                    }))
+                    .expect(422);
+            });
+
+            it('sections is not array, expected return 422', function() {
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        sections: "abcdef",
+                    }))
+                    .expect(422);
+            });
+
+            it('subsection of title and content is empty, expected return 422', function() {
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({ sections: [{subtitle: null, content: null}] }))
+                    .expect(422);
+            });
+
+            it('subtitle of word is more than 25 char, expected return 422', function() {
+                const words = new Array(40).join("慘");
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({ sections: [{subtitle: words, content: "喝喝面試官"}] }))
+                    .expect(422);
+            });
+
+            it('subcontent of word is more then 5000 char, expected return 422', function() {
+                let sendData = generateInterviewExperiencePayload();
+                const words = new Array(6000).join("好");
+                sendData.sections[0].content = words;
+                return request(app).post('/interview_experiences')
+                    .send(sendData)
+                    .expect(422);
+            });
+
+            it('education is illegal , expected return 422', function() {
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        education: "無業遊名",
+                    }))
+                    .expect(422);
+            });
         });
 
         describe('Interview Validation Part', function() {
+            it('interview_time is required', function() {
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        interview_time: -1,
+                    }))
+                    .expect(422);
+            });
+
             it('interview_time_year is required', function() {
                 return request(app).post('/interview_experiences')
                     .send(generateInterviewExperiencePayload({
@@ -130,6 +203,144 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .send(generateInterviewExperiencePayload({
                         interview_time: {
                             year: 2017,
+                        },
+                    }))
+                    .expect(422);
+            });
+
+            it('interview_qas is array', function() {
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        interview_qas: {},
+                    }))
+                    .expect(422);
+            });
+
+            it('interview_qas of question and answer  is required', function() {
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        interview_qas: [
+                            {
+                                question: undefined,
+                                answer: undefined,
+                            },
+                        ],
+                    }))
+                    .expect(422);
+            });
+
+            it('number of question word  is less than 250 char', function() {
+                const question = new Array(300).join("問");
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        interview_qas: [
+                            {
+                                question: question,
+                                answer: "我想寫個慘字",
+                            },
+                        ],
+                    }))
+                    .expect(422);
+            });
+
+            it('number of answer word  is less than 5000 char', function() {
+                const answer = new Array(5500).join("問");
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        interview_qas: [
+                            {
+                                question: "我還是想寫個慘字",
+                                answer: answer,
+                            },
+                        ],
+                    }))
+                    .expect(422);
+            });
+
+            it('number of question count  is less than 30', function() {
+                const qas = { question: "慘啊", answer: "給我寫個慘" };
+                let interview_qas = [];
+                for (var i=0;i<=40;i++) {
+                    interview_qas.push(qas);
+                }
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        interview_qas: interview_qas,
+                    }))
+                    .expect(422);
+            });
+
+            it('number of interview_result word  is less than 10', function() {
+                const interview_result = new Array(20).join('慘');
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        interview_result: interview_result,
+                    }))
+                    .expect(422);
+            });
+
+            it('interview_sensitive_questions is array', function() {
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        interview_sensitive_questions: {},
+                    }))
+                    .expect(422);
+            });
+
+            it('interview_sensitive_questions is required non empty string', function() {
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        interview_sensitive_questions: ['', ''],
+                    }))
+                    .expect(422);
+            });
+
+            it('number of interview_sensitive_questions count is less than 20', function() {
+                const qs = new Array(30).join('慘');
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        interview_sensitive_questions: [qs, qs],
+                    }))
+                    .expect(422);
+            });
+
+            it('number of interview_sensitive_questions count is less than 20', function() {
+                const qs = new Array(30).join('慘');
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        interview_sensitive_questions: [qs, qs],
+                    }))
+                    .expect(422);
+            });
+
+            it('salary type should in ["year","month","day","hour"]', function() {
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        salary: {
+                            type: "hooooo",
+                            amount: 10000,
+                        },
+                    }))
+                    .expect(422);
+            });
+
+            it('salary amount is number required', function() {
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        salary: {
+                            type: "year",
+                            amount: "hohohoho",
+                        },
+                    }))
+                    .expect(422);
+            });
+
+            it('salary amount should be positive number', function() {
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        salary: {
+                            type: "year",
+                            amount: -1000,
                         },
                     }))
                     .expect(422);
@@ -164,7 +375,7 @@ describe('experiences 面試和工作經驗資訊', function() {
                     return request(app).post('/interview_experiences')
                         .send(generateInterviewExperiencePayload({
                             interview_time: {
-                                year: nextYear.getFullYear().toString(),
+                                year: nextYear.getFullYear(),
                                 month: 3,
                             },
                         }))
@@ -175,7 +386,7 @@ describe('experiences 面試和工作經驗資訊', function() {
                     return request(app).post('/interview_experiences')
                         .send(generateInterviewExperiencePayload({
                             interview_time: {
-                                year: ((new Date()).getFullYear() - 10).toString(),
+                                year: ((new Date()).getFullYear() - 10),
                                 month: 3,
                             },
                         }))
@@ -199,8 +410,8 @@ describe('experiences 面試和工作經驗資訊', function() {
                     return request(app).post('/interview_experiences')
                         .send(generateInterviewExperiencePayload({
                             interview_time: {
-                                year: now.getFullYear().toString(),
-                                month: (now.getMonth() + 2).toString(),
+                                year: now.getFullYear(),
+                                month: (now.getMonth() + 2),
                             },
                         }))
                         .expect(422);
@@ -282,6 +493,16 @@ describe('experiences 面試和工作經驗資訊', function() {
             }
         });
 
+        describe('No Login status', function() {
+            it('no login status create interview experience , and expected return erro code 401', function() {
+                let sendData = generateInterviewExperiencePayload();
+                sendData.access_token = undefined;
+                return request(app).post('/interview_experiences')
+                    .send(sendData)
+                    .expect(401);
+            });
+        });
+
         after('DB: 清除 experiences', function() {
             return db.collection('experiences').remove({});
         });
@@ -290,7 +511,7 @@ describe('experiences 面試和工作經驗資訊', function() {
             return db.collection('companies').remove({});
         });
 
-        after(function() {
+        afterEach(function() {
             sandbox.restore();
         });
     });
