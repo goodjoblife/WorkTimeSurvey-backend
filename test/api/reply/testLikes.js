@@ -88,6 +88,7 @@ describe('POST /replies/:id/likes', function() {
             .then(record => {
                 assert.isNotNull(record, 'expect record is trieved in db');
                 assert.deepEqual(record.reply_id, new ObjectId(reply_id_string));
+                assert.deepEqual(record.experience_id, new ObjectId('123456789012'));
             });
 
         const check_replies_collection = req
