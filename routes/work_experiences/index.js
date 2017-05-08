@@ -13,39 +13,6 @@ const {
     stringRequireLength,
 } = require('../../libs/validation');
 
-/**
- * Post /work_experiences
- * @param {object} req.body
- *  - {
- *  company_query : "1111",
- *  company_id : "123456",
- *  region : "台北市",
- *  job_title : "BackEnd Developer",
- *  title: "share my backend work experiences",
- *  sections : [
- *      { subtitle:"hello" , content : "test" }
- *  ],
- *  experience_in_year : "10",
- *  education : "碩士",
- *  is_currently_employed: "no",
- *  job_ending_time: {
- *      year: "2017",
- *      month: "4",
- *  },
- *  salary: {
- *      type: "month",
- *      amount: "22000",
- *  },
- *  week_work_time: "40",
- *  recommend_to_others: "yes",
- *
- *  }
- *
- * @returns {object}
- *  - {
- *      success : true
- *  }
- */
 router.post('/', [
     authentication.cachedFacebookAuthenticationMiddleware,
     function(req, res, next) {
