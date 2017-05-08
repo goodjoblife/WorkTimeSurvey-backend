@@ -434,21 +434,21 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .expect(422);
             });
 
-            for (let result of ["錄取", "未錄取", "未通知", "other"]) {
-                it(`interview_result should be ${result}`, function() {
-                    return request(app).post('/interview_experiences')
-                        .send(generateInterviewExperiencePayload({
-                            interview_result: result,
-                        }))
-                        .expect(200)
-                        .then(res => {
-                            return db.collection('experiences').findOne({_id: ObjectId(res.body.experience._id)})
-                                .then(experience => {
-                                    assert.equal(experience.interview_result, result);
-                                });
-                        });
-                });
-            }
+            it('interview_result could not be a string length < 1', function() {
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        interview_result: "",
+                    }))
+                    .expect(422);
+            });
+
+            it('interview_result should be a string length 1~10', function() {
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        interview_result: "12345",
+                    }))
+                    .expect(200);
+            });
 
             it('overall_rating is required', function() {
                 return request(app).post('/interview_experiences')
