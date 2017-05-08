@@ -98,15 +98,28 @@ describe('Replies Test', function() {
 
     describe('Get : /experiences/:id/replies', function() {
         let experience_id = null;
+        let sandbox = null;
+        let user = null;
         const test_Replies_Count = 200;
 
-        before('Create test data', function() {
+        before('create user', function() {
+            user = {
+                type: "facebook",
+                _id: new ObjectId(),
+            };
+            sandbox = sinon.sandbox.create();
+            sandbox.stub(authentication, 'cachedFacebookAuthentication')
+                .withArgs(sinon.match.object, 'fakeaccesstoken')
+                .resolves({
+                    id: user._id,
+                    name: 'markLin',
+                });
+        });
+
+        before('create test data', function() {
             return db.collection('experiences').insert({
                 type: 'interview',
-                author: {
-                    type: "facebook",
-                    _id: "123",
-                },
+                author: user,
                 status: "published",
             }).then(function(result) {
                 experience_id = result.ops[0]._id;
@@ -115,9 +128,7 @@ describe('Replies Test', function() {
                     testDatas.push({
                         created_at: new Date(),
                         experience_id: experience_id,
-                        author: {
-                            _id: new ObjectId(),
-                        },
+                        author: user,
                         content: "hello test0",
                         like_count: 0,
                         report_count: 0,
@@ -147,6 +158,9 @@ describe('Replies Test', function() {
                 .query({
                     limit: 200,
                 })
+                .send({
+                    access_token: 'fakeaccesstoken',
+                })
                 .expect(200)
                 .expect(function(res) {
                     assert.property(res.body, 'replies');
@@ -156,9 +170,16 @@ describe('Replies Test', function() {
                 });
         });
 
-        it('get experiences replies, and check replies liked field expect two reply is liked  ', function() {
+        it('get experiences reply, and expected liked is true ', function() {
             return request(app)
                 .get('/experiences/' + experience_id + '/replies')
+                .query({
+                    limit: 1,
+                    start: 0,
+                })
+                .send({
+                    access_token: 'fakeaccesstoken',
+                })
                 .expect(200)
                 .expect(function(res) {
                     assert.property(res.body, 'replies');
@@ -176,6 +197,9 @@ describe('Replies Test', function() {
                     limit: 100,
                     start: 0,
                 })
+                .send({
+                    access_token: 'fakeaccesstoken',
+                })
                 .expect(200)
                 .expect(function(res) {
                     assert.property(res.body, 'replies');
@@ -188,12 +212,18 @@ describe('Replies Test', function() {
         it('set error replies and expect error code 404', function() {
             return request(app)
                 .get('/experiences/1111/replies')
+                .send({
+                    access_token: 'fakeaccesstoken',
+                })
                 .expect(404);
         });
 
         it('post a 2000 limit and expect error code 402', function() {
             return request(app)
                 .get('/experiences/' + experience_id + '/replies')
+                .send({
+                    access_token: 'fakeaccesstoken',
+                })
                 .query({
                     limit: 2000,
                 })
@@ -206,6 +236,9 @@ describe('Replies Test', function() {
                 .query({
                     limit: 1,
                     start: 0,
+                })
+                .send({
+                    access_token: 'fakeaccesstoken',
                 })
                 .expect(200)
                 .expect(function(res) {
@@ -230,5 +263,8 @@ describe('Replies Test', function() {
             return Promise.all([pro1, pro2, pro3]);
         });
 
+        after(function() {
+            sandbox.restore();
+        });
     });
 });
