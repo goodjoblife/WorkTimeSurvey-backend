@@ -76,7 +76,6 @@ describe('experiences 面試和工作經驗資訊', function() {
                                 assert.deepEqual(experience.overall_rating, 5);
                                 assert.deepEqual(experience.like_count, 0);
                                 assert.deepEqual(experience.reply_count, 0);
-                                assert.deepEqual(experience.report_count, 0);
                                 assert.property(experience, 'created_at');
                             });
                     });
