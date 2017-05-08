@@ -98,8 +98,7 @@ describe('POST /replies/:id/likes', function() {
             }))
             .then(reply => {
                 assert.isNotNull(reply, 'expect reply is retrieved in db');
-                // TODO
-                // assert.propertyVal(reply, 'like_count', 1);
+                assert.propertyVal(reply, 'like_count', 1);
             });
 
         return Promise.all([
@@ -130,8 +129,7 @@ describe('POST /replies/:id/likes', function() {
             }))
             .then(reply => {
                 assert.isNotNull(reply, 'expect reply is retrieved in db');
-                // TODO
-                // assert.propertyVal(reply, 'like_count', 2);
+                assert.propertyVal(reply, 'like_count', 2);
             });
 
         return check;
