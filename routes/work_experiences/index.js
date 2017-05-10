@@ -200,8 +200,8 @@ function validateWorkInputFields(data) {
         if (!requiredNumber(data.week_work_time)) {
             throw new HttpError("工時需為數字", 422);
         }
-        if (data.week_work_time < 0) {
-            throw new HttpError('工時不小於0', 422);
+        if (data.week_work_time < 0 || data.week_work_time > 168) {
+            throw new HttpError('工時需介於 0~168 之間', 422);
         }
     }
 
@@ -247,9 +247,10 @@ function pickupWorkExperience(input) {
 
     if (is_currently_employed === "yes") {
         const now = new Date();
-        const data_time = {};
-        data_time.year = now.getFullYear();
-        data_time.month = now.getMonth() + 1;
+        const data_time = {
+            year: now.getFullYear(),
+            month: now.getMonth() + 1,
+        };
 
         partial.data_time = data_time;
     } else {

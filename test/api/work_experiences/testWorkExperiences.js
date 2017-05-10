@@ -422,7 +422,7 @@ describe('experiences 面試和工作經驗資訊', function() {
             });
         });
 
-        describe('No Login status', function() {
+        describe('should 401 Unauthorized', function() {
             it('no login status create work experience , and expected return erro code 401', function() {
                 const sendData = generateWorkExperiencePayload();
                 sendData.access_token = undefined;
