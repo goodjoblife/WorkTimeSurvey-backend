@@ -5,10 +5,12 @@ const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const lodash = require('lodash');
 const winston = require('winston');
 const ExperienceModel = require('../../models/experience_model');
+const ExperienceLikeModel = require('../../models/experience_like_model');
 const {
     requiredNumberInRange,
     requiredNumberGreaterThanOrEqualTo,
 } = require('../../libs/validation');
+const authentication = require('../../middlewares/authentication_user');
 
 /**
  * Get /experiences api
@@ -149,26 +151,57 @@ function _queryToDBQuery(search_query, search_by, type) {
     return query;
 }
 
-router.get('/:id', function(req, res, next) {
-    const id = req.params.id;
-    winston.info('experiences/id', {
-        id: id,
-        ip: req.ip,
-        ips: req.ips,
-    });
+router.get('/:id', [
+    authentication.cachedAndSetUserMiddleware,
+    function(req, res, next) {
+        const id = req.params.id;
+        let user = null;
+        winston.info('experiences/id', {
+            id: id,
+            ip: req.ip,
+            ips: req.ips,
+        });
 
-    const experience_model = new ExperienceModel(req.db);
-    experience_model.getExperienceById(id).then((result) => {
-        res.send(result);
-    }).catch((err) => {
-        if (err instanceof ObjectNotExistError) {
-            next(new HttpError(err.message, 404));
-        } else {
-            next(new HttpError("Internal Service Error", 500));
+        if (req.user) {
+            user = {
+                id: req.user.facebook_id,
+                type: 'facebook',
+            };
+        }
+
+        const experience_model = new ExperienceModel(req.db);
+        const experience_like_model = new ExperienceLikeModel(req.db);
+        let result = null;
+        experience_model.getExperienceById(id).then((experience) => {
+            result = experience;
+            if (user) {
+                return experience_like_model.getLikeByExperienceId(id);
+            } else {
+                res.send(result);
+                return;
+            }
+        }).then((likes) => {
+            _createLikedField(result, likes, user);
+            res.send(result);
+        }).catch((err) => {
+            if (err instanceof ObjectNotExistError) {
+                next(new HttpError(err.message, 404));
+            } else {
+                next(new HttpError("Internal Service Error", 500));
+            }
+        });
+    },
+]);
+
+function _createLikedField(experience, likes, user) {
+    const find_result = likes.find((like) => {
+        if (like.experience_id.equals(experience._id) && like.user.id == user.id) {
+            return like;
         }
     });
 
-});
+    experience.liked = (find_result) ? true : false;
+}
 
 router.use('/', require('./replies'));
 router.use('/', require('./likes'));
