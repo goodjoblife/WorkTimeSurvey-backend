@@ -2,7 +2,10 @@ const assert = require('chai').assert;
 const mongo = new require('mongodb');
 const request = require('supertest');
 const app = require('../../../app');
-const { MongoClient, ObjectId } = require('mongodb');
+const {
+    MongoClient,
+    ObjectId,
+} = require('mongodb');
 const sinon = require('sinon');
 require('sinon-as-promised');
 const config = require('config');
@@ -155,9 +158,9 @@ describe('Experience Likes Test', function() {
                 })
                 .then((res) => {
                     return request(app).post(uri)
-                    .send({
-                        access_token: 'other_fakeaccesstoken',
-                    });
+                        .send({
+                            access_token: 'other_fakeaccesstoken',
+                        });
                 })
                 .then((res) => {
                     return db.collection("experiences")
@@ -184,17 +187,17 @@ describe('Experience Likes Test', function() {
             sandbox.restore();
             let pro1 = db.collection('experience_likes').remove();
             let pro2 = db.collection('experiences').remove({});
-            let pro3 = db.collection('experience_likes').remove({});
-            return Promise.all([pro1, pro2, pro3]);
+            return Promise.all([pro1, pro2]);
         });
 
     });
 
     describe('Delete : /experiences/:id/likes', function() {
-        let experience_id = undefined;
+        let experience_id = null;
+        let test_likes = null;
         let sandbox;
 
-        beforeEach('create user', function() {
+        beforeEach('mock user', function() {
             sandbox = sinon.sandbox.create();
             sandbox.stub(authentication, 'cachedFacebookAuthentication')
                 .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
@@ -227,6 +230,8 @@ describe('Experience Likes Test', function() {
                     experience_id: result.insertedId,
 
                 }]);
+            }).then((likes) => {
+                test_likes = likes.ops;
             });
         });
 
@@ -264,7 +269,9 @@ describe('Experience Likes Test', function() {
 
 
         it('should delete the record(but the like is not exist) ,and return 404', function() {
-            return db.collection('experience_likes').remove().then((result) => {
+            return db.collection('experience_likes').remove({
+                user: test_likes[0].user,
+            }).then((result) => {
                 return request(app)
                     .delete('/experiences/' + experience_id + '/likes')
                     .send({
