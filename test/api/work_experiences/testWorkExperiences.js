@@ -81,6 +81,11 @@ describe('experiences 面試和工作經驗資訊', function() {
                                 assert.deepEqual(experience.reply_count, 0);
                                 assert.property(experience, 'created_at');
                                 assert.property(experience, 'data_time');
+
+                                // expected response
+                                assert.property(res.body, 'success');
+                                assert.equal(res.body.success, true);
+                                assert.deepProperty(res.body, 'experience._id');
                             });
                     });
             });
@@ -215,7 +220,7 @@ describe('experiences 面試和工作經驗資訊', function() {
             });
 
             for (let input of ["大學", "高中", "國中"]) {
-                it(`education should be ${input}`, function() {
+                it(`education could be ${input}`, function() {
                     return request(app).post('/work_experiences')
                         .send(generateWorkExperiencePayload({
                             education: input,
@@ -422,8 +427,8 @@ describe('experiences 面試和工作經驗資訊', function() {
             });
         });
 
-        describe('should 401 Unauthorized', function() {
-            it('no login status create work experience , and expected return erro code 401', function() {
+        describe('user not login', function() {
+            it('should return 401 Unauthorized', function() {
                 const sendData = generateWorkExperiencePayload();
                 sendData.access_token = undefined;
                 return request(app).post('/work_experiences')
