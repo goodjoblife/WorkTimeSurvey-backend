@@ -222,7 +222,6 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .query({})
                 .expect(200)
                 .expect(function(res) {
-                    assert.propertyVal(res.body, 'total_pages', 1);
                     assert.property(res.body, 'experiences');
                     assert.lengthOf(res.body.experiences, 4);
                     assert.deepPropertyVal(res.body.experiences[0], 'company.name', 'GOODJOB1');
@@ -344,8 +343,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
             return request(app).get('/experiences')
                 .expect(200)
                 .expect(function(res) {
-                    assert.property(res.body, 'total_pages');
-                    assert.property(res.body, 'page');
+                    assert.property(res.body, 'total');
                     assert.property(res.body, 'experiences');
                     const experience = res.body.experiences[3];
                     assert.property(experience, '_id');
@@ -373,8 +371,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
             return request(app).get('/experiences')
                 .expect(200)
                 .expect(function(res) {
-                    assert.property(res.body, 'total_pages');
-                    assert.property(res.body, 'page');
+                    assert.property(res.body, 'total');
                     assert.property(res.body, 'experiences');
                     const experience = res.body.experiences[2];
                     assert.property(experience, '_id');
@@ -474,12 +471,12 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it('limit = 2, page =0 ，預期回傳2筆資料', function() {
+        it('limit = 2, start =0 ，預期回傳2筆資料', function() {
 
             return request(app).get('/experiences')
                 .query({
                     limit: 2,
-                    page: 0,
+                    start: 0,
                 })
                 .expect(200)
                 .expect(function(res) {
@@ -500,16 +497,16 @@ describe('Experiences 面試和工作經驗資訊', function() {
 
             return request(app).get('/experiences')
                 .query({
-                    limit: 0,
+                    limit: -1,
                 })
                 .expect(422);
         });
 
-        it('page = -1，預期回傳422傳誤', function() {
+        it('start = -1，預期回傳422傳誤', function() {
 
             return request(app).get('/experiences')
                 .query({
-                    page: -1,
+                    start: -1,
                 })
                 .expect(422);
         });
