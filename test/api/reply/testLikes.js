@@ -34,8 +34,8 @@ describe('POST /replies/:id/likes', function() {
             experience_id,
             content: 'Hello',
             user: {
+                id: "3",
                 type: "facebook",
-                _id: "3",
             },
             floor: 2,
             like_count: 0,
