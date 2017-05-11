@@ -45,6 +45,35 @@ class ReplyLikeModel {
             }
         });
     }
+
+    /**
+     * 刪除一個留言的讚
+     * @param {string} reply_id - id of target reply
+     * @param {object} user - user's object { "id":1111,"type":"facebook" }
+     * @returns {Promise}
+            resolved
+            rejected: ObjectNotExistError / mongodb default reason object in promise
+     */
+    deleteLike(reply_id, user) {
+        const reply_model = new ReplyModel(this._db);
+
+        return reply_model.getReplyById(reply_id).then((reply) => {
+            if (!reply) {
+                throw new ObjectNotExistError("這篇留言不存在");
+            }
+
+            const filter = {
+                user: user,
+                reply_id: new ObjectId(reply_id),
+            };
+
+            return this.collection.deleteOne(filter);
+        }).then((result) => {
+            if (result.deletedCount === 0) {
+                throw new ObjectNotExistError("讚不存在");
+            }
+        });
+    }
 }
 
 module.exports = ReplyLikeModel;
