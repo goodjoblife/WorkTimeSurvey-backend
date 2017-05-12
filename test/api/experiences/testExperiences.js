@@ -51,13 +51,16 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     test_work_experience_id = result.ops[1]._id;
                     return db.collection('experience_likes').insertOne({
                         created_at: new Date(),
-                        user: fake_user.facebook,
+                        user: {
+                            id: fake_user.facebook_id,
+                            type: 'facebook',
+                        },
                         experience_id: new ObjectId(test_interview_experience_id),
                     });
                 });
         });
 
-        it('get experience (no user) and expected get one data', function() {
+        it('should return one data, and the liked field should not be exist', function() {
             return request(app).get("/experiences/" + test_interview_experience_id)
                 .expect(200)
                 .expect(function(res) {
@@ -67,7 +70,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it('get experience, expect return experience liked field is true', function() {
+        it('should return one data, and the liked field hsould be true', function() {
             return request(app).get("/experiences/" + test_interview_experience_id)
                 .send({
                     access_token: 'fakeaccesstoken',
@@ -80,12 +83,12 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it('Set error uri and expected to get error', function() {
+        it('should get error code 404 while giving wrong experience_id', function() {
             return request(app).get("/experiences/123XXX")
                 .expect(404);
         });
 
-        it('get interview experience, and validate field ', function() {
+        it('should get one interview experience, and it return correct fields', function() {
             return request(app).get("/experiences/" + test_interview_experience_id)
                 .send({
                     access_token: 'fakeaccesstoken',
@@ -97,57 +100,64 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.property(experience, '_id');
                     assert.propertyVal(experience, 'type', 'interview');
                     assert.property(experience, 'company');
+                    assert.deepProperty(experience, 'company.name');
                     assert.property(experience, 'region');
                     assert.property(experience, 'job_title');
                     assert.property(experience, 'title');
                     assert.property(experience, 'sections');
                     assert.property(experience, 'experience_in_year');
                     assert.property(experience, 'education');
-                    assert.property(experience, 'interview_time');
-                    assert.property(experience, 'interview_qas');
-                    assert.property(experience, 'interview_result');
-                    assert.property(experience, 'interview_sensitive_questions');
-                    assert.property(experience, 'salary');
-                    assert.property(experience, 'overall_rating');
                     assert.property(experience, 'like_count');
                     assert.property(experience, 'reply_count');
                     assert.property(experience, 'created_at');
                     assert.property(experience, 'liked');
 
+                    assert.property(experience, 'interview_time');
+                    assert.deepProperty(experience, 'interview_time.year');
+                    assert.deepProperty(experience, 'interview_time.month');
+                    assert.property(experience, 'interview_result');
+                    assert.property(experience, 'overall_rating');
+                    assert.property(experience, 'salary');
+                    assert.deepProperty(experience, 'salary.type');
+                    assert.deepProperty(experience, 'salary.amount');
+                    assert.property(experience, 'interview_sensitive_questions');
+                    assert.property(experience, 'interview_qas');
+
                     assert.notProperty(experience, 'author');
                 });
         });
 
-        it('get work experience, and validate field ', function() {
+        it('should get one work experience , and it return correct fields ', function() {
             return request(app).get("/experiences/" + test_work_experience_id)
                 .send({
                     access_token: 'fakeaccesstoken',
                 })
                 .expect(200)
                 .expect((res) => {
-
                     const experience = res.body;
                     assert.property(experience, '_id');
                     assert.propertyVal(experience, 'type', 'work');
                     assert.property(experience, 'company');
+                    assert.deepProperty(experience, 'company.name');
                     assert.property(experience, 'region');
                     assert.property(experience, 'job_title');
                     assert.property(experience, 'title');
                     assert.property(experience, 'sections');
                     assert.property(experience, 'experience_in_year');
                     assert.property(experience, 'education');
-                    assert.property(experience, 'salary');
-                    assert.property(experience, 'overall_rating');
                     assert.property(experience, 'like_count');
                     assert.property(experience, 'reply_count');
                     assert.property(experience, 'created_at');
                     assert.property(experience, 'liked');
 
-                    assert.property(experience, 'is_currently_employed');
-                    assert.property(experience, 'job_ending_time');
+                    assert.property(experience, 'salary');
+                    assert.deepProperty(experience, 'salary.type');
+                    assert.deepProperty(experience, 'salary.amount');
                     assert.property(experience, 'week_work_time');
-                    assert.property(experience, 'recommend_to_others');
                     assert.property(experience, 'data_time');
+                    assert.property(experience, 'recommend_to_others');
+
+                    assert.notProperty(experience, 'author');
                 });
         });
         after(function() {

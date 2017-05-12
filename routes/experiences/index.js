@@ -171,18 +171,17 @@ router.get('/:id', [
 
         const experience_model = new ExperienceModel(req.db);
         const experience_like_model = new ExperienceLikeModel(req.db);
-        let result = null;
-        experience_model.getExperienceById(id).then((experience) => {
-            result = experience;
+        let model = null;
+        experience_model.getExperienceById(id).then((doc) => {
+            model = doc;
             if (user) {
-                return experience_like_model.getLikeByExperienceId(id);
+                return experience_like_model.getLikeByExperienceIdAndUser(id, user);
             } else {
-                res.send(result);
+                res.send(_generateGetExperienceViewModel(model));
                 return;
             }
-        }).then((likes) => {
-            _createLikedField(result, likes, user);
-            res.send(result);
+        }).then((like) => {
+            res.send(_generateGetExperienceViewModel(model, user, like));
         }).catch((err) => {
             if (err instanceof ObjectNotExistError) {
                 next(new HttpError(err.message, 404));
@@ -193,14 +192,46 @@ router.get('/:id', [
     },
 ]);
 
-function _createLikedField(experience, likes, user) {
-    const find_result = likes.find((like) => {
-        if (like.experience_id.equals(experience._id) && like.user.id == user.id) {
-            return like;
-        }
-    });
+function _generateGetExperienceViewModel(experience, user, like) {
+    let result = {
+        _id: experience._id,
+        type: experience.type,
+        created_at: experience.created_at,
+        company: experience.company,
+        job_title: experience.job_title,
+        experience_in_year: experience.experience_in_year,
+        education: experience.education,
+        region: experience.region,
+        title: experience.title,
+        sections: experience.sections,
+        like_count: experience.like_count,
+        reply_count: experience.reply_count,
+        report_count: experience.reply_count,
+    };
 
-    experience.liked = (find_result) ? true : false;
+    if (user) {
+        result.liked = (like) ? true : false;
+    }
+
+    if (experience.type == 'interview') {
+        result = Object.assign(result, {
+            interview_time: experience.interview_time,
+            interview_result: experience.interview_result,
+            overall_rating: experience.overall_rating,
+            salary: experience.salary,
+            interview_sensitive_questions: experience.interview_sensitive_questions,
+            interview_qas: experience.interview_qas,
+        });
+    } else if (experience.type == 'work') {
+        result = Object.assign(result, {
+            salary: experience.salary,
+            week_work_time: experience.week_work_time,
+            data_time: experience.data_time,
+            recommend_to_others: experience.recommend_to_others,
+        });
+    }
+
+    return result;
 }
 
 router.use('/', require('./replies'));

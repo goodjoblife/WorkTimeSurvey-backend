@@ -11,7 +11,7 @@ function generateInterviewExperienceData() {
         title: "title_example",
         company: {
             id: '111',
-            company: 'goodjob',
+            name: 'goodjob',
         },
         sections: [{
             subtitle: "subtitle1",
@@ -59,7 +59,7 @@ function generateWorkExperienceData() {
         title: "title_example",
         company: {
             id: '111',
-            company: 'goodjob',
+            name: 'goodjob',
         },
         sections: [{
             subtitle: "subtitle1",
@@ -67,7 +67,6 @@ function generateWorkExperienceData() {
         }],
         experience_in_year: 10,
         education: "大學",
-        overall_rating: 5,
         like_count: 0,
         reply_count: 0,
         report_count: 0,
@@ -80,7 +79,7 @@ function generateWorkExperienceData() {
             type: 'year',
             amount: 100000,
         },
-        week_work_time: 'yes',
+        week_work_time: 40,
         data_time: {
             year: 2017,
             month: 10,
