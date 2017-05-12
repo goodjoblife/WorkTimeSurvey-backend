@@ -171,17 +171,15 @@ router.get('/:id', [
 
         const experience_model = new ExperienceModel(req.db);
         const experience_like_model = new ExperienceLikeModel(req.db);
-        let model = null;
-        experience_model.getExperienceById(id).then((doc) => {
-            model = doc;
+        experience_model.getExperienceById(id).then((experience) => {
             if (user) {
-                return experience_like_model.getLikeByExperienceIdAndUser(id, user);
+                return experience_like_model.getLikeByExperienceIdAndUser(id, user)
+                    .then(like => _generateGetExperienceViewModel(experience, user, like));
             } else {
-                res.send(_generateGetExperienceViewModel(model));
-                return;
+                return _generateGetExperienceViewModel(experience);
             }
-        }).then((like) => {
-            res.send(_generateGetExperienceViewModel(model, user, like));
+        }).then((result) => {
+            res.send(result);
         }).catch((err) => {
             if (err instanceof ObjectNotExistError) {
                 next(new HttpError(err.message, 404));
@@ -206,7 +204,6 @@ function _generateGetExperienceViewModel(experience, user, like) {
         sections: experience.sections,
         like_count: experience.like_count,
         reply_count: experience.reply_count,
-        report_count: experience.reply_count,
     };
 
     if (user) {

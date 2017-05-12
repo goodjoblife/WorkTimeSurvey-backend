@@ -49,6 +49,7 @@ class ExperienceLikeModel {
      * Get Likes by experience_id
      *
      * @param {string} experience_id
+     * @param {id, type} user
      * @returns {Promise} -
      *  resolve: {
      *    _id: ObjectId,
