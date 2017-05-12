@@ -431,26 +431,29 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .expect(422);
             });
 
-            it.skip('interview_result could not be others', function() {
+            it('interview_result could not be a string length > 10', function() {
                 return request(app).post('/interview_experiences')
                     .send(generateInterviewExperiencePayload({
-                        interview_result: "invalid",
+                        interview_result: "12345678901",
                     }))
                     .expect(422);
             });
 
-            for (let result of [""]) {
-                it.skip(`interview_result should be ${result}`, function() {
-                    return request(app).post('/interview_experiences')
-                        .send(generateInterviewExperiencePayload({
-                            interview_result: result,
-                        }))
-                        .expect(200)
-                        .expect(function(res) {
-                            // todo
-                        });
-                });
-            }
+            it('interview_result could not be a string length < 1', function() {
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        interview_result: "",
+                    }))
+                    .expect(422);
+            });
+
+            it('interview_result should be a string length 1~10', function() {
+                return request(app).post('/interview_experiences')
+                    .send(generateInterviewExperiencePayload({
+                        interview_result: "12345",
+                    }))
+                    .expect(200);
+            });
 
             it('overall_rating is required', function() {
                 return request(app).post('/interview_experiences')
@@ -484,15 +487,18 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .expect(422);
             });
 
-            for (let input of [""]) {
-                it.skip(`education should be ${input}`, function() {
+            for (let input of ["大學", "高中", "國中"]) {
+                it(`education should be ${input}`, function() {
                     return request(app).post('/interview_experiences')
                         .send(generateInterviewExperiencePayload({
                             education: input,
                         }))
                         .expect(200)
-                        .expect(function(res) {
-                            // todo
+                        .then(res => {
+                            return db.collection('experiences').findOne({_id: ObjectId(res.body.experience._id)})
+                                .then(experience => {
+                                    assert.equal(experience.education, input);
+                                });
                         });
                 });
             }
