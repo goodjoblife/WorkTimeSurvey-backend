@@ -434,17 +434,14 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it('search_query = "GoodJob1"  type = "interview" ，預期回傳1筆資料', function() {
+        it('search_query = "GoodJob1"  type = "interview" ，預期回傳422', function() {
 
             return request(app).get('/experiences')
                 .query({
                     search_query: "GOODJOB1",
                     type: "interview",
                 })
-                .expect(200)
-                .expect(function(res) {
-                    assert.lengthOf(res.body.experiences, 1);
-                });
+                .expect(422);
         });
 
         it('type = "work,interview" ，預期回傳4筆資料', function() {

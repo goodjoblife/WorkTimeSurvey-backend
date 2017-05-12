@@ -25,16 +25,18 @@ router.get('/', function(req, res, next) {
     const limit = Number(req.query.limit || 20);
     const type = req.query.type;
 
-    if (!search_by) {
-        next(new HttpError("search by 不能為空", 422));
-        return;
+    if (search_query) {
+        if (!search_by) {
+            next(new HttpError("search by 不能為空", 422));
+            return;
+        }
+        if (!shouldIn(search_by, ["company", "job_title"])) {
+            next(new HttpError("search by 格式錯誤", 422));
+            return;
+        }
     }
 
-    if (!shouldIn(search_by, ["company", "job_title"])) {
-        next(new HttpError("search by 格式錯誤", 422));
-        return;
-    }
-    if (!shouldIn(sort_field, ["created_at", "job_title"])) {
+    if (!shouldIn(sort_field, ["created_at", "popularity"])) {
         next(new HttpError("sort by 格式錯誤", 422));
         return;
     }
