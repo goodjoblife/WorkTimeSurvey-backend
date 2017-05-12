@@ -61,7 +61,7 @@ router.get('/:id/replies', [
         let limit = parseInt(req.query.limit) || 20;
         let start = parseInt(req.query.start) || 0;
 
-        if (!requiredNumberInRange(limit, 1000, 0)) {
+        if (!requiredNumberInRange(limit, 1000, 1)) {
             throw new HttpError("limit 格式錯誤", 422);
         }
 
@@ -81,9 +81,7 @@ router.get('/:id/replies', [
 
         reply_model.getRepliesByExperienceId(experience_id, start, limit).then((replies) => {
             result = replies;
-            const replies_ids = replies.map((reply) => {
-                return reply._id;
-            });
+            const replies_ids = replies.map(reply => reply._id);
             return reply_like_model.getRepliesLikesByRepliesIds(replies_ids);
         }).then((likes) => {
             _createLikesField(result, likes, user);

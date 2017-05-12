@@ -49,7 +49,7 @@ describe('Replies Test', function() {
             });
         });
 
-        it('post a normal experience reply, and expected return data', function() {
+        it('Success, and expected return data', function() {
             return request(app)
                 .post('/experiences/' + experience_id + '/replies')
                 .send({
@@ -81,7 +81,7 @@ describe('Replies Test', function() {
                 ]));
         });
 
-        it('post a error experience_id reply, and expected return experiencedId does not exit', function() {
+        it('Fail, and expected return experiencedId does not exit', function() {
             return request(app)
                 .post('/experiences/1111/replies')
                 .send({
@@ -102,7 +102,7 @@ describe('Replies Test', function() {
     });
 
     describe('Get : /experiences/:id/replies', function() {
-        let experience_id = null;
+        let experience_id;
         let sandbox = null;
         const test_Replies_Count = 200;
 
@@ -116,7 +116,10 @@ describe('Replies Test', function() {
         before('create test data', function() {
             return db.collection('experiences').insert({
                 type: 'interview',
-                author: fake_user.facebook,
+                author: {
+                    id: fake_user.facebook_id,
+                    type: 'facebook',
+                },
                 status: "published",
             }).then(function(result) {
                 experience_id = result.ops[0]._id;
@@ -129,7 +132,7 @@ describe('Replies Test', function() {
                         content: "hello test0",
                         like_count: 0,
                         report_count: 0,
-                        floor: 1,
+                        floor: i+1,
                     });
                 }
                 return db.collection('replies').insertMany(testDatas);
@@ -161,7 +164,7 @@ describe('Replies Test', function() {
                 .expect(200)
                 .expect(function(res) {
                     assert.property(res.body, 'replies');
-                    assert.notDeepProperty(res.body, 'author');
+                    assert.notDeepProperty(res.body, 'replies.0.author');
                     assert.isArray(res.body.replies);
                     assert.lengthOf(res.body.replies, test_Replies_Count);
                 });
@@ -187,7 +190,7 @@ describe('Replies Test', function() {
                 });
         });
 
-        it('get experiences replies data by start 0 and limit 100 , expect 10 replies ', function() {
+        it('get experiences replies data by start 0 and limit 100 , expect 100 replies ', function() {
             return request(app)
                 .get('/experiences/' + experience_id + '/replies')
                 .query({

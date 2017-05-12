@@ -63,6 +63,10 @@ class ReplyLikeModel {
             reply_id: {
                 $in: ids,
             },
+        }, {
+            opt: {
+                _id: 1,
+            },
         }).toArray();
     }
 }
