@@ -209,7 +209,10 @@ describe('Experience Likes Test', function() {
 
             return db.collection('experiences').insertOne({
                 type: 'interview',
-                author: fake_user.facebook,
+                author: {
+                    id: fake_user.facebook_id,
+                    type: 'facebook',
+                },
                 status: "published",
                 like_count: 2,
             }).then(function(result) {
@@ -217,7 +220,7 @@ describe('Experience Likes Test', function() {
                 return db.collection('experience_likes').insertMany([{
                     created_at: new Date(),
                     user: {
-                        id: '-1',
+                        id: fake_user.facebook_id,
                         type: 'facebook',
                     },
                     experience_id: result.insertedId,
@@ -248,8 +251,8 @@ describe('Experience Likes Test', function() {
                     return db.collection('experience_likes').findOne({
                         experience_id: new ObjectId(experience_id),
                         user: {
-                            id: '-1',
-                            name: 'markLin',
+                            id: fake_user.facebook_id,
+                            type: 'facebook',
                         },
                     });
                 })
@@ -268,12 +271,31 @@ describe('Experience Likes Test', function() {
         });
 
 
-        it('should delete the record(but the like is not exist) ,and return 404', function() {
+        it('cannot delete like, beacause like does not exist and return 404', function() {
             return db.collection('experience_likes').remove({
                 user: test_likes[0].user,
             }).then((result) => {
                 return request(app)
                     .delete('/experiences/' + experience_id + '/likes')
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                    })
+                    .expect(404);
+            }).then((res) => {
+                return db.collection('experiences').findOne({
+                    _id: new ObjectId(experience_id),
+                });
+            }).then((experience) => {
+                assert.equal(experience.like_count, 2, 'the like_count should be 2 (it can not change)');
+            });
+        });
+
+        it('cannot delete like, because experience id does not exist and return 404', function() {
+            return db.collection('experience_likes').remove({
+                user: test_likes[0].user,
+            }).then((result) => {
+                return request(app)
+                    .delete('/experiences/123456789/likes')
                     .send({
                         access_token: 'fakeaccesstoken',
                     })
