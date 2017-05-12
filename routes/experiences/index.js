@@ -8,6 +8,7 @@ const ExperienceModel = require('../../models/experience_model');
 const {
     requiredNumberInRange,
     requiredNumberGreaterThanOrEqualTo,
+    shouldIn,
 } = require('../../libs/validation');
 
 router.get('/', function(req, res, next) {
@@ -18,17 +19,22 @@ router.get('/', function(req, res, next) {
     });
 
     const search_query = req.query.search_query;
-    const search_by = req.query.search_by || "company";
+    const search_by = req.query.search_by;
     const sort_field = req.query.sort || "created_at";
     const start = parseInt(req.query.start) || 0;
     const limit = Number(req.query.limit || 20);
     const type = req.query.type;
 
-    if (!_isValidSearchByField(search_by)) {
+    if (!search_by) {
+        next(new HttpError("search by 不能為空", 422));
+        return;
+    }
+
+    if (!shouldIn(search_by, ["company", "job_title"])) {
         next(new HttpError("search by 格式錯誤", 422));
         return;
     }
-    if (!_isValidSortField(sort_field)) {
+    if (!shouldIn(sort_field, ["created_at", "job_title"])) {
         next(new HttpError("sort by 格式錯誤", 422));
         return;
     }
@@ -38,7 +44,7 @@ router.get('/', function(req, res, next) {
         return;
     }
 
-    if (!requiredNumberInRange(limit, 20, 1)) {
+    if (!requiredNumberInRange(limit, 100, 1)) {
         next(new HttpError("limit 格式錯誤", 422));
         return;
     }
@@ -68,21 +74,6 @@ function _modelMapToViewModel(experience) {
     delete experience.sections;
 }
 
-function _isValidSearchByField(search_by) {
-    if (!search_by) {
-        return true;
-    }
-    const Default_Field = ["company", "job_title"];
-    return Default_Field.includes(search_by);
-}
-
-function _isValidSortField(sort_by) {
-    if (!sort_by) {
-        return true;
-    }
-    const Default_Field = ["created_at", "job_title"];
-    return Default_Field.includes(sort_by);
-}
 
 /**
  * _queryToDBQuery
