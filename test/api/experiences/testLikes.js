@@ -270,8 +270,23 @@ describe('Experience Likes Test', function() {
             ]);
         });
 
+        it('cannot delete like, beacause the user does not login and return 404', function() {
+            return db.collection('experience_likes').remove({
+                user: test_likes[0].user,
+            }).then((result) => {
+                return request(app)
+                    .delete('/experiences/' + experience_id + '/likes')
+                    .expect(401);
+            }).then((res) => {
+                return db.collection('experiences').findOne({
+                    _id: new ObjectId(experience_id),
+                });
+            }).then((experience) => {
+                assert.equal(experience.like_count, 2, 'the like_count should be 2 (it can not change)');
+            });
+        });
 
-        it('cannot delete like, beacause like does not exist and return 404', function() {
+        it('cannot delete like, beacause the like does not exist and return 404', function() {
             return db.collection('experience_likes').remove({
                 user: test_likes[0].user,
             }).then((result) => {
@@ -290,7 +305,7 @@ describe('Experience Likes Test', function() {
             });
         });
 
-        it('cannot delete like, because experience id does not exist and return 404', function() {
+        it('cannot delete like, because experience does not exist and return 404', function() {
             return db.collection('experience_likes').remove({
                 user: test_likes[0].user,
             }).then((result) => {
@@ -308,7 +323,6 @@ describe('Experience Likes Test', function() {
                 assert.equal(experience.like_count, 2, 'the like_count should be 2 (it can not change)');
             });
         });
-
 
         afterEach(function() {
             sandbox.restore();
