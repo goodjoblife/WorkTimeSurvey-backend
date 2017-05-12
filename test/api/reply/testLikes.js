@@ -87,7 +87,7 @@ describe('POST /replies/:id/likes', function() {
                 },
             }))
             .then(record => {
-                assert.isNotNull(record, 'expect record is trieved in db');
+                assert.isNotNull(record, 'expect record is retrieved in db');
                 assert.deepEqual(record.reply_id, new ObjectId(reply_id_string));
                 assert.deepEqual(record.experience_id, experience_id);
             });
@@ -146,13 +146,24 @@ describe('POST /replies/:id/likes', function() {
                 assert.deepEqual(res.body, {'success': true});
             });
 
-        return req.then(() =>
+        const other_req = req.then(() =>
             request(app)
                 .post(`/replies/${reply_id_string}/likes`)
                 .send({
                     access_token: 'fakeAccessToken',
                 })
                 .expect(403));
+
+        const check_replies_collection = other_req
+            .then(() => db.collection('replies').findOne({
+                _id: new ObjectId(reply_id_string),
+            }))
+            .then(reply => {
+                assert.isNotNull(reply, 'expect reply is retrieved in db');
+                assert.propertyVal(reply, 'like_count', 1, 'like_count is still 1');
+            });
+
+        return check_replies_collection;
     });
 
     afterEach(function() {
