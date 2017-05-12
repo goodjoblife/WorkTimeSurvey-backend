@@ -36,6 +36,9 @@ describe('Replies Test', function() {
             cachedFacebookAuthentication
                 .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
                 .resolves(fake_user);
+            cachedFacebookAuthentication
+                .withArgs(sinon.match.object, sinon.match.object, 'wrongToken')
+                .rejects();
         });
 
         beforeEach('Seed experiences collection', function() {
@@ -92,6 +95,16 @@ describe('Replies Test', function() {
             ]);
         });
 
+        it('should 401 Unauthorized if user is not valid', function() {
+            return request(app)
+                .post(`/experiences/${experience_id_string}/replies`)
+                .send({
+                    access_token: 'wrongToken',
+                    content: "你好我是大留言",
+                })
+                .expect(401);
+        });
+
         it('should 404 NotFound if target experience does not exist', function() {
             return request(app)
                 .post('/experiences/1111/replies')
@@ -100,6 +113,15 @@ describe('Replies Test', function() {
                     content: "你好我是大留言",
                 })
                 .expect(404);
+        });
+
+        it('should fail, content is required', function() {
+            return request(app)
+                .post(`/experiences/${experience_id_string}/replies`)
+                .send({
+                    access_token: 'fakeaccesstoken',
+                })
+                .expect(422);
         });
 
         afterEach(function() {
