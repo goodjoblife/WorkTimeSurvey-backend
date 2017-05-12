@@ -27,17 +27,17 @@ router.get('/', function(req, res, next) {
 
     if (search_query) {
         if (!search_by) {
-            next(new HttpError("search by 不能為空", 422));
+            next(new HttpError("search_by 不能為空", 422));
             return;
         }
         if (!shouldIn(search_by, ["company", "job_title"])) {
-            next(new HttpError("search by 格式錯誤", 422));
+            next(new HttpError("search_by 格式錯誤", 422));
             return;
         }
     }
 
     if (!shouldIn(sort_field, ["created_at", "popularity"])) {
-        next(new HttpError("sort by 格式錯誤", 422));
+        next(new HttpError("sort_by 格式錯誤", 422));
         return;
     }
 
@@ -52,8 +52,10 @@ router.get('/', function(req, res, next) {
     }
 
     const query = _queryToDBQuery(search_query, search_by, type);
+
+    const db_sort_field = (sort_field == 'popularity') ? 'like_count'  : sort_field;
     const sort = {
-        [sort_field]: -1,
+        [db_sort_field]: -1,
     };
 
     let result = {};

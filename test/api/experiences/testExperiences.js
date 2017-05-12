@@ -122,7 +122,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     education: "bachelor",
                     salary_type: "month",
                     salary_amount: "66666",
-                    like_count: 1,
+                    like_count: 10,
                     reply_count: 1,
                 },
                 {
@@ -162,7 +162,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                         year: 2017,
                         month: 1,
                     },
-                    like_count: 1,
+                    like_count: 9,
                     reply_count: 1,
                 },
                 {
@@ -434,12 +434,11 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it('search_query = "GoodJob1"  type = "interview" ，預期回傳422', function() {
+        it('search_query = "GoodJob1",因search_by為空,預期回傳422', function() {
 
             return request(app).get('/experiences')
                 .query({
                     search_query: "GOODJOB1",
-                    type: "interview",
                 })
                 .expect(422);
         });
@@ -506,6 +505,30 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     start: -1,
                 })
                 .expect(422);
+        });
+
+        it('search 預期回傳422傳誤', function() {
+
+            return request(app).get('/experiences')
+                .query({
+                    start: -1,
+                })
+                .expect(422);
+        });
+
+        it(`sort_by = popularity，預期根據like_count數量由大到小 `, function() {
+
+            return request(app).get('/experiences')
+                .query({
+                    sort: 'popularity',
+                })
+                .expect(200)
+                .expect(function(res) {
+                    assert.property(res.body, 'experiences');
+                    assert.lengthOf(res.body.experiences, 4);
+                    assert.propertyVal(res.body.experiences[0], 'like_count', 10);
+                    assert.propertyVal(res.body.experiences[1], 'like_count', 9);
+                });
         });
 
         after(function() {
