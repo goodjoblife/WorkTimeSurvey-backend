@@ -6,6 +6,7 @@ const ReplyModel = require('../../models/reply_model');
 const authentication = require('../../middlewares/authentication');
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const {
+    requiredNonEmptyString,
     stringRequireLength,
 } = require('../../libs/validation');
 
@@ -36,7 +37,7 @@ router.post('/:id/replies', [
         });
 
         const partial_reply = {
-            user,
+            author: user,
             content,
         };
 
@@ -59,6 +60,9 @@ router.post('/:id/replies', [
 
 const MAX_CONTENT_SIZE = 1000;
 function validationPostFields(body) {
+    if (!requiredNonEmptyString(body.content)) {
+        throw new HttpError("留言內容必填！", 422);
+    }
     if (!stringRequireLength(body.content, 1, MAX_CONTENT_SIZE)) {
         throw new HttpError("留言內容請少於 1000 個字元", 422);
     }

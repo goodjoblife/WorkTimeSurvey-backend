@@ -71,7 +71,7 @@ describe('Replies Test', function() {
                     assert.deepPropertyVal(res.body, 'reply.floor', 0);
                     assert.deepPropertyVal(res.body, 'reply.experience_id', experience_id_string);
                     assert.deepPropertyVal(res.body, 'reply.like_count', 0);
-                    assert.deepEqual(res.body.reply.user, {id: '-1', type: 'facebook'});
+                    assert.deepEqual(res.body.reply.author, {id: '-1', type: 'facebook'});
                 });
 
             const check_experiences_collection = req
@@ -86,7 +86,7 @@ describe('Replies Test', function() {
                     db.collection('replies').findOne({_id: ObjectId(res.body.reply._id)})
                         .then(reply => {
                             assert.deepEqual(reply.experience_id, ObjectId(experience_id_string));
-                            assert.deepEqual(reply.user, {id: '-1', type: 'facebook'});
+                            assert.deepEqual(reply.author, {id: '-1', type: 'facebook'});
                         }));
 
             return Promise.all([
