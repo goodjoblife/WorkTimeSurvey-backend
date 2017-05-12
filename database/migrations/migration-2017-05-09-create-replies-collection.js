@@ -1,3 +1,6 @@
 module.exports = (db) => {
-    return db.collection('replies').createIndex({experience_id: 1});
+    return Promise.all([
+        db.collection('replies').createIndex({experience_id: 1}),
+        db.collection('replies').createIndex({created_at: -1}),
+    ]);
 };
