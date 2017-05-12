@@ -72,6 +72,7 @@ describe('Replies Test', function() {
                     assert.deepPropertyVal(res.body, 'reply.experience_id', experience_id_string);
                     assert.deepPropertyVal(res.body, 'reply.like_count', 0);
                     assert.deepEqual(res.body.reply.author, {id: '-1', type: 'facebook'});
+                    assert.deepProperty(res.body, 'reply.created_at');
                 });
 
             const check_experiences_collection = req
@@ -85,7 +86,11 @@ describe('Replies Test', function() {
                 .then(res =>
                     db.collection('replies').findOne({_id: ObjectId(res.body.reply._id)})
                         .then(reply => {
+                            assert.equal(reply.content, '你好我是大留言');
+                            assert.equal(reply.floor, 0);
                             assert.deepEqual(reply.experience_id, ObjectId(experience_id_string));
+                            assert.deepPropertyVal(res.body, 'reply.like_count', 0);
+                            assert.property(reply, 'created_at');
                             assert.deepEqual(reply.author, {id: '-1', type: 'facebook'});
                         }));
 
