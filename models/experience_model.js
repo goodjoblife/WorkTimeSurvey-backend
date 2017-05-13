@@ -13,6 +13,7 @@ class ExperienceModel {
      * @param {object} sort  - {created_at: 1}
      * @param {number} skip  - 0
      * @param {number} limit - 20
+     * @param {object} opt - mongodb find field filter
      *
      * @returns {Promise}
      *  - resolved :
@@ -37,16 +38,7 @@ class ExperienceModel {
      *  ]
      *  - reject :  Default Error;
      */
-    getExperiences(query, sort, skip = 0, limit = 25) {
-        const opt = {
-            author: 0,
-            education: 0,
-            experience_in_year: 0,
-            interview_time: 0,
-            interview_qas: 0,
-            interview_result: 0,
-            interview_sensitive_questions: 0,
-        };
+    getExperiences(query, sort, skip = 0, limit = 25, opt = {}) {
 
         return this.collection.find(query, opt).sort(sort).skip(skip).limit(limit).toArray()
             .then((docs) => {
@@ -69,6 +61,7 @@ class ExperienceModel {
     /**
      * 使用 experience _id 來取得單篇文章
      * @param   {string}  id - experience_id
+     * @param {object} opt - mongodb find field filter
      * @returns {Promise}
      *  - resolved : {
      *      type : "interview",
@@ -84,14 +77,11 @@ class ExperienceModel {
      *
      *  - reject : ObjectNotExistError/Default Error
      */
-    getExperienceById(id) {
+    getExperienceById(id, opt = {}) {
         if (!this._isValidId(id)) {
             return Promise.reject(new ObjectNotExistError("該文章不存在"));
         }
 
-        const opt = {
-            author: 0,
-        };
         return this.collection.findOne({
             _id: new mongo.ObjectId(id),
         }, opt).then((result) => {

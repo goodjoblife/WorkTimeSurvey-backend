@@ -172,134 +172,52 @@ describe('Experiences 面試和工作經驗資訊', function() {
     describe('GET /experiences', function() {
 
         before('Seeding some experiences', function() {
+            let inter_data_1 = Object.assign(generateInterviewExperienceData(), {
+                company: {
+                    name: "GOODJOB1",
+                    id: "123",
+                },
+                job_title: "SW ENGINEER",
+                created_at: new Date("2017-03-20T10:00:00.929Z"),
+                like_count: 10,
+            });
+
+            let inter_data_2 = generateInterviewExperienceData();
+            inter_data_2 = Object.assign(generateInterviewExperienceData(), {
+                company: {
+                    name: "BADJOB",
+                    id: "321",
+                },
+                job_title: "HW ENGINEER",
+                created_at: new Date("2017-03-22T10:00:00.929Z"),
+                like_count: 5,
+            });
+
+            let work_data_1 = Object.assign(generateWorkExperienceData(), {
+                company: {
+                    name: "GOODJOB2",
+                    id: "123",
+                },
+                job_title: "ENGINEER",
+                created_at: new Date("2017-03-21T10:00:00.929Z"),
+                like_count: 9,
+            });
+
+            let work_data_2 = Object.assign(generateWorkExperienceData(), {
+                company: {
+                    name: "GOODJOB1",
+                    id: "321",
+                },
+                job_title: "F2E",
+                created_at: new Date("2017-03-25T10:00:00.929Z"),
+                like_count: 0,
+            });
+
             return db.collection('experiences').insertMany([
-                {
-                    type: "interview",
-                    created_at: new Date("2017-03-20T10:00:00.929Z"),
-                    company: {
-                        name: "GOODJOB1",
-                        id: "123",
-                    },
-                    area: "台北",
-                    title: "Good面試",
-                    job_title: "SW ENGINEER",
-                    overall_rating: "5",
-                    sections: [
-                        {
-                            subtitle: "面試過程",
-                            content: "很開心",
-                        },
-                    ],
-                    interview_time: {
-                        year: 10,
-                        month: 1,
-                    },
-                    interview_qas: [
-                        { question: "What your name?", answer: "I'm Mark" },
-                    ],
-                    interview_result: "Sorry ~ ",
-                    interview_sensitive_questions: [
-                        "Are you a yacht boy ?",
-                    ],
-                    salary: {
-                        type: "year",
-                        amount: 1000000,
-                    },
-                    experience_in_year: "1",
-                    education: "bachelor",
-                    salary_type: "month",
-                    salary_amount: "66666",
-                    like_count: 10,
-                    reply_count: 1,
-                },
-                {
-                    type: "work",
-                    author: {
-                        type: "facebook",
-                        _id: "abcde",
-                    },
-                    created_at: new Date("2017-03-21T10:00:00.929Z"),
-                    company: {
-                        name: "GOODJOB2",
-                        id: "123",
-                    },
-                    region: "台北",
-                    job_title: "ENGINEER",
-                    title: "Facebook Work",
-                    sections: [
-                        {
-                            subtitle: "面試過程",
-                            content: "很開心",
-                        },
-                    ],
-                    experience_in_year: "1",
-                    education: "bachelor",
-                    is_currently_employed: "yes",
-                    job_ending_time: {
-                        year: 2017,
-                        month: 1,
-                    },
-                    salary: {
-                        type: "month",
-                        amount: 100000,
-                    },
-                    week_work_time: 40,
-                    recommend_to_others: "yes",
-                    data_time: {
-                        year: 2017,
-                        month: 1,
-                    },
-                    like_count: 9,
-                    reply_count: 1,
-                },
-                {
-                    type: "interview",
-                    created_at: new Date("2017-03-22T10:00:00.929Z"),
-                    company: {
-                        name: "BADJOB",
-                        id: "321",
-                    },
-                    area: "台北",
-                    job_title: "HW ENGINEER",
-                    interview_time_year: "2017",
-                    interview_time_month: "3",
-                    // interview_result: ???,
-                    overall_rating: "5",
-                    sections: [
-                        {
-                            subtitle: "面試過程",
-                            content: "很開心",
-                        },
-                    ],
-                    experience_in_year: "1",
-                    education: "bachelor",
-                    salary_type: "month",
-                    salary_amount: "77777",
-                },
-                {
-                    type: "work",
-                    created_at: new Date("2017-03-25T10:00:00.929Z"),
-                    company: {
-                        name: "GOODJOB1",
-                        id: "321",
-                    },
-                    area: "台北",
-                    job_title: "F2E",
-                    interview_time_year: "2017",
-                    interview_time_month: "3",
-                    // interview_result: ???,
-                    overall_rating: "5",
-                    sections: [
-                        {
-                            subtitle: "面試過程",
-                            content: "很開心",
-                        },
-                    ],
-                    experience_in_year: "1",
-                    education: "bachelor",
-                    salary_type: "month",
-                    salary_amount: "77777",
-                },
+                inter_data_1,
+                work_data_1,
+                inter_data_2,
+                work_data_2,
             ]);
         });
 
@@ -444,6 +362,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.property(experience, 'reply_count');
 
                     assert.notProperty(experience, 'author');
+                    assert.notProperty(experience, 'overall_rating');
                     assert.notProperty(experience, 'sections');
                     assert.notProperty(experience, 'experience_in_year');
                     assert.notProperty(experience, 'education');
@@ -478,6 +397,11 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.notProperty(experience, 'sections');
                     assert.notProperty(experience, 'experience_in_year');
                     assert.notProperty(experience, 'education');
+                    assert.notProperty(experience, 'recommend_to_others');
+                    assert.notProperty(experience, 'js_currently_employed');
+                    assert.notProperty(experience, 'job_ending_time');
+                    assert.notProperty(experience, 'data_time');
+
                 });
         });
 
