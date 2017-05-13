@@ -73,6 +73,7 @@ router.get('/', function(req, res, next) {
 });
 
 function _generateGetExperiencesViewModel(experiences, total) {
+    const MAX_PREVIEW_SIZE = 160;
     let result = {
         total,
         experiences: [],
@@ -86,7 +87,7 @@ function _generateGetExperiencesViewModel(experiences, total) {
             company: experience.company,
             job_title: experience.job_title,
             title: experience.title,
-            preview: experience.sections[0].content.substring(0, 160),
+            preview: experience.sections[0].content.substring(0, MAX_PREVIEW_SIZE),
             like_count: experience.like_count,
             reply_count: experience.reply_count,
         };
