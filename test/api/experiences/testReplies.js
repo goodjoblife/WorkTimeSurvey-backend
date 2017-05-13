@@ -9,8 +9,7 @@ const config = require('config');
 const authentication = require('../../../libs/authentication');
 
 describe('Replies Test', function() {
-
-    let db = undefined;
+    let db;
     let fake_user = {
         _id: new ObjectId(),
         facebook_id: '-1',
@@ -20,38 +19,46 @@ describe('Replies Test', function() {
         },
     };
 
-    before(function() {
+    before('DB: Setup', function() {
         return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
             db = _db;
         });
     });
 
-    describe('Post /experiences/:id/replies', function() {
-        let experience_id = undefined;
+    describe('POST /experiences/:id/replies', function() {
+        let experience_id_string;
         let sandbox;
 
-        before('Create test data', function() {
-
+        beforeEach('Stub', function() {
             sandbox = sinon.sandbox.create();
-            sandbox.stub(authentication, 'cachedFacebookAuthentication')
+            const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication');
+
+            cachedFacebookAuthentication
                 .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
                 .resolves(fake_user);
+            cachedFacebookAuthentication
+                .withArgs(sinon.match.object, sinon.match.object, 'wrongToken')
+                .rejects();
+        });
 
-            return db.collection('experiences').insertOne({
+        beforeEach('Seed experiences collection', function() {
+            const experience = {
                 type: 'interview',
                 author: {
                     type: "facebook",
                     _id: "123",
                 },
                 reply_count: 0,
-            }).then(function(result) {
-                experience_id = result.insertedId.toString();
-            });
+            };
+            return db.collection('experiences').insertOne(experience)
+                .then((result) => {
+                    experience_id_string = result.insertedId.toString();
+                });
         });
 
-        it('Success, and expected return data', function() {
-            return request(app)
-                .post('/experiences/' + experience_id + '/replies')
+        it('should 200 Success if succeed', function() {
+            const req = request(app)
+                .post(`/experiences/${experience_id_string}/replies`)
                 .send({
                     access_token: 'fakeaccesstoken',
                     content: "你好我是大留言",
@@ -62,26 +69,48 @@ describe('Replies Test', function() {
                     assert.deepProperty(res.body, 'reply._id');
                     assert.deepPropertyVal(res.body, 'reply.content', '你好我是大留言');
                     assert.deepPropertyVal(res.body, 'reply.floor', 0);
-                    assert.deepPropertyVal(res.body, 'reply.experience_id', experience_id);
+                    assert.deepPropertyVal(res.body, 'reply.experience_id', experience_id_string);
                     assert.deepPropertyVal(res.body, 'reply.like_count', 0);
-                    assert.deepEqual(res.body.reply.user, {id: '-1', type: 'facebook'});
-                })
-                .then(res => Promise.all([
-                    // experience part
-                    db.collection('experiences').findOne({_id: ObjectId(experience_id)})
+                    assert.deepEqual(res.body.reply.author, {id: '-1', type: 'facebook'});
+                    assert.deepProperty(res.body, 'reply.created_at');
+                });
+
+            const check_experiences_collection = req
+                .then(() =>
+                    db.collection('experiences').findOne({_id: ObjectId(experience_id_string)})
                         .then(experience => {
                             assert.equal(experience.reply_count, 1);
-                        }),
-                    // reply part
+                        }));
+
+            const check_replies_collection = req
+                .then(res =>
                     db.collection('replies').findOne({_id: ObjectId(res.body.reply._id)})
                         .then(reply => {
-                            assert.deepEqual(reply.experience_id, ObjectId(experience_id));
-                            assert.deepEqual(reply.user, {id: '-1', type: 'facebook'});
-                        }),
-                ]));
+                            assert.equal(reply.content, '你好我是大留言');
+                            assert.equal(reply.floor, 0);
+                            assert.deepEqual(reply.experience_id, ObjectId(experience_id_string));
+                            assert.deepPropertyVal(res.body, 'reply.like_count', 0);
+                            assert.property(reply, 'created_at');
+                            assert.deepEqual(reply.author, {id: '-1', type: 'facebook'});
+                        }));
+
+            return Promise.all([
+                check_experiences_collection,
+                check_replies_collection,
+            ]);
         });
 
-        it('Fail, and expected return experiencedId does not exit', function() {
+        it('should 401 Unauthorized if user is not valid', function() {
+            return request(app)
+                .post(`/experiences/${experience_id_string}/replies`)
+                .send({
+                    access_token: 'wrongToken',
+                    content: "你好我是大留言",
+                })
+                .expect(401);
+        });
+
+        it('should 404 NotFound if target experience does not exist', function() {
             return request(app)
                 .post('/experiences/1111/replies')
                 .send({
@@ -90,13 +119,23 @@ describe('Replies Test', function() {
                 })
                 .expect(404);
         });
-        after(function() {
-            let pro1 = db.collection('replies').remove({});
-            let pro2 = db.collection('experiences').remove({});
+
+        it('should fail, content is required', function() {
+            return request(app)
+                .post(`/experiences/${experience_id_string}/replies`)
+                .send({
+                    access_token: 'fakeaccesstoken',
+                })
+                .expect(422);
+        });
+
+        afterEach(function() {
+            let pro1 = db.collection('replies').deleteMany({});
+            let pro2 = db.collection('experiences').deleteMany({});
             return Promise.all([pro1, pro2]);
         });
 
-        after(function() {
+        afterEach(function() {
             sandbox.restore();
         });
     });
@@ -218,7 +257,7 @@ describe('Replies Test', function() {
                 .expect(404);
         });
 
-        it('post a 2000 limit and expect error code 402', function() {
+        it('limit = 2000  and expect error code 402', function() {
             return request(app)
                 .get('/experiences/' + experience_id + '/replies')
                 .send({
@@ -248,7 +287,6 @@ describe('Replies Test', function() {
                     assert.deepProperty(res.body.replies[0], '_id');
                     assert.deepProperty(res.body.replies[0], 'content');
                     assert.deepProperty(res.body.replies[0], 'like_count');
-                    assert.deepProperty(res.body.replies[0], 'report_count');
                     assert.deepProperty(res.body.replies[0], 'liked');
                     assert.deepProperty(res.body.replies[0], 'created_at');
                     assert.deepProperty(res.body.replies[0], 'floor');

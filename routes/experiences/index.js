@@ -5,10 +5,12 @@ const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const lodash = require('lodash');
 const winston = require('winston');
 const ExperienceModel = require('../../models/experience_model');
+const ExperienceLikeModel = require('../../models/experience_like_model');
 const {
     requiredNumberInRange,
     requiredNumberGreaterThanOrEqualTo,
 } = require('../../libs/validation');
+const authentication = require('../../middlewares/authentication_user');
 
 /**
  * Get /experiences api
@@ -149,26 +151,85 @@ function _queryToDBQuery(search_query, search_by, type) {
     return query;
 }
 
-router.get('/:id', function(req, res, next) {
-    const id = req.params.id;
-    winston.info('experiences/id', {
-        id: id,
-        ip: req.ip,
-        ips: req.ips,
-    });
+router.get('/:id', [
+    authentication.cachedAndSetUserMiddleware,
+    function(req, res, next) {
+        const id = req.params.id;
+        let user = null;
+        winston.info('experiences/id', {
+            id: id,
+            ip: req.ip,
+            ips: req.ips,
+        });
 
-    const experience_model = new ExperienceModel(req.db);
-    experience_model.getExperienceById(id).then((result) => {
-        res.send(result);
-    }).catch((err) => {
-        if (err instanceof ObjectNotExistError) {
-            next(new HttpError(err.message, 404));
-        } else {
-            next(new HttpError("Internal Service Error", 500));
+        if (req.user) {
+            user = {
+                id: req.user.facebook_id,
+                type: 'facebook',
+            };
         }
-    });
 
-});
+        const experience_model = new ExperienceModel(req.db);
+        const experience_like_model = new ExperienceLikeModel(req.db);
+        experience_model.getExperienceById(id).then((experience) => {
+            if (user) {
+                return experience_like_model.getLikeByExperienceIdAndUser(id, user)
+                    .then(like => _generateGetExperienceViewModel(experience, user, like));
+            } else {
+                return _generateGetExperienceViewModel(experience);
+            }
+        }).then((result) => {
+            res.send(result);
+        }).catch((err) => {
+            if (err instanceof ObjectNotExistError) {
+                next(new HttpError(err.message, 404));
+            } else {
+                next(new HttpError("Internal Service Error", 500));
+            }
+        });
+    },
+]);
+
+function _generateGetExperienceViewModel(experience, user, like) {
+    let result = {
+        _id: experience._id,
+        type: experience.type,
+        created_at: experience.created_at,
+        company: experience.company,
+        job_title: experience.job_title,
+        experience_in_year: experience.experience_in_year,
+        education: experience.education,
+        region: experience.region,
+        title: experience.title,
+        sections: experience.sections,
+        like_count: experience.like_count,
+        reply_count: experience.reply_count,
+    };
+
+    if (user) {
+        result.liked = (like) ? true : false;
+    }
+
+    if (experience.type == 'interview') {
+        result = Object.assign(result, {
+            interview_time: experience.interview_time,
+            interview_result: experience.interview_result,
+            overall_rating: experience.overall_rating,
+            salary: experience.salary,
+            interview_sensitive_questions: experience.interview_sensitive_questions,
+            interview_qas: experience.interview_qas,
+        });
+    } else if (experience.type == 'work') {
+        result = Object.assign(result, {
+            salary: experience.salary,
+            week_work_time: experience.week_work_time,
+            data_time: experience.data_time,
+            recommend_to_others: experience.recommend_to_others,
+        });
+    }
+
+    return result;
+}
 
 router.use('/', require('./replies'));
 router.use('/', require('./likes'));

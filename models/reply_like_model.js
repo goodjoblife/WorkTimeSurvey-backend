@@ -20,7 +20,8 @@ class ReplyLikeModel {
      */
     createLike(reply_id, user) {
         const reply_model = new ReplyModel(this._db);
-        reply_model.getReplyById(reply_id).then((reply) => {
+
+        return reply_model.getReplyById(reply_id).then((reply) => {
             if (!reply) {
                 throw new ObjectNotExistError("這篇留言不存在");
             }
@@ -58,14 +59,10 @@ class ReplyLikeModel {
      *     experience_id: ObjectId,
      *  }
      */
-    getRepliesLikesByRepliesIds(ids) {
+    getReplyLikesByRepliesIds(ids) {
         return this.collection.find({
             reply_id: {
                 $in: ids,
-            },
-        }, {
-            opt: {
-                _id: 1,
             },
         }).toArray();
     }

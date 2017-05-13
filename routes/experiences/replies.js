@@ -5,24 +5,31 @@ const router = express.Router();
 const ReplyModel = require('../../models/reply_model');
 const ReplyLikeModel = require('../../models/reply_like_model');
 const authentication = require('../../middlewares/authentication');
+const authenticationUser = require('../../middlewares/authentication_user');
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const {
     requiredNumberInRange,
+    requiredNonEmptyString,
+    stringRequireLength,
 } = require('../../libs/validation');
 
 router.post('/:id/replies', [
     authentication.cachedFacebookAuthenticationMiddleware,
     function(req, res, next) {
-        const MAX_CONTENT_SIZE = 1000;
+        try {
+            validationPostFields(req.body);
+        } catch (err) {
+            next(err);
+            return;
+        }
+
         const user = {
             id: req.user.facebook_id,
             type: 'facebook',
         };
         const experience_id = req.params.id;
+        // pick fields from post body
         const content = req.body.content;
-        if (content.length >= MAX_CONTENT_SIZE) {
-            next(new HttpError("留言內容請少於1000個字元", 422));
-        }
 
         const reply_model = new ReplyModel(req.db);
         winston.info("/experiences/:id/replies", {
@@ -33,7 +40,7 @@ router.post('/:id/replies', [
         });
 
         const partial_reply = {
-            user,
+            author: user,
             content,
         };
 
@@ -54,12 +61,24 @@ router.post('/:id/replies', [
     },
 ]);
 
+const MAX_CONTENT_SIZE = 1000;
+
+function validationPostFields(body) {
+    if (!requiredNonEmptyString(body.content)) {
+        throw new HttpError("留言內容必填！", 422);
+    }
+    if (!stringRequireLength(body.content, 1, MAX_CONTENT_SIZE)) {
+        throw new HttpError("留言內容請少於 1000 個字元", 422);
+    }
+}
+
 router.get('/:id/replies', [
-    authentication.cachedFacebookAuthenticationMiddleware,
+    authenticationUser.cachedAndSetUserMiddleware,
     function(req, res, next) {
         const experience_id = req.params.id;
         let limit = parseInt(req.query.limit) || 20;
         let start = parseInt(req.query.start) || 0;
+        let user;
 
         if (!requiredNumberInRange(limit, 1000, 1)) {
             throw new HttpError("limit 格式錯誤", 422);
@@ -70,10 +89,13 @@ router.get('/:id/replies', [
             ip: req.ip,
             ips: req.ips,
         });
-        const user = {
-            id: req.user.facebook_id,
-            type: 'facebook',
-        };
+
+        if (req.user) {
+            user = {
+                id: req.user.facebook_id,
+                type: 'facebook',
+            };
+        }
 
         const reply_model = new ReplyModel(req.db);
         const reply_like_model = new ReplyLikeModel(req.db);
@@ -82,13 +104,10 @@ router.get('/:id/replies', [
         reply_model.getRepliesByExperienceId(experience_id, start, limit).then((replies) => {
             result = replies;
             const replies_ids = replies.map(reply => reply._id);
-            return reply_like_model.getRepliesLikesByRepliesIds(replies_ids);
+            return reply_like_model.getReplyLikesByRepliesIds(replies_ids);
         }).then((likes) => {
             _createLikesField(result, likes, user);
-            _repliesModelToApiModel(result);
-            res.send({
-                replies: result,
-            });
+            res.send(_generateGetRepliesViewModel(result));
         }).catch((err) => {
             if (err instanceof ObjectNotExistError) {
                 next(new HttpError(err.message, 404));
@@ -114,10 +133,21 @@ function _isExistUserLiked(reply_id, user, likes) {
     return (result) ? true : false;
 }
 
-function _repliesModelToApiModel(replies) {
-    return replies.forEach((reply) => {
-        delete reply.author;
+function _generateGetRepliesViewModel(replies) {
+    let result ={
+        replies: [],
+    };
+    replies.forEach((reply) => {
+        result.replies.push({
+            _id: reply._id,
+            content: reply.content,
+            like_count: reply.like_count,
+            liked: reply.liked,
+            created_at: reply.created_at,
+            floor: reply.floor,
+        });
     });
+    return result;
 }
 
 module.exports = router;

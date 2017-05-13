@@ -13,38 +13,6 @@ const {
     stringRequireLength,
 } = require('../../libs/validation');
 
-/**
- * Post /interview_experiences
- * @param {object} req.body
- *  - {
- *  company_query : "1111",
- *  company_id : "123456",
- *  region : "台北市",
- *  job_title : "BackEnd Developer",
- *  experience_in_year : "10",
- *  education : "碩士",
- *  interview_time_year : "2016",
- *  interview_time_month : "12",
- *  interview_result : "錄取",
- *  salary_amoount : "year",
- *  overall_rating : "5",
- *  sections : [
- *      { subtitle:"hello" , content : "test" }
- *  ],
- *  interview_qas : [
- *      { querstion : "what you name?" , answer : "you father"}
- *  ],
- *  interview_sensitive_questions : [
- *      "what your name ?"
- *  ]
- *
- *  }
- *
- * @returns {object}
- *  - {
- *      success : true
- *  }
- */
 router.post('/', [
     authentication.cachedFacebookAuthenticationMiddleware,
     function(req, res, next) {
@@ -57,7 +25,7 @@ router.post('/', [
 
         const experience = {};
         Object.assign(experience, {
-            type: "interview",
+            type: "work",
             author: {
                 id: req.user.facebook_id,
                 type: 'facebook',
@@ -69,7 +37,7 @@ router.post('/', [
             // TODO 瀏覽次數？檢舉數？
             created_at: new Date(),
         });
-        Object.assign(experience, pickupInterviewExperience(req.body));
+        Object.assign(experience, pickupWorkExperience(req.body));
 
         const experience_model = new ExperienceModel(req.db);
 
@@ -78,7 +46,7 @@ router.post('/', [
         }).then(() => {
             return experience_model.createExperience(experience);
         }).then(() => {
-            winston.info("interview experiences insert data success", {
+            winston.info("work experiences insert data success", {
                 id: experience._id,
                 ip: req.ip,
                 ips: req.ips,
@@ -91,7 +59,7 @@ router.post('/', [
                 },
             });
         }).catch(err => {
-            winston.info("interview experiences insert data fail", {
+            winston.info("work experiences insert data fail", {
                 id: experience._id,
                 ip: req.ip,
                 ips: req.ips,
@@ -105,7 +73,7 @@ router.post('/', [
 
 function validationInputFields(data) {
     validateCommonInputFields(data);
-    validateInterviewInputFields(data);
+    validateWorkInputFields(data);
 }
 
 function validateCommonInputFields(data) {
@@ -185,68 +153,35 @@ function validateCommonInputFields(data) {
     }
 }
 
-function validateInterviewInputFields(data) {
-    if (!data.interview_time) {
-        throw new HttpError("面試時間要填喔！", 422);
+function validateWorkInputFields(data) {
+    if (!data.is_currently_employed) {
+        throw new HttpError("你現在在職嗎？", 422);
     }
-    if (!requiredNumber(data.interview_time.year)) {
-        throw new HttpError("面試年份要填喔！", 422);
-    }
-    if (!requiredNumber(data.interview_time.month)) {
-        throw new HttpError("面試月份要填喔！", 422);
-    }
-    const now = new Date();
-    if (data.interview_time.year <= now.getFullYear() - 10) {
-        throw new HttpError('面試年份需在10年內', 422);
-    }
-    if (data.interview_time.month < 1 || data.interview_time.month > 12) {
-        throw new HttpError('面試月份需在1~12月', 422);
-    }
-    if ((data.interview_time.year === now.getFullYear() && data.interview_time.month > (now.getMonth() + 1)) ||
-        data.interview_time.year > now.getFullYear()) {
-        throw new HttpError('面試月份不可能比現在時間晚', 422);
+    if (!shouldIn(data.is_currently_employed, ["yes", "no"])) {
+        throw new HttpError('是否在職 yes or no', 422);
     }
 
-    if (data.interview_qas) {
-        if (!(data.interview_qas instanceof Array)) {
-            throw new HttpError("面試題目列表要是一個陣列", 422);
+    if (data.is_currently_employed === "no") {
+        if (!data.job_ending_time) {
+            throw new HttpError("離職年、月份要填喔！", 422);
         }
-        data.interview_qas.forEach((qa) => {
-            if (!requiredNonEmptyString(qa.question) || !requiredNonEmptyString(qa.answer)) {
-                throw new HttpError("面試題目內容要寫喔！", 422);
-            }
-            if (!stringRequireLength(qa.question, 1, 250)) {
-                throw new HttpError("面試題目標題僅限 1~250 字！", 422);
-            }
-            if (!stringRequireLength(qa.answer, 1, 5000)) {
-                throw new HttpError("面試題目標題僅限 1~5000 字！", 422);
-            }
-        });
-        if (data.interview_qas.length > 30) {
-            throw new HttpError("面試題目列表超過 30 題！", 422);
+        if (!requiredNumber(data.job_ending_time.year)) {
+            throw new HttpError("離職年份要填喔！", 422);
         }
-    }
-
-    if (!requiredNonEmptyString(data.interview_result)) {
-        throw new HttpError("面試結果要填喔！", 422);
-    }
-    if (!stringRequireLength(data.interview_result, 1, 10)) {
-        throw new HttpError("面試結果僅限 1~10 字！", 422);
-    }
-
-    // interview_sensitive_questions
-    if (data.interview_sensitive_questions) {
-        if (!(data.interview_sensitive_questions instanceof Array)) {
-            throw new HttpError("面試中提及的特別問題要是一個陣列", 422);
+        if (!requiredNumber(data.job_ending_time.month)) {
+            throw new HttpError("離職月份要填喔！", 422);
         }
-        data.interview_sensitive_questions.forEach((question) => {
-            if (!requiredNonEmptyString(question)) {
-                throw new HttpError("面試中提及的特別問題要是 string！", 422);
-            }
-            if (!stringRequireLength(question, 1, 20)) {
-                throw new HttpError("面試中提及的特別問題僅限 1~20 字！", 422);
-            }
-        });
+        const now = new Date();
+        if (data.job_ending_time.year <= now.getFullYear() - 10) {
+            throw new HttpError('離職年份需在10年內', 422);
+        }
+        if (data.job_ending_time.month < 1 || data.job_ending_time.month > 12) {
+            throw new HttpError('離職月份需在1~12月', 422);
+        }
+        if ((data.job_ending_time.year === now.getFullYear() && data.job_ending_time.month > (now.getMonth() + 1)) ||
+            data.job_ending_time.year > now.getFullYear()) {
+            throw new HttpError('離職月份不可能比現在時間晚', 422);
+        }
     }
 
     if (data.salary) {
@@ -261,15 +196,23 @@ function validateInterviewInputFields(data) {
         }
     }
 
-    if (!requiredNumber(data.overall_rating)) {
-        throw new HttpError("這次面試你給幾分？", 422);
+    if (data.week_work_time) {
+        if (!requiredNumber(data.week_work_time)) {
+            throw new HttpError("工時需為數字", 422);
+        }
+        if (data.week_work_time < 0 || data.week_work_time > 168) {
+            throw new HttpError('工時需介於 0~168 之間', 422);
+        }
     }
-    if (!shouldIn(data.overall_rating, [1, 2, 3, 4, 5])) {
-        throw new HttpError('面試分數有誤', 422);
+
+    if (data.recommend_to_others) {
+        if (!shouldIn(data.recommend_to_others, ["yes", "no", "don\'t know"])) {
+            throw new HttpError('是否推薦此工作需為 yes/no/don\'t know', 422);
+        }
     }
 }
 
-function pickupInterviewExperience(input) {
+function pickupWorkExperience(input) {
     const partial = {};
 
     const {
@@ -280,13 +223,12 @@ function pickupInterviewExperience(input) {
         sections,
         experience_in_year,
         education,
-        // interview part
-        interview_time,
-        interview_qas,
-        interview_result,
-        interview_sensitive_questions,
+        // work part
+        is_currently_employed,
+        job_ending_time,
         salary,
-        overall_rating,
+        week_work_time,
+        recommend_to_others,
     } = input;
 
     Object.assign(partial, {
@@ -296,33 +238,40 @@ function pickupInterviewExperience(input) {
         sections,
         // experience_in_year optional
         // education optional
-        interview_time,
-        // interview_qas optional
-        interview_result,
-        // interview_sensitive_questions optional
+        is_currently_employed,
+        job_ending_time,
         // salary optional
-        overall_rating,
+        // week_work_time optional
+        // recommend_to_others optional
     });
 
+    if (is_currently_employed === "yes") {
+        const now = new Date();
+        const data_time = {
+            year: now.getFullYear(),
+            month: now.getMonth() + 1,
+        };
+
+        partial.data_time = data_time;
+    } else {
+        partial.data_time = job_ending_time;
+    }
     if (experience_in_year) {
         partial.experience_in_year = experience_in_year;
     }
     if (education) {
         partial.education = education;
     }
-    if (interview_qas) {
-        partial.interview_qas = interview_qas;
-    } else {
-        partial.interview_qas = [];
-    }
-    if (interview_sensitive_questions) {
-        partial.interview_sensitive_questions = interview_sensitive_questions;
-    } else {
-        partial.interview_sensitive_questions = [];
-    }
     if (salary) {
         partial.salary = salary;
     }
+    if (week_work_time) {
+        partial.week_work_time = week_work_time;
+    }
+    if (recommend_to_others) {
+        partial.recommend_to_others = recommend_to_others;
+    }
+
     return partial;
 }
 
