@@ -57,8 +57,45 @@ router.post('/:id/likes', [
     },
 ]);
 
-router.delete('/:id/likes', function(req, res, next) {
-    res.send('Yo! you are in DELETE /experiences/:id/likes');
-});
+router.delete('/:id/likes', [
+    authentication.cachedFacebookAuthenticationMiddleware,
+    function(req, res, next) {
+        winston.info(req.originalUrl, {
+            ip: req.ip,
+            ips: req.ips,
+        });
+
+        const user = {
+            id: req.user.facebook_id,
+            type: 'facebook',
+        };
+        const experience_id = req.params.id;
+        const experience_like_model = new ExperienceLikeModel(req.db);
+        const experience_model = new ExperienceModel(req.db);
+
+        experience_like_model.deleteLike(experience_id, user).then(() => {
+            return experience_model.decrementLikeCount(experience_id);
+        }).then((result) => {
+            res.send({
+                success: true,
+            });
+        }).catch((err) => {
+            winston.info(req.originalUrl, {
+                id: experience_id,
+                ip: req.ip,
+                ips: req.ips,
+                err: err.message,
+            });
+
+            if (err instanceof DuplicateKeyError) {
+                next(new HttpError(err.message, 403));
+            } else if (err instanceof ObjectNotExistError) {
+                next(new HttpError(err.message, 404));
+            } else {
+                next(new HttpError("Internal Server Error", 500));
+            }
+        });
+    },
+]);
 
 module.exports = router;

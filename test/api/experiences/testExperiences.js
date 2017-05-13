@@ -3,8 +3,18 @@ chai.use(require('chai-datetime'));
 const assert = chai.assert;
 const request = require('supertest');
 const app = require('../../../app');
-const MongoClient = require('mongodb').MongoClient;
+const {
+    MongoClient,
+    ObjectId,
+} = require('mongodb');
 const config = require('config');
+const sinon = require('sinon');
+require('sinon-as-promised');
+const authentication = require('../../../libs/authentication');
+const {
+    generateInterviewExperienceData,
+    generateWorkExperienceData,
+} = require('../testData');
 
 describe('Experiences 面試和工作經驗資訊', function() {
     var db = undefined;
@@ -16,72 +26,149 @@ describe('Experiences 面試和工作經驗資訊', function() {
     });
     describe('GET /experiences/:id', function() {
 
-        let testId = undefined;
-
-        before('Creating experiences', function() {
-            return db.collection('experiences').insertOne({
-                type: "interview",
-                created_at: new Date("2017-03-20T10:00:00.929Z"),
-                author: {
-                    type: "facebook",
-                    _id: "123",
-                },
-                company: {
-                    id: "abcde01",
-                    name: "GoodJob",
-                },
-                area: "台北",
-                job_title: "Junior backend engineer",
-                interview_time_year: "2017",
-                interview_time_month: "3",
-                title: "XXX面試洗臉記",
-                sections: [{
-                    subtitle: "人資的問話",
-                    content: "人資妹子好啊",
-                }, {
-                    subtitle: "被洗臉了",
-                    content: "被洗到好慘",
-                }],
-                education: "碩士",
-                interview_time: {
-                    year: 10,
-                    month: 1,
-                },
-                interview_qas: [
-                    { question: "What your name?", answer: "I'm Mark" },
-                ],
-                interview_result: "Sorry ~ ",
-                interview_sensitive_questions: [
-                    "Are you a yacht boy ?",
-                ],
-                salary: {
-                    type: "year",
-                    amount: 1000000,
-                },
-                status: "draft",
-                like_count: 1,
-                reply_count: 1,
-            }).then(function(result) {
-                testId = result.ops[0]._id;
-            });
+        let test_interview_experience_id = null;
+        let test_work_experience_id = null;
+        let sandbox = null;
+        let fake_user = {
+            _id: new ObjectId(),
+            facebook_id: '-1',
+            facebook: {
+                id: '-1',
+                name: 'markLin',
+            },
+        };
+        before('mock user', function() {
+            sandbox = sinon.sandbox.create();
+            sandbox.stub(authentication, 'cachedFacebookAuthentication')
+                .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
+                .resolves(fake_user);
         });
 
-        it(' Expected get one data', function() {
-            return request(app).get("/experiences/" + testId)
-                .expect(200)
-                .expect(function(res) {
-                    assert.equal(res.body._id, testId);
-                    assert.notDeepProperty(res.body, 'author');
+        before('create experiences', function() {
+            return db.collection('experiences').insertMany([generateInterviewExperienceData(), generateWorkExperienceData()])
+                .then(function(result) {
+                    test_interview_experience_id = result.ops[0]._id;
+                    test_work_experience_id = result.ops[1]._id;
+                    return db.collection('experience_likes').insertOne({
+                        created_at: new Date(),
+                        user: {
+                            id: fake_user.facebook_id,
+                            type: 'facebook',
+                        },
+                        experience_id: new ObjectId(test_interview_experience_id),
+                    });
                 });
         });
-        it('Set error uri and expected to get error', function() {
+
+        it('should return one data, and the liked field should not be exist', function() {
+            return request(app).get("/experiences/" + test_interview_experience_id)
+                .expect(200)
+                .expect(function(res) {
+                    assert.equal(res.body._id, test_interview_experience_id);
+                    assert.notDeepProperty(res.body, 'author');
+                    assert.notDeepProperty(res.body, 'liked');
+                });
+        });
+
+        it('should return one data, and the liked field hsould be true', function() {
+            return request(app).get("/experiences/" + test_interview_experience_id)
+                .send({
+                    access_token: 'fakeaccesstoken',
+                })
+                .expect(200)
+                .expect((res) => {
+                    assert.equal(res.body._id, test_interview_experience_id);
+                    assert.notDeepProperty(res.body, 'author');
+                    assert.isTrue(res.body.liked);
+                });
+        });
+
+        it('should get error code 404 while giving wrong experience_id', function() {
             return request(app).get("/experiences/123XXX")
                 .expect(404);
+        });
+
+        it('should get one interview experience, and it return correct fields', function() {
+            return request(app).get("/experiences/" + test_interview_experience_id)
+                .send({
+                    access_token: 'fakeaccesstoken',
+                })
+                .expect(200)
+                .expect((res) => {
+
+                    const experience = res.body;
+                    assert.property(experience, '_id');
+                    assert.propertyVal(experience, 'type', 'interview');
+                    assert.property(experience, 'company');
+                    assert.deepProperty(experience, 'company.name');
+                    assert.property(experience, 'region');
+                    assert.property(experience, 'job_title');
+                    assert.property(experience, 'title');
+                    assert.property(experience, 'sections');
+                    assert.property(experience, 'experience_in_year');
+                    assert.property(experience, 'education');
+                    assert.property(experience, 'like_count');
+                    assert.property(experience, 'reply_count');
+                    assert.property(experience, 'created_at');
+                    assert.property(experience, 'liked');
+
+                    assert.property(experience, 'interview_time');
+                    assert.deepProperty(experience, 'interview_time.year');
+                    assert.deepProperty(experience, 'interview_time.month');
+                    assert.property(experience, 'interview_result');
+                    assert.property(experience, 'overall_rating');
+                    assert.property(experience, 'salary');
+                    assert.deepProperty(experience, 'salary.type');
+                    assert.deepProperty(experience, 'salary.amount');
+                    assert.property(experience, 'interview_sensitive_questions');
+                    assert.property(experience, 'interview_qas');
+
+                    assert.notProperty(experience, 'author');
+                });
+        });
+
+        it('should get one work experience , and it return correct fields ', function() {
+            return request(app).get("/experiences/" + test_work_experience_id)
+                .send({
+                    access_token: 'fakeaccesstoken',
+                })
+                .expect(200)
+                .expect((res) => {
+                    const experience = res.body;
+                    assert.property(experience, '_id');
+                    assert.propertyVal(experience, 'type', 'work');
+                    assert.property(experience, 'company');
+                    assert.deepProperty(experience, 'company.name');
+                    assert.property(experience, 'region');
+                    assert.property(experience, 'job_title');
+                    assert.property(experience, 'title');
+                    assert.property(experience, 'sections');
+                    assert.property(experience, 'experience_in_year');
+                    assert.property(experience, 'education');
+                    assert.property(experience, 'like_count');
+                    assert.property(experience, 'reply_count');
+                    assert.property(experience, 'created_at');
+                    assert.property(experience, 'liked');
+
+                    assert.property(experience, 'salary');
+                    assert.deepProperty(experience, 'salary.type');
+                    assert.deepProperty(experience, 'salary.amount');
+                    assert.property(experience, 'week_work_time');
+                    assert.property(experience, 'data_time');
+                    assert.property(experience, 'recommend_to_others');
+
+                    assert.notProperty(experience, 'author');
+                });
         });
         after(function() {
             return db.collection('experiences').remove({});
         });
+
+        after(function() {
+            sandbox.restore();
+        });
     });
+
     describe('GET /experiences', function() {
 
         before('Seeding some experiences', function() {

@@ -108,6 +108,23 @@ class ReplyModel {
     _isValidId(id) {
         return (id && mongo.ObjectId.isValid(id));
     }
+
+    incrementLikeCount(id) {
+        if (!this._isValidId(id)) {
+            return Promise.reject(new ObjectNotExistError("該留言不存在"));
+        }
+
+        return this.collection.updateOne(
+            {
+                _id: new ObjectId(id),
+            },
+            {
+                $inc: {
+                    like_count: 1,
+                },
+            }
+        );
+    }
 }
 
 module.exports = ReplyModel;

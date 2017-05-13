@@ -5,20 +5,28 @@ const router = express.Router();
 const ReplyModel = require('../../models/reply_model');
 const authentication = require('../../middlewares/authentication');
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
+const {
+    requiredNonEmptyString,
+    stringRequireLength,
+} = require('../../libs/validation');
 
 router.post('/:id/replies', [
     authentication.cachedFacebookAuthenticationMiddleware,
     function(req, res, next) {
-        const MAX_CONTENT_SIZE = 1000;
+        try {
+            validationPostFields(req.body);
+        } catch (err) {
+            next(err);
+            return;
+        }
+
         const user = {
             id: req.user.facebook_id,
             type: 'facebook',
         };
         const experience_id = req.params.id;
+        // pick fields from post body
         const content = req.body.content;
-        if (content.length >= MAX_CONTENT_SIZE) {
-            next(new HttpError("留言內容請少於1000個字元", 422));
-        }
 
         const reply_model = new ReplyModel(req.db);
         winston.info("/experiences/:id/replies", {
@@ -29,7 +37,7 @@ router.post('/:id/replies', [
         });
 
         const partial_reply = {
-            user,
+            author: user,
             content,
         };
 
@@ -49,6 +57,16 @@ router.post('/:id/replies', [
         });
     },
 ]);
+
+const MAX_CONTENT_SIZE = 1000;
+function validationPostFields(body) {
+    if (!requiredNonEmptyString(body.content)) {
+        throw new HttpError("留言內容必填！", 422);
+    }
+    if (!stringRequireLength(body.content, 1, MAX_CONTENT_SIZE)) {
+        throw new HttpError("留言內容請少於 1000 個字元", 422);
+    }
+}
 
 /**
  * @returns {object} - {
