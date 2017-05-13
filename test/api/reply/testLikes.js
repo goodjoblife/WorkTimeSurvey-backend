@@ -297,7 +297,7 @@ describe('DELETE /replies/:id/likes', function() {
             }))
             .then(reply => {
                 assert.isNotNull(reply, 'expect reply is retrieved in db');
-                assert.propertyVal(reply, 'like_count', 1);
+                assert.propertyVal(reply, 'like_count', 1, 'should change from 2 to 1');
             });
 
         return Promise.all([
@@ -328,7 +328,7 @@ describe('DELETE /replies/:id/likes', function() {
             }))
             .then(reply => {
                 assert.isNotNull(reply, 'expect reply is retrieved in db');
-                assert.propertyVal(reply, 'like_count', 0);
+                assert.propertyVal(reply, 'like_count', 0, 'should change from 2 to 1 then 0');
             });
 
         return check_like_count;
