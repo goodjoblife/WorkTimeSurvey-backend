@@ -507,15 +507,6 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(422);
         });
 
-        it('search 預期回傳422傳誤', function() {
-
-            return request(app).get('/experiences')
-                .query({
-                    start: -1,
-                })
-                .expect(422);
-        });
-
         it(`sort_by = popularity，預期根據like_count數量由大到小 `, function() {
 
             return request(app).get('/experiences')
