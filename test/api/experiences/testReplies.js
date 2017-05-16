@@ -167,7 +167,10 @@ describe('Replies Test', function() {
                     testDatas.push({
                         created_at: new Date(),
                         experience_id: experience_id,
-                        author: fake_user.facebook,
+                        author: {
+                            id: fake_user.facebook_id,
+                            type: 'facebook',
+                        },
                         content: "hello test0",
                         like_count: 0,
                         report_count: 0,
