@@ -218,7 +218,7 @@ describe('Replies Test', function() {
             return request(app)
                 .get(`/experiences/${experience_id_string}/replies`)
                 .query({
-                    limit: 1,
+                    limit: 200,
                     start: 0,
                 })
                 .send({

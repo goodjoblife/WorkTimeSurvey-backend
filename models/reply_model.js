@@ -74,7 +74,7 @@ class ReplyModel {
      *  ]
      */
     getRepliesByExperienceId(experience_id, skip = 0, limit = 20, sort = {
-        created_at: 1,
+        floor: 1,
     }) {
         const experience_model = new ExperienceModel(this._db);
         return experience_model.isExist(experience_id).then((is_exist) => {
