@@ -3,7 +3,10 @@ chai.use(require('chai-datetime'));
 const assert = chai.assert;
 const request = require('supertest');
 const app = require('../../../app');
-const { MongoClient, ObjectId } = require('mongodb');
+const {
+    MongoClient,
+    ObjectId,
+} = require('mongodb');
 const config = require('config');
 const sinon = require('sinon');
 require('sinon-as-promised');
