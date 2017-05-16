@@ -163,7 +163,7 @@ describe('Replies Test', function() {
                 status: "published",
             }).then(function(result) {
                 experience_id = result.insertedId;
-                experience_id_string = result.insertedId.toString(); 
+                experience_id_string = result.insertedId.toString();
                 let testDatas = [];
                 for (var i = 0; i < test_Replies_Count; i++) {
                     testDatas.push({

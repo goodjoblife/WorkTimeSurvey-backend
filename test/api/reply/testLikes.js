@@ -347,11 +347,11 @@ describe('DELETE /replies/:id/likes', function() {
         sandbox.restore();
     });
 
-    afterEach(function() {
+    after(function() {
         return db.collection('replies').deleteMany({});
     });
 
-    afterEach(function() {
+    after(function() {
         return db.collection('reply_likes').deleteMany({});
     });
 });
