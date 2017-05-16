@@ -142,6 +142,7 @@ describe('Replies Test', function() {
 
     describe('Get : /experiences/:id/replies', function() {
         let experience_id;
+        let experience_id_string;
         let sandbox = null;
         const test_Replies_Count = 200;
 
@@ -153,7 +154,7 @@ describe('Replies Test', function() {
         });
 
         before('create test data', function() {
-            return db.collection('experiences').insert({
+            return db.collection('experiences').insertOne({
                 type: 'interview',
                 author: {
                     id: fake_user.facebook_id,
@@ -161,7 +162,8 @@ describe('Replies Test', function() {
                 },
                 status: "published",
             }).then(function(result) {
-                experience_id = result.ops[0]._id;
+                experience_id = result.insertedId;
+                experience_id_string = result.insertedId.toString(); 
                 let testDatas = [];
                 for (var i = 0; i < test_Replies_Count; i++) {
                     testDatas.push({
@@ -196,7 +198,7 @@ describe('Replies Test', function() {
 
         it('get experiences replies data and expect 200 replies ', function() {
             return request(app)
-                .get('/experiences/' + experience_id + '/replies')
+                .get(`/experiences/${experience_id_string}/replies`)
                 .query({
                     limit: 200,
                 })
@@ -214,7 +216,7 @@ describe('Replies Test', function() {
 
         it('get experiences reply, and expected liked is true ', function() {
             return request(app)
-                .get('/experiences/' + experience_id + '/replies')
+                .get(`/experiences/${experience_id_string}/replies`)
                 .query({
                     limit: 1,
                     start: 0,
@@ -234,7 +236,7 @@ describe('Replies Test', function() {
 
         it('get experiences replies data by start 0 and limit 100 , expect 100 replies ', function() {
             return request(app)
-                .get('/experiences/' + experience_id + '/replies')
+                .get(`/experiences/${experience_id_string}/replies`)
                 .query({
                     limit: 100,
                     start: 0,
@@ -262,7 +264,7 @@ describe('Replies Test', function() {
 
         it('limit = 2000  and expect error code 402', function() {
             return request(app)
-                .get('/experiences/' + experience_id + '/replies')
+                .get(`/experiences/${experience_id_string}/replies`)
                 .send({
                     access_token: 'fakeaccesstoken',
                 })
@@ -274,7 +276,7 @@ describe('Replies Test', function() {
 
         it('get one experiences replies , and validate return field', function() {
             return request(app)
-                .get('/experiences/' + experience_id + '/replies')
+                .get(`/experiences/${experience_id_string}/replies`)
                 .query({
                     limit: 1,
                     start: 0,
