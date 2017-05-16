@@ -9,4 +9,5 @@ module.exports = [
     'migrate-2017-04-23-create-experiences-collection',
     'create-experienceLikes-collection',
     'create-replyLikes-collection',
+    'migration-2017-05-09-create-replies-collection',
 ];

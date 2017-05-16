@@ -178,3 +178,180 @@ describe('POST /replies/:id/likes', function() {
         return db.collection('reply_likes').deleteMany({});
     });
 });
+
+describe('DELETE /replies/:id/likes', function() {
+    let db;
+    let fake_user = {
+        _id: new ObjectId(),
+        facebook_id: '1',
+        facebook: {id: '1', name: 'markLin'},
+    };
+    let fake_other_user = {
+        _id: new ObjectId(),
+        facebook_id: '2',
+        facebook: {id: '2', name: 'Mark Chen'},
+    };
+    let fake_third_user = {
+        _id: new ObjectId(),
+        facebook_id: '3',
+        facebook: {id: '3', name: 'GoodJob'},
+    };
+    let reply_id_string;
+    const experience_id = new ObjectId();
+    let sandbox;
+
+    before('DB: Setup', function() {
+        return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
+            db = _db;
+        });
+    });
+
+    // 插入一個留言（作者 3 號），有兩個按讚（作者 1, 2 號）
+    beforeEach('Seed replies', function() {
+        const reply = {
+            experience_id,
+            content: 'Hello',
+            user: {
+                id: "3",
+                type: "facebook",
+            },
+            floor: 1,
+            like_count: 2,
+        };
+
+        return db.collection('replies').insertOne(reply)
+            .then(result => {
+                reply_id_string = result.insertedId.toString();
+            });
+    });
+
+    beforeEach('Seed reply_likes', function() {
+        const reply_likes = [{
+            experience_id,
+            reply_id: new ObjectId(reply_id_string),
+            user: {
+                id: "1",
+                type: "facebook",
+            },
+        }, {
+            experience_id,
+            reply_id: new ObjectId(reply_id_string),
+            user: {
+                id: "2",
+                type: "facebook",
+            },
+        }];
+
+        return db.collection('reply_likes').insertMany(reply_likes);
+    });
+
+    beforeEach('Mock', function() {
+        sandbox = sinon.sandbox.create();
+        const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication');
+        cachedFacebookAuthentication
+            .withArgs(sinon.match.object, sinon.match.object, 'fakeAccessToken')
+            .resolves(fake_user);
+        cachedFacebookAuthentication
+            .withArgs(sinon.match.object, sinon.match.object, 'otherFakeAccessToken')
+            .resolves(fake_other_user);
+        cachedFacebookAuthentication
+            .withArgs(sinon.match.object, sinon.match.object, 'thirdFakeAccessToken')
+            .resolves(fake_third_user);
+    });
+
+    it('it should 404 Not Found if reply not exists', function() {
+        return request(app)
+            .delete(`/replies/1234567890aa/likes`)
+            .send({
+                access_token: 'fakeAccessToken',
+            })
+            .expect(404);
+    });
+
+    it('it should 200 success if succeed', function() {
+        const req = request(app)
+            .delete(`/replies/${reply_id_string}/likes`)
+            .send({
+                access_token: 'fakeAccessToken',
+            })
+            .expect(200)
+            .expect(function(res) {
+                assert.deepEqual(res.body, {'success': true});
+            });
+
+        const check_reply_likes_collection = req
+            .then(() => db.collection('reply_likes').findOne({
+                reply_id: new ObjectId(reply_id_string),
+                user: {
+                    id: '1',
+                    type: 'facebook',
+                },
+            }))
+            .then(record => {
+                assert.isNull(record, 'expect nothing is trieved in db');
+            });
+
+        const check_replies_collection = req
+            .then(() => db.collection('replies').findOne({
+                _id: new ObjectId(reply_id_string),
+            }))
+            .then(reply => {
+                assert.isNotNull(reply, 'expect reply is retrieved in db');
+                assert.propertyVal(reply, 'like_count', 1, 'should change from 2 to 1');
+            });
+
+        return Promise.all([
+            check_reply_likes_collection,
+            check_replies_collection,
+        ]);
+    });
+
+
+    it('it should 200 success if other user dislike the same reply', function() {
+        const req = request(app)
+            .delete(`/replies/${reply_id_string}/likes`)
+            .send({
+                access_token: 'fakeAccessToken',
+            })
+            .expect(200)
+            .then(() => request(app)
+                .delete(`/replies/${reply_id_string}/likes`)
+                .send({
+                    access_token: 'otherFakeAccessToken',
+                })
+                .expect(200)
+            );
+
+        const check_like_count = req
+            .then(() => db.collection('replies').findOne({
+                _id: new ObjectId(reply_id_string),
+            }))
+            .then(reply => {
+                assert.isNotNull(reply, 'expect reply is retrieved in db');
+                assert.propertyVal(reply, 'like_count', 0, 'should change from 2 to 1 then 0');
+            });
+
+        return check_like_count;
+    });
+
+    it('it should 404 NotFound if dislike a no like reply', function() {
+        return request(app)
+            .delete(`/replies/${reply_id_string}/likes`)
+            .send({
+                access_token: 'thirdFakeAccessToken',
+            })
+            .expect(404);
+    });
+
+    afterEach(function() {
+        sandbox.restore();
+    });
+
+    afterEach(function() {
+        return db.collection('replies').deleteMany({});
+    });
+
+    afterEach(function() {
+        return db.collection('reply_likes').deleteMany({});
+    });
+});

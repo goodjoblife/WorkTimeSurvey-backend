@@ -9,38 +9,10 @@ const ExperienceLikeModel = require('../../models/experience_like_model');
 const {
     requiredNumberInRange,
     requiredNumberGreaterThanOrEqualTo,
+    shouldIn,
 } = require('../../libs/validation');
 const authentication = require('../../middlewares/authentication_user');
 
-/**
- * Get /experiences api
- * @param {string} search_query - "goodjob"
- * @param {string} search_by - "compnay"/"job_title"
- * @param {string} sort - "created_at"
- * @param {string} page - "0"
- * @param {string} limit - "20"
- * @param {string} type - "interview"/"work"
- *
- * @returns {object}
- *  - {
- *      total_pages : 1,
- *      page : 0,
- *      experiences : [
- *          _id : ObjectId,
- *          type : "interview"/"work",
- *          created_at : new Date(),
- *          company : {
- *              id : "abcdef123",
- *              name : "goodjob"
- *          },
- *          job_title : "abcde",
- *          title : "hello",
- *          preview : "hello world XBCDE",
- *          like_count : 0,
- *          reply_count : 0
- *      ]
- *  }
- */
 router.get('/', function(req, res, next) {
     winston.info(req.originalUrl, {
         query: req.query,
@@ -48,40 +20,52 @@ router.get('/', function(req, res, next) {
         ips: req.ips,
     });
 
-    if (!_isValidSearchByField(req.query.search_by)) {
-        next(new HttpError("search by 格式錯誤", 422));
-        return;
-    }
+    const search_query = req.query.search_query;
+    const search_by = req.query.search_by;
     const sort_field = req.query.sort || "created_at";
-    if (!_isValidSortField(sort_field)) {
-        next(new HttpError("sort by 格式錯誤", 422));
-        return;
-    }
-
-    const query = _queryToDBQuery(req.query.search_query, req.query.search_by, req.query.type);
-    const sort = {
-        [sort_field]: -1,
-    };
-    const page = parseInt(req.query.page) || 0;
+    const start = parseInt(req.query.start) || 0;
     const limit = Number(req.query.limit || 20);
+    const type = req.query.type;
 
-    if (!requiredNumberGreaterThanOrEqualTo(page, 0)) {
-        next(new HttpError("page 格式錯誤", 422));
+    if (search_query) {
+        if (!search_by) {
+            next(new HttpError("search_by 不能為空", 422));
+            return;
+        }
+        if (!shouldIn(search_by, ["company", "job_title"])) {
+            next(new HttpError("search_by 格式錯誤", 422));
+            return;
+        }
+    }
+
+    if (!shouldIn(sort_field, ["created_at", "popularity"])) {
+        next(new HttpError("sort_by 格式錯誤", 422));
         return;
     }
-    if (!requiredNumberInRange(limit, 20, 1)) {
+
+    if (!requiredNumberGreaterThanOrEqualTo(start, 0)) {
+        next(new HttpError("start 格式錯誤", 422));
+        return;
+    }
+
+    if (!requiredNumberInRange(limit, 100, 1)) {
         next(new HttpError("limit 格式錯誤", 422));
         return;
     }
-    const skip = limit * page;
+
+    const query = _queryToDBQuery(search_query, search_by, type);
+
+    const db_sort_field = (sort_field == 'popularity') ? 'like_count'  : sort_field;
+    const sort = {
+        [db_sort_field]: -1,
+    };
 
     let result = {};
     const experience_model = new ExperienceModel(req.db);
     experience_model.getExperiencesCountByQuery(query).then((count) => {
-        result.total_pages = Math.ceil(count / limit);
-        return experience_model.getExperiences(query, sort, skip, limit);
+        result.total = count;
+        return experience_model.getExperiences(query, sort, start, limit);
     }).then((docs) => {
-        result.page = page;
         result.experiences = docs;
         result.experiences.map(_modelMapToViewModel);
         res.send(result);
@@ -96,21 +80,6 @@ function _modelMapToViewModel(experience) {
     delete experience.sections;
 }
 
-function _isValidSearchByField(search_by) {
-    if (!search_by) {
-        return true;
-    }
-    const Default_Field = ["company", "job_title"];
-    return Default_Field.includes(search_by);
-}
-
-function _isValidSortField(sort_by) {
-    if (!sort_by) {
-        return true;
-    }
-    const Default_Field = ["created_at", "job_title"];
-    return Default_Field.includes(sort_by);
-}
 
 /**
  * _queryToDBQuery
