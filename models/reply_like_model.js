@@ -46,7 +46,7 @@ class ReplyLikeModel {
         });
     }
 
-     /**
+    /**
      * Get replies likes
      * @param {array} ids - replies ids
      * @returns {Promise}
@@ -67,7 +67,7 @@ class ReplyLikeModel {
         }).toArray();
     }
 
-     /**
+    /**
      * 刪除一個留言的讚
      * @param {string} reply_id - id of target reply
      * @param {object} user - user's object { "id":1111,"type":"facebook" }
