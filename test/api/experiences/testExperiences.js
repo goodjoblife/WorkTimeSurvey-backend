@@ -398,7 +398,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.notProperty(experience, 'experience_in_year');
                     assert.notProperty(experience, 'education');
                     assert.notProperty(experience, 'recommend_to_others');
-                    assert.notProperty(experience, 'js_currently_employed');
+                    assert.notProperty(experience, 'is_currently_employed');
                     assert.notProperty(experience, 'job_ending_time');
                     assert.notProperty(experience, 'data_time');
 

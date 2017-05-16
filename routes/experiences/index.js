@@ -74,12 +74,8 @@ router.get('/', function(req, res, next) {
 
 function _generateGetExperiencesViewModel(experiences, total) {
     const MAX_PREVIEW_SIZE = 160;
-    let result = {
-        total,
-        experiences: [],
-    };
 
-    experiences.forEach((experience) => {
+    const view_experiences = experiences.map(experience => {
         let experience_view_model = {
             _id: experience._id,
             type: experience.type,
@@ -87,7 +83,13 @@ function _generateGetExperiencesViewModel(experiences, total) {
             company: experience.company,
             job_title: experience.job_title,
             title: experience.title,
-            preview: experience.sections[0].content.substring(0, MAX_PREVIEW_SIZE),
+            preview: (() => {
+                if (experience.sections[0]) {
+                    return experience.sections[0].content.substring(0, MAX_PREVIEW_SIZE);
+                } else {
+                    return null;
+                }
+            })(),
             like_count: experience.like_count,
             reply_count: experience.reply_count,
         };
@@ -103,8 +105,14 @@ function _generateGetExperiencesViewModel(experiences, total) {
                 week_work_time: experience.week_work_time,
             });
         }
-        result.experiences.push(experience_view_model);
+        return experience_view_model;
     });
+
+    const result = {
+        total,
+        experiences: view_experiences,
+    };
+
     return result;
 }
 
