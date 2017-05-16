@@ -229,8 +229,11 @@ describe('Replies Test', function() {
                     assert.property(res.body, 'replies');
                     assert.notDeepProperty(res.body, 'author');
                     assert.isArray(res.body.replies);
-                    let reply = res.body.replies[0];
-                    assert.isTrue(reply.liked);
+                    const replies = res.body.replies;
+                    const target_reply = replies.find((reply) => {
+                        return reply.liked == true;
+                    });
+                    assert.isTrue(target_reply.liked);
                 });
         });
 
