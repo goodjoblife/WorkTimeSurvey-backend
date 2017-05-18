@@ -203,9 +203,8 @@ describe('Experiences 面試和工作經驗資訊', function() {
     });
 
     describe('GET /experiences', function() {
-
         before('Seeding some experiences', function() {
-            let inter_data_1 = Object.assign(generateInterviewExperienceData(), {
+            const inter_data_1 = Object.assign(generateInterviewExperienceData(), {
                 company: {
                     name: "GOODJOB1",
                     id: "123",
@@ -215,8 +214,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 like_count: 10,
             });
 
-            let inter_data_2 = generateInterviewExperienceData();
-            inter_data_2 = Object.assign(generateInterviewExperienceData(), {
+            const inter_data_2 = Object.assign(generateInterviewExperienceData(), {
                 company: {
                     name: "BADJOB",
                     id: "321",
@@ -226,20 +224,20 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 like_count: 5,
             });
 
-            let work_data_1 = Object.assign(generateWorkExperienceData(), {
+            const work_data_1 = Object.assign(generateWorkExperienceData(), {
                 company: {
                     name: "GOODJOB2",
-                    id: "123",
+                    id: "456",
                 },
                 job_title: "ENGINEER",
                 created_at: new Date("2017-03-21T10:00:00.929Z"),
                 like_count: 9,
             });
 
-            let work_data_2 = Object.assign(generateWorkExperienceData(), {
+            const work_data_2 = Object.assign(generateWorkExperienceData(), {
                 company: {
                     name: "GOODJOB1",
-                    id: "321",
+                    id: "123",
                 },
                 job_title: "F2E",
                 created_at: new Date("2017-03-25T10:00:00.929Z"),
@@ -254,20 +252,17 @@ describe('Experiences 面試和工作經驗資訊', function() {
             ]);
         });
 
-        it(`check API return correct data without query`, function() {
-
+        it('應該回傳"全部"的資料，當沒有 query', function() {
             return request(app).get('/experiences')
-                .query({})
                 .expect(200)
                 .expect(function(res) {
+                    assert.propertyVal(res.body, 'total', 4);
                     assert.property(res.body, 'experiences');
                     assert.lengthOf(res.body.experiences, 4);
-                    assert.deepPropertyVal(res.body.experiences[0], 'company.name', 'GOODJOB1');
                 });
         });
 
-        it(`return correct data if query company`, function() {
-
+        it(`搜尋 company 正確`, function() {
             return request(app).get('/experiences')
                 .query({
                     search_query: "GOODJOB2",
@@ -277,13 +272,12 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(function(res) {
                     assert.property(res.body, 'experiences');
                     assert.lengthOf(res.body.experiences, 1);
-                    assert.deepPropertyVal(res.body.experiences[0], 'company.name', 'GOODJOB2');
+                    assert.deepEqual(res.body.experiences[0].company, {name: 'GOODJOB2', id: '456'});
                     assert.propertyVal(res.body.experiences[0], 'job_title', 'ENGINEER');
                 });
         });
 
-        it(`return correct data if query job_title`, function() {
-
+        it('搜尋 job_title 正確', function() {
             return request(app).get('/experiences')
                 .query({
                     search_query: "HW ENGINEER",
@@ -293,13 +287,12 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(function(res) {
                     assert.property(res.body, 'experiences');
                     assert.lengthOf(res.body.experiences, 1);
-                    assert.deepPropertyVal(res.body.experiences[0], 'company.name', 'BADJOB');
+                    assert.deepEqual(res.body.experiences[0].company, {name: 'BADJOB', id: '321'});
                     assert.propertyVal(res.body.experiences[0], 'job_title', 'HW ENGINEER');
                 });
         });
 
-        it('小寫 company query 轉換成大寫', function() {
-
+        it('搜尋 company, 小寫 search_query 轉換成大寫', function() {
             return request(app).get('/experiences')
                 .query({
                     search_query: "GoodJob1",
@@ -308,12 +301,11 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body.experiences, 2);
-                    assert.deepPropertyVal(res.body.experiences[0], 'company.name', 'GOODJOB1');
+                    assert.deepEqual(res.body.experiences[0].company, {name: 'GOODJOB1', id: '123'});
                 });
         });
 
-        it('company match any substring in company.name', function() {
-
+        it('搜尋 company, match any substring in company.name', function() {
             return request(app).get('/experiences')
                 .query({
                     search_query: "GOODJOB",
@@ -322,42 +314,42 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body.experiences, 3);
-                    assert.deepPropertyVal(res.body.experiences[0], 'company.name', 'GOODJOB1');
-                    assert.deepPropertyVal(res.body.experiences[1], 'company.name', 'GOODJOB2');
+                    assert.deepEqual(res.body.experiences[0].company, {name: 'GOODJOB1', id: '123'});
+                    assert.deepEqual(res.body.experiences[1].company, {name: 'GOODJOB2', id: '456'});
+                    assert.deepEqual(res.body.experiences[2].company, {name: 'GOODJOB1', id: '123'});
                 });
         });
 
-        it('依照 sort_by  排序', function() {
-
+        it('依照 sort (created_at) 排序', function() {
             return request(app).get('/experiences')
                 .query({
-                    sort_by: 'created_at',
+                    sort: 'created_at',
                 })
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body.experiences, 4);
-                    assert.deepPropertyVal(res.body.experiences[0], 'company.name', 'GOODJOB1');
-                    assert.deepPropertyVal(res.body.experiences[1], 'company.name', 'BADJOB');
-                    assert.deepPropertyVal(res.body.experiences[2], 'company.name', 'GOODJOB2');
-                    assert.deepPropertyVal(res.body.experiences[3], 'company.name', 'GOODJOB1');
+                    assert.deepEqual(res.body.experiences[0].company, {name: 'GOODJOB1', id: '123'}); // 2017-03-25T10:00:00.929Z
+                    assert.deepEqual(res.body.experiences[1].company, {name: 'BADJOB', id: '321'}); // 2017-03-22T10:00:00.929Z
+                    assert.deepEqual(res.body.experiences[2].company, {name: 'GOODJOB2', id: '456'}); // 2017-03-21T10:00:00.929Z
+                    assert.deepEqual(res.body.experiences[3].company, {name: 'GOODJOB1', id: '123'}); // 2017-03-20T10:00:00.929Z
                 });
         });
 
-        it('根據統編搜尋', function() {
-
+        it('搜尋 company, 根據統編搜尋', function() {
             return request(app).get('/experiences')
                 .query({
-                    search_query: "321",
+                    search_query: "123",
                     search_by: "company",
                 })
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body.experiences, 2);
-                    assert.deepPropertyVal(res.body.experiences[0], 'company.id', '321');
+                    assert.deepEqual(res.body.experiences[0].company, {name: 'GOODJOB1', id: '123'});
+                    assert.deepEqual(res.body.experiences[1].company, {name: 'GOODJOB1', id: '123'});
                 });
         });
 
-        it('search_by輸入不符合規定之種類，預期回傳error code 422', function() {
+        it('should 422 當 search_by 不符合規定之種類', function() {
 
             return request(app).get('/experiences')
                 .query({
@@ -367,17 +359,15 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(422);
         });
 
-        it('sort輸入不符合規定之種類，預期回傳error code 422', function() {
-
+        it('should 422 當 sort 不符合規定之種類', function() {
             return request(app).get('/experiences')
                 .query({
-                    search_query: "321",
                     sort: "xxxxx",
                 })
                 .expect(422);
         });
 
-        it('沒有query的搜尋，驗證『面試經驗』回傳欄位', function() {
+        it('驗證『面試經驗』回傳欄位', function() {
             return request(app).get('/experiences')
                 .expect(200)
                 .expect(function(res) {
@@ -406,7 +396,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it('沒有query的搜尋，驗證『工作經驗』回傳欄位', function() {
+        it('驗證『工作經驗』回傳欄位', function() {
             return request(app).get('/experiences')
                 .expect(200)
                 .expect(function(res) {
@@ -434,12 +424,10 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.notProperty(experience, 'is_currently_employed');
                     assert.notProperty(experience, 'job_ending_time');
                     assert.notProperty(experience, 'data_time');
-
                 });
         });
 
-        it('使用type的interview進行搜尋，預期回傳2筆資料', function() {
-
+        it('type = "interview" 正確', function() {
             return request(app).get('/experiences')
                 .query({
                     type: "interview",
@@ -451,8 +439,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it(' type = "work"，預期回傳2筆資料', function() {
-
+        it('type = "work" 正確', function() {
             return request(app).get('/experiences')
                 .query({
                     type: "work",
@@ -464,8 +451,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it('search_query = "GoodJob1" search_by = "company" type = "interview" ，預期回傳1筆資料', function() {
-
+        it('搜尋 company 與 type = "interview" (search_query = "GoodJob1", search_by = "company")，預期回傳 1 筆資料', function() {
             return request(app).get('/experiences')
                 .query({
                     search_query: "GOODJOB1",
@@ -475,11 +461,11 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(200)
                 .expect(function(res) {
                     assert.lengthOf(res.body.experiences, 1);
+                    assert.propertyVal(res.body.experiences[0], 'like_count', 10, '驗證是特定一筆');
                 });
         });
 
-        it('search_query = "GoodJob1",因search_by為空,預期回傳422', function() {
-
+        it('should 422 當給定 search_query 卻沒有 search_by', function() {
             return request(app).get('/experiences')
                 .query({
                     search_query: "GOODJOB1",
@@ -487,8 +473,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(422);
         });
 
-        it('type = "work,interview" ，預期回傳4筆資料', function() {
-
+        it('type 聯合查詢 type = "work,interview" 正確', function() {
             return request(app).get('/experiences')
                 .query({
                     type: "work,interview",
@@ -511,21 +496,20 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it('limit = 2, start =0 ，預期回傳2筆資料', function() {
-
+        it('limit = 3, start = 0，預期回傳 3 筆資料', function() {
             return request(app).get('/experiences')
                 .query({
-                    limit: 2,
+                    limit: 3,
                     start: 0,
                 })
                 .expect(200)
                 .expect(function(res) {
-                    assert.lengthOf(res.body.experiences, 2);
+                    assert.propertyVal(res.body, 'total', 4, 'total 應該要是全部資料的數量');
+                    assert.lengthOf(res.body.experiences, 3);
                 });
         });
 
-        it('limit = 0，預期回傳422傳誤', function() {
-
+        it('should 422 if limit = 0', function() {
             return request(app).get('/experiences')
                 .query({
                     limit: 0,
@@ -533,8 +517,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(422);
         });
 
-        it('limit = -1，預期回傳422傳誤', function() {
-
+        it('should 422 if limit < 0', function() {
             return request(app).get('/experiences')
                 .query({
                     limit: -1,
@@ -542,8 +525,15 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(422);
         });
 
-        it('start = -1，預期回傳422傳誤', function() {
+        it('should 422 if limit > 100', function() {
+            return request(app).get('/experiences')
+                .query({
+                    limit: 101,
+                })
+                .expect(422);
+        });
 
+        it('should 422 if start < 0', function() {
             return request(app).get('/experiences')
                 .query({
                     start: -1,
@@ -551,8 +541,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(422);
         });
 
-        it(`sort_by = popularity，預期根據like_count數量由大到小 `, function() {
-
+        it('依照 sort (popularity) 排序，回傳根據 like_count 數值由大到小', function() {
             return request(app).get('/experiences')
                 .query({
                     sort: 'popularity',
@@ -563,11 +552,13 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.lengthOf(res.body.experiences, 4);
                     assert.propertyVal(res.body.experiences[0], 'like_count', 10);
                     assert.propertyVal(res.body.experiences[1], 'like_count', 9);
+                    assert.propertyVal(res.body.experiences[2], 'like_count', 5);
+                    assert.propertyVal(res.body.experiences[3], 'like_count', 0);
                 });
         });
 
         after(function() {
-            return db.collection('experiences').remove({});
+            return db.collection('experiences').deleteMany({});
         });
     });
 });
