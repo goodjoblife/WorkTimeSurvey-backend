@@ -64,7 +64,7 @@ describe('experiences 面試和工作經驗資訊', function() {
                             .then(experience => {
                                 // expected fields in db
                                 assert.equal(experience.type, 'work');
-                                assert.deepEqual(experience.author, {id: '-1', type: 'facebook'});
+                                assert.deepEqual(experience.author_id, fake_user._id);
                                 assert.deepEqual(experience.company, {id: '00000001', name: 'GOODJOB'});
                                 assert.equal(experience.region, '臺北市');
                                 assert.equal(experience.job_title, 'JOB_TITLE_EXAMPLE');

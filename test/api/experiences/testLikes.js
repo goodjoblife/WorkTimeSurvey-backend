@@ -56,10 +56,7 @@ describe('Experience Likes Test', function() {
 
             return db.collection('experiences').insertOne({
                 type: 'interview',
-                author: {
-                    type: "facebook",
-                    _id: "123",
-                },
+                author_id: new ObjectId(),
                 status: "published",
                 like_count: 0,
             }).then(function(result) {
@@ -209,27 +206,18 @@ describe('Experience Likes Test', function() {
 
             return db.collection('experiences').insertOne({
                 type: 'interview',
-                author: {
-                    id: fake_user.facebook_id,
-                    type: 'facebook',
-                },
+                author_id: new ObjectId(),
                 status: "published",
                 like_count: 2,
             }).then(function(result) {
                 experience_id = result.insertedId.toString();
                 return db.collection('experience_likes').insertMany([{
                     created_at: new Date(),
-                    user: {
-                        id: fake_user.facebook_id,
-                        type: 'facebook',
-                    },
+                    user_id: fake_user._id,
                     experience_id: result.insertedId,
                 }, {
                     created_at: new Date(),
-                    user: {
-                        id: '-2',
-                        type: 'facebook',
-                    },
+                    user_id: fake_other_user._id,
                     experience_id: result.insertedId,
 
                 }]);
@@ -250,10 +238,7 @@ describe('Experience Likes Test', function() {
                 req.then((res) => {
                     return db.collection('experience_likes').findOne({
                         experience_id: new ObjectId(experience_id),
-                        user: {
-                            id: fake_user.facebook_id,
-                            type: 'facebook',
-                        },
+                        user_id: fake_user._id,
                     });
                 })
                 .then((result) => {
@@ -272,7 +257,7 @@ describe('Experience Likes Test', function() {
 
         it('cannot delete like, beacause the user does not login and return 404', function() {
             return db.collection('experience_likes').remove({
-                user: test_likes[0].user,
+                user_id: test_likes[0].user_id,
             }).then((result) => {
                 return request(app)
                     .delete('/experiences/' + experience_id + '/likes')
@@ -288,7 +273,7 @@ describe('Experience Likes Test', function() {
 
         it('cannot delete like, beacause the like does not exist and return 404', function() {
             return db.collection('experience_likes').remove({
-                user: test_likes[0].user,
+                user_id: test_likes[0].user_id,
             }).then((result) => {
                 return request(app)
                     .delete('/experiences/' + experience_id + '/likes')
@@ -307,7 +292,7 @@ describe('Experience Likes Test', function() {
 
         it('cannot delete like, because experience does not exist and return 404', function() {
             return db.collection('experience_likes').remove({
-                user: test_likes[0].user,
+                user_id: test_likes[0].user_id,
             }).then((result) => {
                 return request(app)
                     .delete('/experiences/123456789/likes')

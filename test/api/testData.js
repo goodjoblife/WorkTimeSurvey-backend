@@ -1,11 +1,10 @@
+const { ObjectId } = require('mongodb');
+
 function generateInterviewExperienceData() {
     const interview_experience_data = {
         type: 'interview',
         created_at: new Date(),
-        author: {
-            _id: '-1',
-            type: 'facebook',
-        },
+        author_id: new ObjectId(),
         region: "臺北市",
         job_title: 'job_title_example',
         title: "title_example",
@@ -50,10 +49,7 @@ function generateWorkExperienceData() {
     const work_experience_data = {
         type: 'work',
         created_at: new Date(),
-        author: {
-            _id: '-1',
-            type: 'facebook',
-        },
+        author_id: new ObjectId(),
         region: "臺北市",
         job_title: 'job_title_example',
         title: "title_example",

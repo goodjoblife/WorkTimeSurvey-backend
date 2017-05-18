@@ -44,10 +44,7 @@ describe('Replies Test', function() {
         beforeEach('Seed experiences collection', function() {
             const experience = {
                 type: 'interview',
-                author: {
-                    type: "facebook",
-                    _id: "123",
-                },
+                author_id: new ObjectId(),
                 reply_count: 0,
             };
             return db.collection('experiences').insertOne(experience)
@@ -156,10 +153,7 @@ describe('Replies Test', function() {
         before('create test data', function() {
             return db.collection('experiences').insertOne({
                 type: 'interview',
-                author: {
-                    id: fake_user.facebook_id,
-                    type: 'facebook',
-                },
+                author_id: fake_user._id,
                 status: "published",
             }).then(function(result) {
                 experience_id = result.insertedId;
@@ -169,10 +163,7 @@ describe('Replies Test', function() {
                     testDatas.push({
                         created_at: new Date(),
                         experience_id: experience_id,
-                        author: {
-                            id: fake_user.facebook_id,
-                            type: 'facebook',
-                        },
+                        author_id: fake_user._id,
                         content: "hello test0",
                         like_count: 0,
                         report_count: 0,
@@ -184,11 +175,11 @@ describe('Replies Test', function() {
                 let reply1 = result.ops[0];
                 let reply2 = result.ops[1];
                 let testLikes = [{
-                    user: reply1.author,
+                    user_id: reply1.author_id,
                     reply_id: reply1._id,
                     experience_id: reply1.experience_id,
                 }, {
-                    user: reply2.author,
+                    user_id: reply2.author_id,
                     reply_id: reply2._id,
                     experience_id: reply2.experience_id,
                 }];

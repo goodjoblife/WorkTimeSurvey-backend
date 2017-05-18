@@ -33,10 +33,7 @@ describe('POST /replies/:id/likes', function() {
         const reply = {
             experience_id,
             content: 'Hello',
-            user: {
-                id: "3",
-                type: "facebook",
-            },
+            user: new ObjectId(),
             floor: 2,
             like_count: 0,
         };
@@ -81,10 +78,7 @@ describe('POST /replies/:id/likes', function() {
         const check_reply_likes_collection = req
             .then(() => db.collection('reply_likes').findOne({
                 reply_id: new ObjectId(reply_id_string),
-                user: {
-                    id: '1',
-                    type: 'facebook',
-                },
+                user_id: fake_user._id,
             }))
             .then(record => {
                 assert.isNotNull(record, 'expect record is retrieved in db');
@@ -211,10 +205,7 @@ describe('DELETE /replies/:id/likes', function() {
         const reply = {
             experience_id,
             content: 'Hello',
-            user: {
-                id: "3",
-                type: "facebook",
-            },
+            user_id: fake_third_user._id,
             floor: 1,
             like_count: 2,
         };
@@ -229,17 +220,11 @@ describe('DELETE /replies/:id/likes', function() {
         const reply_likes = [{
             experience_id,
             reply_id: new ObjectId(reply_id_string),
-            user: {
-                id: "1",
-                type: "facebook",
-            },
+            user_id: fake_user._id,
         }, {
             experience_id,
             reply_id: new ObjectId(reply_id_string),
-            user: {
-                id: "2",
-                type: "facebook",
-            },
+            user_id: fake_other_user._id,
         }];
 
         return db.collection('reply_likes').insertMany(reply_likes);
@@ -282,10 +267,7 @@ describe('DELETE /replies/:id/likes', function() {
         const check_reply_likes_collection = req
             .then(() => db.collection('reply_likes').findOne({
                 reply_id: new ObjectId(reply_id_string),
-                user: {
-                    id: '1',
-                    type: 'facebook',
-                },
+                user_id: fake_user._id,
             }))
             .then(record => {
                 assert.isNull(record, 'expect nothing is trieved in db');
