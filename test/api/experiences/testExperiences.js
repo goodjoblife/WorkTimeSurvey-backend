@@ -17,19 +17,19 @@ const {
 } = require('../testData');
 
 describe('Experiences 面試和工作經驗資訊', function() {
-    var db = undefined;
+    let db = undefined;
 
     before('DB: Setup', function() {
         return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
             db = _db;
         });
     });
-    describe('GET /experiences/:id', function() {
 
+    describe('GET /experiences/:id', function() {
         let test_interview_experience_id = null;
         let test_work_experience_id = null;
         let sandbox = null;
-        let fake_user = {
+        const fake_user = {
             _id: new ObjectId(),
             facebook_id: '-1',
             facebook: {
@@ -37,30 +37,46 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 name: 'markLin',
             },
         };
-        before('mock user', function() {
+        const fake_other_user = {
+            _id: new ObjectId(),
+            facebook_id: '-2',
+            facebook: {
+                id: '-2',
+                name: 'markChen',
+            },
+        };
+
+        before('Mock', function() {
             sandbox = sinon.sandbox.create();
-            sandbox.stub(authentication, 'cachedFacebookAuthentication')
+            const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication');
+            cachedFacebookAuthentication
                 .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
                 .resolves(fake_user);
+            cachedFacebookAuthentication
+                .withArgs(sinon.match.object, sinon.match.object, 'fakeOtheraccesstoken')
+                .resolves(fake_other_user);
         });
 
-        before('create experiences', function() {
+        before('Seed experiences collection', function() {
             return db.collection('experiences').insertMany([generateInterviewExperienceData(), generateWorkExperienceData()])
                 .then(function(result) {
-                    test_interview_experience_id = result.ops[0]._id;
-                    test_work_experience_id = result.ops[1]._id;
-                    return db.collection('experience_likes').insertOne({
-                        created_at: new Date(),
-                        user: {
-                            id: fake_user.facebook_id,
-                            type: 'facebook',
-                        },
-                        experience_id: new ObjectId(test_interview_experience_id),
-                    });
+                    test_interview_experience_id = result.insertedIds[0].toString();
+                    test_work_experience_id = result.insertedIds[1].toString();
                 });
         });
 
-        it('should return one data, and the liked field should not be exist', function() {
+        before('Seed experience_likes collection', function() {
+            return db.collection('experience_likes').insertOne({
+                created_at: new Date(),
+                user: {
+                    id: fake_other_user.facebook_id,
+                    type: 'facebook',
+                },
+                experience_id: new ObjectId(test_interview_experience_id),
+            });
+        });
+
+        it('should not see liked if not authenticated', function() {
             return request(app).get("/experiences/" + test_interview_experience_id)
                 .expect(200)
                 .expect(function(res) {
@@ -70,10 +86,10 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it('should return one data, and the liked field hsould be true', function() {
+        it('should see liked = true if authenticated user liked', function() {
             return request(app).get("/experiences/" + test_interview_experience_id)
                 .send({
-                    access_token: 'fakeaccesstoken',
+                    access_token: 'fakeOtheraccesstoken',
                 })
                 .expect(200)
                 .expect((res) => {
@@ -83,19 +99,31 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it('should get error code 404 while giving wrong experience_id', function() {
-            return request(app).get("/experiences/123XXX")
-                .expect(404);
-        });
-
-        it('should get one interview experience, and it return correct fields', function() {
+        it('should see liked = false if authenticated user not liked', function() {
             return request(app).get("/experiences/" + test_interview_experience_id)
                 .send({
                     access_token: 'fakeaccesstoken',
                 })
                 .expect(200)
                 .expect((res) => {
+                    assert.equal(res.body._id, test_interview_experience_id);
+                    assert.notDeepProperty(res.body, 'author');
+                    assert.isFalse(res.body.liked);
+                });
+        });
 
+        it('should 404 NotFound if experiences does not exist', function() {
+            return request(app).get("/experiences/123XXX")
+                .expect(404);
+        });
+
+        it('should get one interview experience, and it returns correct fields', function() {
+            return request(app).get("/experiences/" + test_interview_experience_id)
+                .send({
+                    access_token: 'fakeaccesstoken',
+                })
+                .expect(200)
+                .expect((res) => {
                     const experience = res.body;
                     assert.property(experience, '_id');
                     assert.propertyVal(experience, 'type', 'interview');
@@ -127,7 +155,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it('should get one work experience , and it return correct fields ', function() {
+        it('should get one work experience, and it returns correct fields ', function() {
             return request(app).get("/experiences/" + test_work_experience_id)
                 .send({
                     access_token: 'fakeaccesstoken',
@@ -160,8 +188,13 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.notProperty(experience, 'author');
                 });
         });
+
         after(function() {
-            return db.collection('experiences').remove({});
+            return db.collection('experiences').deleteMany({});
+        });
+
+        after(function() {
+            return db.collection('experience_likes').deleteMany({});
         });
 
         after(function() {
