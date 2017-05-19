@@ -644,6 +644,31 @@ describe('Workings 工時資訊', function() {
                     });
             });
 
+            for(let salary_type of ['month', 'year', 'day']) {
+                it(`doc shouldn't have 'estimated_hourly_wage' field if salary_type is '${salary_type}' 
+                    but no WorkTime information`, function() {
+                    const send_request = request(app).post('/workings')
+                        .send(generateAllPayload({
+                            salary_type: salary_type,
+                            salary_amount: '10000',
+                            week_work_time: -1,
+                            day_real_work_time: -1,
+                            day_promised_work_time: -1,
+                            overtime_frequency: -1,
+                        }))
+                        .expect(200)
+                        .then((res) => {
+                            return res.body.working._id;
+                        });
+                    const test_db = send_request.then((data_id) => {
+                        return db.collection('workings').findOne({_id:ObjectId(data_id)}).then(result => {
+                            assert.notProperty(result, 'estimated_hourly_wage');
+                        });
+                    });
+                    return Promise.all([send_request, test_db]);
+                });
+            }
+
             it('salary_amount is required', function() {
                 return request(app).post('/workings')
                     .send(generateSalaryRelatedPayload({
