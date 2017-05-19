@@ -361,7 +361,7 @@ function main(req, res, next) {
         };
 
         const wage = helper.calculateEstimatedHourlyWage(working);
-        if(typeof wage !== 'undefined'){
+        if (typeof wage !== 'undefined') {
             working.estimated_hourly_wage = wage;
         }
     }
