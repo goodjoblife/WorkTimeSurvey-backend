@@ -10,12 +10,20 @@ const authentication = require('../../../libs/authentication');
 
 describe('Replies Test', function() {
     let db;
-    let fake_user = {
+    const fake_user = {
         _id: new ObjectId(),
         facebook_id: '-1',
         facebook: {
             id: '-1',
             name: 'markLin',
+        },
+    };
+    const fake_other_user = {
+        _id: new ObjectId(),
+        facebook_id: '-2',
+        facebook: {
+            id: '-2',
+            name: 'markChen',
         },
     };
 
@@ -140,17 +148,21 @@ describe('Replies Test', function() {
         });
     });
 
-    describe('Get : /experiences/:id/replies', function() {
+    describe('GET /experiences/:id/replies', function() {
         let experience_id;
         let experience_id_string;
         let sandbox = null;
-        const test_Replies_Count = 200;
+        const TEST_REPLIES_COUNT = 200;
 
         before('create user', function() {
             sandbox = sinon.sandbox.create();
-            sandbox.stub(authentication, 'cachedFacebookAuthentication')
+            const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication');
+            cachedFacebookAuthentication
                 .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
                 .resolves(fake_user);
+            cachedFacebookAuthentication
+                .withArgs(sinon.match.object, sinon.match.object, 'otherFakeAccessToken')
+                .resolves(fake_other_user);
         });
 
         before('create test data', function() {
@@ -160,12 +172,12 @@ describe('Replies Test', function() {
                     id: fake_user.facebook_id,
                     type: 'facebook',
                 },
-                status: "published",
             }).then(function(result) {
                 experience_id = result.insertedId;
                 experience_id_string = result.insertedId.toString();
+
                 let testDatas = [];
-                for (var i = 0; i < test_Replies_Count; i++) {
+                for (let i = 0; i < TEST_REPLIES_COUNT; i++) {
                     testDatas.push({
                         created_at: new Date(),
                         experience_id: experience_id,
@@ -176,14 +188,15 @@ describe('Replies Test', function() {
                         content: "hello test0",
                         like_count: 0,
                         report_count: 0,
-                        floor: i+1,
+                        floor: i,
                     });
                 }
                 return db.collection('replies').insertMany(testDatas);
             }).then(function(result) {
-                let reply1 = result.ops[0];
-                let reply2 = result.ops[1];
-                let testLikes = [{
+                const reply1 = result.ops[0];
+                const reply2 = result.ops[1];
+                const reply3 = result.ops[2];
+                const testLikes = [{
                     user: reply1.author,
                     reply_id: reply1._id,
                     experience_id: reply1.experience_id,
@@ -191,9 +204,33 @@ describe('Replies Test', function() {
                     user: reply2.author,
                     reply_id: reply2._id,
                     experience_id: reply2.experience_id,
+                }, {
+                    user: {
+                        id: fake_other_user.facebook_id,
+                        type: 'facebook',
+                    },
+                    reply_id: reply3._id,
+                    experience_id: reply3.experience_id,
                 }];
                 return db.collection('reply_likes').insertMany(testLikes);
             });
+        });
+
+        it('should get replies, and the fields are correct', function() {
+            return request(app)
+                .get(`/experiences/${experience_id_string}/replies`)
+                .expect(200)
+                .expect(function(res) {
+                    assert.property(res.body, 'replies');
+                    assert.isArray(res.body.replies);
+                    assert.notDeepProperty(res.body, 'replies.0.author');
+                    assert.deepProperty(res.body, 'replies.0._id');
+                    assert.deepProperty(res.body, 'replies.0.content');
+                    assert.deepProperty(res.body, 'replies.0.like_count');
+                    assert.deepProperty(res.body, 'replies.0.created_at');
+                    assert.deepProperty(res.body, 'replies.0.floor');
+                    assert.lengthOf(res.body.replies, 20, '不給 limit 的最大回傳數量');
+                });
         });
 
         it('get experiences replies data and expect 200 replies ', function() {
@@ -202,39 +239,59 @@ describe('Replies Test', function() {
                 .query({
                     limit: 200,
                 })
-                .send({
-                    access_token: 'fakeaccesstoken',
-                })
                 .expect(200)
                 .expect(function(res) {
                     assert.property(res.body, 'replies');
                     assert.notDeepProperty(res.body, 'replies.0.author');
                     assert.isArray(res.body.replies);
-                    assert.lengthOf(res.body.replies, test_Replies_Count);
+                    assert.lengthOf(res.body.replies, TEST_REPLIES_COUNT);
                 });
         });
 
-        it('get experiences reply, and expected liked is true ', function() {
+        it('should not see liked (true/false) if not autheticated', function() {
             return request(app)
                 .get(`/experiences/${experience_id_string}/replies`)
+                .expect(200)
+                .expect(function(res) {
+                    assert.property(res.body, 'replies');
+                    assert.isArray(res.body.replies);
+                    assert.notDeepProperty(res.body, 'replies.0.liked');
+                    assert.notDeepProperty(res.body, 'replies.1.liked');
+                });
+        });
+
+        it('should see liked (true/false) if autheticated', function() {
+            const request_as_fake_user = request(app)
+                .get(`/experiences/${experience_id_string}/replies`)
                 .query({
-                    limit: 200,
-                    start: 0,
-                })
-                .send({
                     access_token: 'fakeaccesstoken',
                 })
                 .expect(200)
                 .expect(function(res) {
                     assert.property(res.body, 'replies');
-                    assert.notDeepProperty(res.body, 'author');
                     assert.isArray(res.body.replies);
-                    const replies = res.body.replies;
-                    const target_reply = replies.find((reply) => {
-                        return reply.liked == true;
-                    });
-                    assert.isTrue(target_reply.liked);
+                    assert.isTrue(res.body.replies[0].liked, 'fake_user 對 reply1 按過讚');
+                    assert.isTrue(res.body.replies[1].liked, 'fake_user 對 reply2 按過讚');
+                    assert.isFalse(res.body.replies[2].liked, 'fake_user 對 reply3 沒表達 like');
                 });
+            const request_as_fake_other_user = request(app)
+                .get(`/experiences/${experience_id_string}/replies`)
+                .query({
+                    access_token: 'otherFakeAccessToken',
+                })
+                .expect(200)
+                .expect(function(res) {
+                    assert.property(res.body, 'replies');
+                    assert.isArray(res.body.replies);
+                    assert.isFalse(res.body.replies[0].liked, 'fake_other_user 對 reply1 沒表達 like');
+                    assert.isFalse(res.body.replies[1].liked, 'fake_other_user 對 reply2 沒表達 like');
+                    assert.isTrue(res.body.replies[2].liked, 'fake_other_user 對 reply3 按過讚');
+                });
+
+            return Promise.all([
+                request_as_fake_user,
+                request_as_fake_other_user,
+            ]);
         });
 
         it('get experiences replies data by start 0 and limit 100 , expect 100 replies ', function() {
@@ -243,8 +300,6 @@ describe('Replies Test', function() {
                 .query({
                     limit: 100,
                     start: 0,
-                })
-                .send({
                     access_token: 'fakeaccesstoken',
                 })
                 .expect(200)
@@ -259,7 +314,7 @@ describe('Replies Test', function() {
         it('set error replies and expect error code 404', function() {
             return request(app)
                 .get('/experiences/1111/replies')
-                .send({
+                .query({
                     access_token: 'fakeaccesstoken',
                 })
                 .expect(404);
@@ -268,10 +323,8 @@ describe('Replies Test', function() {
         it('limit = 2000  and expect error code 402', function() {
             return request(app)
                 .get(`/experiences/${experience_id_string}/replies`)
-                .send({
-                    access_token: 'fakeaccesstoken',
-                })
                 .query({
+                    access_token: 'fakeaccesstoken',
                     limit: 2000,
                 })
                 .expect(422);
@@ -283,8 +336,6 @@ describe('Replies Test', function() {
                 .query({
                     limit: 1,
                     start: 0,
-                })
-                .send({
                     access_token: 'fakeaccesstoken',
                 })
                 .expect(200)
@@ -303,9 +354,9 @@ describe('Replies Test', function() {
         });
 
         after(function() {
-            let pro1 = db.collection('replies').remove({});
-            let pro2 = db.collection('experiences').remove({});
-            let pro3 = db.collection('reply_likes').remove({});
+            const pro1 = db.collection('replies').remove({});
+            const pro2 = db.collection('experiences').remove({});
+            const pro3 = db.collection('reply_likes').remove({});
             return Promise.all([pro1, pro2, pro3]);
         });
 
