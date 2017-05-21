@@ -175,7 +175,7 @@ describe('Experience Likes Test', function() {
             return db.collection("experience_likes").indexes().then((indexes) => {
                 const uniqueIndex = indexes[1];
                 assert.isDefined(uniqueIndex);
-                assert.equal(uniqueIndex.name, "user_1_experience_id_1");
+                assert.equal(uniqueIndex.name, "user_id_1_experience_id_1");
                 assert.equal(uniqueIndex.unique, true);
             });
         });
