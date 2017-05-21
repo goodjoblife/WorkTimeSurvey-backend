@@ -68,7 +68,7 @@ describe('Replies Test', function() {
                     assert.deepPropertyVal(res.body, 'reply.floor', 0);
                     assert.deepPropertyVal(res.body, 'reply.experience_id', experience_id_string);
                     assert.deepPropertyVal(res.body, 'reply.like_count', 0);
-                    assert.deepEqual(res.body.reply.author, {id: '-1', type: 'facebook'});
+                    assert.deepEqual(res.body.reply.author_id, fake_user._id.toString());
                     assert.deepProperty(res.body, 'reply.created_at');
                 });
 
@@ -88,7 +88,7 @@ describe('Replies Test', function() {
                             assert.deepEqual(reply.experience_id, ObjectId(experience_id_string));
                             assert.deepPropertyVal(res.body, 'reply.like_count', 0);
                             assert.property(reply, 'created_at');
-                            assert.deepEqual(reply.author, {id: '-1', type: 'facebook'});
+                            assert.deepEqual(reply.author_id, fake_user._id);
                         }));
 
             return Promise.all([
