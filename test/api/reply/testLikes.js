@@ -33,7 +33,7 @@ describe('POST /replies/:id/likes', function() {
         const reply = {
             experience_id,
             content: 'Hello',
-            user: new ObjectId(),
+            author_id: new ObjectId(),
             floor: 2,
             like_count: 0,
         };
@@ -205,7 +205,7 @@ describe('DELETE /replies/:id/likes', function() {
         const reply = {
             experience_id,
             content: 'Hello',
-            user_id: fake_third_user._id,
+            author_id: fake_third_user._id,
             floor: 1,
             like_count: 2,
         };
