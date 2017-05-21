@@ -27,7 +27,7 @@ class ReplyLikeModel {
             }
 
             const data = {
-                user: user,
+                user_id: user._id,
                 created_at: new Date(),
                 reply_time: reply.created_at,
                 reply_id: new ObjectId(reply_id),
@@ -84,7 +84,7 @@ class ReplyLikeModel {
             }
 
             const filter = {
-                user: user,
+                user_id: user._id,
                 reply_id: new ObjectId(reply_id),
             };
 

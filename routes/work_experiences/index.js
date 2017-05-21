@@ -26,10 +26,7 @@ router.post('/', [
         const experience = {};
         Object.assign(experience, {
             type: "work",
-            author: {
-                id: req.user.facebook_id,
-                type: 'facebook',
-            },
+            author_id: req.user._id,
             // company 後面決定
             company: {},
             like_count: 0,

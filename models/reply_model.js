@@ -14,12 +14,12 @@ class ReplyModel {
      * 新增留言至工作經驗文章中
      * @param  {string}   experience_id - experience's id
      * @param  {string}   partial_reply - {
-     *      user : {id : ObjectId,type : "facebook"}
+     *      user_id : ObjectId
      *      content : "hello",
      * }
      * @returns {Promise}
      *  - resolved : {
-     *          user: { id:ObjectId, type: "facebook" }
+     *          user_id: ObjectId,
      *          content: "hello",
      *          experience_id: ObjectId,
      *          floor: 1,

@@ -168,10 +168,7 @@ router.get('/:id', [
         });
 
         if (req.user) {
-            user = {
-                id: req.user.facebook_id,
-                type: 'facebook',
-            };
+            user = req.user;
         }
 
         const experience_model = new ExperienceModel(req.db);

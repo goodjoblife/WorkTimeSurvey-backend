@@ -18,13 +18,7 @@ router.post('/:reply_id/likes', (req, res, next) => {
         return;
     }
 
-    const user = {
-        id: req.user.facebook_id,
-        type: 'facebook',
-    };
-
-    // TODO
-    // const user_id = req.user._id;
+    const user = req.user;
 
     const reply_like_model = new ReplyLikeModel(req.db);
     const reply_model = new ReplyModel(req.db);
@@ -59,13 +53,7 @@ router.delete('/:reply_id/likes', (req, res, next) => {
         return;
     }
 
-    const user = {
-        id: req.user.facebook_id,
-        type: 'facebook',
-    };
-
-    // TODO
-    // const user_id = req.user._id;
+    const user = req.user;
 
     const reply_like_model = new ReplyLikeModel(req.db);
     const reply_model = new ReplyModel(req.db);

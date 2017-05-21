@@ -23,10 +23,7 @@ router.post('/:id/replies', [
             return;
         }
 
-        const user = {
-            id: req.user.facebook_id,
-            type: 'facebook',
-        };
+        const user = req.user;
         const experience_id = req.params.id;
         // pick fields from post body
         const content = req.body.content;
@@ -40,7 +37,7 @@ router.post('/:id/replies', [
         });
 
         const partial_reply = {
-            author: user,
+            author_id: user._id,
             content,
         };
 
@@ -91,10 +88,7 @@ router.get('/:id/replies', [
         });
 
         if (req.user) {
-            user = {
-                id: req.user.facebook_id,
-                type: 'facebook',
-            };
+            user = req.user;
         }
 
         const reply_model = new ReplyModel(req.db);
@@ -129,7 +123,7 @@ function _createLikesField(replies, likes, user) {
 
 function _isExistUserLiked(reply_id, user, likes) {
     const result = likes.find((like) => {
-        if (like.reply_id.equals(reply_id) && like.user.id == user.id) {
+        if (like.reply_id.equals(reply_id) && like.user_id.equals(user._id)) {
             return like;
         }
     });

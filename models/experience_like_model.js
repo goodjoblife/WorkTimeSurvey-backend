@@ -30,7 +30,7 @@ class ExperienceLikeModel {
             }
 
             const data = {
-                user: user,
+                user_id: user._id,
                 created_at: new Date(),
                 experience_id: new ObjectId(experience_id),
             };
@@ -63,7 +63,7 @@ class ExperienceLikeModel {
 
             return this.collection.deleteOne({
                 experience_id: new ObjectId(experience_id),
-                user: user,
+                user_id: user._id,
             });
         }).then((result) => {
             if (result.deletedCount == 0) {
@@ -99,7 +99,7 @@ class ExperienceLikeModel {
 
             return this.collection.findOne({
                 experience_id: new ObjectId(experience_id),
-                user: user,
+                user_id: user._id,
             });
         }).then((likes) => {
             return likes;

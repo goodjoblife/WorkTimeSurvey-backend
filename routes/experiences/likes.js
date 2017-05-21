@@ -24,10 +24,7 @@ router.post('/:id/likes', [
             ips: req.ips,
         });
 
-        const user = {
-            id: req.user.facebook_id,
-            type: 'facebook',
-        };
+        const user = req.user;
         const experience_id = req.params.id;
         const experience_like_model = new ExperienceLikeModel(req.db);
         const experience_model = new ExperienceModel(req.db);
@@ -65,10 +62,7 @@ router.delete('/:id/likes', [
             ips: req.ips,
         });
 
-        const user = {
-            id: req.user.facebook_id,
-            type: 'facebook',
-        };
+        const user = req.user;
         const experience_id = req.params.id;
         const experience_like_model = new ExperienceLikeModel(req.db);
         const experience_model = new ExperienceModel(req.db);
