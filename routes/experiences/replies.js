@@ -119,6 +119,9 @@ router.get('/:id/replies', [
 ]);
 
 function _createLikesField(replies, likes, user) {
+    if (!user) {
+        return;
+    }
     replies.forEach((reply) => {
         reply.liked = _isExistUserLiked(reply._id, user, likes);
     });
