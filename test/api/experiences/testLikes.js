@@ -217,7 +217,7 @@ describe('Experience Likes Test', function() {
 
         beforeEach('create test data', function() {
             const experience_by_user = Object.assign(generateInterviewExperienceData(), {
-                author_id: {
+                author: {
                     id: fake_user.facebook_id,
                     type: 'facebook',
                 },
