@@ -112,7 +112,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it('should 404 NotFound if experiences does not exist', function() {
+        it('should be status 404 NotFound if experiences does not exist', function() {
             return request(app).get("/experiences/123XXX")
                 .expect(404);
         });
@@ -349,7 +349,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it('should 422 當 search_by 不符合規定之種類', function() {
+        it('should be status 422 當 search_by 不符合規定之種類', function() {
 
             return request(app).get('/experiences')
                 .query({
@@ -359,7 +359,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(422);
         });
 
-        it('should 422 當 sort 不符合規定之種類', function() {
+        it('should be status 422 當 sort 不符合規定之種類', function() {
             return request(app).get('/experiences')
                 .query({
                     sort: "xxxxx",
@@ -427,7 +427,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it('type = "interview" 正確', function() {
+        it('type = "interview" 正確取得 面試經驗', function() {
             return request(app).get('/experiences')
                 .query({
                     type: "interview",
@@ -439,7 +439,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it('type = "work" 正確', function() {
+        it('type = "work" 正確取得 工作經驗', function() {
             return request(app).get('/experiences')
                 .query({
                     type: "work",
@@ -465,7 +465,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it('should 422 當給定 search_query 卻沒有 search_by', function() {
+        it('should be status 422 當給定 search_query 卻沒有 search_by', function() {
             return request(app).get('/experiences')
                 .query({
                     search_query: "GOODJOB1",
@@ -473,7 +473,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(422);
         });
 
-        it('type 聯合查詢 type = "work,interview" 正確', function() {
+        it('type 聯合查詢 type = "work,interview" 正確取得 面試/工作經驗', function() {
             return request(app).get('/experiences')
                 .query({
                     type: "work,interview",
@@ -509,7 +509,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 });
         });
 
-        it('should 422 if limit = 0', function() {
+        it('should be status 422 if limit = 0', function() {
             return request(app).get('/experiences')
                 .query({
                     limit: 0,
@@ -517,7 +517,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(422);
         });
 
-        it('should 422 if limit < 0', function() {
+        it('should be status 422 if limit < 0', function() {
             return request(app).get('/experiences')
                 .query({
                     limit: -1,
@@ -525,7 +525,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(422);
         });
 
-        it('should 422 if limit > 100', function() {
+        it('should be status 422 if limit > 100', function() {
             return request(app).get('/experiences')
                 .query({
                     limit: 101,
@@ -533,7 +533,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(422);
         });
 
-        it('should 422 if start < 0', function() {
+        it('should be status 422 if start < 0', function() {
             return request(app).get('/experiences')
                 .query({
                     start: -1,
@@ -541,7 +541,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(422);
         });
 
-        it('依照 sort (popularity) 排序，回傳根據 like_count 數值由大到小', function() {
+        it('依照 sort (popularity) 排序，回傳的經驗根據 like_count 數值由大到小排列', function() {
             return request(app).get('/experiences')
                 .query({
                     sort: 'popularity',
