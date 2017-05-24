@@ -216,7 +216,7 @@ describe('Experience Likes Test', function() {
         });
 
         beforeEach('create test data', function() {
-            const experience_user = Object.assign(generateInterviewExperienceData(), {
+            const experience_by_user = Object.assign(generateInterviewExperienceData(), {
                 author_id: {
                     id: fake_user.facebook_id,
                     type: 'facebook',
@@ -224,7 +224,7 @@ describe('Experience Likes Test', function() {
                 like_count: 2,
             });
 
-            const experience_other_user = Object.assign(generateInterviewExperienceData(), {
+            const experience_by_other_user = Object.assign(generateInterviewExperienceData(), {
                 author: {
                     id: fake_other_user.facebook_id,
                     type: 'facebook',
@@ -232,8 +232,8 @@ describe('Experience Likes Test', function() {
             });
 
             return db.collection('experiences').insertMany([
-                experience_user,
-                experience_other_user,
+                experience_by_user,
+                experience_by_other_user,
             ]).then(function(result) {
                 experience_id_by_user = result.ops[0]._id;
                 experience_id_string_by_user = result.ops[0]._id.toString();
