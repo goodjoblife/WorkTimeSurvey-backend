@@ -372,7 +372,7 @@ describe('Experience Likes Test', function() {
                     });
                 })
                 .then((result) => {
-                    assert.equal(result.user.id, fake_other_user.facebook_id, 'the userB of like should exist');
+                    assert.equal(result.user.id, fake_other_user.facebook_id, 'the other user of like should exist');
                 });
 
             return Promise.all([
