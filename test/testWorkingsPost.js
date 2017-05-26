@@ -584,7 +584,25 @@ describe('Workings 工時資訊', function() {
                 });
             }
 
-            it(`if salary_type is 'hour' should have 'estimated_hourly_wage' field`, function() {
+            it('salary_amount is required', function() {
+                return request(app).post('/workings')
+                    .send(generateSalaryRelatedPayload({
+                        salary_amount: -1,
+                    }))
+                    .expect(422);
+            });
+
+            it('experience_in_year is required', function() {
+                return request(app).post('/workings')
+                    .send(generateSalaryRelatedPayload({
+                        experience_in_year: -1,
+                    }))
+                    .expect(422);
+            });
+        });
+
+        describe('estimated_hourly_wage Part', function() {
+            it(`should have 'estimated_hourly_wage' field, if salary_type is 'hour' `, function() {
                 return request(app).post('/workings')
                     .send(generateSalaryRelatedPayload({
                         salary_type: 'hour',
@@ -597,8 +615,8 @@ describe('Workings 工時資訊', function() {
                     });
             });
 
-            it(`if salary_type is 'day' and has WorkingTime information
-                should have 'estimated_hourly_wage' field`, function() {
+            it(`should have 'estimated_hourly_wage' field, if salary_type is
+                 'day' and has WorkingTime information`, function() {
                 return request(app).post('/workings')
                     .send(generateAllPayload({
                         salary_type: 'day',
@@ -612,8 +630,8 @@ describe('Workings 工時資訊', function() {
                     });
             });
 
-            it(`if salary_type is 'month' and has WorkingTime information
-                should have 'estimated_hourly_wage' field`, function() {
+            it(`should have 'estimated_hourly_wage' field, if salary_type is
+                'month' and has WorkingTime information`, function() {
                 return request(app).post('/workings')
                     .send(generateAllPayload({
                         salary_type: 'month',
@@ -628,8 +646,8 @@ describe('Workings 工時資訊', function() {
                     });
             });
 
-            it(`if salary_type is 'year' and has WorkingTime information
-                should have 'estimated_hourly_wage' field`, function() {
+            it(`should have 'estimated_hourly_wage' field, if salary_type is
+                'year' and has WorkingTime information`, function() {
                 return request(app).post('/workings')
                     .send(generateAllPayload({
                         salary_type: 'year',
@@ -645,8 +663,9 @@ describe('Workings 工時資訊', function() {
             });
 
             for (let salary_type of ['month', 'year', 'day']) {
-                it(`doc shouldn't have 'estimated_hourly_wage' field if salary_type is '${salary_type}' 
-                    but no WorkTime information`, function() {
+                it(`doc shouldn't have 'estimated_hourly_wage' field, if the calculated 
+                    'estimated_hourly_wage' is undefined. (salary_type is '${salary_type}' 
+                    but no WorkTime information)`, function() {
                     const send_request = request(app).post('/workings')
                         .send(generateAllPayload({
                             salary_type: salary_type,
@@ -669,20 +688,25 @@ describe('Workings 工時資訊', function() {
                 });
             }
 
-            it('salary_amount is required', function() {
-                return request(app).post('/workings')
-                    .send(generateSalaryRelatedPayload({
+            it(`doc shouldn't have 'estimated_hourly_wage' field, if the calculated 
+                'estimated_hourly_wage' is undefined. (has WorkTime information, but 
+                but no Salary information)`, function() {
+                const send_request = request(app).post('/workings')
+                    .send(generateAllPayload({
+                        salary_type: -1,
                         salary_amount: -1,
-                    }))
-                    .expect(422);
-            });
-
-            it('experience_in_year is required', function() {
-                return request(app).post('/workings')
-                    .send(generateSalaryRelatedPayload({
                         experience_in_year: -1,
                     }))
-                    .expect(422);
+                    .expect(200)
+                    .then((res) => {
+                        return res.body.working._id;
+                    });
+                const test_db = send_request.then((data_id) => {
+                    return db.collection('workings').findOne({_id: ObjectId(data_id)}).then(result => {
+                        assert.notProperty(result, 'estimated_hourly_wage');
+                    });
+                });
+                return Promise.all([send_request, test_db]);
             });
         });
 
