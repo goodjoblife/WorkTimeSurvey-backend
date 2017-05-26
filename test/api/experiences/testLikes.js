@@ -353,7 +353,7 @@ describe('Experience Likes Test', function() {
             });
         });
 
-        it('should not delete the other user of like when both user and other user likes the experience_by_user and user delete the like', function() {
+        it('should not delete others`s like if user cancels the like of an experience', function() {
             const req = request(app)
                 .delete(`/experiences/${experience_id_string_by_user}/likes`)
                 .send({
@@ -380,7 +380,7 @@ describe('Experience Likes Test', function() {
             ]);
         });
 
-        it('should not delete the experience_by_other_user of user like  when the user likes both experience_by_user and experience_by_other_user, and user delete the experience_by_user of like', function() {
+        it('should not delete the other experiences`s like, when the user cancels the like of an experience', function() {
             const req = request(app)
                 .delete(`/experiences/${experience_id_string_by_user}/likes`)
                 .send({
@@ -399,7 +399,7 @@ describe('Experience Likes Test', function() {
                     });
                 })
                 .then((result) => {
-                    assert.equal(result.user.id, fake_user.facebook_id, 'the experience_by_other_user of user like should exist');
+                    assert.equal(result.user.id, fake_user.facebook_id, 'the other experience`s like should exist');
                 });
 
             return Promise.all([
