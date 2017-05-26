@@ -360,9 +360,9 @@ function main(req, res, next) {
             amount: req.custom.salary_amount,
         };
 
-        const wage = helper.calculateEstimatedHourlyWage(working);
-        if (typeof wage !== 'undefined') {
-            working.estimated_hourly_wage = wage;
+        const estimated_hourly_wage = helper.calculateEstimatedHourlyWage(working);
+        if (typeof estimated_hourly_wage !== 'undefined') {
+            working.estimated_hourly_wage = estimated_hourly_wage;
         }
     }
     if (working.is_currently_employed === 'no') {
