@@ -602,7 +602,7 @@ describe('Workings 工時資訊', function() {
         });
 
         describe('estimated_hourly_wage Part', function() {
-            it(`should have 'estimated_hourly_wage' field, if salary_type is 'hour' `, function() {
+            it(`should have 'estimated_hourly_wage' field, if salary_type is 'hour'`, function() {
                 return request(app).post('/workings')
                     .send(generateSalaryRelatedPayload({
                         salary_type: 'hour',
@@ -675,11 +675,11 @@ describe('Workings 工時資訊', function() {
                             day_promised_work_time: -1,
                             overtime_frequency: -1,
                         }))
-                        .expect(200)
-                        .then((res) => {
-                            return res.body.working._id;
-                        });
-                    const test_db = send_request.then((data_id) => {
+                        .expect(200);
+
+                    const test_db = send_request.then((res) => {
+                        return res.body.working._id;
+                    }).then((data_id) => {
                         return db.collection('workings').findOne({_id: ObjectId(data_id)}).then(result => {
                             assert.notProperty(result, 'estimated_hourly_wage');
                         });
@@ -697,11 +697,11 @@ describe('Workings 工時資訊', function() {
                         salary_amount: -1,
                         experience_in_year: -1,
                     }))
-                    .expect(200)
-                    .then((res) => {
-                        return res.body.working._id;
-                    });
-                const test_db = send_request.then((data_id) => {
+                    .expect(200);
+
+                const test_db = send_request.then((res) => {
+                    return res.body.working._id;
+                }).then((data_id) => {
                     return db.collection('workings').findOne({_id: ObjectId(data_id)}).then(result => {
                         assert.notProperty(result, 'estimated_hourly_wage');
                     });
