@@ -565,9 +565,6 @@ describe('Workings 工時資訊', function() {
             });
 
         it('平均值是 null 的會放在全部資料的最後面', function() {
-            sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
-                .resolves({id: '-1', name: 'LittleWhiteYA'});
-            sandbox.stub(authorizationLib, 'cachedSearchPermissionAuthorization').resolves();
             const sort_field = 'week_work_time';
 
             return request(app).get('/workings/search_by/company/group_by/company')
