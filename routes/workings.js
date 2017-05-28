@@ -226,6 +226,20 @@ router.get('/search_by/company/group_by/company', function(req, res, next) {
             $sort: req.group_sort_by,
         },
     ]).toArray().then(function(results) {
+        const sort_field = req.query.group_sort_by || "week_work_time";
+
+        // move null data to the end of array
+        if (results[0].average[sort_field] === null &&
+            results[results.length - 1].average[sort_field] !== null) {
+            let not_null_idx = 0;
+            while (results[not_null_idx].average[sort_field] === null) {
+                ++not_null_idx;
+            }
+
+            const nullDatas = results.splice(0, not_null_idx);
+            results = results.concat(nullDatas);
+        }
+
         res.send(results);
     }).catch(function(err) {
         next(new HttpError("Internal Server Error", 500));
