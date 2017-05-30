@@ -4,14 +4,13 @@ const migrations = require('./migrations');
 const config = require('config');
 const collection_name = 'migrations';
 
-function isMigrated(db, name) {
-    return db.collection(collection_name).findOne({_id: name}).then(result => {
-        if (result) {
-            return true;
-        } else {
-            return false;
-        }
-    });
+async function isMigrated(db, name) {
+    const result = await db.collection(collection_name).findOne({_id: name});
+    if (result) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 function recordMigration(db, name) {
@@ -21,35 +20,37 @@ function recordMigration(db, name) {
     });
 }
 
-function migrate(db, name) {
-    return co(function* () {
-        const result = yield isMigrated(db, name);
-        if (result === false) {
-            const migration = require(`./migrations/${name}`);
+async function migrate(db, name) {
+    const result = await isMigrated(db, name);
+    if (result === false) {
+        const migration = require(`./migrations/${name}`);
 
-            yield migration(db);
-            yield recordMigration(db, name);
+        await migration(db);
+        await recordMigration(db, name);
 
-            console.log(`${name} is migrating, done`);
-        } else {
-            console.log(`${name} is migrated, skipped`);
-        }
-    });
+        console.log(`${name} is migrating, done`);
+    } else {
+        console.log(`${name} is migrated, skipped`);
+    }
 }
 
-const main = co.wrap(function* () {
-    const db = yield MongoClient.connect(config.get('MONGODB_URI'));
+const main = async function() {
+    const db = await MongoClient.connect(config.get('MONGODB_URI'));
 
     try {
-        for (let name of migrations) {
-            yield migrate(db, name);
+        for (const name of migrations) {
+            await migrate(db, name);
         }
-        yield db.close();
     } catch (err) {
         console.log(err);
-        yield db.close();
     }
-});
+
+    try {
+        await db.close();
+    } catch (err) {
+        console.log(err);
+    }
+};
 
 module.exports = {
     main,

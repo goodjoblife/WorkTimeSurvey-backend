@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const HttpError = require('../libs/errors').HttpError;
 const lodash = require('lodash');
 const winston = require('winston');
+const wrap = require('../libs/wrap');
 
 /**
  * @api {get} /jobs/search 從職稱清單中搜尋職稱
@@ -14,7 +14,7 @@ const winston = require('winston');
  * @apiSuccess {String} ._id 代號
  * @apiSuccess {String} .des 職稱名
  */
-router.get('/search', function(req, res, next) {
+router.get('/search', wrap(async function (req, res) {
     winston.info("/jobs/search", {query: req.query, ip: req.ip, ips: req.ips});
 
     const search = req.query.key || "";
@@ -29,11 +29,9 @@ router.get('/search', function(req, res, next) {
 
     const collection = req.db.collection('job_titles');
 
-    collection.find(q, {isFinal: 0}).skip(25 * page).limit(25).toArray().then((results) => {
-        res.send(results);
-    }).catch((err) => {
-        next(new HttpError("Internal Server Error", 500));
-    });
-});
+    const results = await collection.find(q, {isFinal: 0}).skip(25 * page).limit(25).toArray();
+
+    res.send(results);
+}));
 
 module.exports = router;
