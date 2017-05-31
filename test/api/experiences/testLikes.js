@@ -346,14 +346,11 @@ describe('Experience Likes Test', function() {
                 .then(() => {
                     return db.collection('experience_likes').findOne({
                         experience_id: experience_id_by_user,
-                        user: {
-                            id: fake_other_user.facebook_id,
-                            type: 'facebook',
-                        },
+                        user_id: fake_other_user._id,
                     });
                 })
                 .then((result) => {
-                    assert.equal(result.user.id, fake_other_user.facebook_id, 'the other user of like should exist');
+                    assert.equal(result.user_id.toString(), fake_other_user._id.toString(), 'the other user of like should exist');
                 });
 
             return Promise.all([
@@ -373,14 +370,11 @@ describe('Experience Likes Test', function() {
                 .then(() => {
                     return db.collection('experience_likes').findOne({
                         experience_id: experience_id_by_other_user,
-                        user: {
-                            id: fake_user.facebook_id,
-                            type: 'facebook',
-                        },
+                        user_id: fake_user._id,
                     });
                 })
                 .then((result) => {
-                    assert.equal(result.user.id, fake_user.facebook_id, 'the other experience`s like should exist');
+                    assert.equal(result.user_id.toString(), fake_user._id.toString(), 'the other experience`s like should exist');
                 });
 
             return Promise.all([
