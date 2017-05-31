@@ -219,10 +219,7 @@ describe('Experience Likes Test', function() {
             });
 
             const experience_by_other_user = Object.assign(generateInterviewExperienceData(), {
-                author: {
-                    id: fake_other_user.facebook_id,
-                    type: 'facebook',
-                },
+                author_id: fake_other_user._id,
             });
 
             return db.collection('experiences').insertMany([

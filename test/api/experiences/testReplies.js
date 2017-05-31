@@ -211,7 +211,7 @@ describe('Replies Test', function() {
                 .expect(function(res) {
                     assert.property(res.body, 'replies');
                     assert.isArray(res.body.replies);
-                    assert.notDeepProperty(res.body, 'replies.0.author');
+                    assert.notDeepProperty(res.body, 'replies.0.author_id');
                     assert.deepProperty(res.body, 'replies.0._id');
                     assert.deepProperty(res.body, 'replies.0.content');
                     assert.deepProperty(res.body, 'replies.0.like_count');
@@ -230,7 +230,7 @@ describe('Replies Test', function() {
                 .expect(200)
                 .expect(function(res) {
                     assert.property(res.body, 'replies');
-                    assert.notDeepProperty(res.body, 'replies.0.author');
+                    assert.notDeepProperty(res.body, 'replies.0.author_id');
                     assert.isArray(res.body.replies);
                     assert.lengthOf(res.body.replies, TEST_REPLIES_COUNT);
                 });
@@ -293,7 +293,7 @@ describe('Replies Test', function() {
                 .expect(200)
                 .expect(function(res) {
                     assert.property(res.body, 'replies');
-                    assert.notDeepProperty(res.body, 'author');
+                    assert.notDeepProperty(res.body, 'author_id');
                     assert.isArray(res.body.replies);
                     assert.lengthOf(res.body.replies, 100);
                 });
@@ -329,7 +329,7 @@ describe('Replies Test', function() {
                 .expect(200)
                 .expect(function(res) {
                     assert.property(res.body, 'replies');
-                    assert.notDeepProperty(res.body.replies[0], 'author');
+                    assert.notDeepProperty(res.body.replies[0], 'author_id');
 
                     assert.deepProperty(res.body.replies[0], '_id');
                     assert.deepProperty(res.body.replies[0], 'content');

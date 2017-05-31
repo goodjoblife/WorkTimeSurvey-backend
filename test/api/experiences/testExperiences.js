@@ -104,7 +104,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .expect(200)
                 .expect((res) => {
                     assert.equal(res.body._id, test_interview_experience_id);
-                    assert.notDeepProperty(res.body, 'author');
+                    assert.notDeepProperty(res.body, 'author_id');
                     assert.isFalse(res.body.liked);
                 });
         });
