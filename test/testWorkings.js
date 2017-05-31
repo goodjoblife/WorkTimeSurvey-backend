@@ -691,6 +691,26 @@ describe('Workings 工時資訊', function() {
                     estimated_hourly_wage: 100,
                     experience_in_year: 1,
                 },
+                {
+                    job_title: "ENGINEER4",
+                    company: {name: "COMPANY3"},
+                    is_currently_employed: 'yes',
+                    employment_type: 'full-time',
+                    created_at: new Date("2016-07-20T06:00:00.000Z"),
+                    data_time: {
+                        year: 2016,
+                        month: 7,
+                    },
+                    author: {
+                    },
+                    // no work time data
+                    //
+                    salary: {
+                        type: 'month',
+                        amount: 22000,
+                    },
+                    experience_in_year: 1,
+                },
             ]);
         });
 
@@ -776,18 +796,37 @@ describe('Workings 工時資訊', function() {
         });
 
         it('依照 group_sort_order 排序 group data', function() {
+            const sort_field = 'week_work_time';
+
             return request(app).get('/workings/search_by/job_title/group_by/company')
                 .query({
-                    group_sort_by: 'week_work_time',
+                    group_sort_by: sort_field,
                     job_title: 'ENGINEER',
                     group_sort_order: 'ascending',
                 })
                 .expect(200)
                 .expect(function(res) {
-                    assert.lengthOf(res.body, 2);
-                    for (let idx = 1; idx < res.body.length; ++idx) {
-                        assert(res.body[idx].average.week_work_time >= res.body[idx-1].average.week_work_time);
-                    }
+                    assert.lengthOf(res.body, 3);
+                    assert(res.body[0].average[sort_field] <= res.body[1].average[sort_field]);
+                    assert.isNull(res.body[2].average[sort_field]);
+                });
+        });
+
+        it('平均值是 null 的會放在全部資料的最後面', function() {
+            const sort_field = 'week_work_time';
+
+            return request(app).get('/workings/search_by/job_title/group_by/company')
+                .query({
+                    job_title: 'ENGINEER',
+                    group_sort_by: sort_field,
+                    group_sort_order: 'ascending',
+                    access_token: 'faketoken',
+                })
+                .expect(200)
+                .expect(function(res) {
+                    assert.lengthOf(res.body, 3);
+                    assert.isNotNull(res.body[0].average[sort_field]);
+                    assert.isNull(res.body[2].average[sort_field]);
                 });
         });
 
