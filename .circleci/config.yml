@@ -23,7 +23,9 @@ jobs:
             - run:
                 name: Unit test and API test
                 command: npm test -- --timeout 30s
-            - run: npm run coveralls
+            - run:
+                name: Coveralls
+                command: npm run coveralls || /bin/true
             - run:
                 name: Lint
                 command: npm run lint

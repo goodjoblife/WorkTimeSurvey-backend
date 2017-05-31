@@ -11,11 +11,14 @@ require('sinon-as-promised');
 const config = require('config');
 
 const authentication = require('../../../libs/authentication');
+const {
+    generateInterviewExperienceData,
+} = require('../testData');
 
 describe('Experience Likes Test', function() {
 
     let db = undefined;
-    let fake_user = {
+    const fake_user = {
         _id: new ObjectId(),
         facebook_id: '-1',
         facebook: {
@@ -23,7 +26,7 @@ describe('Experience Likes Test', function() {
             name: 'markLin',
         },
     };
-    let fake_other_user = {
+    const fake_other_user = {
         _id: new ObjectId(),
         facebook_id: '-2',
         facebook: {
@@ -190,36 +193,58 @@ describe('Experience Likes Test', function() {
     });
 
     describe('Delete : /experiences/:id/likes', function() {
-        let experience_id = null;
+        let experience_id_string_by_user = null;
+        let experience_id_by_user = null;
+        let experience_id_by_other_user = null;
         let test_likes = null;
         let sandbox;
 
         beforeEach('mock user', function() {
             sandbox = sinon.sandbox.create();
-            sandbox.stub(authentication, 'cachedFacebookAuthentication')
+            const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication');
+
+            cachedFacebookAuthentication
                 .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
                 .resolves(fake_user);
+            cachedFacebookAuthentication
+                .withArgs(sinon.match.object, sinon.match.object, 'otherFakeAccessToken')
+                .resolves(fake_other_user);
 
         });
 
         beforeEach('create test data', function() {
-
-            return db.collection('experiences').insertOne({
-                type: 'interview',
-                author_id: new ObjectId(),
-                status: "published",
+            const experience_by_user = Object.assign(generateInterviewExperienceData(), {
+                author_id: fake_user._id,
                 like_count: 2,
-            }).then(function(result) {
-                experience_id = result.insertedId.toString();
+            });
+
+            const experience_by_other_user = Object.assign(generateInterviewExperienceData(), {
+                author: {
+                    id: fake_other_user.facebook_id,
+                    type: 'facebook',
+                },
+            });
+
+            return db.collection('experiences').insertMany([
+                experience_by_user,
+                experience_by_other_user,
+            ]).then(function(result) {
+                experience_id_by_user = result.ops[0]._id;
+                experience_id_string_by_user = result.ops[0]._id.toString();
+                experience_id_by_other_user = result.ops[1]._id;
+
                 return db.collection('experience_likes').insertMany([{
                     created_at: new Date(),
                     user_id: fake_user._id,
-                    experience_id: result.insertedId,
+                    experience_id: experience_id_by_user,
                 }, {
                     created_at: new Date(),
                     user_id: fake_other_user._id,
-                    experience_id: result.insertedId,
-
+                    experience_id: experience_id_by_user,
+                }, {
+                    created_at: new Date(),
+                    user_id: fake_user._id,
+                    experience_id: experience_id_by_other_user,
                 }]);
             }).then((likes) => {
                 test_likes = likes.ops;
@@ -228,7 +253,7 @@ describe('Experience Likes Test', function() {
 
         it('should delete the record, and return success', function() {
             const req = request(app)
-                .delete('/experiences/' + experience_id + '/likes')
+                .delete(`/experiences/${experience_id_string_by_user}/likes`)
                 .send({
                     access_token: 'fakeaccesstoken',
                 })
@@ -237,7 +262,7 @@ describe('Experience Likes Test', function() {
             return Promise.all([
                 req.then((res) => {
                     return db.collection('experience_likes').findOne({
-                        experience_id: new ObjectId(experience_id),
+                        experience_id: experience_id_by_user,
                         user_id: fake_user._id,
                     });
                 })
@@ -246,7 +271,7 @@ describe('Experience Likes Test', function() {
                 }),
                 req.then((res) => {
                     return db.collection('experiences').findOne({
-                        _id: new ObjectId(experience_id),
+                        _id: experience_id_by_user,
                     });
                 })
                 .then((experience) => {
@@ -260,11 +285,11 @@ describe('Experience Likes Test', function() {
                 user_id: test_likes[0].user_id,
             }).then((result) => {
                 return request(app)
-                    .delete('/experiences/' + experience_id + '/likes')
+                    .delete(`/experiences/${experience_id_string_by_user}/likes`)
                     .expect(401);
             }).then((res) => {
                 return db.collection('experiences').findOne({
-                    _id: new ObjectId(experience_id),
+                    _id: experience_id_by_user,
                 });
             }).then((experience) => {
                 assert.equal(experience.like_count, 2, 'the like_count should be 2 (it can not change)');
@@ -276,14 +301,14 @@ describe('Experience Likes Test', function() {
                 user_id: test_likes[0].user_id,
             }).then((result) => {
                 return request(app)
-                    .delete('/experiences/' + experience_id + '/likes')
+                    .delete(`/experiences/${experience_id_string_by_user}/likes`)
                     .send({
                         access_token: 'fakeaccesstoken',
                     })
                     .expect(404);
             }).then((res) => {
                 return db.collection('experiences').findOne({
-                    _id: new ObjectId(experience_id),
+                    _id: experience_id_by_user,
                 });
             }).then((experience) => {
                 assert.equal(experience.like_count, 2, 'the like_count should be 2 (it can not change)');
@@ -302,17 +327,71 @@ describe('Experience Likes Test', function() {
                     .expect(404);
             }).then((res) => {
                 return db.collection('experiences').findOne({
-                    _id: new ObjectId(experience_id),
+                    _id: experience_id_by_user,
                 });
             }).then((experience) => {
                 assert.equal(experience.like_count, 2, 'the like_count should be 2 (it can not change)');
             });
         });
 
+        it('should not delete others`s like if user cancels the like of an experience', function() {
+            const req = request(app)
+                .delete(`/experiences/${experience_id_string_by_user}/likes`)
+                .send({
+                    access_token: 'fakeaccesstoken',
+                })
+                .expect(200);
+
+            const check_experience_likes = req
+                .then(() => {
+                    return db.collection('experience_likes').findOne({
+                        experience_id: experience_id_by_user,
+                        user: {
+                            id: fake_other_user.facebook_id,
+                            type: 'facebook',
+                        },
+                    });
+                })
+                .then((result) => {
+                    assert.equal(result.user.id, fake_other_user.facebook_id, 'the other user of like should exist');
+                });
+
+            return Promise.all([
+                check_experience_likes,
+            ]);
+        });
+
+        it('should not delete the other experiences`s like, when the user cancels the like of an experience', function() {
+            const req = request(app)
+                .delete(`/experiences/${experience_id_string_by_user}/likes`)
+                .send({
+                    access_token: 'fakeaccesstoken',
+                })
+                .expect(200);
+
+            const check_experience_likes = req
+                .then(() => {
+                    return db.collection('experience_likes').findOne({
+                        experience_id: experience_id_by_other_user,
+                        user: {
+                            id: fake_user.facebook_id,
+                            type: 'facebook',
+                        },
+                    });
+                })
+                .then((result) => {
+                    assert.equal(result.user.id, fake_user.facebook_id, 'the other experience`s like should exist');
+                });
+
+            return Promise.all([
+                check_experience_likes,
+            ]);
+        });
+
         afterEach(function() {
             sandbox.restore();
-            let pro1 = db.collection('experience_likes').remove();
-            let pro2 = db.collection('experiences').remove({});
+            const pro1 = db.collection('experience_likes').remove();
+            const pro2 = db.collection('experiences').remove({});
             return Promise.all([pro1, pro2]);
         });
     });

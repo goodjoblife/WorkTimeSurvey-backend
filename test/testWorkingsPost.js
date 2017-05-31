@@ -584,66 +584,6 @@ describe('Workings 工時資訊', function() {
                 });
             }
 
-            it(`if salary_type is 'hour' should have 'estimated_hourly_wage' field`, function() {
-                return request(app).post('/workings')
-                    .send(generateSalaryRelatedPayload({
-                        salary_type: 'hour',
-                        salary_amount: '100',
-                    }))
-                    .expect(200)
-                    .expect(function(res) {
-                        assert.property(res.body.working, 'estimated_hourly_wage');
-                        assert.propertyVal(res.body.working, 'estimated_hourly_wage', 100);
-                    });
-            });
-
-            it(`if salary_type is 'day' and has WorkingTime information
-                should have 'estimated_hourly_wage' field`, function() {
-                return request(app).post('/workings')
-                    .send(generateAllPayload({
-                        salary_type: 'day',
-                        salary_amount: '10000',
-                        day_real_work_time: '10',
-                    }))
-                    .expect(200)
-                    .expect(function(res) {
-                        assert.property(res.body.working, 'estimated_hourly_wage');
-                        assert.propertyVal(res.body.working, 'estimated_hourly_wage', 1000);
-                    });
-            });
-
-            it(`if salary_type is 'month' and has WorkingTime information
-                should have 'estimated_hourly_wage' field`, function() {
-                return request(app).post('/workings')
-                    .send(generateAllPayload({
-                        salary_type: 'month',
-                        salary_amount: '10000',
-                        day_real_work_time: '10',
-                        week_work_time: '40',
-                    }))
-                    .expect(200)
-                    .expect(function(res) {
-                        assert.property(res.body.working, 'estimated_hourly_wage');
-                        assert.closeTo(res.body.working.estimated_hourly_wage, 63, 1);
-                    });
-            });
-
-            it(`if salary_type is 'year' and has WorkingTime information
-                should have 'estimated_hourly_wage' field`, function() {
-                return request(app).post('/workings')
-                    .send(generateAllPayload({
-                        salary_type: 'year',
-                        salary_amount: '100000',
-                        day_real_work_time: '10',
-                        week_work_time: '40',
-                    }))
-                    .expect(200)
-                    .expect(function(res) {
-                        assert.property(res.body.working, 'estimated_hourly_wage');
-                        assert.closeTo(res.body.working.estimated_hourly_wage, 52, 1);
-                    });
-            });
-
             it('salary_amount is required', function() {
                 return request(app).post('/workings')
                     .send(generateSalaryRelatedPayload({
@@ -658,6 +598,115 @@ describe('Workings 工時資訊', function() {
                         experience_in_year: -1,
                     }))
                     .expect(422);
+            });
+        });
+
+        describe('estimated_hourly_wage Part', function() {
+            it(`should have 'estimated_hourly_wage' field, if salary_type is 'hour'`, function() {
+                return request(app).post('/workings')
+                    .send(generateSalaryRelatedPayload({
+                        salary_type: 'hour',
+                        salary_amount: '100',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.property(res.body.working, 'estimated_hourly_wage');
+                        assert.propertyVal(res.body.working, 'estimated_hourly_wage', 100);
+                    });
+            });
+
+            it(`should have 'estimated_hourly_wage' field, if salary_type is
+                 'day' and has WorkingTime information`, function() {
+                return request(app).post('/workings')
+                    .send(generateAllPayload({
+                        salary_type: 'day',
+                        salary_amount: '10000',
+                        day_real_work_time: '10',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.property(res.body.working, 'estimated_hourly_wage');
+                        assert.propertyVal(res.body.working, 'estimated_hourly_wage', 1000);
+                    });
+            });
+
+            it(`should have 'estimated_hourly_wage' field, if salary_type is
+                'month' and has WorkingTime information`, function() {
+                return request(app).post('/workings')
+                    .send(generateAllPayload({
+                        salary_type: 'month',
+                        salary_amount: '10000',
+                        day_real_work_time: '10',
+                        week_work_time: '40',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.property(res.body.working, 'estimated_hourly_wage');
+                        assert.closeTo(res.body.working.estimated_hourly_wage, 63, 1);
+                    });
+            });
+
+            it(`should have 'estimated_hourly_wage' field, if salary_type is
+                'year' and has WorkingTime information`, function() {
+                return request(app).post('/workings')
+                    .send(generateAllPayload({
+                        salary_type: 'year',
+                        salary_amount: '100000',
+                        day_real_work_time: '10',
+                        week_work_time: '40',
+                    }))
+                    .expect(200)
+                    .expect(function(res) {
+                        assert.property(res.body.working, 'estimated_hourly_wage');
+                        assert.closeTo(res.body.working.estimated_hourly_wage, 52, 1);
+                    });
+            });
+
+            for (let salary_type of ['month', 'year', 'day']) {
+                it(`doc shouldn't have 'estimated_hourly_wage' field, if the calculated 
+                    'estimated_hourly_wage' is undefined. (salary_type is '${salary_type}' 
+                    but no WorkTime information)`, function() {
+                    const send_request = request(app).post('/workings')
+                        .send(generateAllPayload({
+                            salary_type: salary_type,
+                            salary_amount: '10000',
+                            week_work_time: -1,
+                            day_real_work_time: -1,
+                            day_promised_work_time: -1,
+                            overtime_frequency: -1,
+                        }))
+                        .expect(200);
+
+                    const test_db = send_request.then((res) => {
+                        return res.body.working._id;
+                    }).then((data_id) => {
+                        return db.collection('workings').findOne({_id: ObjectId(data_id)}).then(result => {
+                            assert.notProperty(result, 'estimated_hourly_wage');
+                        });
+                    });
+                    return Promise.all([send_request, test_db]);
+                });
+            }
+
+            it(`doc shouldn't have 'estimated_hourly_wage' field, if the calculated 
+                'estimated_hourly_wage' is undefined. (has WorkTime information, but 
+                but no Salary information)`, function() {
+                const send_request = request(app).post('/workings')
+                    .send(generateAllPayload({
+                        salary_type: -1,
+                        salary_amount: -1,
+                        experience_in_year: -1,
+                    }))
+                    .expect(200);
+
+                const test_db = send_request.then((res) => {
+                    return res.body.working._id;
+                }).then((data_id) => {
+                    return db.collection('workings').findOne({_id: ObjectId(data_id)}).then(result => {
+                        assert.notProperty(result, 'estimated_hourly_wage');
+                    });
+                });
+                return Promise.all([send_request, test_db]);
             });
         });
 
