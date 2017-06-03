@@ -49,6 +49,7 @@ app.use((req, res, next) => {
     winston.info(req.originalUrl, {
         ip: req.ip,
         ips: req.ips,
+        query: req.query,
     });
     next();
 });
