@@ -13,7 +13,7 @@ class ReplyLikeModel {
     /**
      * 新增讚至一個留言。
      * @param {string} reply_id - id of target reply
-     * @param {object} user - user's object { "id":1111,"type":"facebook" }
+     * @param {User} user - associated user
      * @returns {Promise}
             resolved: the id of like document
             rejected: DuplicateKeyError / ObjectNotExistError / mongodb default reason object in promise
@@ -50,11 +50,12 @@ class ReplyLikeModel {
      * Get replies likes
      * @param {array} ids - replies ids
      * @returns {Promise}
-     *  - resolve : [{
+     *  - resolve : ReplyLike[]
+     *  ReplyLike: {
      *     _id: ObjectId,
-     *     created_at: new Date,
-     *     user: user model,
-     *     reply_time: new Date,
+     *     created_at: Date,
+     *     user_id: ObjectId,
+     *     reply_time: Date,
      *     reply_id: ObjectId,
      *     experience_id: ObjectId,
      *  }
@@ -70,7 +71,7 @@ class ReplyLikeModel {
     /**
      * 刪除一個留言的讚
      * @param {string} reply_id - id of target reply
-     * @param {object} user - user's object { "id":1111,"type":"facebook" }
+     * @param {User} user - associated user
      * @returns {Promise}
             resolved
             rejected: ObjectNotExistError / mongodb default reason object in promise

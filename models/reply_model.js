@@ -14,12 +14,12 @@ class ReplyModel {
      * 新增留言至工作經驗文章中
      * @param  {string}   experience_id - experience's id
      * @param  {string}   partial_reply - {
-     *      user_id : ObjectId
+     *      author_id : ObjectId
      *      content : "hello",
      * }
      * @returns {Promise}
      *  - resolved : {
-     *          user_id: ObjectId,
+     *          author_id: ObjectId,
      *          content: "hello",
      *          experience_id: ObjectId,
      *          floor: 1,
@@ -60,18 +60,17 @@ class ReplyModel {
      * @param {number} limit - limit (Default: 20)
      * @param {object} sort - mongodb sort object (Default: { created_at:1 })
      * @returns {Promise}
-     *  - [
-     *      _id : ObjectId,
+     *  - Reply[]
+     * Reply: {
+     *      _id: ObjectId,
      *      experience_id : ObjectId,
-     *      author : {
-     *          id : ObjectId,
-     *      },
-     *      created_at : new Date(),
-     *      content : "Hello GoodJob",
+     *      author_id: ObjectId,
+     *      created_at: Date,
+     *      content: "Hello GoodJob",
      *      floor: 1,
      *      like_count: 0,
      *      report_count: 0,
-     *  ]
+     *  }
      */
     getRepliesByExperienceId(experience_id, skip = 0, limit = 20, sort = {
         floor: 1,
@@ -94,10 +93,7 @@ class ReplyModel {
      * resolve {
      *  _id : ObjectId,
      *  experience_id : ObjectId,
-     *  author : {
-     *      _id : ObjectId,
-     *      type : "facebook",
-     *  },
+     *  author_id: ObjectId,
      *  created_at: new Date(),
      *  like_count: 0,
      * }
