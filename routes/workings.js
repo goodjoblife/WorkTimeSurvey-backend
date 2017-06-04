@@ -26,7 +26,7 @@ router.get('/', function(req, res, next) {
     };
 
     let query = {
-        [req.custom.sort_by]: {$exists: true},
+        [req.custom.sort_by]: {$ne: null},
     };
     let page = req.pagination.page;
     let limit = req.pagination.limit;
