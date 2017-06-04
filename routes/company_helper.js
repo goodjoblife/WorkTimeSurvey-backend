@@ -18,7 +18,7 @@ function getCompanyByIdOrQuery(db, company_id, company_query) {
 
             return {
                 id: company_id,
-                name: results[0].name,
+                name: _getCompanyName(results[0].name),
             };
         });
     } else {
@@ -28,7 +28,7 @@ function getCompanyByIdOrQuery(db, company_id, company_query) {
                     if (results.length === 1) {
                         return {
                             id: results[0].id,
-                            name: results[0].name,
+                            name: _getCompanyName(results[0].name),
                         };
                     } else {
                         return {
@@ -39,12 +39,21 @@ function getCompanyByIdOrQuery(db, company_id, company_query) {
             } else {
                 return {
                     id: results[0].id,
-                    name: results[0].name,
+                    name: _getCompanyName(results[0].name),
                 };
             }
         });
     }
 }
+
+function _getCompanyName(db_company_name) {
+    if (Array.isArray(db_company_name)) {
+        return db_company_name[0];
+    } else {
+        return db_company_name;
+    }
+}
+
 module.exports = {
     getCompanyByIdOrQuery: getCompanyByIdOrQuery,
 };

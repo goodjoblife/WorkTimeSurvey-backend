@@ -29,6 +29,10 @@ describe('company Helper', function() {
                     id: '00000003',
                     name: 'GOODJOBGREAT',
                 },
+                {
+                    id: '00000004',
+                    name: ['GOODJOBMARK', '馬克的公司'],
+                },
             ]);
         });
 
@@ -60,6 +64,13 @@ describe('company Helper', function() {
         it('只給 company，但名稱無法決定唯一公司', function() {
             return assert.becomes(helper.getCompanyByIdOrQuery(db, undefined, 'GoodJobGreat'), {
                 name: 'GOODJOBGREAT',
+            });
+        });
+
+        it('取得公司名稱時，如果是陣列，則取出第一個字串', function() {
+            return assert.becomes(helper.getCompanyByIdOrQuery(db, '00000004'), {
+                id: '00000004',
+                name: 'GOODJOBMARK',
             });
         });
 
