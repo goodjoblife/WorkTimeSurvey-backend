@@ -203,8 +203,8 @@ function validateWorkInputFields(data) {
     }
 
     if (data.recommend_to_others) {
-        if (!shouldIn(data.recommend_to_others, ["yes", "no", "don\'t know"])) {
-            throw new HttpError('是否推薦此工作需為 yes/no/don\'t know', 422);
+        if (!shouldIn(data.recommend_to_others, ["yes", "no"])) {
+            throw new HttpError("是否推薦此工作需為 yes or no", 422);
         }
     }
 }

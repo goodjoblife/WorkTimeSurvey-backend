@@ -377,10 +377,10 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .expect(422);
             });
 
-            it('recommend_to_others should be ["yes", "no", "don\'t know"]', function() {
+            it('recommend_to_others should be ["yes", "no"]', function() {
                 return request(app).post('/work_experiences')
                     .send(generateWorkExperiencePayload({
-                        recommend_to_others: "yeah",
+                        recommend_to_others: "don't know",
                     }))
                     .expect(422);
             });
