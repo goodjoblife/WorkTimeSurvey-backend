@@ -3,12 +3,10 @@ const assert = require('chai').assert;
 const config = require('config');
 
 describe('MongoDB version', function() {
-    it('should be at least 3.x.x', function() {
-        return MongoClient.connect(config.get('MONGODB_URI'))
-            .then(db => db.admin().serverStatus())
-            .then(info => {
-                let v = parseInt(info.version.split('.')[0]);
-                assert.isAtLeast(v, 3, 'current version is ' + info.version);
-            });
+    it('should be at least 3.x.x', async function() {
+        const db = await MongoClient.connect(config.get('MONGODB_URI'));
+        const info = await db.admin().serverStatus();
+        const v = parseInt(info.version.split('.')[0]);
+        assert.isAtLeast(v, 3, 'current version is ' + info.version);
     });
 });
