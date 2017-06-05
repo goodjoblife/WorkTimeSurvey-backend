@@ -49,6 +49,6 @@
     "supertest": "^2.0.1"
   },
   "engines": {
-    "node": "6.x"
+    "node": "8.x"
   }
 }
