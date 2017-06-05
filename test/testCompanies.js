@@ -41,6 +41,11 @@ describe('companies', function() {
                     name: '公司好薪情',
                     capital: 3000,
                 },
+                {
+                    id: '00000006',
+                    name: [['好薪情', '你好'], ['Good', 'Job']],
+                    capital: 3000,
+                },
             ]);
         });
 
@@ -103,6 +108,20 @@ describe('companies', function() {
             return request(app)
                 .get('/companies/search')
                 .expect(422);
+        });
+
+        it('搜尋 id `00000006` 公司名稱為字串 ', function() {
+            return request(app)
+                .get('/companies/search')
+                .query({key: '00000006'})
+                .expect(200)
+                .expect(function(res) {
+                    assert.lengthOf(res.body, 1);
+                    assert.propertyVal(res.body[0], 'id', '00000006');
+                    assert.isString(res.body[0].name);
+                    assert.propertyVal(res.body[0], 'name', '好薪情');
+                    assert.propertyVal(res.body[0], 'capital', 3000);
+                });
         });
 
         after(function() {

@@ -48,7 +48,7 @@ function getCompanyByIdOrQuery(db, company_id, company_query) {
 
 function _getCompanyName(db_company_name) {
     if (Array.isArray(db_company_name)) {
-        return db_company_name[0];
+        return _getCompanyName(db_company_name[0]);
     } else {
         return db_company_name;
     }

@@ -33,6 +33,11 @@ describe('company Helper', function() {
                     id: '00000004',
                     name: ['GOODJOBMARK', '馬克的公司'],
                 },
+                {
+                    id: '00000005',
+                    name: [['GOODJOBMARK', '馬克的公司'], ['GOOBJOBMARK', 'Mark Co']],
+                },
+
             ]);
         });
 
@@ -70,6 +75,13 @@ describe('company Helper', function() {
         it('取得公司名稱時，如果是陣列，則取出第一個字串', function() {
             return assert.becomes(helper.getCompanyByIdOrQuery(db, '00000004'), {
                 id: '00000004',
+                name: 'GOODJOBMARK',
+            });
+        });
+
+        it('取得公司名稱時，如果是多重陣列，則取出第一個陣列的第一個字串', function() {
+            return assert.becomes(helper.getCompanyByIdOrQuery(db, '00000005'), {
+                id: '00000005',
                 name: 'GOODJOBMARK',
             });
         });

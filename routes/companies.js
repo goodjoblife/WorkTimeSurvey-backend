@@ -40,10 +40,30 @@ router.get('/search', function(req, res, next) {
     const collection = req.db.collection('companies');
 
     collection.find(q).sort(s).skip(25 * page).limit(25).toArray().then((results) => {
-        res.send(results);
+        res.send(generateGetCompanyViewModel(results));
     }).catch((err) => {
         next(new HttpError("Internal Server Error", 500));
     });
 });
 
+function generateGetCompanyViewModel(companies) {
+    const result = companies.map((company) => {
+        return {
+            id: company.id,
+            name: _getCompanyName(company.name),
+            capital: company.capital,
+        };
+    });
+    return result;
+}
+
+function _getCompanyName(db_company_name) {
+    if (Array.isArray(db_company_name)) {
+        return _getCompanyName(db_company_name[0]);
+    } else {
+        return db_company_name;
+    }
+}
+
 module.exports = router;
+
