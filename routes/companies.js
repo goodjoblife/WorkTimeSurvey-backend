@@ -40,13 +40,13 @@ router.get('/search', function(req, res, next) {
     const collection = req.db.collection('companies');
 
     collection.find(q).sort(s).skip(25 * page).limit(25).toArray().then((results) => {
-        res.send(generateGetCompanyViewModel(results));
+        res.send(_generateGetCompanyViewModel(results));
     }).catch((err) => {
         next(new HttpError("Internal Server Error", 500));
     });
 });
 
-function generateGetCompanyViewModel(companies) {
+function _generateGetCompanyViewModel(companies) {
     const result = companies.map((company) => {
         return {
             id: company.id,
