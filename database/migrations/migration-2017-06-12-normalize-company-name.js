@@ -13,11 +13,11 @@ module.exports = (db) => {
         "company.name": 1,
     }).toArray().then((data) => {
         const promiseArr = [];
-        for (let d of data) {
-            const companyName = _getCompanyName(d['company']['name']);
-            if (companyName !== d['company']['name']) {
+        for (const d of data) {
+            const companyName = _getCompanyName(d.company.name);
+            if (companyName !== d.company.name) {
                 promiseArr.push(db.collection('workings').updateOne({
-                    '_id': d['_id'],
+                    '_id': d._id,
                 }, {
                     $set: {
                         "company.name": companyName,
