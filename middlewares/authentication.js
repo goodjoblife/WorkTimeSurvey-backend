@@ -3,18 +3,7 @@ const HttpError = require('../libs/errors').HttpError;
 
 function cachedFacebookAuthenticationMiddleware(req, res, next) {
     const db = req.redis_client;
-    let access_token;
-    // POST or GET
-    if (req.headers && req.headers.authorization) {
-        const parts = req.headers.authorization.split(' ');
-        if (parts.length === 2 && parts[0] === 'Bearer') {
-            access_token = parts[1];
-        }
-    } else if (req.body.access_token !== undefined) {
-        access_token = req.body.access_token;
-    } else {
-        access_token = req.query.access_token;
-    }
+    const access_token = _getAccessToken(req);
 
     if (typeof access_token !== "string") {
         next(new HttpError('Unauthorized', 401));
@@ -29,6 +18,27 @@ function cachedFacebookAuthenticationMiddleware(req, res, next) {
                 next(new HttpError('Unauthorized', 401));
             });
     }
+}
+
+/**
+ * _getAccessToken
+ * Getting acceess token from body or header
+ * @param req - http request
+ * @returns {string} - access token
+ */
+function _getAccessToken(req) {
+    let access_token;
+    if (req.headers && req.headers.authorization) {
+        const parts = req.headers.authorization.split(' ');
+        if (parts.length === 2 && parts[0] === 'Bearer') {
+            access_token = parts[1];
+        }
+    } else if (req.body.access_token !== undefined) {
+        access_token = req.body.access_token;
+    } else {
+        access_token = req.query.access_token;
+    }
+    return access_token;
 }
 
 module.exports = {
