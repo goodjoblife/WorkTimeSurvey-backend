@@ -63,11 +63,14 @@ describe('Authentication Middleware', function() {
         });
 
         it('get property user if success ( header authorization token )', function(done) {
+            const bearer_token = "Bearer mF_9.B5f-4.1JqM";
+            const access_token = "mF_9.B5f-4.1JqM";
             const req = {
                 headers: {
-                    authorization: "Bearer mF_9.B5f-4.1JqM",
+                    authorization: bearer_token,
                 },
                 redis_client: {},
+                db: {},
             };
 
             const fake_user = {
@@ -75,7 +78,9 @@ describe('Authentication Middleware', function() {
                 facebook_id: '-1',
             };
 
-            const stub = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves(fake_user);
+            const stub = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication')
+                .withArgs(sinon.match.object, sinon.match.object, access_token)
+                .resolves(fake_user);
 
             authentication.cachedFacebookAuthenticationMiddleware(req, {}, function(err) {
                 try {
