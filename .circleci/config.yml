@@ -1,35 +1,54 @@
+defaults: &defaults
+    working_directory: ~/app
+    steps:
+        - checkout
+        - restore_cache:
+            key: wtsb-{{ .Branch }}-{{ checksum "package.json" }}
+        - run:
+            name: Install Dependencies
+            command: yarn install
+        - run:
+            name: Migrate
+            command: npm run migrate
+        - run:
+            name: Unit test and API test
+            command: npm test -- --timeout 30s
+        - run:
+            name: Coveralls
+            command: npm run coveralls || /bin/true
+        - run:
+            name: Lint
+            command: npm run lint
+        - save_cache:
+            key: wtsb-{{ .Branch }}-{{ checksum "package.json" }}
+            paths:
+                - "~/.cache/yarn"
+
 version: 2
 jobs:
-    build:
-        working_directory: ~/app
+    build-node-6:
+        <<: *defaults
         docker:
-            - image: node
+            - image: node:6
               environment:
                   MONGODB_URI: mongodb://localhost/goodjob
                   REDIS_URL: redis://localhost
                   NODE_ENV: test
             - image: mongo:3
             - image: redis
-        steps:
-            - checkout
-            - restore_cache:
-                key: wtsb-{{ .Branch }}-{{ checksum "package.json" }}
-            - run:
-                name: Install Dependencies
-                command: yarn install
-            - run:
-                name: Migrate
-                command: npm run migrate
-            - run:
-                name: Unit test and API test
-                command: npm test -- --timeout 30s
-            - run:
-                name: Coveralls
-                command: npm run coveralls || /bin/true
-            - run:
-                name: Lint
-                command: npm run lint
-            - save_cache:
-                key: wtsb-{{ .Branch }}-{{ checksum "package.json" }}
-                paths:
-                    - "~/.cache/yarn"
+    build-node-7:
+        <<: *defaults
+        docker:
+            - image: node:7
+              environment:
+                  MONGODB_URI: mongodb://localhost/goodjob
+                  REDIS_URL: redis://localhost
+                  NODE_ENV: test
+            - image: mongo:3
+            - image: redis
+workflows:
+    version: 2
+    build_and_test:
+        jobs:
+            - build-node-6
+            - build-node-7
