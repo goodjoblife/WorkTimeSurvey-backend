@@ -46,9 +46,35 @@ jobs:
                   NODE_ENV: test
             - image: mongo:3
             - image: redis
+    build-apidoc:
+        docker:
+            - image: node
+        working_directory: ~/app
+        steps:
+            - checkout
+            - run:
+                name: Install Dependencies
+                command: yarn global add apidoc
+            - run:
+                name: Build
+                command: apidoc -i routes/ -o apidoc/
+            - add_ssh_keys
+            - deploy:
+                name: Deploy to github page
+                command: |
+                    if [ "${CIRCLE_PROJECT_USERNAME}" == "goodjoblife" ]; then
+                        ./.circleci/deploy-apidoc.sh
+                    fi
 workflows:
     version: 2
     build_and_test:
         jobs:
             - build-node-6
             - build-node-7
+            - build-apidoc:
+                filters:
+                    branches:
+                        only: master
+                requires:
+                    - build-node-6
+                    - build-node-7
