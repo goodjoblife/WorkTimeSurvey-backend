@@ -9,12 +9,9 @@ const HttpError = require('../../libs/errors').HttpError;
 const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
 
 /**
- * Post /experiences/:id/likes
- * @param {string} req.params.id - experience's id
- * @returns {object}
- *  - {
- *      success : true,
- *  }
+ * @api {post} /experiences/:id/likes 新增單篇經驗的讚 API
+ * @apiGroup Experiences Likes
+ * @apiSuccess {Boolean} success 是否成功點讚
  */
 router.post('/:id/likes', [
     authentication.cachedFacebookAuthenticationMiddleware,
@@ -54,6 +51,11 @@ router.post('/:id/likes', [
     },
 ]);
 
+/**
+ * @api {delete} /experiences/:id/likes 移除單篇經驗的讚 API
+ * @apiGroup Experiences Likes
+ * @apiSuccess {Boolean} success 是否成功取消讚
+ */
 router.delete('/:id/likes', [
     authentication.cachedFacebookAuthenticationMiddleware,
     function(req, res, next) {

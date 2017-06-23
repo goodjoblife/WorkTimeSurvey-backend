@@ -13,6 +13,31 @@ const {
     stringRequireLength,
 } = require('../../libs/validation');
 
+/**
+ * @api {post} /work_experiences 上傳工作經驗 API
+ * @apiGroup Work_Experiences
+ * @apiParam {String} company_query 公司名稱 或 統一編號
+ * @apiParam {String} [company_id] 公司統編 (如果自動完成有成功，會拿的到 company_id )
+ * @apiParam {String="彰化縣","嘉義市","嘉義縣","新竹市","新竹縣","花蓮縣","高雄市","基隆市","金門縣","連江縣","苗栗縣","南投縣","新北市","澎湖縣","屏東縣","臺中市","臺南市","臺北市","臺東縣","桃園市","宜蘭縣","雲林縣" } region 面試地區
+ * @apiParam {String} job_title 工作職稱
+ * @apiParam {Number="整數, 0 <= N <= 50"} [experience_in_year] 相關職務工作經驗
+ * @apiParam {String="大學","碩士","博士","高職","五專","二專","二技","高中","國中","國小" } [education] 最高學歷
+ * @apiParam {String="yes","no"} is_currently_employed 現在是否在職
+ * @apiParam {Object} job_ending_time 工作結束時間(當 is_currently_employed 為no時，本欄才會出現且必填)
+ * @apiParam {Number="整數, Ｎ >= current_year - 10"} job_ending_time.year 工作結束時間的年份
+ * @apiParam {Number="整數, 1~12"} job_ending_time.month 工作結束時間的月份
+ * @apiParam {Object} [salary] 薪資
+ * @apiParam {String="year","month","day","hour"} [salary.type] 薪資種類
+ * @apiParam {Number="整數, >= 0"} [salary.amount] 薪資金額
+ * @apiParam {Number="整數或浮點數。 168>=N>=0。"} [week_work_time] 一週工時
+ * @apiParam {String="yes","no"} [recommend_to_others] 是否推薦此工作
+ * @apiParam {String="0 < length <= 25 "} title 整篇經驗分享的標題
+ * @apiParam {Object[]} sections 整篇內容
+ * @apiParam {String="0 < length <= 25"} sections.subtitle 段落標題
+ * @apiParam {String="0 < length <= 5000"} sections.content 段落內容
+ * @apiSuccess {Boolean} success 是否上傳成功
+ * @apiSuccess {String} experience._id  文章id
+ */
 router.post('/', [
     authentication.cachedFacebookAuthenticationMiddleware,
     function(req, res, next) {

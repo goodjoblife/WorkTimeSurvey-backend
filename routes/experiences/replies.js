@@ -13,6 +13,17 @@ const {
     stringRequireLength,
 } = require('../../libs/validation');
 
+/**
+ * @api {post} /experiences/:id/replies 新增單篇經驗的留言 API
+ * @apiGroup Experiences Replies
+ * @apiParam {String="0 < length <= 1000 "} content 留言內容
+ * @apiSuccess {Object} reply 該留言的物件
+ * @apiSuccess {String} reply._id 留言的ID
+ * @apiSuccess {String} reply.content 留言的內容
+ * @apiSuccess {Number} reply.like_count 留言的讚數
+ * @apiSuccess {Number} reply.floor 該留言的樓層數 (整數, index from 0)
+ * @apiSuccess {String} reply.created_at 該留言的時間
+ */
 router.post('/:id/replies', [
     authentication.cachedFacebookAuthenticationMiddleware,
     function(req, res, next) {
@@ -69,6 +80,19 @@ function validationPostFields(body) {
     }
 }
 
+/**
+ * @api {get} /experiences/:id/replies 取得單篇經驗的留言列表 API
+ * @apiGroup Experiences Replies
+ * @apiParam {String="整數"} [start=0] (從第 start 個留言開始 (start =0為第1筆留言）)
+ * @apiParam {String="整數, 1000=>N> 0"} [limit =20] 回傳最多limit個留言
+ * @apiSuccess {Object[]} replies 該留言的物件陣列 (由第1樓排到第N樓。第1樓為該篇經驗分享的時間最早的第一個留言，依此類推
+ * @apiSuccess {String} replies._id 留言的ID
+ * @apiSuccess {String} replies.content 留言的內容
+ * @apiSuccess {Number} replies.like_count 留言的讚數
+ * @apiSuccess {Boolean} replies.liked 該留言是否已經被該名使用按讚過
+ * @apiSuccess {String} replies.created_at 該留言的時間
+ * @apiSuccess {Number} replies.floor 樓層
+ */
 router.get('/:id/replies', [
     authenticationUser.cachedAndSetUserMiddleware,
     function(req, res, next) {

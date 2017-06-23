@@ -13,37 +13,34 @@ const {
     stringRequireLength,
 } = require('../../libs/validation');
 
+
 /**
- * Post /interview_experiences
- * @param {object} req.body
- *  - {
- *  company_query : "1111",
- *  company_id : "123456",
- *  region : "台北市",
- *  job_title : "BackEnd Developer",
- *  experience_in_year : "10",
- *  education : "碩士",
- *  interview_time_year : "2016",
- *  interview_time_month : "12",
- *  interview_result : "錄取",
- *  salary_amoount : "year",
- *  overall_rating : "5",
- *  sections : [
- *      { subtitle:"hello" , content : "test" }
- *  ],
- *  interview_qas : [
- *      { querstion : "what you name?" , answer : "you father"}
- *  ],
- *  interview_sensitive_questions : [
- *      "what your name ?"
- *  ]
- *
- *  }
- *
- * @returns {object}
- *  - {
- *      success : true
- *  }
+ * @api {post} /interview_experiences 上傳面試經驗 API
+ * @apiGroup Interview_Experiences
+ * @apiParam {String} company_query 公司名稱 或 統一編號
+ * @apiParam {String} [company_id] 公司統編 (如果自動完成有成功，會拿的到 company_id )
+ * @apiParam {String="彰化縣","嘉義市","嘉義縣","新竹市","新竹縣","花蓮縣","高雄市","基隆市","金門縣","連江縣","苗栗縣","南投縣","新北市","澎湖縣","屏東縣","臺中市","臺南市","臺北市","臺東縣","桃園市","宜蘭縣","雲林縣" } region 面試地區
+ * @apiParam {String} job_title 應徵職稱
+ * @apiParam {Number="整數, 0 <= N <= 50"} [experience_in_year] 相關職務工作經驗
+ * @apiParam {String="大學","碩士","博士","高職","五專","二專","二技","高中","國中","國小" } [education] 最高學歷
+ * @apiParam {Object} interview_time 面試時間
+ * @apiParam {Number="整數, N >= current_year - 10"} interview_time.year 面試時間的年份
+ * @apiParam {Number="整數, 1~12"} interview_time.month 面試時間的月份
+ * @apiParam {String="錄取,未錄取,沒通知,或其他 0 < length <= 10 的字串"} interview_result 面試結果
+ * @apiParam {Object} [salary] 面談薪資
+ * @apiParam {String="year","month","day","hour"} [salary.type] 面談薪資種類
+ * @apiParam {Number="整數, >= 0"} [salary.amount] 面談薪資金額
+ * @apiParam {Number="整數, 1~5"} overall_rating 整體面試滿意度
+ * @apiParam {String="0 < length <= 25 "} title 整篇經驗分享的標題
+ * @apiParam {Object[]} sections 整篇內容
+ * @apiParam {String="0 < length <= 25"} sections.subtitle 段落標題
+ * @apiParam {String="0 < length <= 5000"} sections.content 段落內容
+ * @apiParam {Object[]="Array maximum size: 30"} [interview_qas] 面試題目列表
+ * @apiParam {String="0 < length <= 250"} [interview_qas.question] 面試題目
+ * @apiParam {String="0 < length <= 5000"} [interview_qas.answer] 面試題目的回答
+ * @apiParam {String[]="曾詢問家庭狀況","曾詢問婚姻狀況","生育計畫","曾要求繳交身分證","曾要求繳交保證金","曾詢問宗教信仰","或其他 0 < length <= 20 的字串"} [interview_sensitive_questions] 面試中提及的特別問題陣列(較敏感/可能違法)
+ * @apiSuccess {Boolean} success 是否上傳成功
+ * @apiSuccess {String} experience._id  文章id
  */
 router.post('/', [
     authentication.cachedFacebookAuthenticationMiddleware,

@@ -8,6 +8,11 @@ const ReplyLikeModel = require('../../models/reply_like_model');
 const ReplyModel = require('../../models/reply_model');
 const authentication = require('../../middlewares/authentication');
 
+/**
+ * @api {post} /replies/:id/likes 新增留言的讚 API
+ * @apiGroup Replies Likes
+ * @apiSuccess {Boolean} success 是否成功點讚
+ */
 router.post('/:reply_id/likes', authentication.cachedFacebookAuthenticationMiddleware);
 router.post('/:reply_id/likes', (req, res, next) => {
     winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
@@ -43,6 +48,11 @@ router.post('/:reply_id/likes', (req, res, next) => {
 
 });
 
+/**
+ * @api {delete} /replies/:id/likes 移除留言的讚 API
+ * @apiGroup Replies Likes
+ * @apiSuccess {Boolean} success 是否成功取消讚
+ */
 router.delete('/:reply_id/likes', authentication.cachedFacebookAuthenticationMiddleware);
 router.delete('/:reply_id/likes', (req, res, next) => {
     winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
