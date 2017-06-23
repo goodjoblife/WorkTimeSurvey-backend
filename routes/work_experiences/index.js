@@ -36,7 +36,8 @@ const {
  * @apiParam {String="0 < length <= 25"} sections.subtitle 段落標題
  * @apiParam {String="0 < length <= 5000"} sections.content 段落內容
  * @apiSuccess {Boolean} success 是否上傳成功
- * @apiSuccess {String} experience._id  文章id
+ * @apiSuccess {Object} experience 經驗分享物件
+ * @apiSuccess {String} experience._id  經驗分享id
  */
 router.post('/', [
     authentication.cachedFacebookAuthenticationMiddleware,

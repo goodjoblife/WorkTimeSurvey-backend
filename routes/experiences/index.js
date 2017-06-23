@@ -16,32 +16,32 @@ const authentication = require('../../middlewares/authentication_user');
 /**
  * @api {get} /experiences 查詢面試及工作經驗 API
  * @apiGroup Experiences
- * @apiParam {String} search_query 搜尋字串
+ * @apiParam {String} [search_query] 搜尋字串
  * @apiParam {String="company","job_title"} [search_by="company"]  選擇以公司 or 職稱搜尋
  * @apiParam {String="created_at","popularity"} [sort = “created_at"]  排序方式。最新 or 熱門經驗
  * @apiParam {Number="0 <= start "} [start = 0] 從第 start + 1 筆資料開始
  * @apiParam {String="0 < limit <=100 "} [limit = 20] 最多回傳limit筆資料
- * @apiParam {String="interview","work"} [type = “interview,work”] 搜尋的種類
+ * @apiParam {String="interview","work","interview,work"} [type = “interview,work”] 搜尋的種類
  * @apiSuccess {Number} total 總資料數
  * @apiSuccess {Object[]} experiences 經驗資料
  * @apiSuccess {String} experiences._id 經驗分享 id
- * @apiSuccess {String} experiences.type 經驗類別 (interview work)
+ * @apiSuccess {String="interview","work"} experiences.type 經驗類別
  * @apiSuccess {String} experiences.created_at 資料填寫時間
  * @apiSuccess {Object} experiences.company 公司
- * @apiSuccess {String} experiences.company.id 公司統編
- * @apiSuccess {String/Array} experiences.company.name 公司名稱。公司有中英文兩個名稱時，會是Array of strings
+ * @apiSuccess {String} [experiences.company.id] 公司統編
+ * @apiSuccess {String} experiences.company.name 公司名稱
  * @apiSuccess {String} experiences.job_title 職稱
  * @apiSuccess {String} experiences.title 標題
  * @apiSuccess {string} experiences.preview 整篇內容的preview。直接使用第1個section的內容，至多前Ｎ個字。N=160。
- * @apiSuccess (interview) {String} experiences.region 面試地區
- * @apiSuccess (interview) {Object} experiences.salary 面談薪資
- * @apiSuccess (interview) {String} experiences.salary.type 面談薪資種類 (year month day hour)
- * @apiSuccess (interview) {Number} experiences.salary.amount 面談薪資金額
- * @apiSuccess (work) {String} experiences.region 工作地區
- * @apiSuccess (work) {String} experiences.week_work_time 一週工時 (整數或浮點數。 168>=N>=0)
- * @apiSuccess (work) {Object} experiences.salary 工作薪資
- * @apiSuccess (work) {String} experiences.salary.type 工作薪資種類 (year month day hour)
- * @apiSuccess (work) {Number} experiences.salary.amount 工作薪資金額
+ * @apiSuccess (interview) {String="彰化縣","嘉義市","嘉義縣","新竹市","新竹縣","花蓮縣","高雄市","基隆市","金門縣","連江縣","苗栗縣","南投縣","新北市","澎湖縣","屏東縣","臺中市","臺南市","臺北市","臺東縣","桃園市","宜蘭縣","雲林縣"} experiences.region 面試地區
+ * @apiSuccess (interview) {Object} [experiences.salary] 面談薪資
+ * @apiSuccess (interview) {String="year","month","day","hour"} [experiences.salary.type] 面談薪資種類
+ * @apiSuccess (interview) {Number} [experiences.salary.amount] 面談薪資金額
+ * @apiSuccess (work) {String="彰化縣","嘉義市","嘉義縣","新竹市","新竹縣","花蓮縣","高雄市","基隆市","金門縣","連江縣","苗栗縣","南投縣","新北市","澎湖縣","屏東縣","臺中市","臺南市","臺北市","臺東縣","桃園市","宜蘭縣","雲林縣"} experiences.region 工作地區
+ * @apiSuccess (work) {String="整數或浮點數, 0 <= N <= 168"} [experiences.week_work_time] 一週工時
+ * @apiSuccess (work) {Object} [experiences.salary] 工作薪資
+ * @apiSuccess (work) {String="year","month","day","hour"} [experiences.salary.type] 工作薪資種類
+ * @apiSuccess (work) {Number} [experiences.salary.amount] 工作薪資金額
  */
 router.get('/', function(req, res, next) {
     winston.info(req.originalUrl, {
@@ -189,15 +189,15 @@ function _queryToDBQuery(search_query, search_by, type) {
 /**
  * @api {get} /experiences/:id 顯示單篇面試或工作經驗 API
  * @apiGroup Experiences
- * @apiSuccess {String}  type 經驗類別，可能值:interview work
+ * @apiSuccess {String="interview","work"}  type 經驗類別
  * @apiSuccess {String}  created_at 資料填寫時間
  * @apiSuccess {Object}  company 公司
- * @apiSuccess {String}  company.id 公司統編
- * @apiSuccess {String/Array}  company.name 公司名稱。公司有中英文兩個名稱時，會是Array of strings
+ * @apiSuccess {String}  [company.id] 公司統編
+ * @apiSuccess {String}  company.name 公司名稱
  * @apiSuccess {String}  job_title 職稱
- * @apiSuccess {String}  experience_in_year 相關職務工作經驗 (整數, 0 <= N <= 50)
- * @apiSuccess {String}  education 最高學歷
- * @apiSuccess {String}  region 面試地區/工作地區
+ * @apiSuccess {String="整數, 0 <= N <= 50"}  [experience_in_year] 相關職務工作經驗
+ * @apiSuccess {String="大學","碩士","博士","高職","五專","二專","二技","高中","國中","國小"}  education 最高學歷
+ * @apiSuccess {String="彰化縣","嘉義市","嘉義縣","新竹市","新竹縣","花蓮縣","高雄市","基隆市","金門縣","連江縣","苗栗縣","南投縣","新北市","澎湖縣","屏東縣","臺中市","臺南市","臺北市","臺東縣","桃園市","宜蘭縣","雲林縣"}  region 面試地區/工作地區
  * @apiSuccess {String}  title 標題
  * @apiSuccess {Object[]}  sections 整篇內容
  * @apiSuccess {String}  sections.subtitle 段落標題
@@ -207,24 +207,24 @@ function _queryToDBQuery(search_query, search_by, type) {
  * @apiSuccess {Boolean}  liked 該名使用者是否已經讚過該篇經驗分享 (若使用者未登入，則不會回傳本欄位)
  * @apiSuccess (interview) {Object}  interview_time 面試時間
  * @apiSuccess (interview) {Number}  interview_time.year 面試時間的年份
- * @apiSuccess (interview) {Number}  interview_time.month 面試時間的月份(整數, 1~12)
+ * @apiSuccess (interview) {Number="1,2,3...12"}  interview_time.month 面試時間的月份
  * @apiSuccess (interview) {String}  interview_result 面試結果 ( `錄取` `未錄取` `沒通知`或其他 0 < length <= 10 的字串 )
  * @apiSuccess (interview) {Number}  overall_rating 整體面試滿意度 (整數, 1~5)
- * @apiSuccess (interview) {Object}  salary 面談薪資
- * @apiSuccess (interview) {String}  salary.type 面談薪資種類 (year month day hour)
- * @apiSuccess (interview) {Number}  salary.amount 面談薪資金額 (整數, >= 0)
- * @apiSuccess (interview) {String[]}  interview_sensitive_questions 面試中提及的特別問題陣列(較敏感/可能違法)
- * @apiSuccess (interview) {Object[]}  interview_qas 面試題目列表
- * @apiSuccess (interview) {String}  interview_qas.question 面試題目
- * @apiSuccess (interview) {String}  interview_qas.answer 面試題目的回答
- * @apiSuccess (work) {Object}  salary 工作薪資
- * @apiSuccess (work) {String}  salary.type 工作薪資種類 (year month day hour)
- * @apiSuccess (work) {Number}  salary.amount 工作薪資金額
- * @apiSuccess (work) {Number}  week_work_time 一週工時
+ * @apiSuccess (interview) {Object}  [salary] 面談薪資
+ * @apiSuccess (interview) {String="year","month","day","hour"} [salary.type] 面談薪資種類 (year month day hour)
+ * @apiSuccess (interview) {Number}  [salary.amount] 面談薪資金額 (整數, >= 0)
+ * @apiSuccess (interview) {String[]}  [interview_sensitive_questions] 面試中提及的特別問題陣列(較敏感/可能違法)
+ * @apiSuccess (interview) {Object[]}  [interview_qas] 面試題目列表
+ * @apiSuccess (interview) {String}  [interview_qas.question] 面試題目
+ * @apiSuccess (interview) {String}  [interview_qas.answer] 面試題目的回答
+ * @apiSuccess (work) {Object}  [salary] 工作薪資
+ * @apiSuccess (work) {String="year","month","day","hour"} [salary.type] 工作薪資種類 (year month day hour)
+ * @apiSuccess (work) {Number}  [salary.amount] 工作薪資金額
+ * @apiSuccess (work) {Number}  [week_work_time] 一週工時
  * @apiSuccess (work) {Object}  data_time 離職時間或留資料的時間。若 `is_currently_employed` = `yes`則為 `created_at`  的年月，若為`no` ，則為 `job_ending_time`
  * @apiSuccess (work) {Number}  data_time.year 留資料的時間或離職的年份
- * @apiSuccess (work) {Number}  data_time.month 留資料的時間或離職的月份 (整數, 1~12)
- * @apiSuccess (work) {String}  recommend_to_others 是否推薦此工作 (yes no)
+ * @apiSuccess (work) {Number="1,2,3...12"}  data_time.month 留資料的時間或離職的月份
+ * @apiSuccess (work) {String}  [recommend_to_others="yes","no"] 是否推薦此工作
  */
 router.get('/:id', [
     authentication.cachedAndSetUserMiddleware,
