@@ -28,8 +28,8 @@ const {
  * @apiParam {Number="1,2,3...12"} interview_time.month 面試時間的月份
  * @apiParam {String="錄取,未錄取,沒通知,或其他 0 < length <= 10 的字串"} interview_result 面試結果
  * @apiParam {Object} [salary] 面談薪資
- * @apiParam {String="year","month","day","hour"} [salary.type] 面談薪資種類
- * @apiParam {Number="整數, >= 0"} [salary.amount] 面談薪資金額
+ * @apiParam {String="year","month","day","hour"} salary.type 面談薪資種類 (若有上傳面談薪資欄位，本欄必填)
+ * @apiParam {Number="整數, >= 0"} salary.amount 面談薪資金額 (若有上傳面談薪資欄位，本欄必填)
  * @apiParam {Number="整數, 1~5"} overall_rating 整體面試滿意度
  * @apiParam {String="0 < length <= 25 "} title 整篇經驗分享的標題
  * @apiParam {Object[]} sections 整篇內容

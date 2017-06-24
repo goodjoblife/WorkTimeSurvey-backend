@@ -27,8 +27,8 @@ const {
  * @apiParam {Number="整數, Ｎ >= current_year - 10"} job_ending_time.year 工作結束時間的年份
  * @apiParam {Number="整數, 1~12"} job_ending_time.month 工作結束時間的月份
  * @apiParam {Object} [salary] 薪資
- * @apiParam {String="year","month","day","hour"} [salary.type] 薪資種類
- * @apiParam {Number="整數, >= 0"} [salary.amount] 薪資金額
+ * @apiParam {String="year","month","day","hour"} salary.type 薪資種類 (若有上傳薪資欄位，本欄必填)
+ * @apiParam {Number="整數, >= 0"} salary.amount 薪資金額 (若有上傳薪資欄位，本欄必填)
  * @apiParam {Number="整數或浮點數。 168>=N>=0。"} [week_work_time] 一週工時
  * @apiParam {String="yes","no"} [recommend_to_others] 是否推薦此工作
  * @apiParam {String="0 < length <= 25 "} title 整篇經驗分享的標題

@@ -84,7 +84,7 @@ function validationPostFields(body) {
  * @api {get} /experiences/:id/replies 取得單篇經驗的留言列表 API
  * @apiGroup Experiences Replies
  * @apiParam {String="整數"} [start=0] (從第 start 個留言開始 (start =0為第1筆留言）)
- * @apiParam {String="整數, 0 <= N <= 1000"} [limit =20] 回傳最多limit個留言
+ * @apiParam {String="整數, 0 < N <= 1000"} [limit =20] 回傳最多limit個留言
  * @apiSuccess {Object[]} replies 該留言的物件陣列 (由第1樓排到第N樓。第1樓為該篇經驗分享的時間最早的第一個留言，依此類推
  * @apiSuccess {String} replies._id 留言的ID
  * @apiSuccess {String} replies.content 留言的內容
