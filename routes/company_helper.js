@@ -59,6 +59,6 @@ function _getCompanyName(db_company_name) {
 }
 
 module.exports = {
-    getCompanyByIdOrQuery: getCompanyByIdOrQuery,
-    getCompanyName: getCompanyName,
+    getCompanyByIdOrQuery,
+    getCompanyName,
 };
