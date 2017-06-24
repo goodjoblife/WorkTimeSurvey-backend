@@ -1,8 +1,12 @@
 WorkTimeSurvey Backend
 =====================
 
+[![Build Status](https://circleci.com/gh/goodjoblife/WorkTimeSurvey-backend.svg?style=shield)](https://circleci.com/gh/goodjoblife/WorkTimeSurvey-backend)
 [![Build Status](https://travis-ci.org/goodjoblife/WorkTimeSurvey-backend.svg?branch=master)](https://travis-ci.org/goodjoblife/WorkTimeSurvey-backend)
 [![Coverage Status](https://coveralls.io/repos/github/goodjoblife/WorkTimeSurvey-backend/badge.svg?branch=master)](https://coveralls.io/github/goodjoblife/WorkTimeSurvey-backend?branch=master)
+[![License](https://img.shields.io/github/license/goodjoblife/WorkTimeSurvey-backend.svg)](https://github.com/goodjoblife/WorkTimeSurvey-backend/blob/master/LICENSE)
+
+GoodJob 後端 API 服務
 
 * Environment: nodejs 6
 * DB: mongodb, redis
