@@ -68,21 +68,19 @@ app.use(passport.session());
 passport.use(passportStrategies.facebookStrategy);
 
 passport.serializeUser((user, done) => {
-    console.log('serializeUser:');
-    console.log(user);
-    done(null, user.id);
+    // set user info to req.session.passport.user
+    done(null, user);
 });
 
-passport.deserializeUser((id, done) => {
-    console.log('deserializeUser:');
-    console.log(id);
-    done(null, id);
+passport.deserializeUser((user, done) => {
+    // get from req.session.passport.user and set to req.user
+    done(null, user);
 });
 
 app.get('/auth/facebook', passport.authenticate('facebook'));
 app.get('/auth/facebook/callback',
     passport.authenticate('facebook', {
-        successReturnToOrRedirect: '/',
+        successReturnToOrRedirect: '/', //FIXME: change to right url
         session: true,
     })
 );

@@ -6,6 +6,7 @@ const winston = require('winston');
 const lodash = require('lodash');
 const post_helper = require('./workings_post');
 const middleware = require('./middleware');
+const facebookAuth = require('../middlewares/facebookAuth');
 
 router.get('/', middleware.sort_by);
 router.get('/', middleware.pagination);
@@ -84,6 +85,8 @@ if (! process.env.SKIP_FACEBOOK_AUTH) {
         });
     });
 
+} else if (process.env.NEW_FACEBOOK_AUTH) {
+    router.post('/', facebookAuth());
 }
 
 router.post('/', (req, res, next) => {
