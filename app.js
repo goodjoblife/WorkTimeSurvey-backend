@@ -4,9 +4,12 @@ const config = require('config');
 const cors = require('cors');
 const express = require('express');
 const expressMongoDb = require('express-mongo-db');
+const session = require('express-session');
 const { HttpError } = require('./libs/errors');
 const logger = require('morgan');
 const winston = require('winston');
+const passport = require('passport');
+const passportStrategies = require('./libs/passport-strategies');
 require('winston-mongodb').MongoDB;
 
 const routes = require('./routes/index');
@@ -53,6 +56,37 @@ app.use((req, res, next) => {
     });
     next();
 });
+
+app.use(session({
+    secret: 'secret',
+    resave: false, // don't save session if unmodified
+    saveUninitialized: true, // always create session to ensure the origin
+}));
+// passport
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(passportStrategies.facebookStrategy);
+
+passport.serializeUser((user, done) => {
+    console.log('serializeUser:');
+    console.log(user);
+    done(null, user.id);
+});
+
+passport.deserializeUser((id, done) => {
+    console.log('deserializeUser:');
+    console.log(id);
+    done(null, id);
+});
+
+app.get('/auth/facebook', passport.authenticate('facebook'));
+app.get('/auth/facebook/callback',
+    passport.authenticate('facebook', {
+        successReturnToOrRedirect: '/',
+        session: true,
+    })
+);
+
 app.use('/', routes);
 app.use('/companies', require('./routes/companies'));
 app.use('/workings', require('./routes/workings'));
