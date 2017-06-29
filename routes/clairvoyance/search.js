@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
-const lodash = require('lodash');
+const escapeRegExp = require('lodash/escapeRegExp');
 const winston = require('winston');
 
 /**
@@ -34,7 +34,7 @@ router.get('/by-job', function(req, res, next) {
 
     //mongodb query
     const db_query = {
-        job_title: new RegExp(lodash.escapeRegExp(job_title.toUpperCase() ) ),
+        job_title: new RegExp(escapeRegExp(job_title.toUpperCase() ) ),
     };
 
     //sorted order
@@ -101,7 +101,7 @@ router.get('/by-company', function(req, res, next) {
     //mongodb query
     const q = {
         $or: [
-                {'company.name': new RegExp(lodash.escapeRegExp(company.toUpperCase()))},
+                {'company.name': new RegExp(escapeRegExp(company.toUpperCase()))},
                 {'company.id': company},
         ],
     };

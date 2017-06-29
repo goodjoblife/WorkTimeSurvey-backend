@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const HttpError = require('../libs/errors').HttpError;
-const lodash = require('lodash');
+const escapeRegExp = require('lodash/escapeRegExp');
 const winston = require('winston');
 
 /**
@@ -24,7 +24,7 @@ router.get('/search', function(req, res, next) {
     if (search == "") {
         q = {isFinal: true};
     } else {
-        q = {des: new RegExp(lodash.escapeRegExp(search.toUpperCase())), isFinal: true};
+        q = {des: new RegExp(escapeRegExp(search.toUpperCase())), isFinal: true};
     }
 
     const collection = req.db.collection('job_titles');

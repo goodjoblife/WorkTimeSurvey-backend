@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
-const lodash = require('lodash');
+const escapeRegExp = require('lodash/escapeRegExp');
 const winston = require('winston');
 const CompanyModel = require('../../models/company_model');
 const getCompanyName = require('../company_helper').getCompanyName;
@@ -22,11 +22,12 @@ router.get('/search', function(req, res, next) {
     let query;
 
     if (search == "") {
-        throw new HttpError("key is required", 422);
+        next(new HttpError("key is required", 422));
+        return;
     } else {
         query = {
             $or: [
-                {name: new RegExp("^" + lodash.escapeRegExp(search.toUpperCase()))},
+                {name: new RegExp("^" + escapeRegExp(search.toUpperCase()))},
                 {id: search},
             ],
         };

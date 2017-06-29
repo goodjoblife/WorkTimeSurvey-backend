@@ -3,7 +3,7 @@ const router = express.Router();
 const HttpError = require('../libs/errors').HttpError;
 const facebook = require('../libs/facebook');
 const winston = require('winston');
-const lodash = require('lodash');
+const escapeRegExp = require('lodash/escapeRegExp');
 const post_helper = require('./workings_post');
 const middleware = require('./middleware');
 
@@ -108,7 +108,7 @@ router.get('/search_by/company/group_by/company', function(req, res, next) {
         {
             $match: {
                 $or: [
-                    {'company.name': new RegExp(lodash.escapeRegExp(company.toUpperCase()))},
+                    {'company.name': new RegExp(escapeRegExp(company.toUpperCase()))},
                     {'company.id': company},
                 ],
             },
@@ -262,7 +262,7 @@ router.get('/search_by/job_title/group_by/company', function(req, res, next) {
     collection.aggregate([
         {
             $match: {
-                job_title: new RegExp(lodash.escapeRegExp(job_title.toUpperCase())),
+                job_title: new RegExp(escapeRegExp(job_title.toUpperCase())),
             },
         },
         {
@@ -353,7 +353,8 @@ router.get('/companies/search', function(req, res, next) {
     const page = parseInt(req.query.page) || 0;
 
     if (search === "") {
-        throw new HttpError("key is required", 422);
+        next(new HttpError("key is required", 422));
+        return;
     }
 
     const collection = req.db.collection('workings');
@@ -367,7 +368,7 @@ router.get('/companies/search', function(req, res, next) {
         {
             $match: {
                 $or: [
-                    {'company.name': new RegExp(lodash.escapeRegExp(search.toUpperCase()))},
+                    {'company.name': new RegExp(escapeRegExp(search.toUpperCase()))},
                     {'company.id': search},
                 ],
             },
@@ -405,7 +406,8 @@ router.get('/jobs/search', function(req, res, next) {
     const page = parseInt(req.query.page) || 0;
 
     if (search === "") {
-        throw new HttpError("key is required", 422);
+        next(new HttpError("key is required", 422));
+        return;
     }
 
     const collection = req.db.collection('workings');
@@ -418,7 +420,7 @@ router.get('/jobs/search', function(req, res, next) {
         },
         {
             $match: {
-                job_title: new RegExp(lodash.escapeRegExp(search.toUpperCase())),
+                job_title: new RegExp(escapeRegExp(search.toUpperCase())),
             },
         },
         {

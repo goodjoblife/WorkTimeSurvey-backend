@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
-const lodash = require('lodash');
+const escapeRegExp = require('lodash/escapeRegExp');
 const winston = require('winston');
 const ExperienceModel = require('../../models/experience_model');
 const ExperienceLikeModel = require('../../models/experience_like_model');
@@ -162,11 +162,11 @@ function _queryToDBQuery(search_query, search_by, type) {
     }
 
     if (search_by == "job_title") {
-        query.job_title = new RegExp(lodash.escapeRegExp(search_query.toUpperCase()));
+        query.job_title = new RegExp(escapeRegExp(search_query.toUpperCase()));
     } else {
         if (search_query) {
             query["$or"] = [{
-                'company.name': new RegExp(lodash.escapeRegExp(search_query.toUpperCase())),
+                'company.name': new RegExp(escapeRegExp(search_query.toUpperCase())),
             }, {
                 'company.id': search_query,
             }];
