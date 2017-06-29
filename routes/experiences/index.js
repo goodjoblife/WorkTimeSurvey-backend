@@ -12,6 +12,7 @@ const {
     shouldIn,
 } = require('../../libs/validation');
 const authentication = require('../../middlewares/authentication_user');
+const wrap = require('../../libs/wrap');
 
 /**
  * @api {get} /experiences 查詢面試及工作經驗 API
@@ -43,7 +44,7 @@ const authentication = require('../../middlewares/authentication_user');
  * @apiSuccess (work) {String="year","month","day","hour"} experiences.salary.type 工作薪資種類 (工作薪資存在的話，一定有此欄位)
  * @apiSuccess (work) {Number} experiences.salary.amount 工作薪資金額 (工作薪資存在的話，一定有此欄位)
  */
-router.get('/', function(req, res, next) {
+router.get('/', wrap(async function(req, res) {
     winston.info(req.originalUrl, {
         query: req.query,
         ip: req.ip,
@@ -59,28 +60,23 @@ router.get('/', function(req, res, next) {
 
     if (search_query) {
         if (!search_by) {
-            next(new HttpError("search_by 不能為空", 422));
-            return;
+            throw new HttpError("search_by 不能為空", 422);
         }
         if (!shouldIn(search_by, ["company", "job_title"])) {
-            next(new HttpError("search_by 格式錯誤", 422));
-            return;
+            throw new HttpError("search_by 格式錯誤", 422);
         }
     }
 
     if (!shouldIn(sort_field, ["created_at", "popularity"])) {
-        next(new HttpError("sort_by 格式錯誤", 422));
-        return;
+        throw new HttpError("sort_by 格式錯誤", 422);
     }
 
     if (!requiredNumberGreaterThanOrEqualTo(start, 0)) {
-        next(new HttpError("start 格式錯誤", 422));
-        return;
+        throw new HttpError("start 格式錯誤", 422);
     }
 
     if (!requiredNumberInRange(limit, 100, 1)) {
-        next(new HttpError("limit 格式錯誤", 422));
-        return;
+        throw new HttpError("limit 格式錯誤", 422);
     }
 
     const query = _queryToDBQuery(search_query, search_by, type);
@@ -90,17 +86,12 @@ router.get('/', function(req, res, next) {
         [db_sort_field]: -1,
     };
 
-    let total;
     const experience_model = new ExperienceModel(req.db);
-    experience_model.getExperiencesCountByQuery(query).then((count) => {
-        total = count;
-        return experience_model.getExperiences(query, sort, start, limit);
-    }).then((experiences) => {
-        res.send(_generateGetExperiencesViewModel(experiences, total));
-    }).catch((err) => {
-        next(new HttpError("Internal Service Error", 500));
-    });
-});
+    const total = await experience_model.getExperiencesCountByQuery(query);
+    const experiences = await experience_model.getExperiences(query, sort, start, limit);
+
+    res.send(_generateGetExperiencesViewModel(experiences, total));
+}));
 
 function _generateGetExperiencesViewModel(experiences, total) {
     const MAX_PREVIEW_SIZE = 160;
@@ -228,7 +219,7 @@ function _queryToDBQuery(search_query, search_by, type) {
  */
 router.get('/:id', [
     authentication.cachedAndSetUserMiddleware,
-    function(req, res, next) {
+    wrap(async function(req, res) {
         const id = req.params.id;
         let user = null;
         winston.info('experiences/id', {
@@ -243,23 +234,26 @@ router.get('/:id', [
 
         const experience_model = new ExperienceModel(req.db);
         const experience_like_model = new ExperienceLikeModel(req.db);
-        experience_model.getExperienceById(id).then((experience) => {
-            if (user) {
-                return experience_like_model.getLikeByExperienceIdAndUser(id, user)
-                    .then(like => _generateGetExperienceViewModel(experience, user, like));
-            } else {
-                return _generateGetExperienceViewModel(experience);
-            }
-        }).then((result) => {
-            res.send(result);
-        }).catch((err) => {
+
+        let experience = null;
+        try {
+            experience = await experience_model.getExperienceById(id);
+        } catch (err) {
             if (err instanceof ObjectNotExistError) {
-                next(new HttpError(err.message, 404));
-            } else {
-                next(new HttpError("Internal Service Error", 500));
+                throw new HttpError(err.message, 404);
             }
-        });
-    },
+            throw err;
+        }
+
+        let result;
+        if (user) {
+            const like = await experience_like_model.getLikeByExperienceIdAndUser(id, user);
+            result = _generateGetExperienceViewModel(experience, user, like);
+        } else {
+            result = _generateGetExperienceViewModel(experience);
+        }
+        res.send(result);
+    }),
 ]);
 
 function _generateGetExperienceViewModel(experience, user, like) {
