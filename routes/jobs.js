@@ -1,4 +1,5 @@
 const express = require('express');
+
 const router = express.Router();
 const escapeRegExp = require('lodash/escapeRegExp');
 const winston = require('winston');
@@ -14,22 +15,22 @@ const wrap = require('../libs/wrap');
  * @apiSuccess {String} ._id 代號
  * @apiSuccess {String} .des 職稱名
  */
-router.get('/search', wrap(async function (req, res) {
-    winston.info("/jobs/search", {query: req.query, ip: req.ip, ips: req.ips});
+router.get('/search', wrap(async (req, res) => {
+    winston.info("/jobs/search", { query: req.query, ip: req.ip, ips: req.ips });
 
     const search = req.query.key || "";
     const page = req.query.page || 0;
-    var q;
+    let q;
 
-    if (search == "") {
-        q = {isFinal: true};
+    if (search === "") {
+        q = { isFinal: true };
     } else {
-        q = {des: new RegExp(escapeRegExp(search.toUpperCase())), isFinal: true};
+        q = { des: new RegExp(escapeRegExp(search.toUpperCase())), isFinal: true };
     }
 
     const collection = req.db.collection('job_titles');
 
-    const results = await collection.find(q, {isFinal: 0}).skip(25 * page).limit(25).toArray();
+    const results = await collection.find(q, { isFinal: 0 }).skip(25 * page).limit(25).toArray();
 
     res.send(results);
 }));

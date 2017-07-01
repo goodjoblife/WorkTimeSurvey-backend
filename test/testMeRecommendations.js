@@ -1,5 +1,6 @@
 const chai = require('chai');
 chai.use(require("chai-as-promised"));
+
 const assert = chai.assert;
 const sinon = require('sinon');
 require('sinon-as-promised');
@@ -9,20 +10,20 @@ const app = require('../app');
 const recommendation = require('../libs/recommendation');
 const authentication = require('../libs/authentication');
 
-describe('POST /me/recommendations 取得使用者推薦字串', function() {
+describe('POST /me/recommendations 取得使用者推薦字串', () => {
     let sandbox;
 
-    beforeEach(function() {
+    beforeEach(() => {
         sandbox = sinon.sandbox.create();
     });
 
-    it('get recommendation string success', function() {
+    it('get recommendation string success', () => {
         const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication')
             .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
-            .resolves({facebook_id: '-1'});
+            .resolves({ facebook_id: '-1' });
 
         const getRecommendationString = sandbox.stub(recommendation, 'getRecommendationString')
-            .withArgs(sinon.match.object, {id: '-1', type: 'facebook'})
+            .withArgs(sinon.match.object, { id: '-1', type: 'facebook' })
             .resolves('00000000ccd8958909a983e9');
 
         return request(app).post('/me/recommendations')
@@ -30,7 +31,7 @@ describe('POST /me/recommendations 取得使用者推薦字串', function() {
                 access_token: 'fakeaccesstoken',
             })
             .expect(200)
-            .expect(function(res) {
+            .expect((res) => {
                 sinon.assert.calledOnce(cachedFacebookAuthentication);
                 sinon.assert.calledOnce(getRecommendationString);
 
@@ -38,16 +39,16 @@ describe('POST /me/recommendations 取得使用者推薦字串', function() {
             });
     });
 
-    it('fail if facebook auth fail', function() {
+    it('fail if facebook auth fail', () => {
         sandbox.stub(authentication, 'cachedFacebookAuthentication').rejects();
 
         return request(app).post('/me/recommendations')
             .expect(401);
     });
 
-    it('fail if getRecommendationString fail', function() {
+    it('fail if getRecommendationString fail', () => {
         sandbox.stub(authentication, 'cachedFacebookAuthentication')
-            .resolves({_id: {id: '-1', type: 'facebook'}});
+            .resolves({ _id: { id: '-1', type: 'facebook' } });
         sandbox.stub(recommendation, 'getRecommendationString').rejects();
 
         return request(app).post('/me/recommendations')
@@ -57,7 +58,7 @@ describe('POST /me/recommendations 取得使用者推薦字串', function() {
             .expect(500);
     });
 
-    afterEach(function() {
+    afterEach(() => {
         sandbox.restore();
     });
 });

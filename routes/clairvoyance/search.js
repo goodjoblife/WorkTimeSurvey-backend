@@ -1,4 +1,5 @@
 const express = require('express');
+
 const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
 const escapeRegExp = require('lodash/escapeRegExp');
@@ -20,8 +21,8 @@ const winston = require('winston');
  * @apiSuccess {String} workings.job_title 職稱
  * @apiSuccess {Number} workings.week_work_time 最近一週工作時數
  */
-router.get('/by-job', function(req, res, next) {
-    winston.info('/clairvoyance/search/by-job', {job_title: req.query.job_title, ip: req.ip, ips: req.ips});
+router.get('/by-job', (req, res, next) => {
+    winston.info('/clairvoyance/search/by-job', { job_title: req.query.job_title, ip: req.ip, ips: req.ips });
     const job_title = req.query.job_title;
     const page = req.query.page || 0;
 
@@ -32,17 +33,17 @@ router.get('/by-job', function(req, res, next) {
         return;
     }
 
-    //mongodb query
+    // mongodb query
     const db_query = {
-        job_title: new RegExp(escapeRegExp(job_title.toUpperCase() ) ),
+        job_title: new RegExp(escapeRegExp(job_title.toUpperCase())),
     };
 
-    //sorted order
+    // sorted order
     const db_sort = {
         created_at: -1,
     };
 
-    //display fields
+    // display fields
     const opt = {
         _id: 0,
         job_title: 1,
@@ -53,20 +54,19 @@ router.get('/by-job', function(req, res, next) {
 
     const data = {};
 
-    collection.find(db_query).count().then(function(count) {
+    collection.find(db_query).count().then((count) => {
         data.total_count = count;
         data.total_page = Math.ceil(count / 25);
 
         return collection.find(db_query, opt).sort(db_sort).skip(25 * page).limit(25).toArray();
-    }).then(function(workings) {
+    }).then((workings) => {
         data.page = page;
         data.workings = workings;
 
         res.send(data);
-    }).catch(function(err) {
+    }).catch((err) => {
         next(new HttpError("Internal Server Error", 500));
     });
-
 });
 
 /**
@@ -85,33 +85,33 @@ router.get('/by-job', function(req, res, next) {
  * @apiSuccess {String} workings.job_title 職稱
  * @apiSuccess {Number} workings.week_work_time 最近一週工作時數
  */
-router.get('/by-company', function(req, res, next) {
-    winston.info("/clairvoyance/search/by-company", {company: req.query.company, ip: req.ip, ips: req.ips});
+router.get('/by-company', (req, res, next) => {
+    winston.info("/clairvoyance/search/by-company", { company: req.query.company, ip: req.ip, ips: req.ips });
 
     const company = req.query.company;
     const page = req.query.page || 0;
 
     const collection = req.db.collection('workings');
 
-    if (! company || company === '') {
+    if (!company || company === '') {
         next(new HttpError("company is required", 422));
         return;
     }
 
-    //mongodb query
+    // mongodb query
     const q = {
         $or: [
-                {'company.name': new RegExp(escapeRegExp(company.toUpperCase()))},
-                {'company.id': company},
+                { 'company.name': new RegExp(escapeRegExp(company.toUpperCase())) },
+                { 'company.id': company },
         ],
     };
 
-    //sort field
+    // sort field
     const s = {
         created_at: -1,
     };
 
-    //displayed fields
+    // displayed fields
     const opt = {
         _id: 0,
         job_title: 1,
@@ -122,16 +122,16 @@ router.get('/by-company', function(req, res, next) {
 
     const data = {};
 
-    collection.find(q).count().then(function(count) {
+    collection.find(q).count().then((count) => {
         data.total_count = count;
         data.total_page = Math.ceil(count / 25);
         return collection.find(q, opt).sort(s).skip(25 * page).limit(25).toArray();
-    }).then(function(workings) {
+    }).then((workings) => {
         data.page = page;
         data.workings = workings;
 
         res.send(data);
-    }).catch(function(err) {
+    }).catch((err) => {
         next(new HttpError("Internal Server Error", 500));
     });
 });

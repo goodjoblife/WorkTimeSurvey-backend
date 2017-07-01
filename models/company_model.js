@@ -5,12 +5,12 @@ class CompanyModel {
     }
     searchCompanyById(id) {
         return this.collection.find({
-            id: id,
+            id,
         }).toArray();
     }
     searchCompanyByName(name) {
         return this.collection.find({
-            name: name,
+            name,
         }).toArray();
     }
     searchCompany(query, sort_by, skip, limit) {

@@ -1,6 +1,7 @@
 const winston = require('winston');
 const express = require('express');
 const HttpError = require('../../libs/errors').HttpError;
+
 const router = express.Router();
 const ReplyModel = require('../../models/reply_model');
 const ReplyLikeModel = require('../../models/reply_like_model');
@@ -26,7 +27,7 @@ const {
  */
 router.post('/:id/replies', [
     authentication.cachedFacebookAuthenticationMiddleware,
-    function(req, res, next) {
+    function (req, res, next) {
         try {
             validationPostFields(req.body);
         } catch (err) {
@@ -95,10 +96,10 @@ function validationPostFields(body) {
  */
 router.get('/:id/replies', [
     authenticationUser.cachedAndSetUserMiddleware,
-    function(req, res, next) {
+    function (req, res, next) {
         const experience_id = req.params.id;
-        let limit = parseInt(req.query.limit) || 20;
-        let start = parseInt(req.query.start) || 0;
+        const limit = parseInt(req.query.limit) || 20;
+        const start = parseInt(req.query.start) || 0;
         let user;
 
         if (!requiredNumberInRange(limit, 1000, 1)) {
@@ -151,11 +152,11 @@ function _isExistUserLiked(reply_id, user, likes) {
             return like;
         }
     });
-    return (result) ? true : false;
+    return !!(result);
 }
 
 function _generateGetRepliesViewModel(replies) {
-    let result ={
+    const result = {
         replies: [],
     };
     replies.forEach((reply) => {

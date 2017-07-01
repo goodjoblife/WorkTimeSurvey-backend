@@ -13,21 +13,20 @@ const ObjectIdError = require('./errors').ObjectIdError;
 function getRecommendationString(db, user) {
     return db.collection('recommendations')
         .findOneAndUpdate({
-            user: user,
+            user,
         }, {
             // when insert, insert the user field
-            $set: {user: user},
+            $set: { user },
         }, {
             // insert if not found
             upsert: true,
             // 返回改過的物件
             returnOriginal: false,
         })
-        .then(result => {
+        .then(result =>
             // result.value._id --> ObjectId
             // we want to get string
-            return result.value._id.toHexString();
-        });
+             result.value._id.toHexString());
 }
 
 /*
@@ -55,13 +54,12 @@ function getUserByRecommendationString(db, recommendation_string) {
             // new ObjectId may throw error
             return new ObjectId(recommendation_string);
         })
-        .then(_id => db.collection('recommendations').findOne({_id: _id}))
+        .then(_id => db.collection('recommendations').findOne({ _id }))
         .then(result => {
             if (result === null) {
                 return null;
-            } else {
-                return result.user;
             }
+            return result.user;
         });
 }
 

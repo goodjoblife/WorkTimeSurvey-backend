@@ -1,4 +1,5 @@
 const express = require('express');
+
 const router = express.Router();
 const HttpError = require('../libs/errors').HttpError;
 const facebook = require('../libs/facebook');
@@ -9,8 +10,8 @@ const middleware = require('./middleware');
 
 router.get('/', middleware.sort_by);
 router.get('/', middleware.pagination);
-router.get('/', function(req, res, next) {
-    winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
+router.get('/', (req, res, next) => {
+    winston.info(req.originalUrl, { query: req.query, ip: req.ip, ips: req.ips });
 
     const collection = req.db.collection('workings');
     const opt = {
@@ -26,40 +27,39 @@ router.get('/', function(req, res, next) {
     };
 
     let query = {
-        [req.custom.sort_by]: {$exists: true},
+        [req.custom.sort_by]: { $exists: true },
     };
-    let page = req.pagination.page;
-    let limit = req.pagination.limit;
+    const page = req.pagination.page;
+    const limit = req.pagination.limit;
 
     const data = {};
-    collection.count().then(function(count) {
+    collection.count().then((count) => {
         data.total = count;
 
         return collection.find(query, opt).sort(req.custom.sort).skip(limit * page).limit(limit).toArray();
-    }).then(function(defined_results) {
+    }).then((defined_results) => {
         if (defined_results.length < limit) {
-            return collection.find(query).count().then(function(count_defined_num) {
+            return collection.find(query).count().then((count_defined_num) => {
                 query = {
-                    [req.custom.sort_by]: {$exists: false},
+                    [req.custom.sort_by]: { $exists: false },
                 };
 
                 return collection.find(query, opt)
                         .skip(limit * page + defined_results.length - count_defined_num)
                         .limit(limit - defined_results.length).toArray();
             }).then(results => defined_results.concat(results));
-        } else {
-            return defined_results;
         }
-    }).then(function(results) {
+        return defined_results;
+    }).then((results) => {
         data.time_and_salary = results;
 
         res.send(data);
-    }).catch(function(err) {
+    }).catch((err) => {
         next(new HttpError("Internal Server Error", 500));
     });
 });
 
-router.post('/', function(req, res, next) {
+router.post('/', (req, res, next) => {
     req.custom = {};
     next();
 });
@@ -67,23 +67,21 @@ router.post('/', function(req, res, next) {
 /*
  *  When developing, you can set environment to skip facebook auth
  */
-if (! process.env.SKIP_FACEBOOK_AUTH) {
+if (!process.env.SKIP_FACEBOOK_AUTH) {
+    router.post('/', (req, res, next) => {
+        const access_token = req.body.access_token;
 
-    router.post('/', function(req, res, next) {
-        var access_token = req.body.access_token;
-
-        facebook.accessTokenAuth(access_token).then(function(facebook) {
-            winston.info("facebook auth success", {access_token: access_token, ip: req.ip, ips: req.ips});
+        facebook.accessTokenAuth(access_token).then((facebook) => {
+            winston.info("facebook auth success", { access_token, ip: req.ip, ips: req.ips });
 
             req.custom.facebook = facebook;
             next();
-        }).catch(function(err) {
-            winston.info("facebook auth fail", {access_token: access_token, ip: req.ip, ips: req.ips});
+        }).catch((err) => {
+            winston.info("facebook auth fail", { access_token, ip: req.ip, ips: req.ips });
 
             next(new HttpError("Unauthorized", 401));
         });
     });
-
 }
 
 router.post('/', (req, res, next) => {
@@ -93,12 +91,12 @@ router.post('/', (req, res, next) => {
 }, post_helper.main);
 
 router.use('/search_by/company/group_by/company', middleware.group_sort_by);
-router.get('/search_by/company/group_by/company', function(req, res, next) {
-    winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
+router.get('/search_by/company/group_by/company', (req, res, next) => {
+    winston.info(req.originalUrl, { query: req.query, ip: req.ip, ips: req.ips });
 
     // input parameter
     const company = req.query.company;
-    if (! company || company === '') {
+    if (!company || company === '') {
         next(new HttpError("company is required", 422));
         return;
     }
@@ -108,8 +106,8 @@ router.get('/search_by/company/group_by/company', function(req, res, next) {
         {
             $match: {
                 $or: [
-                    {'company.name': new RegExp(escapeRegExp(company.toUpperCase()))},
-                    {'company.id': company},
+                    { 'company.name': new RegExp(escapeRegExp(company.toUpperCase())) },
+                    { 'company.id': company },
                 ],
             },
         },
@@ -122,32 +120,32 @@ router.get('/search_by/company/group_by/company', function(req, res, next) {
         {
             $group: {
                 _id: "$company",
-                has_overtime_salary_yes: {$sum:
-                    {$cond: [{$eq: ["$has_overtime_salary", "yes"] }, 1, 0] },
+                has_overtime_salary_yes: { $sum:
+                    { $cond: [{ $eq: ["$has_overtime_salary", "yes"] }, 1, 0] },
                 },
-                has_overtime_salary_no: {$sum:
-                    {$cond: [{$eq: ["$has_overtime_salary", "no"] }, 1, 0] },
+                has_overtime_salary_no: { $sum:
+                    { $cond: [{ $eq: ["$has_overtime_salary", "no"] }, 1, 0] },
                 },
-                has_overtime_salary_dont: {$sum:
-                    {$cond: [{$eq: ["$has_overtime_salary", "don't know"] }, 1, 0] },
+                has_overtime_salary_dont: { $sum:
+                    { $cond: [{ $eq: ["$has_overtime_salary", "don't know"] }, 1, 0] },
                 },
-                is_overtime_salary_legal_yes: {$sum:
-                    {$cond: [{$eq: ["$is_overtime_salary_legal", "yes"] }, 1, 0] },
+                is_overtime_salary_legal_yes: { $sum:
+                    { $cond: [{ $eq: ["$is_overtime_salary_legal", "yes"] }, 1, 0] },
                 },
-                is_overtime_salary_legal_no: {$sum:
-                    {$cond: [{$eq: ["$is_overtime_salary_legal", "no"] }, 1, 0] },
+                is_overtime_salary_legal_no: { $sum:
+                    { $cond: [{ $eq: ["$is_overtime_salary_legal", "no"] }, 1, 0] },
                 },
-                is_overtime_salary_legal_dont: {$sum:
-                    {$cond: [{$eq: ["$is_overtime_salary_legal", "don't know"] }, 1, 0] },
+                is_overtime_salary_legal_dont: { $sum:
+                    { $cond: [{ $eq: ["$is_overtime_salary_legal", "don't know"] }, 1, 0] },
                 },
-                has_compensatory_dayoff_yes: {$sum:
-                    {$cond: [{$eq: ["$has_compensatory_dayoff", "yes"] }, 1, 0] },
+                has_compensatory_dayoff_yes: { $sum:
+                    { $cond: [{ $eq: ["$has_compensatory_dayoff", "yes"] }, 1, 0] },
                 },
-                has_compensatory_dayoff_no: {$sum:
-                    {$cond: [{$eq: ["$has_compensatory_dayoff", "no"] }, 1, 0] },
+                has_compensatory_dayoff_no: { $sum:
+                    { $cond: [{ $eq: ["$has_compensatory_dayoff", "no"] }, 1, 0] },
                 },
-                has_compensatory_dayoff_dont: {$sum:
-                    {$cond: [{$eq: ["$has_compensatory_dayoff", "don't know"] }, 1, 0] },
+                has_compensatory_dayoff_dont: { $sum:
+                    { $cond: [{ $eq: ["$has_compensatory_dayoff", "don't know"] }, 1, 0] },
                 },
                 avg_week_work_time: {
                     $avg: "$week_work_time",
@@ -174,7 +172,7 @@ router.get('/search_by/company/group_by/company', function(req, res, next) {
                         estimated_hourly_wage: "$estimated_hourly_wage",
                     },
                 },
-                count: {$sum: 1},
+                count: { $sum: 1 },
             },
         },
         {
@@ -185,7 +183,7 @@ router.get('/search_by/company/group_by/company', function(req, res, next) {
                 },
                 has_overtime_salary_count: {
                     $cond: [
-                        {$gte: ["$count", 5]},
+                        { $gte: ["$count", 5] },
                         {
                             yes: "$has_overtime_salary_yes",
                             no: "$has_overtime_salary_no",
@@ -196,7 +194,7 @@ router.get('/search_by/company/group_by/company', function(req, res, next) {
                 },
                 is_overtime_salary_legal_count: {
                     $cond: [
-                        {$gte: ["$count", 5]},
+                        { $gte: ["$count", 5] },
                         {
                             yes: "$is_overtime_salary_legal_yes",
                             no: "$is_overtime_salary_legal_no",
@@ -207,7 +205,7 @@ router.get('/search_by/company/group_by/company', function(req, res, next) {
                 },
                 has_compensatory_dayoff_count: {
                     $cond: [
-                        {$gte: ["$count", 5]},
+                        { $gte: ["$count", 5] },
                         {
                             yes: "$has_compensatory_dayoff_yes",
                             no: "$has_compensatory_dayoff_no",
@@ -225,7 +223,7 @@ router.get('/search_by/company/group_by/company', function(req, res, next) {
         {
             $sort: req.group_sort_by,
         },
-    ]).toArray().then(function(results) {
+    ]).toArray().then((results) => {
         const sort_field = req.query.group_sort_by || "week_work_time";
 
         // move null data to the end of array
@@ -241,18 +239,18 @@ router.get('/search_by/company/group_by/company', function(req, res, next) {
         }
 
         res.send(results);
-    }).catch(function(err) {
+    }).catch((err) => {
         next(new HttpError("Internal Server Error", 500));
     });
 });
 
 router.use('/search_by/job_title/group_by/company', middleware.group_sort_by);
-router.get('/search_by/job_title/group_by/company', function(req, res, next) {
-    winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
+router.get('/search_by/job_title/group_by/company', (req, res, next) => {
+    winston.info(req.originalUrl, { query: req.query, ip: req.ip, ips: req.ips });
 
     // input parameter
     const job_title = req.query.job_title;
-    if (! job_title || job_title === '') {
+    if (!job_title || job_title === '') {
         next(new HttpError("job_title is required", 422));
         return;
     }
@@ -315,7 +313,7 @@ router.get('/search_by/job_title/group_by/company', function(req, res, next) {
         {
             $sort: req.group_sort_by,
         },
-    ]).toArray().then(function(results) {
+    ]).toArray().then((results) => {
         const sort_field = req.query.group_sort_by || "week_work_time";
 
         // move null data to the end of array
@@ -331,7 +329,7 @@ router.get('/search_by/job_title/group_by/company', function(req, res, next) {
         }
 
         res.send(results);
-    }).catch(function(err) {
+    }).catch((err) => {
         next(new HttpError("Internal Server Error", 500));
     });
 });
@@ -346,8 +344,8 @@ router.get('/search_by/job_title/group_by/company', function(req, res, next) {
  * @apiSuccess {String} ._id.id 公司統編 (有可能沒有)
  * @apiSuccess {String} ._id.name 公司名稱 (有可能是 Array)
  */
-router.get('/companies/search', function(req, res, next) {
-    winston.info("/workings/companies/search", {query: req.query, ip: req.ip, ips: req.ips});
+router.get('/companies/search', (req, res, next) => {
+    winston.info("/workings/companies/search", { query: req.query, ip: req.ip, ips: req.ips });
 
     const search = req.query.key || "";
     const page = parseInt(req.query.page) || 0;
@@ -368,8 +366,8 @@ router.get('/companies/search', function(req, res, next) {
         {
             $match: {
                 $or: [
-                    {'company.name': new RegExp(escapeRegExp(search.toUpperCase()))},
-                    {'company.id': search},
+                    { 'company.name': new RegExp(escapeRegExp(search.toUpperCase())) },
+                    { 'company.id': search },
                 ],
             },
         },
@@ -384,9 +382,9 @@ router.get('/companies/search', function(req, res, next) {
         {
             $skip: 25 * page,
         },
-    ]).toArray().then(function(results) {
+    ]).toArray().then((results) => {
         res.send(results);
-    }).catch(function(err) {
+    }).catch((err) => {
         next(new HttpError("Internal Server Error", 500));
     });
 });
@@ -399,8 +397,8 @@ router.get('/companies/search', function(req, res, next) {
  * @apiSuccess {Object[]} .
  * @apiSuccess {String} ._id 職稱
  */
-router.get('/jobs/search', function(req, res, next) {
-    winston.info("/workings/jobs/search", {query: req.query, ip: req.ip, ips: req.ips});
+router.get('/jobs/search', (req, res, next) => {
+    winston.info("/workings/jobs/search", { query: req.query, ip: req.ip, ips: req.ips });
 
     const search = req.query.key || "";
     const page = parseInt(req.query.page) || 0;
@@ -434,9 +432,9 @@ router.get('/jobs/search', function(req, res, next) {
         {
             $skip: 25 * page,
         },
-    ]).toArray().then(function(results) {
+    ]).toArray().then((results) => {
         res.send(results);
-    }).catch(function(err) {
+    }).catch((err) => {
         next(new HttpError("Internal Server Error", 500));
     });
 });

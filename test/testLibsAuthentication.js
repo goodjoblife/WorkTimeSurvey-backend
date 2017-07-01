@@ -1,5 +1,6 @@
 const chai = require('chai');
 chai.use(require("chai-as-promised"));
+
 const assert = chai.assert;
 const sinon = require('sinon');
 require('sinon-as-promised');
@@ -12,39 +13,35 @@ const _redis = require('../libs/redis');
 
 const cachedFacebookAuthentication = authentication.cachedFacebookAuthentication;
 
-describe('Authentication Library', function() {
-    describe('cachedFacebookAuthentication', function() {
+describe('Authentication Library', () => {
+    describe('cachedFacebookAuthentication', () => {
         let sandbox;
         let db;
         let user;
 
-        before('connect MongoDB', function() {
-            return MongoClient.connect(config.get('MONGODB_URI')).then((_db) => {
-                db = _db;
-            });
-        });
+        before('connect MongoDB', () => MongoClient.connect(config.get('MONGODB_URI')).then((_db) => {
+            db = _db;
+        }));
 
-        before('Seed users', function() {
-            return db.collection('users').insertOne({
-                facebook_id: '1',
-                facebook: {
-                    'id': '1',
-                    'name': 'helloworld',
-                },
-            })
-            .then(result => db.collection('users').findOne({_id: result.insertedId}))
+        before('Seed users', () => db.collection('users').insertOne({
+            facebook_id: '1',
+            facebook: {
+                id: '1',
+                name: 'helloworld',
+            },
+        })
+            .then(result => db.collection('users').findOne({ _id: result.insertedId }))
             .then(_user => {
                 user = _user;
-            });
-        });
+            }));
 
-        beforeEach(function() {
+        beforeEach(() => {
             sandbox = sinon.sandbox.create();
         });
 
-        it('resolve if cached', function() {
+        it('resolve if cached', () => {
             const redis_client = {};
-            const response = {id: '1', name: 'helloworld'};
+            const response = { id: '1', name: 'helloworld' };
 
             const redisGetFB = sandbox.stub(_redis, 'redisGetFB')
                 .withArgs(redis_client, 'fake_accesstoken')
@@ -59,9 +56,9 @@ describe('Authentication Library', function() {
             ]);
         });
 
-        it('resolve if not cached but access_token is valid', function() {
+        it('resolve if not cached but access_token is valid', () => {
             const redis_client = {};
-            const response = {id: '1', name: 'helloworld'};
+            const response = { id: '1', name: 'helloworld' };
 
             const redisGetFB = sandbox.stub(_redis, 'redisGetFB')
                 .withArgs(redis_client, 'fake_accesstoken')
@@ -84,9 +81,9 @@ describe('Authentication Library', function() {
             ]);
         });
 
-        it('resolve if cache error but access_token is valid', function() {
+        it('resolve if cache error but access_token is valid', () => {
             const redis_client = {};
-            const response = {id: '1', name: 'helloworld'};
+            const response = { id: '1', name: 'helloworld' };
 
             const redisGetFB = sandbox.stub(_redis, 'redisGetFB')
                 .withArgs(redis_client, 'fake_accesstoken')
@@ -109,7 +106,7 @@ describe('Authentication Library', function() {
             ]);
         });
 
-        it('reject if not cached and access_token is not valid', function() {
+        it('reject if not cached and access_token is not valid', () => {
             const redis_client = {};
 
             const redisGetFB = sandbox.stub(_redis, 'redisGetFB')
@@ -133,9 +130,9 @@ describe('Authentication Library', function() {
             ]);
         });
 
-        it('resolve a new user if access_token presents a new user', function() {
+        it('resolve a new user if access_token presents a new user', () => {
             const redis_client = {};
-            const fake_fb_account = {id: '2', name: 'Mark Chen'};
+            const fake_fb_account = { id: '2', name: 'Mark Chen' };
 
             const redisGetFB = sandbox.stub(_redis, 'redisGetFB')
                 .withArgs(redis_client, 'fake_accesstoken')
@@ -159,24 +156,21 @@ describe('Authentication Library', function() {
                     sinon.assert.calledOnce(accessTokenAuth);
                     sinon.assert.calledOnce(redisSetFB);
                 }),
-                main.then(() => {
+                main.then(() =>
                     // a new user not null in DB
-                    return db.collection('users').findOne({facebook_id: '2'})
+                     db.collection('users').findOne({ facebook_id: '2' })
                         .then(user => {
                             assert.propertyVal(user, 'facebook_id', '2');
                             assert.deepPropertyVal(user, 'facebook.id', '2');
                             assert.deepPropertyVal(user, 'facebook.name', 'Mark Chen');
-                        });
-                }),
+                        })),
             ]);
         });
 
-        afterEach(function() {
+        afterEach(() => {
             sandbox.restore();
         });
 
-        after(function() {
-            return db.collection('users').remove({});
-        });
+        after(() => db.collection('users').remove({}));
     });
 });

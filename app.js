@@ -74,7 +74,7 @@ const corsOption = {
 app.use('/clairvoyance/search', cors(corsOption), require('./routes/clairvoyance/search'));
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
     next(new HttpError('Not Found', 404));
 });
 
@@ -100,7 +100,7 @@ app.use((err, req, res, next) => {
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
-    app.use(function(err, req, res, next) {
+    app.use((err, req, res, next) => {
         res.status(err.status || 500);
         res.send({
             message: err.message,
@@ -111,7 +111,7 @@ if (app.get('env') === 'development') {
 
 // production error handler
 // no stacktraces leaked to user
-app.use(function(err, req, res, next) {
+app.use((err, req, res, next) => {
     res.status(err.status || 500);
     res.send({
         message: err.message,

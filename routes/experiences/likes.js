@@ -1,5 +1,6 @@
 const express = require('express');
 const winston = require('winston');
+
 const router = express.Router();
 const ExperienceLikeModel = require('../../models/experience_like_model');
 const ExperienceModel = require('../../models/experience_model');
@@ -15,7 +16,7 @@ const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
  */
 router.post('/:id/likes', [
     authentication.cachedFacebookAuthenticationMiddleware,
-    function(req, res, next) {
+    function (req, res, next) {
         winston.info(req.originalUrl, {
             ip: req.ip,
             ips: req.ips,
@@ -26,9 +27,7 @@ router.post('/:id/likes', [
         const experience_like_model = new ExperienceLikeModel(req.db);
         const experience_model = new ExperienceModel(req.db);
 
-        experience_like_model.createLike(experience_id, user).then((result) => {
-            return experience_model.incrementLikeCount(experience_id);
-        }).then((result) => {
+        experience_like_model.createLike(experience_id, user).then((result) => experience_model.incrementLikeCount(experience_id)).then((result) => {
             res.send({
                 success: true,
             });
@@ -58,7 +57,7 @@ router.post('/:id/likes', [
  */
 router.delete('/:id/likes', [
     authentication.cachedFacebookAuthenticationMiddleware,
-    function(req, res, next) {
+    function (req, res, next) {
         winston.info(req.originalUrl, {
             ip: req.ip,
             ips: req.ips,
@@ -69,9 +68,7 @@ router.delete('/:id/likes', [
         const experience_like_model = new ExperienceLikeModel(req.db);
         const experience_model = new ExperienceModel(req.db);
 
-        experience_like_model.deleteLike(experience_id, user).then(() => {
-            return experience_model.decrementLikeCount(experience_id);
-        }).then((result) => {
+        experience_like_model.deleteLike(experience_id, user).then(() => experience_model.decrementLikeCount(experience_id)).then((result) => {
             res.send({
                 success: true,
             });

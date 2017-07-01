@@ -5,7 +5,7 @@ const redis = require('redis');
  * @param url the redis url string
  */
 function expressRedisDb(url) {
-    const redis_client = redis.createClient({'url': url});
+    const redis_client = redis.createClient({ url });
 
     redis_client.on('error', (err) => {
     });
@@ -16,4 +16,4 @@ function expressRedisDb(url) {
     };
 }
 
-module.exports = {expressRedisDb};
+module.exports = { expressRedisDb };

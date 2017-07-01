@@ -1,74 +1,67 @@
 const chai = require('chai');
 chai.use(require("chai-as-promised"));
+
 const assert = chai.assert;
 
 const redis = require('redis');
 const config = require('config');
 const _redis = require('../libs/redis');
 
-describe('Redis Library', function() {
-    describe('redisGetFB', function() {
+describe('Redis Library', () => {
+    describe('redisGetFB', () => {
         const redis_client = redis.createClient(config.get('REDIS_URL'));
 
-        before("Seed some data", function(done) {
+        before("Seed some data", (done) => {
             redis_client.set('fb_faketoken', '{"id":"1","name":"helloworld"}', done);
         });
 
-        it('resolved if key exists', function() {
-            return assert.becomes(_redis.redisGetFB(redis_client, 'faketoken'), {
-                id: '1', name: 'helloworld',
-            });
-        });
+        it('resolved if key exists', () => assert.becomes(_redis.redisGetFB(redis_client, 'faketoken'), {
+            id: '1', name: 'helloworld',
+        }));
 
-        it('resolved null if key doesn\'t exist', function() {
-            return assert.becomes(_redis.redisGetFB(redis_client, 'fakeToken'), null);
-        });
+        it('resolved null if key doesn\'t exist', () => assert.becomes(_redis.redisGetFB(redis_client, 'fakeToken'), null));
 
-        after(function(done) {
+        after((done) => {
             redis_client.flushdb(done);
         });
     });
 
-    describe('redisSetFB', function() {
+    describe('redisSetFB', () => {
         const redis_client = redis.createClient(config.get('REDIS_URL'));
 
-        it('set success', function() {
-            const set = _redis.redisSetFB(redis_client, 'faketoken', {id: 1});
+        it('set success', () => {
+            const set = _redis.redisSetFB(redis_client, 'faketoken', { id: 1 });
             return Promise.all([
                 assert.isFulfilled(set),
-                assert.becomes(set.then(() => _redis.redisGetFB(redis_client, 'faketoken')), {id: 1}),
+                assert.becomes(set.then(() => _redis.redisGetFB(redis_client, 'faketoken')), { id: 1 }),
             ]);
         });
 
-        after(function(done) {
+        after((done) => {
             redis_client.flushdb(done);
         });
     });
 
-    describe('redisGetPermission', function() {
+    describe('redisGetPermission', () => {
         const redis_client = redis.createClient(config.get('REDIS_URL'));
 
-        before("Seed some data", function(done) {
+        before("Seed some data", (done) => {
             redis_client.set('permission_facebook_mark', '1', done);
         });
 
-        it('resolved true if key exists', function() {
-            return assert.becomes(_redis.redisGetPermission(redis_client, 'facebook_mark'), true);
-        });
+        it('resolved true if key exists', () => assert.becomes(_redis.redisGetPermission(redis_client, 'facebook_mark'), true));
 
-        it('resolved false if key doesn\'t exist', function() {
-            return assert.becomes(_redis.redisGetPermission(redis_client, 'facebook_notmark'), false);
-        });
+        it('resolved false if key doesn\'t exist', () => assert.becomes(_redis.redisGetPermission(redis_client, 'facebook_notmark'), false));
 
-        after(function(done) {
+        after((done) => {
             redis_client.flushdb(done);
         });
     });
 
-    describe('redisSetPermission', function() {
+    describe('redisSetPermission', () => {
         const redis_client = redis.createClient(config.get('REDIS_URL'));
 
-        it('set success', function() {
+        it('set success', () => {
             const set = _redis.redisSetPermission(redis_client, 'facebook_mark');
             return Promise.all([
                 assert.isFulfilled(set),
@@ -76,7 +69,7 @@ describe('Redis Library', function() {
             ]);
         });
 
-        after(function(done) {
+        after((done) => {
             redis_client.flushdb(done);
         });
     });

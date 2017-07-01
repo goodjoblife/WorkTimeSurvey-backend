@@ -1,5 +1,6 @@
 const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
+
 chai.use(chaiAsPromised);
 const assert = chai.assert;
 const request = require('supertest');
@@ -11,9 +12,9 @@ require('sinon-as-promised');
 const config = require('config');
 const authentication = require('../../../libs/authentication');
 
-describe('experiences 面試和工作經驗資訊', function() {
-    let db = undefined;
-    let fake_user = {
+describe('experiences 面試和工作經驗資訊', () => {
+    let db;
+    const fake_user = {
         _id: new ObjectId(),
         facebook_id: '-1',
         facebook: {
@@ -22,59 +23,53 @@ describe('experiences 面試和工作經驗資訊', function() {
         },
     };
 
-    before('DB: Setup', function() {
-        return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
-            db = _db;
-        });
-    });
+    before('DB: Setup', () => MongoClient.connect(config.get('MONGODB_URI')).then((_db) => {
+        db = _db;
+    }));
 
-    describe('POST /work_experiences', function() {
+    describe('POST /work_experiences', () => {
         let sandbox;
-        before('Seed companies', function() {
-            return db.collection('companies').insertMany([
-                {
-                    id: '00000001',
-                    name: 'GOODJOB',
-                },
-                {
-                    id: '00000002',
-                    name: 'GOODJOBGREAT',
-                },
-                {
-                    id: '00000003',
-                    name: 'GOODJOBGREAT',
-                },
-            ]);
-        });
+        before('Seed companies', () => db.collection('companies').insertMany([
+            {
+                id: '00000001',
+                name: 'GOODJOB',
+            },
+            {
+                id: '00000002',
+                name: 'GOODJOBGREAT',
+            },
+            {
+                id: '00000003',
+                name: 'GOODJOBGREAT',
+            },
+        ]));
 
-        beforeEach('Stub cachedFacebookAuthentication', function() {
+        beforeEach('Stub cachedFacebookAuthentication', () => {
             sandbox = sinon.sandbox.create();
             sandbox.stub(authentication, 'cachedFacebookAuthentication')
                 .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
                 .resolves(fake_user);
         });
 
-        describe('generate payload', function() {
-            it('generateWorkExperiencePayload', function() {
-                return request(app).post('/work_experiences')
+        describe('generate payload', () => {
+            it('generateWorkExperiencePayload', () => request(app).post('/work_experiences')
                     .send(generateWorkExperiencePayload())
                     .expect(200)
-                    .then(res => {
-                        return db.collection('experiences').findOne({_id: ObjectId(res.body.experience._id)})
+                    .then(res => db.collection('experiences').findOne({ _id: ObjectId(res.body.experience._id) })
                             .then(experience => {
                                 // expected fields in db
                                 assert.equal(experience.type, 'work');
                                 assert.deepEqual(experience.author_id, fake_user._id);
-                                assert.deepEqual(experience.company, {id: '00000001', name: 'GOODJOB'});
+                                assert.deepEqual(experience.company, { id: '00000001', name: 'GOODJOB' });
                                 assert.equal(experience.region, '臺北市');
                                 assert.equal(experience.job_title, 'JOB_TITLE_EXAMPLE');
                                 assert.equal(experience.title, 'title_example');
-                                assert.deepEqual(experience.sections, [{subtitle: "subtitle1", content: "content1"}]);
+                                assert.deepEqual(experience.sections, [{ subtitle: "subtitle1", content: "content1" }]);
                                 assert.equal(experience.experience_in_year, 10);
                                 assert.equal(experience.education, '大學');
                                 assert.equal(experience.is_currently_employed, "no");
-                                assert.deepEqual(experience.job_ending_time, {year: 2017, month: 4});
-                                assert.deepEqual(experience.salary, {type: 'year', amount: 10000});
+                                assert.deepEqual(experience.job_ending_time, { year: 2017, month: 4 });
+                                assert.deepEqual(experience.salary, { type: 'year', amount: 10000 });
                                 assert.equal(experience.week_work_time, 40);
                                 assert.equal(experience.recommend_to_others, "yes");
                                 assert.deepEqual(experience.like_count, 0);
@@ -86,107 +81,83 @@ describe('experiences 面試和工作經驗資訊', function() {
                                 assert.property(res.body, 'success');
                                 assert.equal(res.body.success, true);
                                 assert.deepProperty(res.body, 'experience._id');
-                            });
-                    });
-            });
+                            })));
         });
 
-        describe('Common Data Validation Part', function() {
-            it('company_query or company_id is required', function() {
-                return request(app).post('/work_experiences')
+        describe('Common Data Validation Part', () => {
+            it('company_query or company_id is required', () => request(app).post('/work_experiences')
                     .send(generateWorkExperiencePayload({
                         company_query: -1,
                         company_id: -1,
                     }))
-                    .expect(422);
-            });
+                    .expect(422));
 
-            it('region is required', function() {
-                return request(app).post('/work_experiences')
+            it('region is required', () => request(app).post('/work_experiences')
                     .send(generateWorkExperiencePayload({
                         region: -1,
                     }))
-                    .expect(422);
-            });
+                    .expect(422));
 
-            it('region is illegal Field, expected return 422', function() {
-                return request(app).post('/work_experiences')
+            it('region is illegal Field, expected return 422', () => request(app).post('/work_experiences')
                     .send(generateWorkExperiencePayload({
                         region: "你好市",
                     }))
-                    .expect(422);
-            });
+                    .expect(422));
 
-            for (let input of ["新北市", "臺南市", "新竹市"]) {
-                it(`region should be ${input}`, function() {
-                    return request(app).post('/work_experiences')
+            for (const input of ["新北市", "臺南市", "新竹市"]) {
+                it(`region should be ${input}`, () => request(app).post('/work_experiences')
                         .send(generateWorkExperiencePayload({
                             region: input,
                         }))
                         .expect(200)
-                        .then(res => {
-                            return db.collection('experiences').findOne({_id: ObjectId(res.body.experience._id)})
+                        .then(res => db.collection('experiences').findOne({ _id: ObjectId(res.body.experience._id) })
                             .then(experience => {
                                 assert.equal(experience.region, input);
-                            });
-                        });
-                });
+                            })));
             }
 
-            it('job_title is required', function() {
-                return request(app).post('/work_experiences')
+            it('job_title is required', () => request(app).post('/work_experiences')
                     .send(generateWorkExperiencePayload({
                         job_title: -1,
                     }))
-                    .expect(422);
-            });
+                    .expect(422));
 
-            it('title is required', function() {
-                return request(app).post('/work_experiences')
+            it('title is required', () => request(app).post('/work_experiences')
                     .send(generateWorkExperiencePayload({
                         title: -1,
                     }))
-                    .expect(422);
-            });
+                    .expect(422));
 
-            it('title of word is more than 25 char , expected return 422', function() {
-                return request(app).post('/work_experiences')
+            it('title of word is more than 25 char , expected return 422', () => request(app).post('/work_experiences')
                     .send(generateWorkExperiencePayload({
                         title: new Array(30).join("今"),
                     }))
-                    .expect(422);
-            });
+                    .expect(422));
 
-            it('sections is empty, expected return 422', function() {
-                return request(app).post('/work_experiences')
+            it('sections is empty, expected return 422', () => request(app).post('/work_experiences')
                     .send(generateWorkExperiencePayload({
                         sections: null,
                     }))
-                    .expect(422);
-            });
+                    .expect(422));
 
-            it('sections is not array, expected return 422', function() {
-                return request(app).post('/work_experiences')
+            it('sections is not array, expected return 422', () => request(app).post('/work_experiences')
                     .send(generateWorkExperiencePayload({
                         sections: "abcdef",
                     }))
-                    .expect(422);
-            });
+                    .expect(422));
 
-            it('subsection of title and content is empty, expected return 422', function() {
-                return request(app).post('/work_experiences')
-                    .send(generateWorkExperiencePayload({ sections: [{subtitle: null, content: null}] }))
-                    .expect(422);
-            });
+            it('subsection of title and content is empty, expected return 422', () => request(app).post('/work_experiences')
+                    .send(generateWorkExperiencePayload({ sections: [{ subtitle: null, content: null }] }))
+                    .expect(422));
 
-            it('subtitle of word is more than 25 char, expected return 422', function() {
+            it('subtitle of word is more than 25 char, expected return 422', () => {
                 const words = new Array(40).join("慘");
                 return request(app).post('/work_experiences')
-                    .send(generateWorkExperiencePayload({ sections: [{subtitle: words, content: "喝喝面試官"}] }))
+                    .send(generateWorkExperiencePayload({ sections: [{ subtitle: words, content: "喝喝面試官" }] }))
                     .expect(422);
             });
 
-            it('subcontent of word is more then 5000 char, expected return 422', function() {
+            it('subcontent of word is more then 5000 char, expected return 422', () => {
                 const sendData = generateWorkExperiencePayload();
                 const words = new Array(6000).join("好");
                 sendData.sections[0].content = words;
@@ -195,89 +166,71 @@ describe('experiences 面試和工作經驗資訊', function() {
                     .expect(422);
             });
 
-            it('experience_in_year should not be a valid number', function() {
-                return request(app).post('/work_experiences')
+            it('experience_in_year should not be a valid number', () => request(app).post('/work_experiences')
                     .send(generateWorkExperiencePayload({
                         experience_in_year: "test",
                     }))
-                    .expect(422);
-            });
+                    .expect(422));
 
-            it('experience_in_year should be 0~50', function() {
-                return request(app).post('/work_experiences')
+            it('experience_in_year should be 0~50', () => request(app).post('/work_experiences')
                     .send(generateWorkExperiencePayload({
                         experience_in_year: 51,
                     }))
-                    .expect(422);
-            });
+                    .expect(422));
 
-            it('education is illegal , expected return 422', function() {
-                return request(app).post('/work_experiences')
+            it('education is illegal , expected return 422', () => request(app).post('/work_experiences')
                     .send(generateWorkExperiencePayload({
                         education: "無業遊名",
                     }))
-                    .expect(422);
-            });
+                    .expect(422));
 
-            for (let input of ["大學", "高中", "國中"]) {
-                it(`education could be ${input}`, function() {
-                    return request(app).post('/work_experiences')
+            for (const input of ["大學", "高中", "國中"]) {
+                it(`education could be ${input}`, () => request(app).post('/work_experiences')
                         .send(generateWorkExperiencePayload({
                             education: input,
                         }))
                         .expect(200)
-                        .then(res => {
-                            return db.collection('experiences').findOne({_id: ObjectId(res.body.experience._id)})
+                        .then(res => db.collection('experiences').findOne({ _id: ObjectId(res.body.experience._id) })
                             .then(experience => {
                                 assert.equal(experience.education, input);
-                            });
-                        });
-                });
+                            })));
             }
         });
 
-        describe('Work Validation Part', function() {
-            it('is_currently_employed is required', function() {
-                return request(app).post('/work_experiences')
+        describe('Work Validation Part', () => {
+            it('is_currently_employed is required', () => request(app).post('/work_experiences')
                     .send(generateWorkExperiencePayload({
                         is_currently_employed: -1,
                     }))
-                    .expect(422);
-            });
+                    .expect(422));
 
-            it('job_ending_time is required if is_currently_employed is "no"', function() {
-                return request(app).post('/work_experiences')
+            it('job_ending_time is required if is_currently_employed is "no"', () => request(app).post('/work_experiences')
                     .send(generateWorkExperiencePayload({
                         is_currently_employed: "no",
                         job_ending_time: -1,
                     }))
-                    .expect(422);
-            });
+                    .expect(422));
 
-            describe('job_ending_time should be reasonable', function() {
-                it('job_ending_time.year sould be number', function() {
-                    return request(app).post('/work_experiences')
+            describe('job_ending_time should be reasonable', () => {
+                it('job_ending_time.year sould be number', () => request(app).post('/work_experiences')
                         .send(generateWorkExperiencePayload({
                             job_ending_time: {
                                 year: "2017",
                                 month: 3,
                             },
                         }))
-                        .expect(422);
-                });
+                        .expect(422));
 
-                it('job_ending_time.month sould be number', function() {
-                    return request(app).post('/work_experiences')
+                it('job_ending_time.month sould be number', () => request(app).post('/work_experiences')
                         .send(generateWorkExperiencePayload({
                             job_ending_time: {
                                 year: 2017,
                                 month: "3",
                             },
                         }))
-                        .expect(422);
-                });
+                        .expect(422));
 
-                it('job_ending_time.year <= this year', function() {
+                it('job_ending_time.year <= this year', () => {
                     const nextYear = new Date();
                     nextYear.setFullYear(nextYear.getFullYear() + 1);
                     return request(app).post('/work_experiences')
@@ -290,29 +243,25 @@ describe('experiences 面試和工作經驗資訊', function() {
                         .expect(422);
                 });
 
-                it('job_ending_time.year > this year - 10', function() {
-                    return request(app).post('/work_experiences')
+                it('job_ending_time.year > this year - 10', () => request(app).post('/work_experiences')
                         .send(generateWorkExperiencePayload({
                             job_ending_time: {
                                 year: ((new Date()).getFullYear() - 10),
                                 month: 3,
                             },
                         }))
-                        .expect(422);
-                });
+                        .expect(422));
 
-                it('job_ending_time.month should be 1~12', function() {
-                    return request(app).post('/work_experiences')
+                it('job_ending_time.month should be 1~12', () => request(app).post('/work_experiences')
                         .send(generateWorkExperiencePayload({
                             job_ending_time: {
                                 year: 2017,
                                 month: 13,
                             },
                         }))
-                        .expect(422);
-                });
+                        .expect(422));
 
-                it('job_ending_time <= now', function() {
+                it('job_ending_time <= now', () => {
                     const now = new Date();
 
                     return request(app).post('/work_experiences')
@@ -326,86 +275,69 @@ describe('experiences 面試和工作經驗資訊', function() {
                 });
             });
 
-            describe('salary should be reasonable', function() {
-                it('salary type should in ["year","month","day","hour"]', function() {
-                    return request(app).post('/work_experiences')
+            describe('salary should be reasonable', () => {
+                it('salary type should in ["year","month","day","hour"]', () => request(app).post('/work_experiences')
                         .send(generateWorkExperiencePayload({
                             salary: {
                                 type: "hooooo",
                                 amount: 10000,
                             },
                         }))
-                        .expect(422);
-                });
+                        .expect(422));
 
-                it('salary amount is number required', function() {
-                    return request(app).post('/work_experiences')
+                it('salary amount is number required', () => request(app).post('/work_experiences')
                         .send(generateWorkExperiencePayload({
                             salary: {
                                 type: "year",
                                 amount: "hohohoho",
                             },
                         }))
-                        .expect(422);
-                });
+                        .expect(422));
 
-                it('salary amount should be positive number', function() {
-                    return request(app).post('/work_experiences')
+                it('salary amount should be positive number', () => request(app).post('/work_experiences')
                         .send(generateWorkExperiencePayload({
                             salary: {
                                 type: "year",
                                 amount: -1000,
                             },
                         }))
-                        .expect(422);
-                });
+                        .expect(422));
             });
 
-            it('week_work_time should be number', function() {
-                return request(app).post('/work_experiences')
+            it('week_work_time should be number', () => request(app).post('/work_experiences')
                     .send(generateWorkExperiencePayload({
                         week_work_time: "one",
                     }))
-                    .expect(422);
-            });
+                    .expect(422));
 
-            it('week_work_time should be positive number', function() {
-                return request(app).post('/work_experiences')
+            it('week_work_time should be positive number', () => request(app).post('/work_experiences')
                     .send(generateWorkExperiencePayload({
                         week_work_time: -10,
                     }))
-                    .expect(422);
-            });
+                    .expect(422));
 
-            it('recommend_to_others should be ["yes", "no"]', function() {
-                return request(app).post('/work_experiences')
+            it('recommend_to_others should be ["yes", "no"]', () => request(app).post('/work_experiences')
                     .send(generateWorkExperiencePayload({
                         recommend_to_others: "don't know",
                     }))
-                    .expect(422);
-            });
+                    .expect(422));
 
-            describe('data_time should be reasonable', function() {
-                it('data_time\'s year & month should be today if is_currently_employed is "yes"', function() {
-                    return request(app).post('/work_experiences')
+            describe('data_time should be reasonable', () => {
+                it('data_time\'s year & month should be today if is_currently_employed is "yes"', () => request(app).post('/work_experiences')
                         .send(generateWorkExperiencePayload({
                             is_currently_employed: "yes",
                         }))
                         .expect(200)
-                        .then(res => {
-                            return db.collection('experiences').findOne({_id: ObjectId(res.body.experience._id)})
+                        .then(res => db.collection('experiences').findOne({ _id: ObjectId(res.body.experience._id) })
                             .then(experience => {
                                 const now = new Date();
                                 assert.deepEqual(experience.data_time, {
                                     year: now.getFullYear(),
                                     month: now.getMonth() + 1,
                                 });
-                            });
-                        });
-                });
+                            })));
 
-                it('data_time should be job_ending_time if is_currently_employed is "no"', function() {
-                    return request(app).post('/work_experiences')
+                it('data_time should be job_ending_time if is_currently_employed is "no"', () => request(app).post('/work_experiences')
                         .send(generateWorkExperiencePayload({
                             is_currently_employed: "no",
                             job_ending_time: {
@@ -414,21 +346,18 @@ describe('experiences 面試和工作經驗資訊', function() {
                             },
                         }))
                         .expect(200)
-                        .then(res => {
-                            return db.collection('experiences').findOne({_id: ObjectId(res.body.experience._id)})
+                        .then(res => db.collection('experiences').findOne({ _id: ObjectId(res.body.experience._id) })
                             .then(experience => {
                                 assert.deepEqual(experience.data_time, {
                                     year: 2017,
                                     month: 4,
                                 });
-                            });
-                        });
-                });
+                            })));
             });
         });
 
-        describe('user not login', function() {
-            it('should return 401 Unauthorized', function() {
+        describe('user not login', () => {
+            it('should return 401 Unauthorized', () => {
                 const sendData = generateWorkExperiencePayload();
                 sendData.access_token = undefined;
                 return request(app).post('/work_experiences')
@@ -437,15 +366,11 @@ describe('experiences 面試和工作經驗資訊', function() {
             });
         });
 
-        after('DB: 清除 experiences', function() {
-            return db.collection('experiences').remove({});
-        });
+        after('DB: 清除 experiences', () => db.collection('experiences').remove({}));
 
-        after('DB: 清除 companies', function() {
-            return db.collection('companies').remove({});
-        });
+        after('DB: 清除 companies', () => db.collection('companies').remove({}));
 
-        afterEach(function() {
+        afterEach(() => {
             sandbox.restore();
         });
     });
@@ -480,8 +405,8 @@ function generateWorkExperiencePayload(opt) {
         recommend_to_others: "yes",
     };
 
-    var payload = {};
-    for (let key in valid) {
+    const payload = {};
+    for (const key in valid) {
         if (opt[key]) {
             if (opt[key] === -1) {
                 continue;
@@ -492,13 +417,13 @@ function generateWorkExperiencePayload(opt) {
             payload[key] = valid[key];
         }
     }
-    for (let key in opt) {
+    for (const key in opt) {
         if (opt[key] === -1) {
             continue;
         } else {
             payload[key] = opt[key];
         }
     }
-    payload["access_token"] = "fakeaccesstoken";
+    payload.access_token = "fakeaccesstoken";
     return payload;
 }

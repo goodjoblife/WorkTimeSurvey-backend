@@ -9,8 +9,8 @@ const request = require('request');
  * @rejected   Error (reason)
  */
 function accessTokenAuth(access_token) {
-    return new Promise(function(resolve, reject) {
-        if (! access_token) {
+    return new Promise((resolve, reject) => {
+        if (!access_token) {
             throw new Error("access_token is required");
         }
 
@@ -21,11 +21,11 @@ function accessTokenAuth(access_token) {
         request.get({
             url: "https://graph.facebook.com/v2.6/me",
             qs: {
-                access_token: access_token,
+                access_token,
                 fields: "id,name",
                 format: "json",
             },
-        }, function(error, response, body) {
+        }, (error, response, body) => {
             if (error) {
                 reject(new Error("access_token is invalid"));
                 return;
@@ -38,7 +38,7 @@ function accessTokenAuth(access_token) {
                 return;
             }
 
-            resolve({id: content.id, name: content.name});
+            resolve({ id: content.id, name: content.name });
         });
     });
 }

@@ -1,5 +1,6 @@
 const chai = require('chai');
 chai.use(require("chai-as-promised"));
+
 const assert = chai.assert;
 const { MongoClient, ObjectId } = require('mongodb');
 const redis = require('redis');
@@ -7,24 +8,22 @@ const HttpError = require('../libs/errors').HttpError;
 const authorization = require('../middlewares/authorization');
 const config = require('config');
 
-describe('Authorization middleware', function() {
+describe('Authorization middleware', () => {
     let db;
     let redis_client;
 
-    before('Setup MongoDB', function() {
-        return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
-            db = _db;
-        });
-    });
+    before('Setup MongoDB', () => MongoClient.connect(config.get('MONGODB_URI')).then((_db) => {
+        db = _db;
+    }));
 
-    before('Setup Redis', function() {
-        redis_client = redis.createClient({'url': config.get('REDIS_URL')});
+    before('Setup Redis', () => {
+        redis_client = redis.createClient({ url: config.get('REDIS_URL') });
     });
 
     // generate test data for count combinations
-    const test_data = [{counts: null, expected: false}];
-    [1, 0, undefined].forEach(function(time_and_salary_count) {
-        [1, 0, undefined].forEach(function(reference_count) {
+    const test_data = [{ counts: null, expected: false }];
+    [1, 0, undefined].forEach((time_and_salary_count) => {
+        [1, 0, undefined].forEach((reference_count) => {
             test_data.push({
                 counts: {
                     time_and_salary_count,
@@ -35,10 +34,10 @@ describe('Authorization middleware', function() {
         });
     });
 
-    test_data.forEach(function(data) {
-        describe(`correctly authorize user with ${JSON.stringify(data)}`, function() {
-            let user_id = new ObjectId();
-            before(function() {
+    test_data.forEach((data) => {
+        describe(`correctly authorize user with ${JSON.stringify(data)}`, () => {
+            const user_id = new ObjectId();
+            before(() => {
                 // insert test data into db
                 if (data.counts) {
                     return db.collection('users').insert({
@@ -55,19 +54,19 @@ describe('Authorization middleware', function() {
                 }
             });
 
-            it('search permission for user', function(done) {
+            it('search permission for user', (done) => {
                 // build the fake request
                 const req = {
                     user: {
                         _id: user_id,
                         facebook_id: 'peter.shih',
                     },
-                    db: db,
-                    redis_client: redis_client,
+                    db,
+                    redis_client,
                 };
 
                 // I expect next is called, so I can check here
-                authorization.cachedSearchPermissionAuthorizationMiddleware(req, {}, function(err) {
+                authorization.cachedSearchPermissionAuthorizationMiddleware(req, {}, (err) => {
                     try {
                         if (data.expected === true) {
                             assert.isUndefined(err);
@@ -83,53 +82,47 @@ describe('Authorization middleware', function() {
                 });
             });
 
-            after(function() {
-                return db.collection('users').remove({});
-            });
+            after(() => db.collection('users').remove({}));
 
-            after(function() {
-                return db.collection('recommendations').remove({});
-            });
+            after(() => db.collection('recommendations').remove({}));
 
-            after(function(done) {
+            after((done) => {
                 redis_client.flushall(done);
             });
         });
     });
 
-    describe('redis cached', function() {
-        let user_ids = [new ObjectId(), new ObjectId()];
+    describe('redis cached', () => {
+        const user_ids = [new ObjectId(), new ObjectId()];
 
-        before(function(done) {
+        before((done) => {
             redis_client.set('permission_facebook_peter.shih', '1', done);
         });
 
-        before(function() {
-            return db.collection('users').insertMany([
-                {
-                    _id: user_ids[0],
-                    facebook_id: 'mark86092',
-                    time_and_salary_count: 1,
-                },
-                {
-                    _id: user_ids[1],
-                    facebook_id: 'test',
-                    time_and_salary_count: 0,
-                },
-            ]);
-        });
+        before(() => db.collection('users').insertMany([
+            {
+                _id: user_ids[0],
+                facebook_id: 'mark86092',
+                time_and_salary_count: 1,
+            },
+            {
+                _id: user_ids[1],
+                facebook_id: 'test',
+                time_and_salary_count: 0,
+            },
+        ]));
 
-        it('success if redis cached', function(done) {
+        it('success if redis cached', (done) => {
             const req = {
                 user: {
                     _id: new ObjectId(),
                     facebook_id: 'peter.shih',
                 },
-                db: db,
-                redis_client: redis_client,
+                db,
+                redis_client,
             };
 
-            authorization.cachedSearchPermissionAuthorizationMiddleware(req, {}, function(err) {
+            authorization.cachedSearchPermissionAuthorizationMiddleware(req, {}, (err) => {
                 try {
                     assert.isUndefined(err);
                     done();
@@ -139,18 +132,18 @@ describe('Authorization middleware', function() {
             });
         });
 
-        it('lookup mongo success if redis is not cached', function(done) {
+        it('lookup mongo success if redis is not cached', (done) => {
             const req = {
                 user: {
                     _id: user_ids[0],
                     facebook_id: 'mark86092',
                     time_and_salary_count: 1,
                 },
-                db: db,
-                redis_client: redis_client,
+                db,
+                redis_client,
             };
 
-            authorization.cachedSearchPermissionAuthorizationMiddleware(req, {}, function(err) {
+            authorization.cachedSearchPermissionAuthorizationMiddleware(req, {}, (err) => {
                 try {
                     assert.isUndefined(err);
                     done();
@@ -160,18 +153,18 @@ describe('Authorization middleware', function() {
             });
         });
 
-        it('fail if lookup mongo fail and redis is not cached', function(done) {
+        it('fail if lookup mongo fail and redis is not cached', (done) => {
             const req = {
                 user: {
                     _id: user_ids[1],
                     facebook_id: 'test',
                     time_and_salary_count: 0,
                 },
-                db: db,
-                redis_client: redis_client,
+                db,
+                redis_client,
             };
 
-            authorization.cachedSearchPermissionAuthorizationMiddleware(req, {}, function(err) {
+            authorization.cachedSearchPermissionAuthorizationMiddleware(req, {}, (err) => {
                 try {
                     assert.instanceOf(err, HttpError);
                     assert.equal(err.status, 403);
@@ -182,12 +175,10 @@ describe('Authorization middleware', function() {
             });
         });
 
-        after(function(done) {
+        after((done) => {
             redis_client.flushall(done);
         });
 
-        after(function() {
-            return db.collection('users').remove({});
-        });
+        after(() => db.collection('users').remove({}));
     });
 });

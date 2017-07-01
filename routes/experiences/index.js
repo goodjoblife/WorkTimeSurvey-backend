@@ -1,4 +1,5 @@
 const express = require('express');
+
 const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
@@ -14,6 +15,88 @@ const {
 const authentication = require('../../middlewares/authentication_user');
 const wrap = require('../../libs/wrap');
 
+/**
+ * _queryToDBQuery
+ *
+ * @param {string} search_query - search text
+ * @param {string} search_by - "company" / "job_title"
+ * @param {string} type - "interview" / "work"
+ * @returns {object} - mongodb find object
+ */
+function _queryToDBQuery(search_query, search_by, type) {
+    const query = {};
+    if (!((search_by && search_query) || type)) {
+        return query;
+    }
+
+    if (search_by === "job_title") {
+        query.job_title = new RegExp(escapeRegExp(search_query.toUpperCase()));
+    } else if (search_query) {
+        query.$or = [{
+            'company.name': new RegExp(escapeRegExp(search_query.toUpperCase())),
+        }, {
+            'company.id': search_query,
+        }];
+    }
+
+    if (type) {
+        const types = type.split(',');
+        if (types.length === 1) {
+            query.type = types[0];
+        } else {
+            query.type = {
+                $in: types,
+            };
+        }
+    }
+    return query;
+}
+
+function _generateGetExperiencesViewModel(experiences, total) {
+    const MAX_PREVIEW_SIZE = 160;
+
+    const view_experiences = experiences.map(experience => {
+        let experience_view_model = {
+            _id: experience._id,
+            type: experience.type,
+            created_at: experience.created_at,
+            company: experience.company,
+            job_title: experience.job_title,
+            title: experience.title,
+            preview: (() => {
+                if (experience.sections[0]) {
+                    return experience.sections[0].content.substring(0, MAX_PREVIEW_SIZE);
+                }
+                return null;
+            })(),
+            like_count: experience.like_count,
+            reply_count: experience.reply_count,
+        };
+        if (experience.type === 'interview') {
+            experience_view_model = Object.assign(experience_view_model, {
+                region: experience.region,
+                salary: experience.salary,
+            });
+        } else if (experience.type === 'work') {
+            experience_view_model = Object.assign(experience_view_model, {
+                region: experience.region,
+                salary: experience.salary,
+                week_work_time: experience.week_work_time,
+            });
+        }
+        return experience_view_model;
+    });
+
+    const result = {
+        total,
+        experiences: view_experiences,
+    };
+
+    return result;
+}
+
+
+/* eslint-disable */
 /**
  * @api {get} /experiences 查詢面試及工作經驗 API
  * @apiGroup Experiences
@@ -44,7 +127,8 @@ const wrap = require('../../libs/wrap');
  * @apiSuccess (work) {String="year","month","day","hour"} experiences.salary.type 工作薪資種類 (工作薪資存在的話，一定有此欄位)
  * @apiSuccess (work) {Number} experiences.salary.amount 工作薪資金額 (工作薪資存在的話，一定有此欄位)
  */
-router.get('/', wrap(async function(req, res) {
+/* eslint-enable */
+router.get('/', wrap(async (req, res) => {
     winston.info(req.originalUrl, {
         query: req.query,
         ip: req.ip,
@@ -54,7 +138,7 @@ router.get('/', wrap(async function(req, res) {
     const search_query = req.query.search_query;
     const search_by = req.query.search_by;
     const sort_field = req.query.sort || "created_at";
-    const start = parseInt(req.query.start) || 0;
+    const start = parseInt(req.query.start, 10) || 0;
     const limit = Number(req.query.limit || 20);
     const type = req.query.type;
 
@@ -81,7 +165,7 @@ router.get('/', wrap(async function(req, res) {
 
     const query = _queryToDBQuery(search_query, search_by, type);
 
-    const db_sort_field = (sort_field == 'popularity') ? 'like_count'  : sort_field;
+    const db_sort_field = (sort_field === 'popularity') ? 'like_count' : sort_field;
     const sort = {
         [db_sort_field]: -1,
     };
@@ -93,90 +177,48 @@ router.get('/', wrap(async function(req, res) {
     res.send(_generateGetExperiencesViewModel(experiences, total));
 }));
 
-function _generateGetExperiencesViewModel(experiences, total) {
-    const MAX_PREVIEW_SIZE = 160;
-
-    const view_experiences = experiences.map(experience => {
-        let experience_view_model = {
-            _id: experience._id,
-            type: experience.type,
-            created_at: experience.created_at,
-            company: experience.company,
-            job_title: experience.job_title,
-            title: experience.title,
-            preview: (() => {
-                if (experience.sections[0]) {
-                    return experience.sections[0].content.substring(0, MAX_PREVIEW_SIZE);
-                } else {
-                    return null;
-                }
-            })(),
-            like_count: experience.like_count,
-            reply_count: experience.reply_count,
-        };
-        if (experience.type === 'interview') {
-            experience_view_model = Object.assign(experience_view_model, {
-                region: experience.region,
-                salary: experience.salary,
-            });
-        } else if (experience.type === 'work') {
-            experience_view_model = Object.assign(experience_view_model, {
-                region: experience.region,
-                salary: experience.salary,
-                week_work_time: experience.week_work_time,
-            });
-        }
-        return experience_view_model;
-    });
-
-    const result = {
-        total,
-        experiences: view_experiences,
+function _generateGetExperienceViewModel(experience, user, like) {
+    let result = {
+        _id: experience._id,
+        type: experience.type,
+        created_at: experience.created_at,
+        company: experience.company,
+        job_title: experience.job_title,
+        experience_in_year: experience.experience_in_year,
+        education: experience.education,
+        region: experience.region,
+        title: experience.title,
+        sections: experience.sections,
+        like_count: experience.like_count,
+        reply_count: experience.reply_count,
     };
+
+    if (user) {
+        result.liked = !!(like);
+    }
+
+    if (experience.type === 'interview') {
+        result = Object.assign(result, {
+            interview_time: experience.interview_time,
+            interview_result: experience.interview_result,
+            overall_rating: experience.overall_rating,
+            salary: experience.salary,
+            interview_sensitive_questions: experience.interview_sensitive_questions,
+            interview_qas: experience.interview_qas,
+        });
+    } else if (experience.type === 'work') {
+        result = Object.assign(result, {
+            salary: experience.salary,
+            week_work_time: experience.week_work_time,
+            data_time: experience.data_time,
+            recommend_to_others: experience.recommend_to_others,
+        });
+    }
 
     return result;
 }
 
-
-/**
- * _queryToDBQuery
- *
- * @param {string} search_query - search text
- * @param {string} search_by - "company" / "job_title"
- * @param {string} type - "interview" / "work"
- * @returns {object} - mongodb find object
- */
-function _queryToDBQuery(search_query, search_by, type) {
-    let query = {};
-    if (!(search_by && search_query || type)) {
-        return query;
-    }
-
-    if (search_by == "job_title") {
-        query.job_title = new RegExp(escapeRegExp(search_query.toUpperCase()));
-    } else {
-        if (search_query) {
-            query["$or"] = [{
-                'company.name': new RegExp(escapeRegExp(search_query.toUpperCase())),
-            }, {
-                'company.id': search_query,
-            }];
-        }
-    }
-
-    if (type) {
-        const types = type.split(',');
-        if (types.length == 1) {
-            query.type = types[0];
-        } else {
-            query.type = {
-                $in: types,
-            };
-        }
-    }
-    return query;
-}
-
+/* eslint-disable */
 /**
  * @api {get} /experiences/:id 顯示單篇面試或工作經驗 API
  * @apiGroup Experiences
@@ -217,13 +259,14 @@ function _queryToDBQuery(search_query, search_by, type) {
  * @apiSuccess (work) {Number="1,2,3...12"}  data_time.month 留資料的時間或離職的月份
  * @apiSuccess (work) {String}  [recommend_to_others="yes","no"] 是否推薦此工作
  */
+/* eslint-enable */
 router.get('/:id', [
     authentication.cachedAndSetUserMiddleware,
-    wrap(async function(req, res) {
+    wrap(async (req, res) => {
         const id = req.params.id;
         let user = null;
         winston.info('experiences/id', {
-            id: id,
+            id,
             ip: req.ip,
             ips: req.ips,
         });
@@ -255,47 +298,6 @@ router.get('/:id', [
         res.send(result);
     }),
 ]);
-
-function _generateGetExperienceViewModel(experience, user, like) {
-    let result = {
-        _id: experience._id,
-        type: experience.type,
-        created_at: experience.created_at,
-        company: experience.company,
-        job_title: experience.job_title,
-        experience_in_year: experience.experience_in_year,
-        education: experience.education,
-        region: experience.region,
-        title: experience.title,
-        sections: experience.sections,
-        like_count: experience.like_count,
-        reply_count: experience.reply_count,
-    };
-
-    if (user) {
-        result.liked = (like) ? true : false;
-    }
-
-    if (experience.type == 'interview') {
-        result = Object.assign(result, {
-            interview_time: experience.interview_time,
-            interview_result: experience.interview_result,
-            overall_rating: experience.overall_rating,
-            salary: experience.salary,
-            interview_sensitive_questions: experience.interview_sensitive_questions,
-            interview_qas: experience.interview_qas,
-        });
-    } else if (experience.type == 'work') {
-        result = Object.assign(result, {
-            salary: experience.salary,
-            week_work_time: experience.week_work_time,
-            data_time: experience.data_time,
-            recommend_to_others: experience.recommend_to_others,
-        });
-    }
-
-    return result;
-}
 
 router.use('/', require('./replies'));
 router.use('/', require('./likes'));

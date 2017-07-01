@@ -1,4 +1,5 @@
 const express = require('express');
+
 const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
 const escapeRegExp = require('lodash/escapeRegExp');
@@ -14,8 +15,8 @@ const getCompanyName = require('../company_helper').getCompanyName;
  * @apiParam {Number} [page=0]
  * @apiSuccess {Object[]} . Companies
  */
-router.get('/search', function(req, res, next) {
-    winston.info("/workings/search", {query: req.query, ip: req.ip, ips: req.ips});
+router.get('/search', (req, res, next) => {
+    winston.info("/workings/search", { query: req.query, ip: req.ip, ips: req.ips });
 
     const search = req.query.key || "";
     const page = req.query.page || 0;
@@ -24,14 +25,14 @@ router.get('/search', function(req, res, next) {
     if (search == "") {
         next(new HttpError("key is required", 422));
         return;
-    } else {
-        query = {
-            $or: [
-                {name: new RegExp("^" + escapeRegExp(search.toUpperCase()))},
-                {id: search},
-            ],
-        };
     }
+    query = {
+        $or: [
+                { name: new RegExp(`^${escapeRegExp(search.toUpperCase())}`) },
+                { id: search },
+        ],
+    };
+
 
     const sort_by = {
         capital: -1,
@@ -52,13 +53,11 @@ router.get('/search', function(req, res, next) {
 });
 
 function _generateGetCompanyViewModel(companies) {
-    const result = companies.map((company) => {
-        return {
-            id: company.id,
-            name: getCompanyName(company.name),
-            capital: company.capital,
-        };
-    });
+    const result = companies.map((company) => ({
+        id: company.id,
+        name: getCompanyName(company.name),
+        capital: company.capital,
+    }));
     return result;
 }
 

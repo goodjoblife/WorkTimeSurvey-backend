@@ -39,11 +39,8 @@ class ExperienceModel {
      *  - reject :  Default Error;
      */
     getExperiences(query, sort, skip = 0, limit = 25, opt = {}) {
-
         return this.collection.find(query, opt).sort(sort).skip(skip).limit(limit).toArray()
-            .then((docs) => {
-                return docs;
-            });
+            .then((docs) => docs);
     }
 
     /**
@@ -87,9 +84,8 @@ class ExperienceModel {
         }, opt).then((result) => {
             if (result) {
                 return result;
-            } else {
-                throw new ObjectNotExistError("該文章不存在");
             }
+            throw new ObjectNotExistError("該文章不存在");
         });
     }
 
@@ -116,9 +112,8 @@ class ExperienceModel {
         }).then((result) => {
             if (result) {
                 return true;
-            } else {
-                return false;
             }
+            return false;
         });
     }
 
@@ -182,7 +177,7 @@ class ExperienceModel {
             throw new ObjectNotExistError("該文章不存在");
         }
 
-        return this.collection.findOneAndUpdate({_id: new mongo.ObjectId(id)},
+        return this.collection.findOneAndUpdate({ _id: new mongo.ObjectId(id) },
             {
                 $inc: {
                     [field]: 1,

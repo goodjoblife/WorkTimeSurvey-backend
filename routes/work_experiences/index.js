@@ -1,4 +1,5 @@
 const express = require('express');
+
 const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
 const winston = require('winston');
@@ -41,7 +42,7 @@ const {
  */
 router.post('/', [
     authentication.cachedFacebookAuthenticationMiddleware,
-    function(req, res, next) {
+    function (req, res, next) {
         try {
             validationInputFields(req.body);
         } catch (err) {
@@ -66,9 +67,7 @@ router.post('/', [
 
         helper.getCompanyByIdOrQuery(req.db, req.body.company_id, req.body.company_query).then(company => {
             experience.company = company;
-        }).then(() => {
-            return experience_model.createExperience(experience);
-        }).then(() => {
+        }).then(() => experience_model.createExperience(experience)).then(() => {
             winston.info("work experiences insert data success", {
                 id: experience._id,
                 ip: req.ip,
@@ -86,7 +85,7 @@ router.post('/', [
                 id: experience._id,
                 ip: req.ip,
                 ips: req.ips,
-                err: err,
+                err,
             });
 
             next(err);

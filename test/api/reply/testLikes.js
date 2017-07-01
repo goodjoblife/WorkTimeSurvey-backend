@@ -7,29 +7,27 @@ const config = require('config');
 const app = require('../../../app');
 const authentication = require('../../../libs/authentication');
 
-describe('POST /replies/:id/likes', function() {
+describe('POST /replies/:id/likes', () => {
     let db;
-    let fake_user = {
+    const fake_user = {
         _id: new ObjectId(),
         facebook_id: '1',
-        facebook: {id: '1', name: 'markLin'},
+        facebook: { id: '1', name: 'markLin' },
     };
-    let fake_other_user = {
+    const fake_other_user = {
         _id: new ObjectId(),
         facebook_id: '2',
-        facebook: {id: '2', name: 'Mark Chen'},
+        facebook: { id: '2', name: 'Mark Chen' },
     };
     let reply_id_string;
     const experience_id = new ObjectId();
     let sandbox;
 
-    before('DB: Setup', function() {
-        return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
-            db = _db;
-        });
-    });
+    before('DB: Setup', () => MongoClient.connect(config.get('MONGODB_URI')).then((_db) => {
+        db = _db;
+    }));
 
-    beforeEach('Seed reply', function() {
+    beforeEach('Seed reply', () => {
         const reply = {
             experience_id,
             content: 'Hello',
@@ -44,7 +42,7 @@ describe('POST /replies/:id/likes', function() {
             });
     });
 
-    beforeEach('Mock', function() {
+    beforeEach('Mock', () => {
         sandbox = sinon.sandbox.create();
         const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication');
         cachedFacebookAuthentication
@@ -55,24 +53,22 @@ describe('POST /replies/:id/likes', function() {
             .resolves(fake_other_user);
     });
 
-    it('it should 404 Not Found if reply not exists', function() {
-        return request(app)
+    it('it should 404 Not Found if reply not exists', () => request(app)
             .post(`/replies/1234567890aa/likes`)
             .send({
                 access_token: 'fakeAccessToken',
             })
-            .expect(404);
-    });
+            .expect(404));
 
-    it('it should 200 success if succeed', function() {
+    it('it should 200 success if succeed', () => {
         const req = request(app)
             .post(`/replies/${reply_id_string}/likes`)
             .send({
                 access_token: 'fakeAccessToken',
             })
             .expect(200)
-            .expect(function(res) {
-                assert.deepEqual(res.body, {'success': true});
+            .expect((res) => {
+                assert.deepEqual(res.body, { success: true });
             });
 
         const check_reply_likes_collection = req
@@ -102,7 +98,7 @@ describe('POST /replies/:id/likes', function() {
     });
 
 
-    it('it should 200 success if other user like the same reply', function() {
+    it('it should 200 success if other user like the same reply', () => {
         const req = request(app)
             .post(`/replies/${reply_id_string}/likes`)
             .send({
@@ -129,15 +125,15 @@ describe('POST /replies/:id/likes', function() {
         return check;
     });
 
-    it('it should 403 Forbidden if like again', function() {
+    it('it should 403 Forbidden if like again', () => {
         const req = request(app)
             .post(`/replies/${reply_id_string}/likes`)
             .send({
                 access_token: 'fakeAccessToken',
             })
             .expect(200)
-            .expect(function(res) {
-                assert.deepEqual(res.body, {'success': true});
+            .expect((res) => {
+                assert.deepEqual(res.body, { success: true });
             });
 
         const other_req = req.then(() =>
@@ -160,48 +156,42 @@ describe('POST /replies/:id/likes', function() {
         return check_replies_collection;
     });
 
-    afterEach(function() {
+    afterEach(() => {
         sandbox.restore();
     });
 
-    afterEach(function() {
-        return db.collection('replies').deleteMany({});
-    });
+    afterEach(() => db.collection('replies').deleteMany({}));
 
-    afterEach(function() {
-        return db.collection('reply_likes').deleteMany({});
-    });
+    afterEach(() => db.collection('reply_likes').deleteMany({}));
 });
 
-describe('DELETE /replies/:id/likes', function() {
+describe('DELETE /replies/:id/likes', () => {
     let db;
-    let fake_user = {
+    const fake_user = {
         _id: new ObjectId(),
         facebook_id: '1',
-        facebook: {id: '1', name: 'markLin'},
+        facebook: { id: '1', name: 'markLin' },
     };
-    let fake_other_user = {
+    const fake_other_user = {
         _id: new ObjectId(),
         facebook_id: '2',
-        facebook: {id: '2', name: 'Mark Chen'},
+        facebook: { id: '2', name: 'Mark Chen' },
     };
-    let fake_third_user = {
+    const fake_third_user = {
         _id: new ObjectId(),
         facebook_id: '3',
-        facebook: {id: '3', name: 'GoodJob'},
+        facebook: { id: '3', name: 'GoodJob' },
     };
     let reply_id_string;
     const experience_id = new ObjectId();
     let sandbox;
 
-    before('DB: Setup', function() {
-        return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
-            db = _db;
-        });
-    });
+    before('DB: Setup', () => MongoClient.connect(config.get('MONGODB_URI')).then((_db) => {
+        db = _db;
+    }));
 
     // 插入一個留言（作者 3 號），有兩個按讚（作者 1, 2 號）
-    beforeEach('Seed replies', function() {
+    beforeEach('Seed replies', () => {
         const reply = {
             experience_id,
             content: 'Hello',
@@ -216,7 +206,7 @@ describe('DELETE /replies/:id/likes', function() {
             });
     });
 
-    beforeEach('Seed reply_likes', function() {
+    beforeEach('Seed reply_likes', () => {
         const reply_likes = [{
             experience_id,
             reply_id: new ObjectId(reply_id_string),
@@ -230,7 +220,7 @@ describe('DELETE /replies/:id/likes', function() {
         return db.collection('reply_likes').insertMany(reply_likes);
     });
 
-    beforeEach('Mock', function() {
+    beforeEach('Mock', () => {
         sandbox = sinon.sandbox.create();
         const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication');
         cachedFacebookAuthentication
@@ -244,24 +234,22 @@ describe('DELETE /replies/:id/likes', function() {
             .resolves(fake_third_user);
     });
 
-    it('it should 404 Not Found if reply not exists', function() {
-        return request(app)
+    it('it should 404 Not Found if reply not exists', () => request(app)
             .delete(`/replies/1234567890aa/likes`)
             .send({
                 access_token: 'fakeAccessToken',
             })
-            .expect(404);
-    });
+            .expect(404));
 
-    it('it should 200 success if succeed', function() {
+    it('it should 200 success if succeed', () => {
         const req = request(app)
             .delete(`/replies/${reply_id_string}/likes`)
             .send({
                 access_token: 'fakeAccessToken',
             })
             .expect(200)
-            .expect(function(res) {
-                assert.deepEqual(res.body, {'success': true});
+            .expect((res) => {
+                assert.deepEqual(res.body, { success: true });
             });
 
         const check_reply_likes_collection = req
@@ -289,7 +277,7 @@ describe('DELETE /replies/:id/likes', function() {
     });
 
 
-    it('it should 200 success if other user dislike the same reply', function() {
+    it('it should 200 success if other user dislike the same reply', () => {
         const req = request(app)
             .delete(`/replies/${reply_id_string}/likes`)
             .send({
@@ -316,24 +304,18 @@ describe('DELETE /replies/:id/likes', function() {
         return check_like_count;
     });
 
-    it('it should 404 NotFound if dislike a no like reply', function() {
-        return request(app)
+    it('it should 404 NotFound if dislike a no like reply', () => request(app)
             .delete(`/replies/${reply_id_string}/likes`)
             .send({
                 access_token: 'thirdFakeAccessToken',
             })
-            .expect(404);
-    });
+            .expect(404));
 
-    afterEach(function() {
+    afterEach(() => {
         sandbox.restore();
     });
 
-    afterEach(function() {
-        return db.collection('replies').deleteMany({});
-    });
+    afterEach(() => db.collection('replies').deleteMany({}));
 
-    afterEach(function() {
-        return db.collection('reply_likes').deleteMany({});
-    });
+    afterEach(() => db.collection('reply_likes').deleteMany({}));
 });

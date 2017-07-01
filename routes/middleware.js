@@ -34,7 +34,7 @@ function group_sort_by(req, res, next) {
     }
 
     req.group_sort_by = {};
-    req.group_sort_by["average." + group_sort_by] = group_sort_order;
+    req.group_sort_by[`average.${group_sort_by}`] = group_sort_order;
     next();
 }
 
@@ -48,8 +48,8 @@ function pagination(req, res, next) {
     }
 
     req.pagination = {
-        page: page,
-        limit: limit,
+        page,
+        limit,
     };
     next();
 }

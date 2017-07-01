@@ -5,7 +5,7 @@ function cachedSearchPermissionAuthorizationMiddleware(req, res, next) {
     const db = req.db;
     const redis_client = req.redis_client;
 
-    if (! req.user) {
+    if (!req.user) {
         next(new HttpError('Forbidden', 403));
     }
 

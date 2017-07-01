@@ -1,4 +1,5 @@
 const express = require('express');
+
 const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
 const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
@@ -15,9 +16,9 @@ const authentication = require('../../middlewares/authentication');
  */
 router.post('/:reply_id/likes', authentication.cachedFacebookAuthenticationMiddleware);
 router.post('/:reply_id/likes', (req, res, next) => {
-    winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
+    winston.info(req.originalUrl, { query: req.query, ip: req.ip, ips: req.ips });
 
-    const reply_id =  req.params.reply_id;
+    const reply_id = req.params.reply_id;
     if (typeof reply_id === 'undefined') {
         next(new HttpError('id error', 422));
         return;
@@ -31,7 +32,7 @@ router.post('/:reply_id/likes', (req, res, next) => {
     reply_like_model.createLike(reply_id, user).then(() =>
         reply_model.incrementLikeCount(reply_id)
     ).then(() => {
-        res.send({success: true});
+        res.send({ success: true });
     }).catch(err => {
         if (err instanceof DuplicateKeyError) {
             next(new HttpError(err.message, 403));
@@ -45,7 +46,6 @@ router.post('/:reply_id/likes', (req, res, next) => {
 
         next(new HttpError('Internal Server Error', 500));
     });
-
 });
 
 /**
@@ -55,9 +55,9 @@ router.post('/:reply_id/likes', (req, res, next) => {
  */
 router.delete('/:reply_id/likes', authentication.cachedFacebookAuthenticationMiddleware);
 router.delete('/:reply_id/likes', (req, res, next) => {
-    winston.info(req.originalUrl, {query: req.query, ip: req.ip, ips: req.ips});
+    winston.info(req.originalUrl, { query: req.query, ip: req.ip, ips: req.ips });
 
-    const reply_id =  req.params.reply_id;
+    const reply_id = req.params.reply_id;
     if (typeof reply_id === 'undefined') {
         next(new HttpError('Not Found', 404));
         return;
@@ -71,7 +71,7 @@ router.delete('/:reply_id/likes', (req, res, next) => {
     reply_like_model.deleteLike(reply_id, user)
         .then(() => reply_model.decrementLikeCount(reply_id))
         .then(() => {
-            res.send({success: true});
+            res.send({ success: true });
         })
         .catch(err => {
             if (err instanceof DuplicateKeyError) {
@@ -86,7 +86,6 @@ router.delete('/:reply_id/likes', (req, res, next) => {
 
             next(new HttpError('Internal Server Error', 500));
         });
-
 });
 
 module.exports = router;

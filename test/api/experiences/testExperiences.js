@@ -1,5 +1,6 @@
 const chai = require('chai');
 chai.use(require('chai-datetime'));
+
 const assert = chai.assert;
 const request = require('supertest');
 const app = require('../../../app');
@@ -16,16 +17,14 @@ const {
     generateWorkExperienceData,
 } = require('../testData');
 
-describe('Experiences 面試和工作經驗資訊', function() {
-    let db = undefined;
+describe('Experiences 面試和工作經驗資訊', () => {
+    let db;
 
-    before('DB: Setup', function() {
-        return MongoClient.connect(config.get('MONGODB_URI')).then(function(_db) {
-            db = _db;
-        });
-    });
+    before('DB: Setup', () => MongoClient.connect(config.get('MONGODB_URI')).then((_db) => {
+        db = _db;
+    }));
 
-    describe('GET /experiences/:id', function() {
+    describe('GET /experiences/:id', () => {
         let test_interview_experience_id = null;
         let test_work_experience_id = null;
         let sandbox = null;
@@ -46,7 +45,7 @@ describe('Experiences 面試和工作經驗資訊', function() {
             },
         };
 
-        before('Mock', function() {
+        before('Mock', () => {
             sandbox = sinon.sandbox.create();
             const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication');
             cachedFacebookAuthentication
@@ -57,34 +56,27 @@ describe('Experiences 面試和工作經驗資訊', function() {
                 .resolves(fake_other_user);
         });
 
-        before('Seed experiences collection', function() {
-            return db.collection('experiences').insertMany([generateInterviewExperienceData(), generateWorkExperienceData()])
-                .then(function(result) {
+        before('Seed experiences collection', () => db.collection('experiences').insertMany([generateInterviewExperienceData(), generateWorkExperienceData()])
+                .then((result) => {
                     test_interview_experience_id = result.insertedIds[0].toString();
                     test_work_experience_id = result.insertedIds[1].toString();
-                });
-        });
+                }));
 
-        before('Seed experience_likes collection', function() {
-            return db.collection('experience_likes').insertOne({
-                created_at: new Date(),
-                user_id: fake_other_user._id,
-                experience_id: new ObjectId(test_interview_experience_id),
-            });
-        });
+        before('Seed experience_likes collection', () => db.collection('experience_likes').insertOne({
+            created_at: new Date(),
+            user_id: fake_other_user._id,
+            experience_id: new ObjectId(test_interview_experience_id),
+        }));
 
-        it('should not see liked if not authenticated', function() {
-            return request(app).get("/experiences/" + test_interview_experience_id)
+        it('should not see liked if not authenticated', () => request(app).get(`/experiences/${test_interview_experience_id}`)
                 .expect(200)
-                .expect(function(res) {
+                .expect((res) => {
                     assert.equal(res.body._id, test_interview_experience_id);
                     assert.notDeepProperty(res.body, 'author_id');
                     assert.notDeepProperty(res.body, 'liked');
-                });
-        });
+                }));
 
-        it('should see liked = true if authenticated user liked', function() {
-            return request(app).get("/experiences/" + test_interview_experience_id)
+        it('should see liked = true if authenticated user liked', () => request(app).get(`/experiences/${test_interview_experience_id}`)
                 .send({
                     access_token: 'fakeOtheraccesstoken',
                 })
@@ -93,11 +85,9 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.equal(res.body._id, test_interview_experience_id);
                     assert.notDeepProperty(res.body, 'author_id');
                     assert.isTrue(res.body.liked);
-                });
-        });
+                }));
 
-        it('should see liked = false if authenticated user not liked', function() {
-            return request(app).get("/experiences/" + test_interview_experience_id)
+        it('should see liked = false if authenticated user not liked', () => request(app).get(`/experiences/${test_interview_experience_id}`)
                 .send({
                     access_token: 'fakeaccesstoken',
                 })
@@ -106,16 +96,12 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.equal(res.body._id, test_interview_experience_id);
                     assert.notDeepProperty(res.body, 'author_id');
                     assert.isFalse(res.body.liked);
-                });
-        });
+                }));
 
-        it('should be status 404 NotFound if experiences does not exist', function() {
-            return request(app).get("/experiences/123XXX")
-                .expect(404);
-        });
+        it('should be status 404 NotFound if experiences does not exist', () => request(app).get("/experiences/123XXX")
+                .expect(404));
 
-        it('should get one interview experience, and it returns correct fields', function() {
-            return request(app).get("/experiences/" + test_interview_experience_id)
+        it('should get one interview experience, and it returns correct fields', () => request(app).get(`/experiences/${test_interview_experience_id}`)
                 .send({
                     access_token: 'fakeaccesstoken',
                 })
@@ -149,11 +135,9 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.property(experience, 'interview_qas');
 
                     assert.notProperty(experience, 'author_id');
-                });
-        });
+                }));
 
-        it('should get one work experience, and it returns correct fields ', function() {
-            return request(app).get("/experiences/" + test_work_experience_id)
+        it('should get one work experience, and it returns correct fields ', () => request(app).get(`/experiences/${test_work_experience_id}`)
                 .send({
                     access_token: 'fakeaccesstoken',
                 })
@@ -183,24 +167,19 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.property(experience, 'recommend_to_others');
 
                     assert.notProperty(experience, 'author_id');
-                });
-        });
+                }));
 
-        after(function() {
-            return db.collection('experiences').deleteMany({});
-        });
+        after(() => db.collection('experiences').deleteMany({}));
 
-        after(function() {
-            return db.collection('experience_likes').deleteMany({});
-        });
+        after(() => db.collection('experience_likes').deleteMany({}));
 
-        after(function() {
+        after(() => {
             sandbox.restore();
         });
     });
 
-    describe('GET /experiences', function() {
-        before('Seeding some experiences', function() {
+    describe('GET /experiences', () => {
+        before('Seeding some experiences', () => {
             const inter_data_1 = Object.assign(generateInterviewExperienceData(), {
                 company: {
                     name: "GOODJOB1",
@@ -249,125 +228,105 @@ describe('Experiences 面試和工作經驗資訊', function() {
             ]);
         });
 
-        it('應該回傳"全部"的資料，當沒有 query', function() {
-            return request(app).get('/experiences')
+        it('應該回傳"全部"的資料，當沒有 query', () => request(app).get('/experiences')
                 .expect(200)
-                .expect(function(res) {
+                .expect((res) => {
                     assert.propertyVal(res.body, 'total', 4);
                     assert.property(res.body, 'experiences');
                     assert.lengthOf(res.body.experiences, 4);
-                });
-        });
+                }));
 
-        it(`搜尋 company 正確`, function() {
-            return request(app).get('/experiences')
+        it(`搜尋 company 正確`, () => request(app).get('/experiences')
                 .query({
                     search_query: "GOODJOB2",
                     search_by: "company",
                 })
                 .expect(200)
-                .expect(function(res) {
+                .expect((res) => {
                     assert.property(res.body, 'experiences');
                     assert.lengthOf(res.body.experiences, 1);
-                    assert.deepEqual(res.body.experiences[0].company, {name: 'GOODJOB2', id: '456'});
+                    assert.deepEqual(res.body.experiences[0].company, { name: 'GOODJOB2', id: '456' });
                     assert.propertyVal(res.body.experiences[0], 'job_title', 'ENGINEER');
-                });
-        });
+                }));
 
-        it('搜尋 job_title 正確', function() {
-            return request(app).get('/experiences')
+        it('搜尋 job_title 正確', () => request(app).get('/experiences')
                 .query({
                     search_query: "HW ENGINEER",
                     search_by: "job_title",
                 })
                 .expect(200)
-                .expect(function(res) {
+                .expect((res) => {
                     assert.property(res.body, 'experiences');
                     assert.lengthOf(res.body.experiences, 1);
-                    assert.deepEqual(res.body.experiences[0].company, {name: 'BADJOB', id: '321'});
+                    assert.deepEqual(res.body.experiences[0].company, { name: 'BADJOB', id: '321' });
                     assert.propertyVal(res.body.experiences[0], 'job_title', 'HW ENGINEER');
-                });
-        });
+                }));
 
-        it('搜尋 company, 小寫 search_query 轉換成大寫', function() {
-            return request(app).get('/experiences')
+        it('搜尋 company, 小寫 search_query 轉換成大寫', () => request(app).get('/experiences')
                 .query({
                     search_query: "GoodJob1",
                     search_by: "company",
                 })
                 .expect(200)
-                .expect(function(res) {
+                .expect((res) => {
                     assert.lengthOf(res.body.experiences, 2);
-                    assert.deepEqual(res.body.experiences[0].company, {name: 'GOODJOB1', id: '123'});
-                });
-        });
+                    assert.deepEqual(res.body.experiences[0].company, { name: 'GOODJOB1', id: '123' });
+                }));
 
-        it('搜尋 company, match any substring in company.name', function() {
-            return request(app).get('/experiences')
+        it('搜尋 company, match any substring in company.name', () => request(app).get('/experiences')
                 .query({
                     search_query: "GOODJOB",
                     search_by: "company",
                 })
                 .expect(200)
-                .expect(function(res) {
+                .expect((res) => {
                     assert.lengthOf(res.body.experiences, 3);
-                    assert.deepEqual(res.body.experiences[0].company, {name: 'GOODJOB1', id: '123'});
-                    assert.deepEqual(res.body.experiences[1].company, {name: 'GOODJOB2', id: '456'});
-                    assert.deepEqual(res.body.experiences[2].company, {name: 'GOODJOB1', id: '123'});
-                });
-        });
+                    assert.deepEqual(res.body.experiences[0].company, { name: 'GOODJOB1', id: '123' });
+                    assert.deepEqual(res.body.experiences[1].company, { name: 'GOODJOB2', id: '456' });
+                    assert.deepEqual(res.body.experiences[2].company, { name: 'GOODJOB1', id: '123' });
+                }));
 
-        it('依照 sort (created_at) 排序', function() {
-            return request(app).get('/experiences')
+        it('依照 sort (created_at) 排序', () => request(app).get('/experiences')
                 .query({
                     sort: 'created_at',
                 })
                 .expect(200)
-                .expect(function(res) {
+                .expect((res) => {
                     assert.lengthOf(res.body.experiences, 4);
-                    assert.deepEqual(res.body.experiences[0].company, {name: 'GOODJOB1', id: '123'}); // 2017-03-25T10:00:00.929Z
-                    assert.deepEqual(res.body.experiences[1].company, {name: 'BADJOB', id: '321'}); // 2017-03-22T10:00:00.929Z
-                    assert.deepEqual(res.body.experiences[2].company, {name: 'GOODJOB2', id: '456'}); // 2017-03-21T10:00:00.929Z
-                    assert.deepEqual(res.body.experiences[3].company, {name: 'GOODJOB1', id: '123'}); // 2017-03-20T10:00:00.929Z
-                });
-        });
+                    assert.deepEqual(res.body.experiences[0].company, { name: 'GOODJOB1', id: '123' }); // 2017-03-25T10:00:00.929Z
+                    assert.deepEqual(res.body.experiences[1].company, { name: 'BADJOB', id: '321' }); // 2017-03-22T10:00:00.929Z
+                    assert.deepEqual(res.body.experiences[2].company, { name: 'GOODJOB2', id: '456' }); // 2017-03-21T10:00:00.929Z
+                    assert.deepEqual(res.body.experiences[3].company, { name: 'GOODJOB1', id: '123' }); // 2017-03-20T10:00:00.929Z
+                }));
 
-        it('搜尋 company, 根據統編搜尋', function() {
-            return request(app).get('/experiences')
+        it('搜尋 company, 根據統編搜尋', () => request(app).get('/experiences')
                 .query({
                     search_query: "123",
                     search_by: "company",
                 })
                 .expect(200)
-                .expect(function(res) {
+                .expect((res) => {
                     assert.lengthOf(res.body.experiences, 2);
-                    assert.deepEqual(res.body.experiences[0].company, {name: 'GOODJOB1', id: '123'});
-                    assert.deepEqual(res.body.experiences[1].company, {name: 'GOODJOB1', id: '123'});
-                });
-        });
+                    assert.deepEqual(res.body.experiences[0].company, { name: 'GOODJOB1', id: '123' });
+                    assert.deepEqual(res.body.experiences[1].company, { name: 'GOODJOB1', id: '123' });
+                }));
 
-        it('should be status 422 當 search_by 不符合規定之種類', function() {
-
-            return request(app).get('/experiences')
+        it('should be status 422 當 search_by 不符合規定之種類', () => request(app).get('/experiences')
                 .query({
                     search_query: "321",
                     search_by: "xxxxx",
                 })
-                .expect(422);
-        });
+                .expect(422));
 
-        it('should be status 422 當 sort 不符合規定之種類', function() {
-            return request(app).get('/experiences')
+        it('should be status 422 當 sort 不符合規定之種類', () => request(app).get('/experiences')
                 .query({
                     sort: "xxxxx",
                 })
-                .expect(422);
-        });
+                .expect(422));
 
-        it('驗證『面試經驗』回傳欄位', function() {
-            return request(app).get('/experiences')
+        it('驗證『面試經驗』回傳欄位', () => request(app).get('/experiences')
                 .expect(200)
-                .expect(function(res) {
+                .expect((res) => {
                     assert.property(res.body, 'total');
                     assert.property(res.body, 'experiences');
                     const experience = res.body.experiences[3];
@@ -390,13 +349,11 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.notProperty(experience, 'interview_qas');
                     assert.notProperty(experience, 'interview_result');
                     assert.notProperty(experience, 'interview_sensitive_questions');
-                });
-        });
+                }));
 
-        it('驗證『工作經驗』回傳欄位', function() {
-            return request(app).get('/experiences')
+        it('驗證『工作經驗』回傳欄位', () => request(app).get('/experiences')
                 .expect(200)
-                .expect(function(res) {
+                .expect((res) => {
                     assert.property(res.body, 'total');
                     assert.property(res.body, 'experiences');
                     const experience = res.body.experiences[2];
@@ -421,141 +378,113 @@ describe('Experiences 面試和工作經驗資訊', function() {
                     assert.notProperty(experience, 'is_currently_employed');
                     assert.notProperty(experience, 'job_ending_time');
                     assert.notProperty(experience, 'data_time');
-                });
-        });
+                }));
 
-        it('type = "interview" 正確取得 面試經驗', function() {
-            return request(app).get('/experiences')
+        it('type = "interview" 正確取得 面試經驗', () => request(app).get('/experiences')
                 .query({
                     type: "interview",
                 })
                 .expect(200)
-                .expect(function(res) {
+                .expect((res) => {
                     assert.lengthOf(res.body.experiences, 2);
                     assert.propertyVal(res.body.experiences[0], 'type', 'interview');
-                });
-        });
+                }));
 
-        it('type = "work" 正確取得 工作經驗', function() {
-            return request(app).get('/experiences')
+        it('type = "work" 正確取得 工作經驗', () => request(app).get('/experiences')
                 .query({
                     type: "work",
                 })
                 .expect(200)
-                .expect(function(res) {
+                .expect((res) => {
                     assert.lengthOf(res.body.experiences, 2);
                     assert.propertyVal(res.body.experiences[0], 'type', 'work');
-                });
-        });
+                }));
 
-        it('搜尋 company 與 type = "interview" (search_query = "GoodJob1", search_by = "company")，預期回傳 1 筆資料', function() {
-            return request(app).get('/experiences')
+        it('搜尋 company 與 type = "interview" (search_query = "GoodJob1", search_by = "company")，預期回傳 1 筆資料', () => request(app).get('/experiences')
                 .query({
                     search_query: "GOODJOB1",
                     search_by: "company",
                     type: "interview",
                 })
                 .expect(200)
-                .expect(function(res) {
+                .expect((res) => {
                     assert.lengthOf(res.body.experiences, 1);
                     assert.propertyVal(res.body.experiences[0], 'like_count', 10, '驗證是特定一筆');
-                });
-        });
+                }));
 
-        it('should be status 422 當給定 search_query 卻沒有 search_by', function() {
-            return request(app).get('/experiences')
+        it('should be status 422 當給定 search_query 卻沒有 search_by', () => request(app).get('/experiences')
                 .query({
                     search_query: "GOODJOB1",
                 })
-                .expect(422);
-        });
+                .expect(422));
 
-        it('type 聯合查詢 type = "work,interview" 正確取得 面試/工作經驗', function() {
-            return request(app).get('/experiences')
+        it('type 聯合查詢 type = "work,interview" 正確取得 面試/工作經驗', () => request(app).get('/experiences')
                 .query({
                     type: "work,interview",
                 })
                 .expect(200)
-                .expect(function(res) {
+                .expect((res) => {
                     assert.lengthOf(res.body.experiences, 4);
-                });
-        });
+                }));
 
-        it('search_by="company" type="interview" ，預期回傳2筆資料', function() {
-
-            return request(app).get('/experiences')
+        it('search_by="company" type="interview" ，預期回傳2筆資料', () => request(app).get('/experiences')
                 .query({
                     type: "interview",
                 })
                 .expect(200)
-                .expect(function(res) {
+                .expect((res) => {
                     assert.lengthOf(res.body.experiences, 2);
-                });
-        });
+                }));
 
-        it('limit = 3, start = 0，預期回傳 3 筆資料', function() {
-            return request(app).get('/experiences')
+        it('limit = 3, start = 0，預期回傳 3 筆資料', () => request(app).get('/experiences')
                 .query({
                     limit: 3,
                     start: 0,
                 })
                 .expect(200)
-                .expect(function(res) {
+                .expect((res) => {
                     assert.propertyVal(res.body, 'total', 4, 'total 應該要是全部資料的數量');
                     assert.lengthOf(res.body.experiences, 3);
-                });
-        });
+                }));
 
-        it('should be status 422 if limit = 0', function() {
-            return request(app).get('/experiences')
+        it('should be status 422 if limit = 0', () => request(app).get('/experiences')
                 .query({
                     limit: 0,
                 })
-                .expect(422);
-        });
+                .expect(422));
 
-        it('should be status 422 if limit < 0', function() {
-            return request(app).get('/experiences')
+        it('should be status 422 if limit < 0', () => request(app).get('/experiences')
                 .query({
                     limit: -1,
                 })
-                .expect(422);
-        });
+                .expect(422));
 
-        it('should be status 422 if limit > 100', function() {
-            return request(app).get('/experiences')
+        it('should be status 422 if limit > 100', () => request(app).get('/experiences')
                 .query({
                     limit: 101,
                 })
-                .expect(422);
-        });
+                .expect(422));
 
-        it('should be status 422 if start < 0', function() {
-            return request(app).get('/experiences')
+        it('should be status 422 if start < 0', () => request(app).get('/experiences')
                 .query({
                     start: -1,
                 })
-                .expect(422);
-        });
+                .expect(422));
 
-        it('依照 sort (popularity) 排序，回傳的經驗根據 like_count 數值由大到小排列', function() {
-            return request(app).get('/experiences')
+        it('依照 sort (popularity) 排序，回傳的經驗根據 like_count 數值由大到小排列', () => request(app).get('/experiences')
                 .query({
                     sort: 'popularity',
                 })
                 .expect(200)
-                .expect(function(res) {
+                .expect((res) => {
                     assert.property(res.body, 'experiences');
                     assert.lengthOf(res.body.experiences, 4);
                     assert.propertyVal(res.body.experiences[0], 'like_count', 10);
                     assert.propertyVal(res.body.experiences[1], 'like_count', 9);
                     assert.propertyVal(res.body.experiences[2], 'like_count', 5);
                     assert.propertyVal(res.body.experiences[3], 'like_count', 0);
-                });
-        });
+                }));
 
-        after(function() {
-            return db.collection('experiences').deleteMany({});
-        });
+        after(() => db.collection('experiences').deleteMany({}));
     });
 });

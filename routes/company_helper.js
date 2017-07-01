@@ -8,7 +8,6 @@ const CompanyService = require('../models/company_model');
  * 其他情況看 issue #7
  */
 function getCompanyByIdOrQuery(db, company_id, company_query) {
-
     const company_service = new CompanyService(db);
     if (company_id) {
         return company_service.searchCompanyById(company_id).then(results => {
@@ -21,29 +20,26 @@ function getCompanyByIdOrQuery(db, company_id, company_query) {
                 name: _getCompanyName(results[0].name),
             };
         });
-    } else {
-        return company_service.searchCompanyById(company_query).then(results => {
-            if (results.length === 0) {
-                return company_service.searchCompanyByName(company_query.toUpperCase()).then(results => {
-                    if (results.length === 1) {
-                        return {
-                            id: results[0].id,
-                            name: _getCompanyName(results[0].name),
-                        };
-                    } else {
-                        return {
-                            name: company_query.toUpperCase(),
-                        };
-                    }
-                });
-            } else {
-                return {
-                    id: results[0].id,
-                    name: _getCompanyName(results[0].name),
-                };
-            }
-        });
     }
+    return company_service.searchCompanyById(company_query).then(results => {
+        if (results.length === 0) {
+            return company_service.searchCompanyByName(company_query.toUpperCase()).then(results => {
+                if (results.length === 1) {
+                    return {
+                        id: results[0].id,
+                        name: _getCompanyName(results[0].name),
+                    };
+                }
+                return {
+                    name: company_query.toUpperCase(),
+                };
+            });
+        }
+        return {
+            id: results[0].id,
+            name: _getCompanyName(results[0].name),
+        };
+    });
 }
 
 function getCompanyName(db_company_name) {
@@ -53,9 +49,8 @@ function getCompanyName(db_company_name) {
 function _getCompanyName(db_company_name) {
     if (Array.isArray(db_company_name)) {
         return _getCompanyName(db_company_name[0]);
-    } else {
-        return db_company_name;
     }
+    return db_company_name;
 }
 
 module.exports = {

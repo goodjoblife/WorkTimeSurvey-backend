@@ -1,5 +1,6 @@
 const chai = require('chai');
 chai.use(require("chai-as-promised"));
+
 const assert = chai.assert;
 const sinon = require('sinon');
 require('sinon-as-promised');
@@ -9,12 +10,12 @@ const HttpError = require('../libs/errors').HttpError;
 const middlewares = require('../middlewares');
 const authentication = require('../middlewares/authentication');
 
-describe('Redis middleware', function() {
-    it('request should have property redis_client', function(done) {
+describe('Redis middleware', () => {
+    it('request should have property redis_client', (done) => {
         const middleware = middlewares.expressRedisDb('');
 
         const req = {};
-        middleware(req, {}, function() {
+        middleware(req, {}, () => {
             try {
                 assert.property(req, 'redis_client');
                 done();
@@ -25,16 +26,16 @@ describe('Redis middleware', function() {
     });
 });
 
-describe('Authentication Middleware', function() {
-    describe('cachedFacebookAuthenticationMiddleware', function() {
+describe('Authentication Middleware', () => {
+    describe('cachedFacebookAuthenticationMiddleware', () => {
         let sandbox;
         const authenticationLib = require('../libs/authentication');
 
-        beforeEach(function() {
+        beforeEach(() => {
             sandbox = sinon.sandbox.create();
         });
 
-        it('get property user if success ( body token )', function(done) {
+        it('get property user if success ( body token )', (done) => {
             const req = {
                 redis_client: {},
                 body: {
@@ -49,7 +50,7 @@ describe('Authentication Middleware', function() {
 
             const stub = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').resolves(fake_user);
 
-            authentication.cachedFacebookAuthenticationMiddleware(req, {}, function(err) {
+            authentication.cachedFacebookAuthenticationMiddleware(req, {}, (err) => {
                 try {
                     assert.isUndefined(err);
                     assert.property(req, 'user');
@@ -62,7 +63,7 @@ describe('Authentication Middleware', function() {
             });
         });
 
-        it('get property user if success ( header authorization token )', function(done) {
+        it('get property user if success ( header authorization token )', (done) => {
             const bearer_token = "Bearer mF_9.B5f-4.1JqM";
             const access_token = "mF_9.B5f-4.1JqM";
             const req = {
@@ -82,7 +83,7 @@ describe('Authentication Middleware', function() {
                 .withArgs(sinon.match.object, sinon.match.object, access_token)
                 .resolves(fake_user);
 
-            authentication.cachedFacebookAuthenticationMiddleware(req, {}, function(err) {
+            authentication.cachedFacebookAuthenticationMiddleware(req, {}, (err) => {
                 try {
                     assert.isUndefined(err);
                     assert.property(req, 'user');
@@ -95,7 +96,7 @@ describe('Authentication Middleware', function() {
             });
         });
 
-        it('forbidden if fail', function(done) {
+        it('forbidden if fail', (done) => {
             const req = {
                 redis_client: {},
                 body: {
@@ -104,7 +105,7 @@ describe('Authentication Middleware', function() {
             };
             const stub = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication').rejects();
 
-            authentication.cachedFacebookAuthenticationMiddleware(req, {}, function(err) {
+            authentication.cachedFacebookAuthenticationMiddleware(req, {}, (err) => {
                 try {
                     assert.instanceOf(err, HttpError);
                     sinon.assert.calledOnce(stub);
@@ -115,7 +116,7 @@ describe('Authentication Middleware', function() {
             });
         });
 
-        it('forbidden if access_token is not string', function(done) {
+        it('forbidden if access_token is not string', (done) => {
             const req = {
                 redis_client: {},
                 body: {
@@ -124,7 +125,7 @@ describe('Authentication Middleware', function() {
             };
             const stub = sandbox.stub(authenticationLib, 'cachedFacebookAuthentication');
 
-            authentication.cachedFacebookAuthenticationMiddleware(req, {}, function(err) {
+            authentication.cachedFacebookAuthenticationMiddleware(req, {}, (err) => {
                 try {
                     assert.instanceOf(err, HttpError);
                     sinon.assert.notCalled(stub);
@@ -135,7 +136,7 @@ describe('Authentication Middleware', function() {
             });
         });
 
-        afterEach(function() {
+        afterEach(() => {
             sandbox.restore();
         });
     });
