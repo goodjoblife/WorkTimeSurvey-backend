@@ -140,3 +140,31 @@ describe('Authentication Middleware', function() {
         });
     });
 });
+
+describe('Facebook Auth middleware', function() {
+    it('should success if there is req.user', function(done) {
+        const facebookAuthMiddleware = require('../middlewares/facebookAuth')();
+
+        const req = {
+            custom: {},
+            user: {
+                id: '123',
+                name: 'LittleWhiteYA',
+            },
+        };
+
+        facebookAuthMiddleware(req, {}, function() {
+            assert.deepEqual(req.custom.facebook, req.user);
+            done();
+        });
+    });
+
+    it('should get Error if there is no req.user', function(done) {
+        const facebookAuthMiddleware = require('../middlewares/facebookAuth')();
+
+        facebookAuthMiddleware({}, {}, function(error) {
+            assert.instanceOf(error, HttpError);
+            done();
+        });
+    });
+});

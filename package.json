@@ -7,7 +7,8 @@
     "test": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec --recursive ",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "lint": "eslint *.js libs/ routes/ test/ middlewares/ models/",
-    "migrate": "node ./bin/migrate"
+    "migrate": "node ./bin/migrate",
+    "testonly": "mocha"
   },
   "repository": {
     "type": "git",
@@ -27,9 +28,12 @@
     "debug": "^2.2.0",
     "express": "^4.13.4",
     "express-mongo-db": "^2.0.3",
+    "express-session": "^1.15.3",
     "lodash": "^4.13.1",
     "mongodb": "^2.2.25",
     "morgan": "^1.7.0",
+    "passport": "^0.3.2",
+    "passport-facebook": "^2.1.1",
     "redis": "^2.6.3",
     "request": "^2.72.0",
     "winston": "^2.3.1",
