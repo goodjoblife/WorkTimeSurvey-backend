@@ -7,6 +7,7 @@ const expressMongoDb = require('express-mongo-db');
 const { HttpError } = require('./libs/errors');
 const logger = require('morgan');
 const winston = require('winston');
+// eslint-disable-next-line no-unused-expressions
 require('winston-mongodb').MongoDB;
 
 const routes = require('./routes/index');

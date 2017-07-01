@@ -20,19 +20,18 @@ router.get('/search', (req, res, next) => {
 
     const search = req.query.key || "";
     const page = req.query.page || 0;
-    let query;
 
     if (search === "") {
         next(new HttpError("key is required", 422));
         return;
-    } else {
-        query = {
-            $or: [
+    }
+
+    const query = {
+        $or: [
                 { name: new RegExp(`^${escapeRegExp(search.toUpperCase())}`) },
                 { id: search },
-            ],
-        };
-    }
+        ],
+    };
 
 
     const sort_by = {

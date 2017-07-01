@@ -12,9 +12,12 @@ const _redis = require('./redis');
  * @rejected  error, if unauthenticated
  */
 function cachedFacebookAuthentication(mongodb, redis_client, access_token) {
-    function facebookAuth(redis_client, access_token) {
-        return facebook.accessTokenAuth(access_token)
-            .then(account => _redis.redisSetFB(redis_client, access_token, account).catch((err) => {}).then(() => account));
+    function facebookAuth(Redis_client, Access_token) {
+        return facebook
+            .accessTokenAuth(Access_token)
+            .then(account => _redis.redisSetFB(Redis_client, Access_token, account)
+                    .catch((err) => {})
+                    .then(() => account));
     }
 
     return _redis.redisGetFB(redis_client, access_token).then((account) => {

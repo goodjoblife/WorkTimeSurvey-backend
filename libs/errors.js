@@ -13,27 +13,18 @@ class ObjectIdError extends Error {
     /*
      * @param  message  any
      */
-    constructor(message) {
-        super(message);
-    }
 }
 
 class DuplicateKeyError extends Error {
     /*
      * @param  message  any
      */
-    constructor(message) {
-        super(message);
-    }
 }
 
 class ObjectNotExistError extends Error {
     /*
      * @param  message  any
      */
-    constructor(message) {
-        super(message);
-    }
 }
 
 module.exports.HttpError = HttpError;
