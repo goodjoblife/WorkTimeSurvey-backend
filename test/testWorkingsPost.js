@@ -10,6 +10,109 @@ const config = require('config');
 const facebook = require('../libs/facebook');
 const ObjectId = require('mongodb').ObjectId;
 
+function generateWorkingTimeRelatedPayload(options) {
+    const opt = options || {};
+    const valid = {
+        access_token: 'random',
+        job_title: 'test',
+        company_id: '00000001',
+        is_currently_employed: 'yes',
+        employment_type: 'full-time',
+        week_work_time: '40',
+        overtime_frequency: '3',
+        day_promised_work_time: '8',
+        day_real_work_time: '10',
+    };
+
+    const payload = {};
+    for (const key in valid) {
+        if (opt[key]) {
+            if (opt[key] !== -1) {
+                payload[key] = opt[key];
+            }
+        } else {
+            payload[key] = valid[key];
+        }
+    }
+    for (const key in opt) {
+        if (opt[key] !== -1) {
+            payload[key] = opt[key];
+        }
+    }
+
+    return payload;
+}
+
+function generateSalaryRelatedPayload(options) {
+    const opt = options || {};
+    const valid = {
+        access_token: 'random',
+        job_title: 'test',
+        company_id: '00000001',
+        is_currently_employed: 'yes',
+        employment_type: 'full-time',
+        salary_type: 'year',
+        salary_amount: '10000',
+        experience_in_year: '10',
+    };
+
+    const payload = {};
+    for (const key in valid) {
+        if (opt[key]) {
+            if (opt[key] !== -1) {
+                payload[key] = opt[key];
+            }
+        } else {
+            payload[key] = valid[key];
+        }
+    }
+    for (const key in opt) {
+        if (opt[key] !== -1) {
+            payload[key] = opt[key];
+        }
+    }
+
+    return payload;
+}
+
+function generateAllPayload(options) {
+    const opt = options || {};
+    const valid = {
+        access_token: 'random',
+        job_title: 'test',
+        company_id: '00000001',
+        is_currently_employed: 'yes',
+        employment_type: 'full-time',
+        // Salary related
+        salary_type: 'year',
+        salary_amount: '10000',
+        experience_in_year: '10',
+        // WorkingTime related
+        week_work_time: '40',
+        overtime_frequency: '3',
+        day_promised_work_time: '8',
+        day_real_work_time: '10',
+    };
+
+    const payload = {};
+    for (const key in valid) {
+        if (opt[key]) {
+            if (opt[key] !== -1) {
+                payload[key] = opt[key];
+            }
+        } else {
+            payload[key] = valid[key];
+        }
+    }
+    for (const key in opt) {
+        if (opt[key] !== -1) {
+            payload[key] = opt[key];
+        }
+    }
+
+    return payload;
+}
+
 describe('Workings 工時資訊', () => {
     let db;
     let sandbox;
@@ -44,7 +147,7 @@ describe('Workings 工時資訊', () => {
         describe('Authentication & Authorization Part', () => {
             it('需要回傳 401 如果沒有 access_token', () => {
                 sandbox.restore();
-                const accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
+                accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
                     .rejects(new Error('access_token is invalid'));
 
                 return request(app).post('/workings')
@@ -56,7 +159,7 @@ describe('Workings 工時資訊', () => {
 
             it('需要回傳 401 如果 access_token 為空', () => {
                 sandbox.restore();
-                const accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
+                accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
                     .rejects(new Error('access_token is invalid'));
 
                 return request(app).post('/workings')
@@ -71,7 +174,7 @@ describe('Workings 工時資訊', () => {
 
             it('需要回傳 401 如果不能 FB 登入', () => {
                 sandbox.restore();
-                const accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
+                accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
                     .rejects(new Error('access_token is invalid'));
 
                 return request(app).post('/workings')
@@ -556,8 +659,8 @@ describe('Workings 工時資訊', () => {
                     }));
 
             for (const salary_type of ['month', 'year', 'day']) {
-                it(`doc shouldn't have 'estimated_hourly_wage' field, if the calculated 
-                    'estimated_hourly_wage' is undefined. (salary_type is '${salary_type}' 
+                it(`doc shouldn't have 'estimated_hourly_wage' field, if the calculated
+                    'estimated_hourly_wage' is undefined. (salary_type is '${salary_type}'
                     but no WorkTime information)`, () => {
                     const send_request = request(app).post('/workings')
                         .send(generateAllPayload({
@@ -577,8 +680,8 @@ describe('Workings 工時資訊', () => {
                 });
             }
 
-            it(`doc shouldn't have 'estimated_hourly_wage' field, if the calculated 
-                'estimated_hourly_wage' is undefined. (has WorkTime information, but 
+            it(`doc shouldn't have 'estimated_hourly_wage' field, if the calculated
+                'estimated_hourly_wage' is undefined. (has WorkTime information, but
                 but no Salary information)`, () => {
                 const send_request = request(app).post('/workings')
                     .send(generateAllPayload({
@@ -819,7 +922,7 @@ describe('Workings 工時資訊', () => {
                 const count = 5;
 
                 const requestPromiseStack = [];
-                for (let i = 0; i < count; i++) {
+                for (let i = 0; i < count; i += 1) {
                     requestPromiseStack.push(
                         request(app).post('/workings')
                             .send(generateWorkingTimeRelatedPayload({
@@ -918,117 +1021,3 @@ describe('Workings 工時資訊', () => {
     });
 });
 
-function generateWorkingTimeRelatedPayload(opt) {
-    opt = opt || {};
-    const valid = {
-        access_token: 'random',
-        job_title: 'test',
-        company_id: '00000001',
-        is_currently_employed: 'yes',
-        employment_type: 'full-time',
-        week_work_time: '40',
-        overtime_frequency: '3',
-        day_promised_work_time: '8',
-        day_real_work_time: '10',
-    };
-
-    const payload = {};
-    for (const key in valid) {
-        if (opt[key]) {
-            if (opt[key] === -1) {
-                continue;
-            } else {
-                payload[key] = opt[key];
-            }
-        } else {
-            payload[key] = valid[key];
-        }
-    }
-    for (const key in opt) {
-        if (opt[key] === -1) {
-            continue;
-        } else {
-            payload[key] = opt[key];
-        }
-    }
-
-    return payload;
-}
-
-function generateSalaryRelatedPayload(opt) {
-    opt = opt || {};
-    const valid = {
-        access_token: 'random',
-        job_title: 'test',
-        company_id: '00000001',
-        is_currently_employed: 'yes',
-        employment_type: 'full-time',
-        salary_type: 'year',
-        salary_amount: '10000',
-        experience_in_year: '10',
-    };
-
-    const payload = {};
-    for (const key in valid) {
-        if (opt[key]) {
-            if (opt[key] === -1) {
-                continue;
-            } else {
-                payload[key] = opt[key];
-            }
-        } else {
-            payload[key] = valid[key];
-        }
-    }
-    for (const key in opt) {
-        if (opt[key] === -1) {
-            continue;
-        } else {
-            payload[key] = opt[key];
-        }
-    }
-
-    return payload;
-}
-
-function generateAllPayload(opt) {
-    opt = opt || {};
-    const valid = {
-        access_token: 'random',
-        job_title: 'test',
-        company_id: '00000001',
-        is_currently_employed: 'yes',
-        employment_type: 'full-time',
-        // Salary related
-        salary_type: 'year',
-        salary_amount: '10000',
-        experience_in_year: '10',
-        // WorkingTime related
-        week_work_time: '40',
-        overtime_frequency: '3',
-        day_promised_work_time: '8',
-        day_real_work_time: '10',
-    };
-
-    const payload = {};
-    for (const key in valid) {
-        if (opt[key]) {
-            if (opt[key] === -1) {
-                continue;
-            } else {
-                payload[key] = opt[key];
-            }
-        } else {
-            payload[key] = valid[key];
-        }
-    }
-    for (const key in opt) {
-        if (opt[key] === -1) {
-            continue;
-        } else {
-            payload[key] = opt[key];
-        }
-    }
-
-    return payload;
-}

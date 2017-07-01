@@ -9,6 +9,7 @@ const { ObjectId } = require('mongodb');
 const HttpError = require('../libs/errors').HttpError;
 const middlewares = require('../middlewares');
 const authentication = require('../middlewares/authentication');
+const authenticationLib = require('../libs/authentication');
 
 describe('Redis middleware', () => {
     it('request should have property redis_client', (done) => {
@@ -29,7 +30,6 @@ describe('Redis middleware', () => {
 describe('Authentication Middleware', () => {
     describe('cachedFacebookAuthenticationMiddleware', () => {
         let sandbox;
-        const authenticationLib = require('../libs/authentication');
 
         beforeEach(() => {
             sandbox = sinon.sandbox.create();

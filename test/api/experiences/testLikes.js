@@ -1,6 +1,6 @@
 const assert = require('chai').assert;
 
-const mongo = new require('mongodb');
+const mongo = require('mongodb');
 const request = require('supertest');
 const app = require('../../../app');
 const {
@@ -246,24 +246,29 @@ describe('Experience Likes Test', () => {
 
         it('cannot delete like, beacause the user does not login and return 404', () => db.collection('experience_likes').remove({
             user_id: test_likes[0].user_id,
-        }).then((result) => request(app)
+        }).then(result => request(app)
                     .delete(`/experiences/${experience_id_string_by_user}/likes`)
-                    .expect(401)).then((res) => db.collection('experiences').findOne({
+                    .expect(401))
+                .then(res => db.collection('experiences')
+                    .findOne({
                         _id: experience_id_by_user,
-                    })).then((experience) => {
+                    }))
+                    .then((experience) => {
                         assert.equal(experience.like_count, 2, 'the like_count should be 2 (it can not change)');
                     }));
 
         it('cannot delete like, beacause the like does not exist and return 404', () => db.collection('experience_likes').remove({
             user_id: test_likes[0].user_id,
-        }).then((result) => request(app)
+        }).then(result => request(app)
                     .delete(`/experiences/${experience_id_string_by_user}/likes`)
                     .send({
                         access_token: 'fakeaccesstoken',
                     })
-                    .expect(404)).then((res) => db.collection('experiences').findOne({
+                    .expect(404)).then(res => db.collection('experiences')
+                    .findOne({
                         _id: experience_id_by_user,
-                    })).then((experience) => {
+                    }))
+                    .then(experience => {
                         assert.equal(experience.like_count, 2, 'the like_count should be 2 (it can not change)');
                     }));
 
@@ -274,9 +279,11 @@ describe('Experience Likes Test', () => {
                     .send({
                         access_token: 'fakeaccesstoken',
                     })
-                    .expect(404)).then((res) => db.collection('experiences').findOne({
+                    .expect(404)).then(res => db.collection('experiences')
+                    .findOne({
                         _id: experience_id_by_user,
-                    })).then((experience) => {
+                    }))
+                    .then(experience => {
                         assert.equal(experience.like_count, 2, 'the like_count should be 2 (it can not change)');
                     }));
 

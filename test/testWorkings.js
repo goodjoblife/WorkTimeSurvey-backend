@@ -99,10 +99,10 @@ describe('Workings 工時資訊', () => {
                             }
                         }
 
-                        for (let idx = 1; idx < undefined_start_idx; ++idx) {
+                        for (let idx = 1; idx < undefined_start_idx; idx += 1) {
                             assert(workings[idx][sort_field] <= workings[idx - 1][sort_field]);
                         }
-                        for (let idx = undefined_start_idx; idx < workings.length; ++idx) {
+                        for (let idx = undefined_start_idx; idx < workings.length; idx += 1) {
                             assert.isUndefined(workings[idx][sort_field]);
                         }
                     }));
@@ -118,7 +118,7 @@ describe('Workings 工時資訊', () => {
                     const sort_field = 'created_at';
                     const workings = res.body.time_and_salary;
 
-                    for (let idx = 1; idx < workings.length; ++idx) {
+                    for (let idx = 1; idx < workings.length; idx += 1) {
                         assert(workings[idx][sort_field] >= workings[idx - 1][sort_field]);
                     }
                 }));
@@ -134,10 +134,10 @@ describe('Workings 工時資訊', () => {
                     const workings = res.body.time_and_salary;
 
                     const undefined_idx = 3;
-                    for (let idx = 1; idx < undefined_idx; ++idx) {
+                    for (let idx = 1; idx < undefined_idx; idx += 1) {
                         assert(workings[idx][sort_field] >= workings[idx - 1][sort_field]);
                     }
-                    for (let idx = undefined_idx; idx < workings.length; ++idx) {
+                    for (let idx = undefined_idx; idx < workings.length; idx += 1) {
                         assert.isUndefined(workings[idx][sort_field]);
                     }
                 }));

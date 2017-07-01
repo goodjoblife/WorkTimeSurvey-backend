@@ -146,10 +146,10 @@ describe('Authentication Library', () => {
 
             const main = cachedFacebookAuthentication(db, redis_client, 'fake_accesstoken');
             return Promise.all([
-                main.then(user => {
-                    assert.propertyVal(user, 'facebook_id', '2');
-                    assert.deepPropertyVal(user, 'facebook.id', '2');
-                    assert.deepPropertyVal(user, 'facebook.name', 'Mark Chen');
+                main.then(_user => {
+                    assert.propertyVal(_user, 'facebook_id', '2');
+                    assert.deepPropertyVal(_user, 'facebook.id', '2');
+                    assert.deepPropertyVal(_user, 'facebook.name', 'Mark Chen');
                 }),
                 main.then(() => {
                     sinon.assert.calledOnce(redisGetFB);
@@ -159,10 +159,10 @@ describe('Authentication Library', () => {
                 main.then(() =>
                     // a new user not null in DB
                      db.collection('users').findOne({ facebook_id: '2' })
-                        .then(user => {
-                            assert.propertyVal(user, 'facebook_id', '2');
-                            assert.deepPropertyVal(user, 'facebook.id', '2');
-                            assert.deepPropertyVal(user, 'facebook.name', 'Mark Chen');
+                        .then(_user => {
+                            assert.propertyVal(_user, 'facebook_id', '2');
+                            assert.deepPropertyVal(_user, 'facebook.id', '2');
+                            assert.deepPropertyVal(_user, 'facebook.name', 'Mark Chen');
                         })),
             ]);
         });

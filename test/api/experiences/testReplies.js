@@ -162,7 +162,7 @@ describe('Replies Test', () => {
             experience_id_string = result.insertedId.toString();
 
             const testDatas = [];
-            for (let i = 0; i < TEST_REPLIES_COUNT; i++) {
+            for (let i = 0; i < TEST_REPLIES_COUNT; i += 1) {
                 testDatas.push({
                     created_at: new Date(),
                     experience_id,

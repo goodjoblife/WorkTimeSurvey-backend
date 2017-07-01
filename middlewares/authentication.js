@@ -1,25 +1,6 @@
 const authentication = require('../libs/authentication');
 const HttpError = require('../libs/errors').HttpError;
 
-function cachedFacebookAuthenticationMiddleware(req, res, next) {
-    const db = req.redis_client;
-    const access_token = _getAccessToken(req);
-
-    if (typeof access_token !== "string") {
-        next(new HttpError('Unauthorized', 401));
-    } else {
-        authentication.cachedFacebookAuthentication(req.db, db, access_token)
-            .then(user => {
-                req.user = user;
-            })
-            .then(() => {
-                next();
-            }, () => {
-                next(new HttpError('Unauthorized', 401));
-            });
-    }
-}
-
 /**
  * _getAccessToken
  * Getting acceess token from body or header
@@ -39,6 +20,25 @@ function _getAccessToken(req) {
         access_token = req.query.access_token;
     }
     return access_token;
+}
+
+function cachedFacebookAuthenticationMiddleware(req, res, next) {
+    const db = req.redis_client;
+    const access_token = _getAccessToken(req);
+
+    if (typeof access_token !== "string") {
+        next(new HttpError('Unauthorized', 401));
+    } else {
+        authentication.cachedFacebookAuthentication(req.db, db, access_token)
+            .then(user => {
+                req.user = user;
+            })
+            .then(() => {
+                next();
+            }, () => {
+                next(new HttpError('Unauthorized', 401));
+            });
+    }
 }
 
 module.exports = {

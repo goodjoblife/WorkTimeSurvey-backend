@@ -67,6 +67,18 @@
         "no-underscore-dangle": "off",
         "camelcase": "off",
         "arrow-parens": "off",
-        "prefer-arrow-callback": "off"
+        "prefer-arrow-callback": "off",
+        "import/no-extraneous-dependencies": [
+            "error", {
+                "devDependencies": true
+            }
+        ],
+        "no-restricted-syntax": "off",
+        "no-loop-func": "off",
+        "consistent-return": [
+            0, {
+                "treatUndefinedAsUnspecified": true
+            }
+        ]
     }
 }
