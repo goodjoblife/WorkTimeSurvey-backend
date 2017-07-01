@@ -69,7 +69,7 @@ function expireAsync(db, key, time) {
  * @rejected  error
  */
 function redisGetFB(db, key) {
-    return getAsync(db, `fb_${key}`).then(account_string => {
+    return getAsync(db, `fb_${key}`).then((account_string) => {
         if (account_string === null) {
             return null;
         }
@@ -97,7 +97,7 @@ function redisSetFB(db, key, value) {
  * @rejected  error
  */
 function redisGetPermission(db, key) {
-    return getAsync(db, `permission_${key}`).then(reply => {
+    return getAsync(db, `permission_${key}`).then((reply) => {
         if (reply) {
             return true;
         }

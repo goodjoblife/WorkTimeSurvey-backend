@@ -22,16 +22,17 @@ router.get('/search', (req, res, next) => {
     const page = req.query.page || 0;
     let query;
 
-    if (search == "") {
+    if (search === "") {
         next(new HttpError("key is required", 422));
         return;
-    }
-    query = {
-        $or: [
+    } else {
+        query = {
+            $or: [
                 { name: new RegExp(`^${escapeRegExp(search.toUpperCase())}`) },
                 { id: search },
-        ],
-    };
+            ],
+        };
+    }
 
 
     const sort_by = {
@@ -53,7 +54,7 @@ router.get('/search', (req, res, next) => {
 });
 
 function _generateGetCompanyViewModel(companies) {
-    const result = companies.map((company) => ({
+    const result = companies.map(company => ({
         id: company.id,
         name: getCompanyName(company.name),
         capital: company.capital,

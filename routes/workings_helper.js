@@ -39,14 +39,14 @@ function checkAndUpdateQuota(db, author) {
     }
 
     return increment()
-        .catch(err => {
+        .catch((err) => {
             if (err.code === 11000) { // E11000 duplicate key err
                 return increment();
             }
 
             throw new HttpError(`上傳資料發生點問題`, 500);
         })
-        .then(result => {
+        .then((result) => {
             if (result.value.time_and_salary_count > quota) {
                 return decrementWithoutError()
                     .then(() => {
@@ -68,10 +68,13 @@ function calculateEstimatedHourlyWage(working) {
     } else if (working.day_real_work_time && working.week_work_time) {
         if (working.salary.type === 'month') {
             estimated_hourly_wage = (working.salary.amount * 12) /
-                                    (52 * working.week_work_time - (12 + 7) * working.day_real_work_time);
+                                    (
+                                     (52 * working.week_work_time) -
+                                     ((12 + 7) * working.day_real_work_time));
         } else if (working.salary.type === 'year') {
             estimated_hourly_wage = working.salary.amount /
-                                    (52 * working.week_work_time - (12 + 7) * working.day_real_work_time);
+                                    ((52 * working.week_work_time) -
+                                     ((12 + 7) * working.day_real_work_time));
         }
     }
 

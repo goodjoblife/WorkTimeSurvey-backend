@@ -10,7 +10,7 @@ const CompanyService = require('../models/company_model');
 function getCompanyByIdOrQuery(db, company_id, company_query) {
     const company_service = new CompanyService(db);
     if (company_id) {
-        return company_service.searchCompanyById(company_id).then(results => {
+        return company_service.searchCompanyById(company_id).then((results) => {
             if (results.length === 0) {
                 throw new HttpError("公司統編不正確", 422);
             }
@@ -21,19 +21,21 @@ function getCompanyByIdOrQuery(db, company_id, company_query) {
             };
         });
     }
-    return company_service.searchCompanyById(company_query).then(results => {
+    return company_service.searchCompanyById(company_query).then((results) => {
         if (results.length === 0) {
-            return company_service.searchCompanyByName(company_query.toUpperCase()).then(results => {
-                if (results.length === 1) {
+            return company_service
+                .searchCompanyByName(company_query.toUpperCase())
+                .then((nameResults) => {
+                    if (nameResults.length === 1) {
+                        return {
+                            id: nameResults[0].id,
+                            name: _getCompanyName(nameResults[0].name),
+                        };
+                    }
                     return {
-                        id: results[0].id,
-                        name: _getCompanyName(results[0].name),
+                        name: company_query.toUpperCase(),
                     };
-                }
-                return {
-                    name: company_query.toUpperCase(),
-                };
-            });
+                });
         }
         return {
             id: results[0].id,

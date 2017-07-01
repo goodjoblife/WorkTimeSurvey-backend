@@ -85,7 +85,7 @@ describe('Experience Likes Test', () => {
                 .send({
                     access_token: 'fakeaccesstoken',
                 })
-                .then((response) => request(app)
+                .then(response => request(app)
                         .post(`/experiences/${experience_id}/likes`)
                         .send({
                             access_token: 'fakeaccesstoken',
@@ -100,7 +100,7 @@ describe('Experience Likes Test', () => {
                 .send({
                     access_token: 'fakeaccesstoken',
                 })
-                .then((res) => db.collection("experiences")
+                .then(res => db.collection("experiences")
                         .find({
                             _id: new mongo.ObjectId(experience_id),
                         })
@@ -115,11 +115,11 @@ describe('Experience Likes Test', () => {
                 .send({
                     access_token: 'fakeaccesstoken',
                 })
-                .then((res) => request(app).post(uri)
+                .then(res => request(app).post(uri)
                         .send({
                             access_token: 'fakeaccesstoken',
                         }))
-                .then((res) => db.collection("experiences")
+                .then(res => db.collection("experiences")
                         .find({
                             _id: new mongo.ObjectId(experience_id),
                         })
@@ -135,11 +135,11 @@ describe('Experience Likes Test', () => {
                 .send({
                     access_token: 'fakeaccesstoken',
                 })
-                .then((res) => request(app).post(uri)
+                .then(res => request(app).post(uri)
                         .send({
                             access_token: 'other_fakeaccesstoken',
                         }))
-                .then((res) => db.collection("experiences")
+                .then(res => db.collection("experiences")
                         .find({
                             _id: new mongo.ObjectId(experience_id),
                         })
@@ -228,14 +228,14 @@ describe('Experience Likes Test', () => {
                 .expect(200);
 
             return Promise.all([
-                req.then((res) => db.collection('experience_likes').findOne({
+                req.then(res => db.collection('experience_likes').findOne({
                     experience_id: experience_id_by_user,
                     user_id: fake_user._id,
                 }))
                 .then((result) => {
                     assert.equal(result, null, 'No record in experience_likes');
                 }),
-                req.then((res) => db.collection('experiences').findOne({
+                req.then(res => db.collection('experiences').findOne({
                     _id: experience_id_by_user,
                 }))
                 .then((experience) => {
@@ -268,13 +268,13 @@ describe('Experience Likes Test', () => {
                     .findOne({
                         _id: experience_id_by_user,
                     }))
-                    .then(experience => {
+                    .then((experience) => {
                         assert.equal(experience.like_count, 2, 'the like_count should be 2 (it can not change)');
                     }));
 
         it('cannot delete like, because experience does not exist and return 404', () => db.collection('experience_likes').remove({
             user_id: test_likes[0].user_id,
-        }).then((result) => request(app)
+        }).then(result => request(app)
                     .delete('/experiences/123456789/likes')
                     .send({
                         access_token: 'fakeaccesstoken',
@@ -283,7 +283,7 @@ describe('Experience Likes Test', () => {
                     .findOne({
                         _id: experience_id_by_user,
                     }))
-                    .then(experience => {
+                    .then((experience) => {
                         assert.equal(experience.like_count, 2, 'the like_count should be 2 (it can not change)');
                     }));
 

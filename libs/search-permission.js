@@ -1,5 +1,5 @@
 function getDataNumOfUser(db, user) {
-    return db.collection('users').find({ facebook_id: user.id }).toArray().then(results => {
+    return db.collection('users').find({ facebook_id: user.id }).toArray().then((results) => {
         if (results.length == 0) {
             return 0;
         }
@@ -8,7 +8,7 @@ function getDataNumOfUser(db, user) {
 }
 
 function getRefNumOfUser(db, user) {
-    return db.collection('recommendations').find({ user }).toArray().then(results => {
+    return db.collection('recommendations').find({ user }).toArray().then((results) => {
         if (results.length == 0) {
             return 0;
         }
@@ -23,7 +23,7 @@ function resolveSearchPermission(db, user) {
         getRefNumOfUser(db, user),
     ])
     // determine authorization
-    .then(values => {
+    .then((values) => {
         const sum = values.reduce((a, b) => a + b);
         return sum > 0;
     });

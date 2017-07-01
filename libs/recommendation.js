@@ -55,7 +55,7 @@ function getUserByRecommendationString(db, recommendation_string) {
             return new ObjectId(recommendation_string);
         })
         .then(_id => db.collection('recommendations').findOne({ _id }))
-        .then(result => {
+        .then((result) => {
             if (result === null) {
                 return null;
             }

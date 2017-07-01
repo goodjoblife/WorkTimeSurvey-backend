@@ -39,8 +39,13 @@ class ExperienceModel {
      *  - reject :  Default Error;
      */
     getExperiences(query, sort, skip = 0, limit = 25, opt = {}) {
-        return this.collection.find(query, opt).sort(sort).skip(skip).limit(limit).toArray()
-            .then((docs) => docs);
+        return this.collection
+            .find(query, opt)
+            .sort(sort)
+            .skip(skip)
+            .limit(limit)
+            .toArray()
+            .then(docs => docs);
     }
 
     /**
@@ -89,6 +94,7 @@ class ExperienceModel {
         });
     }
 
+    // eslint-disable-next-line class-methods-use-this
     _isValidId(id) {
         return (id && mongo.ObjectId.isValid(id));
     }

@@ -58,13 +58,20 @@ router.get('/by-job', (req, res, next) => {
         data.total_count = count;
         data.total_page = Math.ceil(count / 25);
 
-        return collection.find(db_query, opt).sort(db_sort).skip(25 * page).limit(25).toArray();
-    }).then((workings) => {
+        return collection
+            .find(db_query, opt)
+            .sort(db_sort)
+            .skip(25 * page)
+            .limit(25)
+            .toArray();
+    })
+    .then((workings) => {
         data.page = page;
         data.workings = workings;
 
         res.send(data);
-    }).catch((err) => {
+    })
+    .catch((err) => {
         next(new HttpError("Internal Server Error", 500));
     });
 });
@@ -125,13 +132,20 @@ router.get('/by-company', (req, res, next) => {
     collection.find(q).count().then((count) => {
         data.total_count = count;
         data.total_page = Math.ceil(count / 25);
-        return collection.find(q, opt).sort(s).skip(25 * page).limit(25).toArray();
-    }).then((workings) => {
+        return collection
+            .find(q, opt)
+            .sort(s)
+            .skip(25 * page)
+            .limit(25)
+            .toArray();
+    })
+    .then((workings) => {
         data.page = page;
         data.workings = workings;
 
         res.send(data);
-    }).catch((err) => {
+    })
+    .catch((err) => {
         next(new HttpError("Internal Server Error", 500));
     });
 });

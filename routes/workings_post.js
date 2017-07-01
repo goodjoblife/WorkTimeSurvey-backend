@@ -24,8 +24,8 @@ function collectData(req, res) {
     }
 
     if (req.custom.facebook) {
-        author.id = req.custom.facebook.id,
-        author.name = req.custom.facebook.name,
+        author.id = req.custom.facebook.id;
+        author.name = req.custom.facebook.name;
         author.type = "facebook";
     } else {
         author.id = "-1";
@@ -176,8 +176,8 @@ function validateCommonData(req) {
         if (!custom.job_ending_time_month) {
             throw new HttpError('離職月份必填', 422);
         }
-        custom.job_ending_time_year = parseInt(custom.job_ending_time_year);
-        custom.job_ending_time_month = parseInt(custom.job_ending_time_month);
+        custom.job_ending_time_year = parseInt(custom.job_ending_time_year, 10);
+        custom.job_ending_time_month = parseInt(custom.job_ending_time_month, 10);
         const now = new Date();
         if (isNaN(custom.job_ending_time_year)) {
             throw new HttpError('離職年份需為數字', 422);
@@ -189,8 +189,9 @@ function validateCommonData(req) {
         } else if (custom.job_ending_time_month < 1 || data.job_ending_time_month > 12) {
             throw new HttpError('離職月份需在1~12月', 422);
         }
-        if ((custom.job_ending_time_year == now.getFullYear() && custom.job_ending_time_month > (now.getMonth() + 1)) ||
-            custom.job_ending_time_year > now.getFullYear()) {
+        if ((custom.job_ending_time_year === now.getFullYear()
+                    && custom.job_ending_time_month > (now.getMonth() + 1))
+                || custom.job_ending_time_year > now.getFullYear()) {
             throw new HttpError('離職月份不能比現在時間晚', 422);
         }
     }
@@ -246,7 +247,7 @@ function validateWorkingTimeData(req) {
     if (["0", "1", "2", "3"].indexOf(data.overtime_frequency) === -1) {
         throw new HttpError("加班頻率格式錯誤", 422);
     }
-    data.overtime_frequency = parseInt(data.overtime_frequency);
+    data.overtime_frequency = parseInt(data.overtime_frequency, 10);
 
     if (!data.day_promised_work_time) {
         throw new HttpError("工作日表訂工時未填", 422);
@@ -314,7 +315,7 @@ function validateSalaryData(req) {
     if (!custom.salary_amount) {
         throw new HttpError('薪資多寡必填', 422);
     }
-    custom.salary_amount = parseInt(custom.salary_amount);
+    custom.salary_amount = parseInt(custom.salary_amount, 10);
     if (isNaN(custom.salary_amount)) {
         throw new HttpError('薪資需為整數', 422);
     }
@@ -325,7 +326,7 @@ function validateSalaryData(req) {
     if (!data.experience_in_year) {
         throw new HttpError('相關職務工作經驗必填', 422);
     }
-    data.experience_in_year = parseInt(data.experience_in_year);
+    data.experience_in_year = parseInt(data.experience_in_year, 10);
     if (isNaN(data.experience_in_year)) {
         throw new HttpError('相關職務工作經驗需為整數', 422);
     }
@@ -386,49 +387,60 @@ function main(req, res, next) {
      *
      * 其他情況看 issue #7
      */
-    companyHelper.getCompanyByIdOrQuery(req.db, working.company.id, company_query).then(company => {
-        working.company = company;
-    }).then(() => {
+    companyHelper
+        .getCompanyByIdOrQuery(req.db, working.company.id, company_query)
+        .then((company) => {
+            working.company = company;
+        }).then(() => {
         // 這邊嘗試從recommendation_string去取得推薦使用者的資訊
-        if (req.custom.recommendation_string) {
-            return recommendation.getUserByRecommendationString(req.db, req.custom.recommendation_string).then(
-                result => {
-                    // if no error but still cannot find user
-                    if (result === null) {
-                        return null;
-                    }
-                    return result;
-                },
-                err => {
-                    // if recommendation_string is not valid
-                    if (err instanceof ObjectIdError) {
-                        return null;
-                    }
-                    throw err;
-                });
-        }
-        return null;
-    }).then((rec_user) => {
-        if (rec_user !== null) {
-            working.recommended_by = rec_user;
-            return req.db.collection('recommendations').update({ user: rec_user }, { $inc: { count: 1 } });
-        }
+            if (req.custom.recommendation_string) {
+                return recommendation
+                    .getUserByRecommendationString(req.db, req.custom.recommendation_string)
+                    .then(
+                        (result) => {
+                            // if no error but still cannot find user
+                            if (result === null) {
+                                return null;
+                            }
+                            return result;
+                        },
+                        (err) => {
+                            // if recommendation_string is not valid
+                            if (err instanceof ObjectIdError) {
+                                return null;
+                            }
+                            throw err;
+                        }
+                    );
+            }
+            return null;
+        }).then((rec_user) => {
+            if (rec_user !== null) {
+                working.recommended_by = rec_user;
+                return req.db.collection('recommendations').update({ user: rec_user }, { $inc: { count: 1 } });
+            }
             // 如果不是 user，依然把 recommendation_string 儲存起來
-        if (req.custom.recommendation_string) {
-            working.recommended_by = req.custom.recommendation_string;
-        }
-    }).then(() => {
+            if (req.custom.recommendation_string) {
+                working.recommended_by = req.custom.recommendation_string;
+            }
+        })
+    .then(() => {
         const author = working.author;
 
-        return helper.checkAndUpdateQuota(req.db, { id: author.id, type: author.type }).then(queries_count => {
-            response_data.queries_count = queries_count;
-        });
-    }).then(() => collection.insert(working)).then(() => {
-        winston.info("workings insert data success", { id: working._id, ip: req.ip, ips: req.ips });
+        return helper
+            .checkAndUpdateQuota(req.db, { id: author.id, type: author.type })
+            .then((queries_count) => {
+                response_data.queries_count = queries_count;
+            });
+    })
+    .then(() => collection.insert(working))
+        .then(() => {
+            winston.info("workings insert data success", { id: working._id, ip: req.ip, ips: req.ips });
         // delete some sensitive information before sending response
-        delete response_data.working.recommended_by;
-        res.send(response_data);
-    }).catch((err) => {
+            delete response_data.working.recommended_by;
+            res.send(response_data);
+        })
+    .catch((err) => {
         winston.info("workings insert data fail", { id: working._id, ip: req.ip, ips: req.ips, err });
 
         next(err);

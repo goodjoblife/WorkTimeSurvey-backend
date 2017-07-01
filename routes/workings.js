@@ -33,30 +33,40 @@ router.get('/', (req, res, next) => {
     const limit = req.pagination.limit;
 
     const data = {};
-    collection.count().then((count) => {
-        data.total = count;
+    collection
+        .count()
+        .then((count) => {
+            data.total = count;
 
-        return collection.find(query, opt).sort(req.custom.sort).skip(limit * page).limit(limit).toArray();
-    }).then((defined_results) => {
-        if (defined_results.length < limit) {
-            return collection.find(query).count().then((count_defined_num) => {
-                query = {
-                    [req.custom.sort_by]: { $exists: false },
-                };
+            return collection
+                .find(query, opt)
+                .sort(req.custom.sort)
+                .skip(limit * page)
+                .limit(limit)
+                .toArray();
+        })
+        .then((defined_results) => {
+            if (defined_results.length < limit) {
+                return collection.find(query).count().then((count_defined_num) => {
+                    query = {
+                        [req.custom.sort_by]: { $exists: false },
+                    };
 
-                return collection.find(query, opt)
-                        .skip(limit * page + defined_results.length - count_defined_num)
-                        .limit(limit - defined_results.length).toArray();
-            }).then(results => defined_results.concat(results));
-        }
-        return defined_results;
-    }).then((results) => {
-        data.time_and_salary = results;
+                    return collection.find(query, opt)
+                            .skip((limit * page) + defined_results.length - count_defined_num)
+                            .limit(limit - defined_results.length).toArray();
+                }).then(results => defined_results.concat(results));
+            }
+            return defined_results;
+        })
+        .then((results) => {
+            data.time_and_salary = results;
 
-        res.send(data);
-    }).catch((err) => {
-        next(new HttpError("Internal Server Error", 500));
-    });
+            res.send(data);
+        })
+        .catch((err) => {
+            next(new HttpError("Internal Server Error", 500));
+        });
 });
 
 router.post('/', (req, res, next) => {
@@ -71,10 +81,10 @@ if (!process.env.SKIP_FACEBOOK_AUTH) {
     router.post('/', (req, res, next) => {
         const access_token = req.body.access_token;
 
-        facebook.accessTokenAuth(access_token).then((facebook) => {
+        facebook.accessTokenAuth(access_token).then((facebookInfo) => {
             winston.info("facebook auth success", { access_token, ip: req.ip, ips: req.ips });
 
-            req.custom.facebook = facebook;
+            req.custom.facebook = facebookInfo;
             next();
         }).catch((err) => {
             winston.info("facebook auth fail", { access_token, ip: req.ip, ips: req.ips });
@@ -231,10 +241,11 @@ router.get('/search_by/company/group_by/company', (req, res, next) => {
             results[results.length - 1].average[sort_field] !== null) {
             let not_null_idx = 0;
             while (results[not_null_idx].average[sort_field] === null) {
-                ++not_null_idx;
+                not_null_idx += 1;
             }
 
             const nullDatas = results.splice(0, not_null_idx);
+            // eslint-disable-next-line no-param-reassign
             results = results.concat(nullDatas);
         }
 
@@ -321,10 +332,11 @@ router.get('/search_by/job_title/group_by/company', (req, res, next) => {
             results[results.length - 1].average[sort_field] !== null) {
             let not_null_idx = 0;
             while (results[not_null_idx].average[sort_field] === null) {
-                ++not_null_idx;
+                not_null_idx += 1;
             }
 
             const nullDatas = results.splice(0, not_null_idx);
+            // eslint-disable-next-line no-param-reassign
             results = results.concat(nullDatas);
         }
 
@@ -348,7 +360,7 @@ router.get('/companies/search', (req, res, next) => {
     winston.info("/workings/companies/search", { query: req.query, ip: req.ip, ips: req.ips });
 
     const search = req.query.key || "";
-    const page = parseInt(req.query.page) || 0;
+    const page = parseInt(req.query.page, 10) || 0;
 
     if (search === "") {
         next(new HttpError("key is required", 422));
@@ -377,7 +389,7 @@ router.get('/companies/search', (req, res, next) => {
             },
         },
         {
-            $limit: 25 * page + 25,
+            $limit: (25 * page) + 25,
         },
         {
             $skip: 25 * page,
@@ -401,7 +413,7 @@ router.get('/jobs/search', (req, res, next) => {
     winston.info("/workings/jobs/search", { query: req.query, ip: req.ip, ips: req.ips });
 
     const search = req.query.key || "";
-    const page = parseInt(req.query.page) || 0;
+    const page = parseInt(req.query.page, 10) || 0;
 
     if (search === "") {
         next(new HttpError("key is required", 422));
@@ -427,7 +439,7 @@ router.get('/jobs/search', (req, res, next) => {
             },
         },
         {
-            $limit: 25 * page + 25,
+            $limit: (25 * page) + 25,
         },
         {
             $skip: 25 * page,

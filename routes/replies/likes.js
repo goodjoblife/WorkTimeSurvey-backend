@@ -33,7 +33,7 @@ router.post('/:reply_id/likes', (req, res, next) => {
         reply_model.incrementLikeCount(reply_id)
     ).then(() => {
         res.send({ success: true });
-    }).catch(err => {
+    }).catch((err) => {
         if (err instanceof DuplicateKeyError) {
             next(new HttpError(err.message, 403));
             return;
@@ -73,7 +73,7 @@ router.delete('/:reply_id/likes', (req, res, next) => {
         .then(() => {
             res.send({ success: true });
         })
-        .catch(err => {
+        .catch((err) => {
             if (err instanceof DuplicateKeyError) {
                 next(new HttpError(err.message, 403));
                 return;

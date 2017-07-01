@@ -19,7 +19,7 @@ function cachedAndSetUserMiddleware(req, res, next) {
         next();
     } else {
         authentication.cachedFacebookAuthentication(req.db, db, access_token)
-            .then(user => {
+            .then((user) => {
                 req.user = user;
             })
             .then(() => {

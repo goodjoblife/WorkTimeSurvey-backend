@@ -10,109 +10,6 @@ const config = require('config');
 const facebook = require('../libs/facebook');
 const ObjectId = require('mongodb').ObjectId;
 
-function generateWorkingTimeRelatedPayload(options) {
-    const opt = options || {};
-    const valid = {
-        access_token: 'random',
-        job_title: 'test',
-        company_id: '00000001',
-        is_currently_employed: 'yes',
-        employment_type: 'full-time',
-        week_work_time: '40',
-        overtime_frequency: '3',
-        day_promised_work_time: '8',
-        day_real_work_time: '10',
-    };
-
-    const payload = {};
-    for (const key in valid) {
-        if (opt[key]) {
-            if (opt[key] !== -1) {
-                payload[key] = opt[key];
-            }
-        } else {
-            payload[key] = valid[key];
-        }
-    }
-    for (const key in opt) {
-        if (opt[key] !== -1) {
-            payload[key] = opt[key];
-        }
-    }
-
-    return payload;
-}
-
-function generateSalaryRelatedPayload(options) {
-    const opt = options || {};
-    const valid = {
-        access_token: 'random',
-        job_title: 'test',
-        company_id: '00000001',
-        is_currently_employed: 'yes',
-        employment_type: 'full-time',
-        salary_type: 'year',
-        salary_amount: '10000',
-        experience_in_year: '10',
-    };
-
-    const payload = {};
-    for (const key in valid) {
-        if (opt[key]) {
-            if (opt[key] !== -1) {
-                payload[key] = opt[key];
-            }
-        } else {
-            payload[key] = valid[key];
-        }
-    }
-    for (const key in opt) {
-        if (opt[key] !== -1) {
-            payload[key] = opt[key];
-        }
-    }
-
-    return payload;
-}
-
-function generateAllPayload(options) {
-    const opt = options || {};
-    const valid = {
-        access_token: 'random',
-        job_title: 'test',
-        company_id: '00000001',
-        is_currently_employed: 'yes',
-        employment_type: 'full-time',
-        // Salary related
-        salary_type: 'year',
-        salary_amount: '10000',
-        experience_in_year: '10',
-        // WorkingTime related
-        week_work_time: '40',
-        overtime_frequency: '3',
-        day_promised_work_time: '8',
-        day_real_work_time: '10',
-    };
-
-    const payload = {};
-    for (const key in valid) {
-        if (opt[key]) {
-            if (opt[key] !== -1) {
-                payload[key] = opt[key];
-            }
-        } else {
-            payload[key] = valid[key];
-        }
-    }
-    for (const key in opt) {
-        if (opt[key] !== -1) {
-            payload[key] = opt[key];
-        }
-    }
-
-    return payload;
-}
-
 describe('Workings 工時資訊', () => {
     let db;
     let sandbox;
@@ -673,7 +570,7 @@ describe('Workings 工時資訊', () => {
                         }))
                         .expect(200);
 
-                    const test_db = send_request.then((res) => res.body.working._id).then((data_id) => db.collection('workings').findOne({ _id: ObjectId(data_id) }).then(result => {
+                    const test_db = send_request.then(res => res.body.working._id).then(data_id => db.collection('workings').findOne({ _id: ObjectId(data_id) }).then((result) => {
                         assert.notProperty(result, 'estimated_hourly_wage');
                     }));
                     return Promise.all([send_request, test_db]);
@@ -691,7 +588,7 @@ describe('Workings 工時資訊', () => {
                     }))
                     .expect(200);
 
-                const test_db = send_request.then((res) => res.body.working._id).then((data_id) => db.collection('workings').findOne({ _id: ObjectId(data_id) }).then(result => {
+                const test_db = send_request.then(res => res.body.working._id).then(data_id => db.collection('workings').findOne({ _id: ObjectId(data_id) }).then((result) => {
                     assert.notProperty(result, 'estimated_hourly_wage');
                 }));
                 return Promise.all([send_request, test_db]);
@@ -816,7 +713,7 @@ describe('Workings 工時資訊', () => {
                     }))
                     .expect(200);
 
-                const test_db = send_request.then(() => db.collection('recommendations').findOne({ _id: ObjectId("00000000ccd8958909a983e8") }).then(result => {
+                const test_db = send_request.then(() => db.collection('recommendations').findOne({ _id: ObjectId("00000000ccd8958909a983e8") }).then((result) => {
                     assert.deepProperty(result, 'count');
                     assert.deepPropertyVal(result, 'count', 1);
                 }));
@@ -831,7 +728,7 @@ describe('Workings 工時資訊', () => {
                     }))
                     .expect(200);
 
-                const test_db = send_request.then(() => db.collection('recommendations').findOne({ _id: ObjectId("00000000ccd8958909a983e9") }).then(result => {
+                const test_db = send_request.then(() => db.collection('recommendations').findOne({ _id: ObjectId("00000000ccd8958909a983e9") }).then((result) => {
                     assert.deepProperty(result, 'count');
                     assert.deepPropertyVal(result, 'count', 4);
                 }));
@@ -848,9 +745,9 @@ describe('Workings 工時資訊', () => {
                     .expect((res) => {
                         assert.notDeepProperty(res.body.working, 'recommended_by');
                     })
-                    .then((res) => res.body.working._id);
+                    .then(res => res.body.working._id);
 
-                const test_db = send_request.then((data_id) => db.collection('workings').findOne({ _id: ObjectId(data_id) }).then(result => {
+                const test_db = send_request.then(data_id => db.collection('workings').findOne({ _id: ObjectId(data_id) }).then((result) => {
                     assert.deepProperty(result, 'recommended_by');
                     assert.deepProperty(result, 'recommended_by.id');
                     assert.deepProperty(result, 'recommended_by.type');
@@ -870,9 +767,9 @@ describe('Workings 工時資訊', () => {
                     .expect((res) => {
                         assert.notDeepProperty(res.body.working, 'recommendation_string');
                     })
-                    .then((res) => res.body.working._id);
+                    .then(res => res.body.working._id);
 
-                const test_db = send_request.then((data_id) => db.collection('workings').findOne({ _id: ObjectId(data_id) }).then(result => {
+                const test_db = send_request.then(data_id => db.collection('workings').findOne({ _id: ObjectId(data_id) }).then((result) => {
                     assert.notDeepProperty(result, 'recommendation_string');
                 }));
 
@@ -889,9 +786,9 @@ describe('Workings 工時資訊', () => {
                         .expect((res) => {
                             assert.notDeepProperty(res.body.working, 'recommendation_string');
                         })
-                        .then((res) => res.body.working._id);
+                        .then(res => res.body.working._id);
 
-                    const test_db = send_request.then((data_id) => db.collection('workings').findOne({ _id: ObjectId(data_id) }).then(result => {
+                    const test_db = send_request.then(data_id => db.collection('workings').findOne({ _id: ObjectId(data_id) }).then((result) => {
                         assert.notDeepProperty(result, 'recommendation_string');
                         assert.deepPropertyVal(result, 'recommended_by', test_string);
                     }));
@@ -907,9 +804,9 @@ describe('Workings 工時資訊', () => {
                     .expect((res) => {
                         assert.notDeepProperty(res.body.working, 'recommended_by');
                     })
-                    .then((res) => res.body.working._id);
+                    .then(res => res.body.working._id);
 
-                const test_db = send_request.then((data_id) => db.collection('workings').findOne({ _id: ObjectId(data_id) }).then(result => {
+                const test_db = send_request.then(data_id => db.collection('workings').findOne({ _id: ObjectId(data_id) }).then((result) => {
                     assert.notDeepProperty(result, 'recommended_by');
                 }));
 
@@ -1020,4 +917,107 @@ describe('Workings 工時資訊', () => {
         after('DB: 清除 recommendations', () => db.collection('recommendations').remove({}));
     });
 });
+
+function generateWorkingTimeRelatedPayload(options) {
+    const opt = options || {};
+    const valid = {
+        access_token: 'random',
+        job_title: 'test',
+        company_id: '00000001',
+        is_currently_employed: 'yes',
+        employment_type: 'full-time',
+        week_work_time: '40',
+        overtime_frequency: '3',
+        day_promised_work_time: '8',
+        day_real_work_time: '10',
+    };
+
+    const payload = {};
+    for (const key in valid) {
+        if (opt[key]) {
+            if (opt[key] !== -1) {
+                payload[key] = opt[key];
+            }
+        } else {
+            payload[key] = valid[key];
+        }
+    }
+    for (const key in opt) {
+        if (opt[key] !== -1) {
+            payload[key] = opt[key];
+        }
+    }
+
+    return payload;
+}
+
+function generateSalaryRelatedPayload(options) {
+    const opt = options || {};
+    const valid = {
+        access_token: 'random',
+        job_title: 'test',
+        company_id: '00000001',
+        is_currently_employed: 'yes',
+        employment_type: 'full-time',
+        salary_type: 'year',
+        salary_amount: '10000',
+        experience_in_year: '10',
+    };
+
+    const payload = {};
+    for (const key in valid) {
+        if (opt[key]) {
+            if (opt[key] !== -1) {
+                payload[key] = opt[key];
+            }
+        } else {
+            payload[key] = valid[key];
+        }
+    }
+    for (const key in opt) {
+        if (opt[key] !== -1) {
+            payload[key] = opt[key];
+        }
+    }
+
+    return payload;
+}
+
+function generateAllPayload(options) {
+    const opt = options || {};
+    const valid = {
+        access_token: 'random',
+        job_title: 'test',
+        company_id: '00000001',
+        is_currently_employed: 'yes',
+        employment_type: 'full-time',
+        // Salary related
+        salary_type: 'year',
+        salary_amount: '10000',
+        experience_in_year: '10',
+        // WorkingTime related
+        week_work_time: '40',
+        overtime_frequency: '3',
+        day_promised_work_time: '8',
+        day_real_work_time: '10',
+    };
+
+    const payload = {};
+    for (const key in valid) {
+        if (opt[key]) {
+            if (opt[key] !== -1) {
+                payload[key] = opt[key];
+            }
+        } else {
+            payload[key] = valid[key];
+        }
+    }
+    for (const key in opt) {
+        if (opt[key] !== -1) {
+            payload[key] = opt[key];
+        }
+    }
+
+    return payload;
+}
 

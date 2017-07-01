@@ -31,7 +31,7 @@ describe('Authentication Library', () => {
             },
         })
             .then(result => db.collection('users').findOne({ _id: result.insertedId }))
-            .then(_user => {
+            .then((_user) => {
                 user = _user;
             }));
 
@@ -146,7 +146,7 @@ describe('Authentication Library', () => {
 
             const main = cachedFacebookAuthentication(db, redis_client, 'fake_accesstoken');
             return Promise.all([
-                main.then(_user => {
+                main.then((_user) => {
                     assert.propertyVal(_user, 'facebook_id', '2');
                     assert.deepPropertyVal(_user, 'facebook.id', '2');
                     assert.deepPropertyVal(_user, 'facebook.name', 'Mark Chen');
@@ -159,7 +159,7 @@ describe('Authentication Library', () => {
                 main.then(() =>
                     // a new user not null in DB
                      db.collection('users').findOne({ facebook_id: '2' })
-                        .then(_user => {
+                        .then((_user) => {
                             assert.propertyVal(_user, 'facebook_id', '2');
                             assert.deepPropertyVal(_user, 'facebook.id', '2');
                             assert.deepPropertyVal(_user, 'facebook.name', 'Mark Chen');

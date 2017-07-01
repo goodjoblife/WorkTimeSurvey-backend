@@ -16,7 +16,9 @@ class ReplyLikeModel {
      * @param {User} user - associated user
      * @returns {Promise}
             resolved: the id of like document
-            rejected: DuplicateKeyError / ObjectNotExistError / mongodb default reason object in promise
+            rejected: DuplicateKeyError /
+                ObjectNotExistError /
+                mongodb default reason object in promise
      */
     createLike(reply_id, user) {
         const reply_model = new ReplyModel(this._db);
@@ -35,7 +37,7 @@ class ReplyLikeModel {
             };
 
             return this.collection.insertOne(data);
-        }).then((value) => value.insertedId).catch(err => {
+        }).then(value => value.insertedId).catch((err) => {
             if (err.code === 11000) { // E11000 duplicate key error
                 throw new DuplicateKeyError("該留言已經被按讚");
             } else {

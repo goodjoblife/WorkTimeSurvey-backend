@@ -30,7 +30,7 @@ function cachedFacebookAuthenticationMiddleware(req, res, next) {
         next(new HttpError('Unauthorized', 401));
     } else {
         authentication.cachedFacebookAuthentication(req.db, db, access_token)
-            .then(user => {
+            .then((user) => {
                 req.user = user;
             })
             .then(() => {

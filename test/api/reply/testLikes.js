@@ -37,7 +37,7 @@ describe('POST /replies/:id/likes', () => {
         };
 
         return db.collection('replies').insertOne(reply)
-            .then(result => {
+            .then((result) => {
                 reply_id_string = result.insertedId.toString();
             });
     });
@@ -76,7 +76,7 @@ describe('POST /replies/:id/likes', () => {
                 reply_id: new ObjectId(reply_id_string),
                 user_id: fake_user._id,
             }))
-            .then(record => {
+            .then((record) => {
                 assert.isNotNull(record, 'expect record is retrieved in db');
                 assert.deepEqual(record.reply_id, new ObjectId(reply_id_string));
                 assert.deepEqual(record.experience_id, experience_id);
@@ -86,7 +86,7 @@ describe('POST /replies/:id/likes', () => {
             .then(() => db.collection('replies').findOne({
                 _id: new ObjectId(reply_id_string),
             }))
-            .then(reply => {
+            .then((reply) => {
                 assert.isNotNull(reply, 'expect reply is retrieved in db');
                 assert.propertyVal(reply, 'like_count', 1);
             });
@@ -117,7 +117,7 @@ describe('POST /replies/:id/likes', () => {
             .then(() => db.collection('replies').findOne({
                 _id: new ObjectId(reply_id_string),
             }))
-            .then(reply => {
+            .then((reply) => {
                 assert.isNotNull(reply, 'expect reply is retrieved in db');
                 assert.propertyVal(reply, 'like_count', 2);
             });
@@ -148,7 +148,7 @@ describe('POST /replies/:id/likes', () => {
             .then(() => db.collection('replies').findOne({
                 _id: new ObjectId(reply_id_string),
             }))
-            .then(reply => {
+            .then((reply) => {
                 assert.isNotNull(reply, 'expect reply is retrieved in db');
                 assert.propertyVal(reply, 'like_count', 1, 'like_count is still 1');
             });
@@ -201,7 +201,7 @@ describe('DELETE /replies/:id/likes', () => {
         };
 
         return db.collection('replies').insertOne(reply)
-            .then(result => {
+            .then((result) => {
                 reply_id_string = result.insertedId.toString();
             });
     });
@@ -257,7 +257,7 @@ describe('DELETE /replies/:id/likes', () => {
                 reply_id: new ObjectId(reply_id_string),
                 user_id: fake_user._id,
             }))
-            .then(record => {
+            .then((record) => {
                 assert.isNull(record, 'expect nothing is trieved in db');
             });
 
@@ -265,7 +265,7 @@ describe('DELETE /replies/:id/likes', () => {
             .then(() => db.collection('replies').findOne({
                 _id: new ObjectId(reply_id_string),
             }))
-            .then(reply => {
+            .then((reply) => {
                 assert.isNotNull(reply, 'expect reply is retrieved in db');
                 assert.propertyVal(reply, 'like_count', 1, 'should change from 2 to 1');
             });
@@ -296,7 +296,7 @@ describe('DELETE /replies/:id/likes', () => {
             .then(() => db.collection('replies').findOne({
                 _id: new ObjectId(reply_id_string),
             }))
-            .then(reply => {
+            .then((reply) => {
                 assert.isNotNull(reply, 'expect reply is retrieved in db');
                 assert.propertyVal(reply, 'like_count', 0, 'should change from 2 to 1 then 0');
             });

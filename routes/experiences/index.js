@@ -245,7 +245,7 @@ function _generateGetExperienceViewModel(experience, user, like) {
  * @apiSuccess (interview) {Number}  overall_rating 整體面試滿意度 (整數, 1~5)
  * @apiSuccess (interview) {Object}  [salary] 面談薪資
  * @apiSuccess (interview) {String="year","month","day","hour"} salary.type 面談薪資種類 (面談薪資存在的話，一定有此欄位)
- * @apiSuccess (interview) {Number="整數, >= 0"}  salary.amount 面談薪資金額 (面談薪資存在的話，一定有此欄位)
+ * @apiSuccess (interview) {Number="整數, >= 0"} salary.amount 面談薪資金額 (面談薪資存在的話，一定有此欄位)
  * @apiSuccess (interview) {String[]}  interview_sensitive_questions 面試中提及的特別問題(較敏感/可能違法)陣列。 (可能為空陣列)
  * @apiSuccess (interview) {Object[]}  interview_qas 面試題目列表 (可能為空陣列)
  * @apiSuccess (interview) {String}  [interview_qas.question] 面試題目

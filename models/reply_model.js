@@ -37,8 +37,10 @@ class ReplyModel {
                 throw new ObjectNotExistError("該篇文章不存在");
             }
 
-            return experience_model.incrementReplyCount(experience_id).then(result => result.value.reply_count);
-        }).then(reply_count => {
+            return experience_model
+                .incrementReplyCount(experience_id)
+                .then(result => result.value.reply_count);
+        }).then((reply_count) => {
             // 如果原本的 reply_count = 95，代表新增完這個留言後， reply_count = 96，則
             // 這個留言的 floor 是 95 （樓層數從 0 開始）
 
@@ -82,7 +84,8 @@ class ReplyModel {
             }
             return this.collection.find({
                 experience_id: new ObjectId(experience_id),
-            }).sort(sort).skip(skip).limit(limit).toArray();
+            }).sort(sort).skip(skip).limit(limit)
+            .toArray();
         });
     }
 
@@ -107,6 +110,8 @@ class ReplyModel {
             _id: new ObjectId(id),
         });
     }
+
+    // eslint-disable-next-line class-methods-use-this
     _isValidId(id) {
         return (id && mongo.ObjectId.isValid(id));
     }

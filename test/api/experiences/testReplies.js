@@ -81,14 +81,14 @@ describe('Replies Test', () => {
             const check_experiences_collection = req
                 .then(() =>
                     db.collection('experiences').findOne({ _id: ObjectId(experience_id_string) })
-                        .then(experience => {
+                        .then((experience) => {
                             assert.equal(experience.reply_count, 1);
                         }));
 
             const check_replies_collection = req
                 .then(res =>
                     db.collection('replies').findOne({ _id: ObjectId(res.body.reply._id) })
-                        .then(reply => {
+                        .then((reply) => {
                             assert.equal(reply.content, '你好我是大留言');
                             assert.equal(reply.floor, 0);
                             assert.deepEqual(reply.experience_id, ObjectId(experience_id_string));

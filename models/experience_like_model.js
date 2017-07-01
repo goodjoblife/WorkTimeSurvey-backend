@@ -31,7 +31,7 @@ class ExperienceLikeModel {
                 experience_id: new ObjectId(experience_id),
             };
             return this.collection.insertOne(data);
-        }).then((result) => result.insertedId).catch((err) => {
+        }).then(result => result.insertedId).catch((err) => {
             if (err.code === 11000) { // E11000 duplicate key error
                 throw new DuplicateKeyError("該篇文章已經被按讚");
             } else {
@@ -60,7 +60,7 @@ class ExperienceLikeModel {
                 user_id: user._id,
             });
         }).then((result) => {
-            if (result.deletedCount == 0) {
+            if (result.deletedCount === 0) {
                 throw new ObjectNotExistError("此讚不存在");
             } else {
                 return true;
@@ -93,7 +93,7 @@ class ExperienceLikeModel {
                 experience_id: new ObjectId(experience_id),
                 user_id: user._id,
             });
-        }).then((likes) => likes);
+        }).then(likes => likes);
     }
 }
 

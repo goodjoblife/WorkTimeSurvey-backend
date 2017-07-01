@@ -27,7 +27,7 @@ const {
  */
 router.post('/:id/replies', [
     authentication.cachedFacebookAuthenticationMiddleware,
-    function (req, res, next) {
+    (req, res, next) => {
         try {
             validationPostFields(req.body);
         } catch (err) {
@@ -96,10 +96,10 @@ function validationPostFields(body) {
  */
 router.get('/:id/replies', [
     authenticationUser.cachedAndSetUserMiddleware,
-    function (req, res, next) {
+    (req, res, next) => {
         const experience_id = req.params.id;
-        const limit = parseInt(req.query.limit) || 20;
-        const start = parseInt(req.query.start) || 0;
+        const limit = parseInt(req.query.limit, 10) || 20;
+        const start = parseInt(req.query.start, 10) || 0;
         let user;
 
         if (!requiredNumberInRange(limit, 1000, 1)) {
@@ -142,11 +142,13 @@ function _createLikesField(replies, likes, user) {
         return;
     }
     replies.forEach((reply) => {
+        // eslint-disable-next-line no-param-reassign
         reply.liked = _isExistUserLiked(reply._id, user, likes);
     });
 }
 
 function _isExistUserLiked(reply_id, user, likes) {
+    /* eslint-disable array-callback-return */
     const result = likes.find((like) => {
         if (like.reply_id.equals(reply_id) && like.user_id.equals(user._id)) {
             return like;

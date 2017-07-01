@@ -14,20 +14,20 @@ const _redis = require('./redis');
 function cachedFacebookAuthentication(mongodb, redis_client, access_token) {
     function facebookAuth(redis_client, access_token) {
         return facebook.accessTokenAuth(access_token)
-            .then(account => _redis.redisSetFB(redis_client, access_token, account).catch(err => {}).then(() => account));
+            .then(account => _redis.redisSetFB(redis_client, access_token, account).catch((err) => {}).then(() => account));
     }
 
-    return _redis.redisGetFB(redis_client, access_token).then(account => {
+    return _redis.redisGetFB(redis_client, access_token).then((account) => {
         if (account === null) {
             return facebookAuth(redis_client, access_token);
         }
         return account;
     }, err => facebookAuth(redis_client, access_token))
-    .then(account => {
+    .then((account) => {
         const facebook_id = account.id;
 
         return mongodb.collection('users').findOne({ facebook_id })
-            .then(user => {
+            .then((user) => {
                 if (user) {
                     return user;
                 }
