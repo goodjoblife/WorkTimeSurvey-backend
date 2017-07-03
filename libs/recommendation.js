@@ -26,7 +26,7 @@ function getRecommendationString(db, user) {
         .then(result =>
             // result.value._id --> ObjectId
             // we want to get string
-             result.value._id.toHexString());
+            result.value._id.toHexString());
 }
 
 /*
