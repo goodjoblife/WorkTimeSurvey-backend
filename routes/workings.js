@@ -53,7 +53,7 @@ router.get('/', (req, res, next) => {
                     };
 
                     return collection.find(query, opt)
-                            .skip((limit * page) + defined_results.length - count_defined_num)
+                            .skip(((limit * page) + defined_results.length) - count_defined_num)
                             .limit(limit - defined_results.length).toArray();
                 }).then(results => defined_results.concat(results));
             }

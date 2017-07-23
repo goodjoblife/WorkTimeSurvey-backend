@@ -14,106 +14,6 @@ const {
     stringRequireLength,
 } = require('../../libs/validation');
 
-
-/**
- * @api {post} /interview_experiences 上傳面試經驗 API
- * @apiGroup Interview_Experiences
- * @apiParam {String} company_query 公司名稱 或 統一編號
- * @apiParam {String} [company_id] 公司統編 (如果自動完成有成功，會拿的到 company_id )
- * @apiParam {String=
-    "彰化縣","嘉義市","嘉義縣","新竹市","新竹縣",
-    "花蓮縣","高雄市","基隆市","金門縣","連江縣",
-    "苗栗縣","南投縣","新北市","澎湖縣","屏東縣",
-    "臺中市","臺南市","臺北市","臺東縣","桃園市",
-    "宜蘭縣","雲林縣" } region 面試地區
- * @apiParam {String} job_title 應徵職稱
- * @apiParam {Number="整數, 0 <= N <= 50"} [experience_in_year] 相關職務工作經驗
- * @apiParam {String="大學","碩士","博士","高職","五專","二專","二技","高中","國中","國小"} [education] 最高學歷
- * @apiParam {Object} interview_time 面試時間
- * @apiParam {Number="整數, N >= current_year - 10"} interview_time.year 面試時間的年份
- * @apiParam {Number="1,2,3...12"} interview_time.month 面試時間的月份
- * @apiParam {String="錄取,未錄取,沒通知,或其他 0 < length <= 10 的字串"} interview_result 面試結果
- * @apiParam {Object} [salary] 面談薪資
- * @apiParam {String="year","month","day","hour"} salary.type 面談薪資種類 (若有上傳面談薪資欄位，本欄必填)
- * @apiParam {Number="整數, >= 0"} salary.amount 面談薪資金額 (若有上傳面談薪資欄位，本欄必填)
- * @apiParam {Number="整數, 1~5"} overall_rating 整體面試滿意度
- * @apiParam {String="0 < length <= 25 "} title 整篇經驗分享的標題
- * @apiParam {Object[]} sections 整篇內容
- * @apiParam {String="0 < length <= 25"} sections.subtitle 段落標題
- * @apiParam {String="0 < length <= 5000"} sections.content 段落內容
- * @apiParam {Object[]="Array maximum size: 30"} [interview_qas] 面試題目列表
- * @apiParam {String="0 < length <= 250"} interview_qas.question 面試題目 (interview_qas有的話，必填)
- * @apiParam {String="0 < length <= 5000"} [interview_qas.answer] 面試題目的回答 (interview_qas有的話，選填)
- * @apiParam {String[]=
-    "曾詢問家庭狀況","曾詢問婚姻狀況","生育計畫",
-    "曾要求繳交身分證","曾要求繳交保證金","曾詢問宗教信仰",
-    "或其他 0 < length <= 20 的字串"} [interview_sensitive_questions] 面試中提及的特別問題陣列(較敏感/可能違法)
- * @apiSuccess {Boolean} success 是否上傳成功
- * @apiSuccess {Object} experience 經驗分享物件
- * @apiSuccess {String} experience._id 經驗分享id
- */
-router.post('/', [
-    authentication.cachedFacebookAuthenticationMiddleware,
-    (req, res, next) => {
-        try {
-            validationInputFields(req.body);
-        } catch (err) {
-            next(err);
-            return;
-        }
-
-        const experience = {};
-        Object.assign(experience, {
-            type: "interview",
-            author_id: req.user._id,
-            // company 後面決定
-            company: {},
-            like_count: 0,
-            reply_count: 0,
-            // TODO 瀏覽次數？檢舉數？
-            created_at: new Date(),
-        });
-        Object.assign(experience, pickupInterviewExperience(req.body));
-
-        const experience_model = new ExperienceModel(req.db);
-
-        helper
-            .getCompanyByIdOrQuery(req.db, req.body.company_id, req.body.company_query)
-            .then((company) => {
-                experience.company = company;
-            })
-            .then(() => experience_model.createExperience(experience)).then(() => {
-                winston.info("interview experiences insert data success", {
-                    id: experience._id,
-                    ip: req.ip,
-                    ips: req.ips,
-                });
-
-                res.send({
-                    success: true,
-                    experience: {
-                        _id: experience._id,
-                    },
-                });
-            })
-            .catch((err) => {
-                winston.info("interview experiences insert data fail", {
-                    id: experience._id,
-                    ip: req.ip,
-                    ips: req.ips,
-                    err,
-                });
-
-                next(err);
-            });
-    },
-]);
-
-function validationInputFields(data) {
-    validateCommonInputFields(data);
-    validateInterviewInputFields(data);
-}
-
 function validateCommonInputFields(data) {
     if (!requiredNonEmptyString(data.company_query)) {
         throw new HttpError("公司/單位名稱要填喔！", 422);
@@ -343,5 +243,105 @@ function pickupInterviewExperience(input) {
     }
     return partial;
 }
+
+function validationInputFields(data) {
+    validateCommonInputFields(data);
+    validateInterviewInputFields(data);
+}
+
+
+/**
+ * @api {post} /interview_experiences 上傳面試經驗 API
+ * @apiGroup Interview_Experiences
+ * @apiParam {String} company_query 公司名稱 或 統一編號
+ * @apiParam {String} [company_id] 公司統編 (如果自動完成有成功，會拿的到 company_id )
+ * @apiParam {String=
+    "彰化縣","嘉義市","嘉義縣","新竹市","新竹縣",
+    "花蓮縣","高雄市","基隆市","金門縣","連江縣",
+    "苗栗縣","南投縣","新北市","澎湖縣","屏東縣",
+    "臺中市","臺南市","臺北市","臺東縣","桃園市",
+    "宜蘭縣","雲林縣" } region 面試地區
+ * @apiParam {String} job_title 應徵職稱
+ * @apiParam {Number="整數, 0 <= N <= 50"} [experience_in_year] 相關職務工作經驗
+ * @apiParam {String="大學","碩士","博士","高職","五專","二專","二技","高中","國中","國小"} [education] 最高學歷
+ * @apiParam {Object} interview_time 面試時間
+ * @apiParam {Number="整數, N >= current_year - 10"} interview_time.year 面試時間的年份
+ * @apiParam {Number="1,2,3...12"} interview_time.month 面試時間的月份
+ * @apiParam {String="錄取,未錄取,沒通知,或其他 0 < length <= 10 的字串"} interview_result 面試結果
+ * @apiParam {Object} [salary] 面談薪資
+ * @apiParam {String="year","month","day","hour"} salary.type 面談薪資種類 (若有上傳面談薪資欄位，本欄必填)
+ * @apiParam {Number="整數, >= 0"} salary.amount 面談薪資金額 (若有上傳面談薪資欄位，本欄必填)
+ * @apiParam {Number="整數, 1~5"} overall_rating 整體面試滿意度
+ * @apiParam {String="0 < length <= 25 "} title 整篇經驗分享的標題
+ * @apiParam {Object[]} sections 整篇內容
+ * @apiParam {String="0 < length <= 25"} sections.subtitle 段落標題
+ * @apiParam {String="0 < length <= 5000"} sections.content 段落內容
+ * @apiParam {Object[]="Array maximum size: 30"} [interview_qas] 面試題目列表
+ * @apiParam {String="0 < length <= 250"} interview_qas.question 面試題目 (interview_qas有的話，必填)
+ * @apiParam {String="0 < length <= 5000"} [interview_qas.answer] 面試題目的回答 (interview_qas有的話，選填)
+ * @apiParam {String[]=
+    "曾詢問家庭狀況","曾詢問婚姻狀況","生育計畫",
+    "曾要求繳交身分證","曾要求繳交保證金","曾詢問宗教信仰",
+    "或其他 0 < length <= 20 的字串"} [interview_sensitive_questions] 面試中提及的特別問題陣列(較敏感/可能違法)
+ * @apiSuccess {Boolean} success 是否上傳成功
+ * @apiSuccess {Object} experience 經驗分享物件
+ * @apiSuccess {String} experience._id 經驗分享id
+ */
+router.post('/', [
+    authentication.cachedFacebookAuthenticationMiddleware,
+    (req, res, next) => {
+        try {
+            validationInputFields(req.body);
+        } catch (err) {
+            next(err);
+            return;
+        }
+
+        const experience = {};
+        Object.assign(experience, {
+            type: "interview",
+            author_id: req.user._id,
+            // company 後面決定
+            company: {},
+            like_count: 0,
+            reply_count: 0,
+            // TODO 瀏覽次數？檢舉數？
+            created_at: new Date(),
+        });
+        Object.assign(experience, pickupInterviewExperience(req.body));
+
+        const experience_model = new ExperienceModel(req.db);
+
+        helper
+            .getCompanyByIdOrQuery(req.db, req.body.company_id, req.body.company_query)
+            .then((company) => {
+                experience.company = company;
+            })
+            .then(() => experience_model.createExperience(experience)).then(() => {
+                winston.info("interview experiences insert data success", {
+                    id: experience._id,
+                    ip: req.ip,
+                    ips: req.ips,
+                });
+
+                res.send({
+                    success: true,
+                    experience: {
+                        _id: experience._id,
+                    },
+                });
+            })
+            .catch((err) => {
+                winston.info("interview experiences insert data fail", {
+                    id: experience._id,
+                    ip: req.ip,
+                    ips: req.ips,
+                    err,
+                });
+
+                next(err);
+            });
+    },
+]);
 
 module.exports = router;

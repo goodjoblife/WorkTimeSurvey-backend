@@ -14,6 +14,54 @@ const {
     stringRequireLength,
 } = require('../../libs/validation');
 
+function _isExistUserLiked(reply_id, user, likes) {
+    /* eslint-disable array-callback-return */
+    const result = likes.find((like) => {
+        if (like.reply_id.equals(reply_id) && like.user_id.equals(user._id)) {
+            return like;
+        }
+    });
+    return !!(result);
+}
+
+function _createLikesField(replies, likes, user) {
+    if (!user) {
+        return;
+    }
+    replies.forEach((reply) => {
+        // eslint-disable-next-line no-param-reassign
+        reply.liked = _isExistUserLiked(reply._id, user, likes);
+    });
+}
+
+function _generateGetRepliesViewModel(replies) {
+    const result = {
+        replies: [],
+    };
+    replies.forEach((reply) => {
+        result.replies.push({
+            _id: reply._id,
+            content: reply.content,
+            like_count: reply.like_count,
+            liked: reply.liked,
+            created_at: reply.created_at,
+            floor: reply.floor,
+        });
+    });
+    return result;
+}
+
+const MAX_CONTENT_SIZE = 1000;
+
+function validationPostFields(body) {
+    if (!requiredNonEmptyString(body.content)) {
+        throw new HttpError("留言內容必填！", 422);
+    }
+    if (!stringRequireLength(body.content, 1, MAX_CONTENT_SIZE)) {
+        throw new HttpError("留言內容請少於 1000 個字元", 422);
+    }
+}
+
 /**
  * @api {post} /experiences/:id/replies 新增單篇經驗的留言 API
  * @apiGroup Experiences Replies
@@ -70,17 +118,6 @@ router.post('/:id/replies', [
     },
 ]);
 
-const MAX_CONTENT_SIZE = 1000;
-
-function validationPostFields(body) {
-    if (!requiredNonEmptyString(body.content)) {
-        throw new HttpError("留言內容必填！", 422);
-    }
-    if (!stringRequireLength(body.content, 1, MAX_CONTENT_SIZE)) {
-        throw new HttpError("留言內容請少於 1000 個字元", 422);
-    }
-}
-
 /**
  * @api {get} /experiences/:id/replies 取得單篇經驗的留言列表 API
  * @apiGroup Experiences Replies
@@ -136,42 +173,5 @@ router.get('/:id/replies', [
         });
     },
 ]);
-
-function _createLikesField(replies, likes, user) {
-    if (!user) {
-        return;
-    }
-    replies.forEach((reply) => {
-        // eslint-disable-next-line no-param-reassign
-        reply.liked = _isExistUserLiked(reply._id, user, likes);
-    });
-}
-
-function _isExistUserLiked(reply_id, user, likes) {
-    /* eslint-disable array-callback-return */
-    const result = likes.find((like) => {
-        if (like.reply_id.equals(reply_id) && like.user_id.equals(user._id)) {
-            return like;
-        }
-    });
-    return !!(result);
-}
-
-function _generateGetRepliesViewModel(replies) {
-    const result = {
-        replies: [],
-    };
-    replies.forEach((reply) => {
-        result.replies.push({
-            _id: reply._id,
-            content: reply.content,
-            like_count: reply.like_count,
-            liked: reply.liked,
-            created_at: reply.created_at,
-            floor: reply.floor,
-        });
-    });
-    return result;
-}
 
 module.exports = router;

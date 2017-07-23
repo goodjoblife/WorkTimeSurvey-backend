@@ -5,6 +5,13 @@ const helper = require('./workings_helper');
 const companyHelper = require('./company_helper');
 const recommendation = require('../libs/recommendation');
 
+function checkBodyField(req, field) {
+    if (req.body[field] && (typeof req.body[field] === "string") && req.body[field] !== "") {
+        return true;
+    }
+    return false;
+}
+
 /*
  * [req.custom.facebook]
  *
@@ -12,12 +19,14 @@ const recommendation = require('../libs/recommendation');
  * req.custom.company_query
  */
 function collectData(req, res) {
-    const author = req.custom.author = {};
-    const working = req.custom.working = {
+    req.custom.author = {};
+    const author = req.custom.author;
+    req.custom.working = {
         author,
         company: {},
         created_at: new Date(),
     };
+    const working = req.custom.working;
 
     if (checkBodyField(req, 'email')) {
         author.email = req.body.email;
@@ -79,55 +88,6 @@ function collectData(req, res) {
     // user recommendation
     if (checkBodyField(req, "recommendation_string")) {
         req.custom.recommendation_string = req.body.recommendation_string;
-    }
-
-    return Promise.resolve();
-}
-
-function checkBodyField(req, field) {
-    if (req.body[field] && (typeof req.body[field] === "string") && req.body[field] !== "") {
-        return true;
-    }
-    return false;
-}
-
-function validation(req, res) {
-    const data = req.custom.working;
-    const custom = req.custom;
-
-    try {
-        validateCommonData(req);
-    } catch (err) {
-        winston.info("validating fail", { ip: req.ip, ips: req.ips });
-
-        return Promise.reject(err);
-    }
-
-    let hasWorkingTimeData = false;
-    let hasSalaryData = false;
-
-    if (data.week_work_time || data.overtime_frequency || data.day_promised_work_time ||
-        data.day_real_work_time || data.has_overtime_salary || data.is_overtime_salary_legal ||
-        data.has_compensatory_dayoff) {
-        hasWorkingTimeData = true;
-        try {
-            validateWorkingTimeData(req);
-        } catch (err) {
-            return Promise.reject(err);
-        }
-    }
-
-    if (custom.salary_type || custom.salary_amount || data.experience_in_year) {
-        hasSalaryData = true;
-        try {
-            validateSalaryData(req);
-        } catch (err) {
-            return Promise.reject(err);
-        }
-    }
-
-    if (!hasWorkingTimeData && !hasSalaryData) {
-        return Promise.reject(new HttpError("薪資或工時欄位擇一必填", 422));
     }
 
     return Promise.resolve();
@@ -333,6 +293,48 @@ function validateSalaryData(req) {
     if (data.experience_in_year < 0 || data.experience_in_year > 50) {
         throw new HttpError('相關職務工作經驗需大於等於0，小於等於50', 422);
     }
+}
+
+function validation(req, res) {
+    const data = req.custom.working;
+    const custom = req.custom;
+
+    try {
+        validateCommonData(req);
+    } catch (err) {
+        winston.info("validating fail", { ip: req.ip, ips: req.ips });
+
+        return Promise.reject(err);
+    }
+
+    let hasWorkingTimeData = false;
+    let hasSalaryData = false;
+
+    if (data.week_work_time || data.overtime_frequency || data.day_promised_work_time ||
+        data.day_real_work_time || data.has_overtime_salary || data.is_overtime_salary_legal ||
+        data.has_compensatory_dayoff) {
+        hasWorkingTimeData = true;
+        try {
+            validateWorkingTimeData(req);
+        } catch (err) {
+            return Promise.reject(err);
+        }
+    }
+
+    if (custom.salary_type || custom.salary_amount || data.experience_in_year) {
+        hasSalaryData = true;
+        try {
+            validateSalaryData(req);
+        } catch (err) {
+            return Promise.reject(err);
+        }
+    }
+
+    if (!hasWorkingTimeData && !hasSalaryData) {
+        return Promise.reject(new HttpError("薪資或工時欄位擇一必填", 422));
+    }
+
+    return Promise.resolve();
 }
 
 function main(req, res, next) {

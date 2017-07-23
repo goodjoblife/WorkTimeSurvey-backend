@@ -7,6 +7,15 @@ const winston = require('winston');
 const CompanyModel = require('../../models/company_model');
 const getCompanyName = require('../company_helper').getCompanyName;
 
+function _generateGetCompanyViewModel(companies) {
+    const result = companies.map(company => ({
+        id: company.id,
+        name: getCompanyName(company.name),
+        capital: company.capital,
+    }));
+    return result;
+}
+
 /**
  * @api {get} /companies/search Search Company
  * @apiName SearchCompany
@@ -51,15 +60,6 @@ router.get('/search', (req, res, next) => {
         next(new HttpError("Internal Server Error", 500));
     });
 });
-
-function _generateGetCompanyViewModel(companies) {
-    const result = companies.map(company => ({
-        id: company.id,
-        name: getCompanyName(company.name),
-        capital: company.capital,
-    }));
-    return result;
-}
 
 module.exports = router;
 

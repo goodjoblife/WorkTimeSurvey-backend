@@ -12,6 +12,59 @@ require('sinon-as-promised');
 const config = require('config');
 const authentication = require('../../../libs/authentication');
 
+function generateInterviewExperiencePayload(options) {
+    const opt = options || {};
+    const valid = {
+        company_query: '00000001',
+        region: "臺北市",
+        job_title: 'job_title_example',
+        title: "title_example",
+        sections: [
+            {
+                subtitle: "subtitle1",
+                content: "content1",
+            },
+        ],
+        experience_in_year: 10,
+        education: "大學",
+        // Interview Experience related
+        interview_time: {
+            year: 2017,
+            month: 3,
+        },
+        interview_qas: [
+            {
+                question: "qas1",
+                answer: "ans1",
+            },
+        ],
+        interview_result: "up",
+        salary: {
+            type: 'year',
+            amount: 10000,
+        },
+        overall_rating: 5,
+    };
+
+    const payload = {};
+    for (const key in valid) {
+        if (opt[key]) {
+            if (opt[key] !== -1) {
+                payload[key] = opt[key];
+            }
+        } else {
+            payload[key] = valid[key];
+        }
+    }
+    for (const key in opt) {
+        if (opt[key] !== -1) {
+            payload[key] = opt[key];
+        }
+    }
+    payload.access_token = "fakeaccesstoken";
+    return payload;
+}
+
 describe('experiences 面試和工作經驗資訊', () => {
     let db;
     const fake_user = {
@@ -487,56 +540,3 @@ describe('experiences 面試和工作經驗資訊', () => {
         });
     });
 });
-
-function generateInterviewExperiencePayload(options) {
-    const opt = options || {};
-    const valid = {
-        company_query: '00000001',
-        region: "臺北市",
-        job_title: 'job_title_example',
-        title: "title_example",
-        sections: [
-            {
-                subtitle: "subtitle1",
-                content: "content1",
-            },
-        ],
-        experience_in_year: 10,
-        education: "大學",
-        // Interview Experience related
-        interview_time: {
-            year: 2017,
-            month: 3,
-        },
-        interview_qas: [
-            {
-                question: "qas1",
-                answer: "ans1",
-            },
-        ],
-        interview_result: "up",
-        salary: {
-            type: 'year',
-            amount: 10000,
-        },
-        overall_rating: 5,
-    };
-
-    const payload = {};
-    for (const key in valid) {
-        if (opt[key]) {
-            if (opt[key] !== -1) {
-                payload[key] = opt[key];
-            }
-        } else {
-            payload[key] = valid[key];
-        }
-    }
-    for (const key in opt) {
-        if (opt[key] !== -1) {
-            payload[key] = opt[key];
-        }
-    }
-    payload.access_token = "fakeaccesstoken";
-    return payload;
-}

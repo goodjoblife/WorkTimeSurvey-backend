@@ -10,6 +10,109 @@ const config = require('config');
 const facebook = require('../libs/facebook');
 const ObjectId = require('mongodb').ObjectId;
 
+function generateWorkingTimeRelatedPayload(options) {
+    const opt = options || {};
+    const valid = {
+        access_token: 'random',
+        job_title: 'test',
+        company_id: '00000001',
+        is_currently_employed: 'yes',
+        employment_type: 'full-time',
+        week_work_time: '40',
+        overtime_frequency: '3',
+        day_promised_work_time: '8',
+        day_real_work_time: '10',
+    };
+
+    const payload = {};
+    for (const key in valid) {
+        if (opt[key]) {
+            if (opt[key] !== -1) {
+                payload[key] = opt[key];
+            }
+        } else {
+            payload[key] = valid[key];
+        }
+    }
+    for (const key in opt) {
+        if (opt[key] !== -1) {
+            payload[key] = opt[key];
+        }
+    }
+
+    return payload;
+}
+
+function generateSalaryRelatedPayload(options) {
+    const opt = options || {};
+    const valid = {
+        access_token: 'random',
+        job_title: 'test',
+        company_id: '00000001',
+        is_currently_employed: 'yes',
+        employment_type: 'full-time',
+        salary_type: 'year',
+        salary_amount: '10000',
+        experience_in_year: '10',
+    };
+
+    const payload = {};
+    for (const key in valid) {
+        if (opt[key]) {
+            if (opt[key] !== -1) {
+                payload[key] = opt[key];
+            }
+        } else {
+            payload[key] = valid[key];
+        }
+    }
+    for (const key in opt) {
+        if (opt[key] !== -1) {
+            payload[key] = opt[key];
+        }
+    }
+
+    return payload;
+}
+
+function generateAllPayload(options) {
+    const opt = options || {};
+    const valid = {
+        access_token: 'random',
+        job_title: 'test',
+        company_id: '00000001',
+        is_currently_employed: 'yes',
+        employment_type: 'full-time',
+        // Salary related
+        salary_type: 'year',
+        salary_amount: '10000',
+        experience_in_year: '10',
+        // WorkingTime related
+        week_work_time: '40',
+        overtime_frequency: '3',
+        day_promised_work_time: '8',
+        day_real_work_time: '10',
+    };
+
+    const payload = {};
+    for (const key in valid) {
+        if (opt[key]) {
+            if (opt[key] !== -1) {
+                payload[key] = opt[key];
+            }
+        } else {
+            payload[key] = valid[key];
+        }
+    }
+    for (const key in opt) {
+        if (opt[key] !== -1) {
+            payload[key] = opt[key];
+        }
+    }
+
+    return payload;
+}
+
 describe('Workings 工時資訊', () => {
     let db;
     let sandbox;
@@ -917,107 +1020,3 @@ describe('Workings 工時資訊', () => {
         after('DB: 清除 recommendations', () => db.collection('recommendations').remove({}));
     });
 });
-
-function generateWorkingTimeRelatedPayload(options) {
-    const opt = options || {};
-    const valid = {
-        access_token: 'random',
-        job_title: 'test',
-        company_id: '00000001',
-        is_currently_employed: 'yes',
-        employment_type: 'full-time',
-        week_work_time: '40',
-        overtime_frequency: '3',
-        day_promised_work_time: '8',
-        day_real_work_time: '10',
-    };
-
-    const payload = {};
-    for (const key in valid) {
-        if (opt[key]) {
-            if (opt[key] !== -1) {
-                payload[key] = opt[key];
-            }
-        } else {
-            payload[key] = valid[key];
-        }
-    }
-    for (const key in opt) {
-        if (opt[key] !== -1) {
-            payload[key] = opt[key];
-        }
-    }
-
-    return payload;
-}
-
-function generateSalaryRelatedPayload(options) {
-    const opt = options || {};
-    const valid = {
-        access_token: 'random',
-        job_title: 'test',
-        company_id: '00000001',
-        is_currently_employed: 'yes',
-        employment_type: 'full-time',
-        salary_type: 'year',
-        salary_amount: '10000',
-        experience_in_year: '10',
-    };
-
-    const payload = {};
-    for (const key in valid) {
-        if (opt[key]) {
-            if (opt[key] !== -1) {
-                payload[key] = opt[key];
-            }
-        } else {
-            payload[key] = valid[key];
-        }
-    }
-    for (const key in opt) {
-        if (opt[key] !== -1) {
-            payload[key] = opt[key];
-        }
-    }
-
-    return payload;
-}
-
-function generateAllPayload(options) {
-    const opt = options || {};
-    const valid = {
-        access_token: 'random',
-        job_title: 'test',
-        company_id: '00000001',
-        is_currently_employed: 'yes',
-        employment_type: 'full-time',
-        // Salary related
-        salary_type: 'year',
-        salary_amount: '10000',
-        experience_in_year: '10',
-        // WorkingTime related
-        week_work_time: '40',
-        overtime_frequency: '3',
-        day_promised_work_time: '8',
-        day_real_work_time: '10',
-    };
-
-    const payload = {};
-    for (const key in valid) {
-        if (opt[key]) {
-            if (opt[key] !== -1) {
-                payload[key] = opt[key];
-            }
-        } else {
-            payload[key] = valid[key];
-        }
-    }
-    for (const key in opt) {
-        if (opt[key] !== -1) {
-            payload[key] = opt[key];
-        }
-    }
-
-    return payload;
-}
-

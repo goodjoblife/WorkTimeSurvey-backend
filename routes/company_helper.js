@@ -1,5 +1,13 @@
 const HttpError = require('../libs/errors').HttpError;
 const CompanyService = require('../models/company_model');
+
+function _getCompanyName(db_company_name) {
+    if (Array.isArray(db_company_name)) {
+        return _getCompanyName(db_company_name[0]);
+    }
+    return db_company_name;
+}
+
 /*
  * 如果使用者有給定 company id，將 company name 補成查詢到的公司
  *
@@ -46,13 +54,6 @@ function getCompanyByIdOrQuery(db, company_id, company_query) {
 
 function getCompanyName(db_company_name) {
     return _getCompanyName(db_company_name);
-}
-
-function _getCompanyName(db_company_name) {
-    if (Array.isArray(db_company_name)) {
-        return _getCompanyName(db_company_name[0]);
-    }
-    return db_company_name;
 }
 
 module.exports = {

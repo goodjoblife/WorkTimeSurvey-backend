@@ -14,99 +14,6 @@ const {
     stringRequireLength,
 } = require('../../libs/validation');
 
-/**
- * @api {post} /work_experiences 上傳工作經驗 API
- * @apiGroup Work_Experiences
- * @apiParam {String} company_query 公司名稱 或 統一編號
- * @apiParam {String} [company_id] 公司統編 (如果自動完成有成功，會拿的到 company_id )
- * @apiParam {String=
-    "彰化縣","嘉義市","嘉義縣","新竹市","新竹縣",
-    "花蓮縣","高雄市","基隆市","金門縣","連江縣",
-    "苗栗縣","南投縣","新北市","澎湖縣","屏東縣",
-    "臺中市","臺南市","臺北市","臺東縣","桃園市",
-    "宜蘭縣","雲林縣" } region 面試地區
- * @apiParam {String} job_title 工作職稱
- * @apiParam {Number="整數, 0 <= N <= 50"} [experience_in_year] 相關職務工作經驗
- * @apiParam {String="大學","碩士","博士","高職","五專","二專","二技","高中","國中","國小" } [education] 最高學歷
- * @apiParam {String="yes","no"} is_currently_employed 現在是否在職
- * @apiParam {Object} job_ending_time 工作結束時間(當 is_currently_employed 為no時，本欄才會出現且必填)
- * @apiParam {Number="整數, Ｎ >= current_year - 10"} job_ending_time.year 工作結束時間的年份
- * @apiParam {Number="整數, 1~12"} job_ending_time.month 工作結束時間的月份
- * @apiParam {Object} [salary] 薪資
- * @apiParam {String="year","month","day","hour"} salary.type 薪資種類 (若有上傳薪資欄位，本欄必填)
- * @apiParam {Number="整數, >= 0"} salary.amount 薪資金額 (若有上傳薪資欄位，本欄必填)
- * @apiParam {Number="整數或浮點數。 168>=N>=0。"} [week_work_time] 一週工時
- * @apiParam {String="yes","no"} [recommend_to_others] 是否推薦此工作
- * @apiParam {String="0 < length <= 25 "} title 整篇經驗分享的標題
- * @apiParam {Object[]} sections 整篇內容
- * @apiParam {String="0 < length <= 25"} sections.subtitle 段落標題
- * @apiParam {String="0 < length <= 5000"} sections.content 段落內容
- * @apiSuccess {Boolean} success 是否上傳成功
- * @apiSuccess {Object} experience 經驗分享物件
- * @apiSuccess {String} experience._id  經驗分享id
- */
-router.post('/', [
-    authentication.cachedFacebookAuthenticationMiddleware,
-    (req, res, next) => {
-        try {
-            validationInputFields(req.body);
-        } catch (err) {
-            next(err);
-            return;
-        }
-
-        const experience = {};
-        Object.assign(experience, {
-            type: "work",
-            author_id: req.user._id,
-            // company 後面決定
-            company: {},
-            like_count: 0,
-            reply_count: 0,
-            // TODO 瀏覽次數？檢舉數？
-            created_at: new Date(),
-        });
-        Object.assign(experience, pickupWorkExperience(req.body));
-
-        const experience_model = new ExperienceModel(req.db);
-
-        helper
-            .getCompanyByIdOrQuery(req.db, req.body.company_id, req.body.company_query)
-            .then((company) => {
-                experience.company = company;
-            })
-            .then(() => experience_model.createExperience(experience)).then(() => {
-                winston.info("work experiences insert data success", {
-                    id: experience._id,
-                    ip: req.ip,
-                    ips: req.ips,
-                });
-
-                res.send({
-                    success: true,
-                    experience: {
-                        _id: experience._id,
-                    },
-                });
-            })
-            .catch((err) => {
-                winston.info("work experiences insert data fail", {
-                    id: experience._id,
-                    ip: req.ip,
-                    ips: req.ips,
-                    err,
-                });
-
-                next(err);
-            });
-    },
-]);
-
-function validationInputFields(data) {
-    validateCommonInputFields(data);
-    validateWorkInputFields(data);
-}
-
 function validateCommonInputFields(data) {
     if (!requiredNonEmptyString(data.company_query)) {
         throw new HttpError("公司/單位名稱要填喔！", 422);
@@ -244,6 +151,11 @@ function validateWorkInputFields(data) {
     }
 }
 
+function validationInputFields(data) {
+    validateCommonInputFields(data);
+    validateWorkInputFields(data);
+}
+
 function pickupWorkExperience(input) {
     const partial = {};
 
@@ -306,5 +218,93 @@ function pickupWorkExperience(input) {
 
     return partial;
 }
+
+/**
+ * @api {post} /work_experiences 上傳工作經驗 API
+ * @apiGroup Work_Experiences
+ * @apiParam {String} company_query 公司名稱 或 統一編號
+ * @apiParam {String} [company_id] 公司統編 (如果自動完成有成功，會拿的到 company_id )
+ * @apiParam {String=
+    "彰化縣","嘉義市","嘉義縣","新竹市","新竹縣",
+    "花蓮縣","高雄市","基隆市","金門縣","連江縣",
+    "苗栗縣","南投縣","新北市","澎湖縣","屏東縣",
+    "臺中市","臺南市","臺北市","臺東縣","桃園市",
+    "宜蘭縣","雲林縣" } region 面試地區
+ * @apiParam {String} job_title 工作職稱
+ * @apiParam {Number="整數, 0 <= N <= 50"} [experience_in_year] 相關職務工作經驗
+ * @apiParam {String="大學","碩士","博士","高職","五專","二專","二技","高中","國中","國小" } [education] 最高學歷
+ * @apiParam {String="yes","no"} is_currently_employed 現在是否在職
+ * @apiParam {Object} job_ending_time 工作結束時間(當 is_currently_employed 為no時，本欄才會出現且必填)
+ * @apiParam {Number="整數, Ｎ >= current_year - 10"} job_ending_time.year 工作結束時間的年份
+ * @apiParam {Number="整數, 1~12"} job_ending_time.month 工作結束時間的月份
+ * @apiParam {Object} [salary] 薪資
+ * @apiParam {String="year","month","day","hour"} salary.type 薪資種類 (若有上傳薪資欄位，本欄必填)
+ * @apiParam {Number="整數, >= 0"} salary.amount 薪資金額 (若有上傳薪資欄位，本欄必填)
+ * @apiParam {Number="整數或浮點數。 168>=N>=0。"} [week_work_time] 一週工時
+ * @apiParam {String="yes","no"} [recommend_to_others] 是否推薦此工作
+ * @apiParam {String="0 < length <= 25 "} title 整篇經驗分享的標題
+ * @apiParam {Object[]} sections 整篇內容
+ * @apiParam {String="0 < length <= 25"} sections.subtitle 段落標題
+ * @apiParam {String="0 < length <= 5000"} sections.content 段落內容
+ * @apiSuccess {Boolean} success 是否上傳成功
+ * @apiSuccess {Object} experience 經驗分享物件
+ * @apiSuccess {String} experience._id  經驗分享id
+ */
+router.post('/', [
+    authentication.cachedFacebookAuthenticationMiddleware,
+    (req, res, next) => {
+        try {
+            validationInputFields(req.body);
+        } catch (err) {
+            next(err);
+            return;
+        }
+
+        const experience = {};
+        Object.assign(experience, {
+            type: "work",
+            author_id: req.user._id,
+            // company 後面決定
+            company: {},
+            like_count: 0,
+            reply_count: 0,
+            // TODO 瀏覽次數？檢舉數？
+            created_at: new Date(),
+        });
+        Object.assign(experience, pickupWorkExperience(req.body));
+
+        const experience_model = new ExperienceModel(req.db);
+
+        helper
+            .getCompanyByIdOrQuery(req.db, req.body.company_id, req.body.company_query)
+            .then((company) => {
+                experience.company = company;
+            })
+            .then(() => experience_model.createExperience(experience)).then(() => {
+                winston.info("work experiences insert data success", {
+                    id: experience._id,
+                    ip: req.ip,
+                    ips: req.ips,
+                });
+
+                res.send({
+                    success: true,
+                    experience: {
+                        _id: experience._id,
+                    },
+                });
+            })
+            .catch((err) => {
+                winston.info("work experiences insert data fail", {
+                    id: experience._id,
+                    ip: req.ip,
+                    ips: req.ips,
+                    err,
+                });
+
+                next(err);
+            });
+    },
+]);
 
 module.exports = router;
