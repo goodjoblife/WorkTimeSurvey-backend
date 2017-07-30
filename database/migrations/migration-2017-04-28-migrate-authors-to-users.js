@@ -1,5 +1,4 @@
-module.exports = (db) => {
-    return db.collection('authors').find().toArray()
+module.exports = (db) => db.collection('authors').find().toArray()
         .then((authors) => {
             const user_collection = db.collection('users');
 
@@ -8,11 +7,11 @@ module.exports = (db) => {
                 const id = author._id.id;
 
                 // current provider is 'facebook' ONLY
-                const provider = author._id.type;
+                // const provider = author._id.type;
 
                 const user = {
                     facebook_id: id,
-                }
+                };
 
                 if (time_and_salary_count) {
                     user.time_and_salary_count = time_and_salary_count;
@@ -27,4 +26,3 @@ module.exports = (db) => {
 
             return user_collection.insertMany(users);
         });
-};
