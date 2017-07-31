@@ -5,7 +5,12 @@ const config = require('config');
 const collection_name = 'migrations';
 
 async function isMigrated(db, name) {
-    return !!await db.collection(collection_name).findOne({ _id: name });
+    const result = await db.collection(collection_name).findOne({ _id: name });
+    if (result) {
+        return true;
+    }
+
+    return false;
 }
 
 function recordMigration(db, name) {
@@ -34,7 +39,9 @@ const main = async function () {
     const db = await MongoClient.connect(config.get('MONGODB_URI'));
 
     try {
-        await Promise.all(migrations.map(name => migrate(db, name)));
+        for (const name of migrations) {
+            await migrate(db, name); // eslint-disable-line no-await-in-loop
+        }
     } catch (err) {
         console.log(err);
     }

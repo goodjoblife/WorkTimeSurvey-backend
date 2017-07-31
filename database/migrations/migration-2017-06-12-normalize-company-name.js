@@ -10,18 +10,18 @@ module.exports = (db) => db.collection('workings').find({
 }, {
     "company.name": 1,
 }).toArray().then((data) => {
-    const promiseArr = [];
+    const promise_arr = [];
     for (const d of data) {
-        const companyName = _getCompanyName(d.company.name);
-        if (companyName !== d.company.name) {
-            promiseArr.push(db.collection('workings').updateOne({
+        const company_name = _getCompanyName(d.company.name);
+        if (company_name !== d.company.name) {
+            promise_arr.push(db.collection('workings').updateOne({
                 _id: d._id,
             }, {
                 $set: {
-                    "company.name": companyName,
+                    "company.name": company_name,
                 },
             }));
         }
     }
-    return Promise.all(promiseArr);
+    return Promise.all(promise_arr);
 });
