@@ -101,3 +101,6 @@ workflows:
                 filters:
                     branches:
                         only: master
+                requires:
+                    - build-node-7
+                    - build-node-8
