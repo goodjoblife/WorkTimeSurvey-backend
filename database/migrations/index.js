@@ -12,4 +12,6 @@ module.exports = [
     'create-experienceLikes-collection',
     'create-replyLikes-collection',
     'migration-2017-05-09-create-replies-collection',
+    'create-companyKeywords-collection',
+    'create-jobTitleKeywords-collection',
 ];

@@ -65,6 +65,38 @@ jobs:
                     if [ "${CIRCLE_PROJECT_USERNAME}" == "goodjoblife" ]; then
                         ./.circleci/deploy-apidoc.sh
                     fi
+    build-docker:
+        working_directory: ~/app
+        docker:
+            - image: buildpack-deps
+        steps:
+            - checkout
+            - run:
+                name: Install Docker client & Docker Compose
+                command: ./.circleci/prepare-docker-compose.sh
+            - setup_remote_docker
+            - run:
+                name: Build Docker Image
+                command: docker-compose -f .circleci/docker-compose.yml build
+            - deploy:
+                name: Deploy docker image
+                command: |
+                    if [ "${CIRCLE_PROJECT_USERNAME}" == "goodjoblife" ]; then
+                        ./.circleci/deploy-docker.sh
+                    fi
+    deploy-stage:
+        working_directory: ~/app
+        docker:
+            - image: buildpack-deps
+        steps:
+            - run:
+                name: Trigger Deploy
+                command: |
+                    if [ "${CIRCLE_PROJECT_USERNAME}" == "goodjoblife" ]; then
+                        curl --user ${CIRCLE_API_TOKEN_FOR_DEPLOY}: \
+                            --data build_parameters[CIRCLE_JOB]=build \
+                            https://circleci.com/api/v1.1/project/github/mark86092/goodjob-deploy-ci/tree/api-stage-v4
+                    fi
 workflows:
     version: 2
     build_and_test:
@@ -78,3 +110,16 @@ workflows:
                 requires:
                     - build-node-7
                     - build-node-8
+            - build-docker:
+                filters:
+                    branches:
+                        only: master
+                requires:
+                    - build-node-7
+                    - build-node-8
+            - deploy-stage:
+                requires:
+                    - build-docker
+                filters:
+                    branches:
+                        only: master

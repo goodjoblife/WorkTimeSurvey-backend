@@ -95,6 +95,24 @@ function _generateGetExperiencesViewModel(experiences, total) {
     return result;
 }
 
+function _keyWordFactory(type) {
+    /* eslint-disable global-require */
+    if (type === 'company') {
+        return require('../../models/company_keywords_model');
+    } else if (type === 'job_title') {
+        return require('../../models/job_title_keywords_model');
+    }
+    /* eslint-enale global-require */
+}
+
+function _saveKeyWord(query, type, db) {
+    if (!query) {
+        return;
+    }
+
+    const keyword_model = new (_keyWordFactory(type))(db);
+    return keyword_model.createKeyword(query);
+}
 
 /* eslint-disable */
 /**
@@ -164,6 +182,7 @@ router.get('/', wrap(async (req, res) => {
     }
 
     const query = _queryToDBQuery(search_query, search_by, type);
+    _saveKeyWord(search_query, search_by, req.db);
 
     const db_sort_field = (sort_field === 'popularity') ? 'like_count' : sort_field;
     const sort = {

@@ -2,13 +2,13 @@ const express = require('express');
 
 const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
-const escapeRegExp = require('lodash/escapeRegExp');
+const lodash = require('lodash');
 const winston = require('winston');
 const CompanyModel = require('../../models/company_model');
 const getCompanyName = require('../company_helper').getCompanyName;
 
 function _generateGetCompanyViewModel(companies) {
-    const result = companies.map(company => ({
+    const result = companies.map((company) => ({
         id: company.id,
         name: getCompanyName(company.name),
         capital: company.capital,
@@ -37,11 +37,10 @@ router.get('/search', (req, res, next) => {
 
     const query = {
         $or: [
-                { name: new RegExp(`^${escapeRegExp(search.toUpperCase())}`) },
+                { name: new RegExp(`^${lodash.escapeRegExp(search.toUpperCase())}`) },
                 { id: search },
         ],
     };
-
 
     const sort_by = {
         capital: -1,

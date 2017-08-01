@@ -17,6 +17,9 @@ const {
     generateWorkExperienceData,
 } = require('../testData');
 
+const create_company_keyword_collection = require('../../../database/migrations/create-companyKeywords-collection');
+const create_title_keyword_collection = require('../../../database/migrations/create-jobTitleKeywords-collection');
+
 describe('Experiences 面試和工作經驗資訊', () => {
     let db;
 
@@ -179,6 +182,27 @@ describe('Experiences 面試和工作經驗資訊', () => {
     });
 
     describe('GET /experiences', () => {
+        before('Key word before', () => db.collections()
+                .then((result) => {
+                    const target_collections = result.map(collection => collection.collectionName);
+
+                    if (target_collections.indexOf("search_by_company_keywords") === -1 &&
+                        target_collections.indexOf("earch_by_job_title_keywords") === -1
+                    ) {
+                        return Promise.all([
+                            create_company_keyword_collection(db),
+                            create_title_keyword_collection(db),
+                        ]);
+                    }
+
+                    if (target_collections.indexOf("search_by_company_keywords") === -1) {
+                        return create_company_keyword_collection(db);
+                    }
+                    if (target_collections.indexOf("earch_by_job_title_keywords") === -1) {
+                        return create_title_keyword_collection(db);
+                    }
+                }));
+
         before('Seeding some experiences', () => {
             const inter_data_1 = Object.assign(generateInterviewExperienceData(), {
                 company: {
@@ -486,5 +510,13 @@ describe('Experiences 面試和工作經驗資訊', () => {
                 }));
 
         after(() => db.collection('experiences').deleteMany({}));
+
+        after(() => Promise.all([
+            db.collection('company_keywords').drop(),
+            db.collection('job_title_keywords').drop(),
+        ]).then(() => Promise.all([
+            create_title_keyword_collection(db),
+            create_company_keyword_collection(db),
+        ])));
     });
 });
