@@ -1,0 +1,7 @@
+version: "2"
+services:
+  node:
+    image: 059402281999.dkr.ecr.ap-northeast-1.amazonaws.com/goodjob/api-server:latest
+    build:
+      context: ..
+      dockerfile: Dockerfile
