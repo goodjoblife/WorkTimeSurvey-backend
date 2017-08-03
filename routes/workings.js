@@ -236,6 +236,11 @@ router.get('/search_by/company/group_by/company', (req, res, next) => {
     ]).toArray().then((results) => {
         const sort_field = req.query.group_sort_by || "week_work_time";
 
+        if (results.length === 0) {
+            res.send(results);
+            return;
+        }
+
         // move null data to the end of array
         if (results[0].average[sort_field] === null &&
             results[results.length - 1].average[sort_field] !== null) {
@@ -251,7 +256,7 @@ router.get('/search_by/company/group_by/company', (req, res, next) => {
 
         res.send(results);
     }).catch((err) => {
-        next(new HttpError("Internal Server Error", 500));
+        next(err);
     });
 });
 
@@ -327,6 +332,11 @@ router.get('/search_by/job_title/group_by/company', (req, res, next) => {
     ]).toArray().then((results) => {
         const sort_field = req.query.group_sort_by || "week_work_time";
 
+        if (results.length === 0) {
+            res.send(results);
+            return;
+        }
+
         // move null data to the end of array
         if (results[0].average[sort_field] === null &&
             results[results.length - 1].average[sort_field] !== null) {
@@ -342,7 +352,7 @@ router.get('/search_by/job_title/group_by/company', (req, res, next) => {
 
         res.send(results);
     }).catch((err) => {
-        next(new HttpError("Internal Server Error", 500));
+        next(err);
     });
 });
 
