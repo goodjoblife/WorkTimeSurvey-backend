@@ -4,7 +4,6 @@ const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const escapeRegExp = require('lodash/escapeRegExp');
-const winston = require('winston');
 const ExperienceModel = require('../../models/experience_model');
 const ExperienceLikeModel = require('../../models/experience_like_model');
 const {
@@ -147,12 +146,6 @@ function _saveKeyWord(query, type, db) {
  */
 /* eslint-enable */
 router.get('/', wrap(async (req, res) => {
-    winston.info(req.originalUrl, {
-        query: req.query,
-        ip: req.ip,
-        ips: req.ips,
-    });
-
     const search_query = req.query.search_query;
     const search_by = req.query.search_by;
     const sort_field = req.query.sort || "created_at";
@@ -284,11 +277,6 @@ router.get('/:id', [
     wrap(async (req, res) => {
         const id = req.params.id;
         let user = null;
-        winston.info('experiences/id', {
-            id,
-            ip: req.ip,
-            ips: req.ips,
-        });
 
         if (req.user) {
             user = req.user;

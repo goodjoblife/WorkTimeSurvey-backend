@@ -1,8 +1,5 @@
-const winston = require('winston');
 const express = require('express');
 const HttpError = require('../../libs/errors').HttpError;
-
-const router = express.Router();
 const ReplyModel = require('../../models/reply_model');
 const ReplyLikeModel = require('../../models/reply_like_model');
 const authentication = require('../../middlewares/authentication');
@@ -13,6 +10,8 @@ const {
     requiredNonEmptyString,
     stringRequireLength,
 } = require('../../libs/validation');
+
+const router = express.Router();
 
 function _isExistUserLiked(reply_id, user, likes) {
     /* eslint-disable array-callback-return */
@@ -89,12 +88,6 @@ router.post('/:id/replies', [
         const content = req.body.content;
 
         const reply_model = new ReplyModel(req.db);
-        winston.info("/experiences/:id/replies", {
-            id: experience_id,
-            ip: req.ip,
-            ips: req.ips,
-            data: req.body,
-        });
 
         const partial_reply = {
             author_id: user._id,
@@ -142,12 +135,6 @@ router.get('/:id/replies', [
         if (!requiredNumberInRange(limit, 1000, 1)) {
             throw new HttpError("limit 格式錯誤", 422);
         }
-
-        winston.info("Get /experiences/:id/replies", {
-            id: experience_id,
-            ip: req.ip,
-            ips: req.ips,
-        });
 
         if (req.user) {
             user = req.user;

@@ -1,13 +1,13 @@
 const express = require('express');
 const winston = require('winston');
-
-const router = express.Router();
 const ExperienceLikeModel = require('../../models/experience_like_model');
 const ExperienceModel = require('../../models/experience_model');
 const authentication = require('../../middlewares/authentication');
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const HttpError = require('../../libs/errors').HttpError;
 const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
+
+const router = express.Router();
 
 /**
  * @api {post} /experiences/:id/likes 新增單篇經驗的讚 API
@@ -17,11 +17,6 @@ const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
 router.post('/:id/likes', [
     authentication.cachedFacebookAuthenticationMiddleware,
     (req, res, next) => {
-        winston.info(req.originalUrl, {
-            ip: req.ip,
-            ips: req.ips,
-        });
-
         const user = req.user;
         const experience_id = req.params.id;
         const experience_like_model = new ExperienceLikeModel(req.db);
@@ -62,11 +57,6 @@ router.post('/:id/likes', [
 router.delete('/:id/likes', [
     authentication.cachedFacebookAuthenticationMiddleware,
     (req, res, next) => {
-        winston.info(req.originalUrl, {
-            ip: req.ip,
-            ips: req.ips,
-        });
-
         const user = req.user;
         const experience_id = req.params.id;
         const experience_like_model = new ExperienceLikeModel(req.db);

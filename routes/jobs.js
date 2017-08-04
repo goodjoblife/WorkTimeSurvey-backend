@@ -1,9 +1,8 @@
 const express = require('express');
+const escapeRegExp = require('lodash/escapeRegExp');
+const wrap = require('../libs/wrap');
 
 const router = express.Router();
-const escapeRegExp = require('lodash/escapeRegExp');
-const winston = require('winston');
-const wrap = require('../libs/wrap');
 
 /**
  * @api {get} /jobs/search 從職稱清單中搜尋職稱
@@ -16,8 +15,6 @@ const wrap = require('../libs/wrap');
  * @apiSuccess {String} .des 職稱名
  */
 router.get('/search', wrap(async (req, res) => {
-    winston.info("/jobs/search", { query: req.query, ip: req.ip, ips: req.ips });
-
     const search = req.query.key || "";
     const page = req.query.page || 0;
     let q;
