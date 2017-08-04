@@ -557,7 +557,7 @@ describe('Workings 工時資訊', () => {
                 .expect(200);
 
             assert.isArray(res.body);
-            assert.lengthOf(res.body, 0, 'res.body is an empty array')
+            assert.lengthOf(res.body, 0, 'res.body is an empty array');
         });
 
         after(() => db.collection('workings').remove({}));
@@ -809,7 +809,7 @@ describe('Workings 工時資訊', () => {
                 .expect(200);
 
             assert.isArray(res.body);
-            assert.lengthOf(res.body, 0, 'res.body is an empty array')
+            assert.lengthOf(res.body, 0, 'res.body is an empty array');
         });
 
         after(() => db.collection('workings').remove({}));
