@@ -75,6 +75,7 @@ describe('Replies Test', () => {
                     assert.deepPropertyVal(res.body, 'reply.floor', 0);
                     assert.deepPropertyVal(res.body, 'reply.experience_id', experience_id_string);
                     assert.deepPropertyVal(res.body, 'reply.like_count', 0);
+                    assert.deepPropertyVal(res.body, 'reply.report_count', 0);
                     assert.deepEqual(res.body.reply.author_id, fake_user._id.toString());
                     assert.deepProperty(res.body, 'reply.created_at');
                 });
@@ -206,6 +207,7 @@ describe('Replies Test', () => {
                     assert.deepProperty(res.body, 'replies.0._id');
                     assert.deepProperty(res.body, 'replies.0.content');
                     assert.deepProperty(res.body, 'replies.0.like_count');
+                    assert.deepProperty(res.body, 'replies.0.report_count');
                     assert.deepProperty(res.body, 'replies.0.created_at');
                     assert.deepProperty(res.body, 'replies.0.floor');
                     assert.lengthOf(res.body.replies, 20, '不給 limit 的最大回傳數量');
@@ -313,6 +315,7 @@ describe('Replies Test', () => {
                     assert.deepProperty(res.body.replies[0], '_id');
                     assert.deepProperty(res.body.replies[0], 'content');
                     assert.deepProperty(res.body.replies[0], 'like_count');
+                    assert.deepProperty(res.body.replies[0], 'report_count');
                     assert.deepProperty(res.body.replies[0], 'liked');
                     assert.deepProperty(res.body.replies[0], 'created_at');
                     assert.deepProperty(res.body.replies[0], 'floor');
