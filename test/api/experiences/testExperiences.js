@@ -123,6 +123,7 @@ describe('Experiences 面試和工作經驗資訊', () => {
                     assert.property(experience, 'education');
                     assert.property(experience, 'like_count');
                     assert.property(experience, 'reply_count');
+                    assert.property(experience, 'report_count');
                     assert.property(experience, 'created_at');
                     assert.property(experience, 'liked');
 
@@ -159,6 +160,7 @@ describe('Experiences 面試和工作經驗資訊', () => {
                     assert.property(experience, 'education');
                     assert.property(experience, 'like_count');
                     assert.property(experience, 'reply_count');
+                    assert.property(experience, 'report_count');
                     assert.property(experience, 'created_at');
                     assert.property(experience, 'liked');
 
@@ -363,6 +365,7 @@ describe('Experiences 面試和工作經驗資訊', () => {
                     assert.property(experience, 'preview');
                     assert.property(experience, 'like_count');
                     assert.property(experience, 'reply_count');
+                    assert.property(experience, 'report_count');
 
                     assert.notProperty(experience, 'author_id');
                     assert.notProperty(experience, 'overall_rating');
@@ -393,6 +396,7 @@ describe('Experiences 面試和工作經驗資訊', () => {
                     assert.property(experience, 'week_work_time');
                     assert.property(experience, 'like_count');
                     assert.property(experience, 'reply_count');
+                    assert.property(experience, 'report_count');
 
                     assert.notProperty(experience, 'author_id');
                     assert.notProperty(experience, 'sections');
