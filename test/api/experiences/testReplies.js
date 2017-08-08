@@ -52,6 +52,7 @@ describe('Replies Test', () => {
                 type: 'interview',
                 author_id: new ObjectId(),
                 reply_count: 0,
+                report_count: 0,
             };
             return db.collection('experiences').insertOne(experience)
                 .then((result) => {
@@ -93,6 +94,7 @@ describe('Replies Test', () => {
                             assert.equal(reply.floor, 0);
                             assert.deepEqual(reply.experience_id, ObjectId(experience_id_string));
                             assert.deepPropertyVal(res.body, 'reply.like_count', 0);
+                            assert.deepPropertyVal(res.body, 'reply.report_count', 0);
                             assert.property(reply, 'created_at');
                             assert.deepEqual(reply.author_id, fake_user._id);
                         }));
