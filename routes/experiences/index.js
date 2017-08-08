@@ -71,6 +71,7 @@ function _generateGetExperiencesViewModel(experiences, total) {
             })(),
             like_count: experience.like_count,
             reply_count: experience.reply_count,
+            report_count: experience.report_count,
         };
         if (experience.type === 'interview') {
             experience_view_model = Object.assign(experience_view_model, {
@@ -135,6 +136,7 @@ function _saveKeyWord(query, type, db) {
  * @apiSuccess {String} experiences.job_title 職稱
  * @apiSuccess {String} experiences.title 標題
  * @apiSuccess {string} experiences.preview 整篇內容的preview。直接使用第1個section的內容，至多前Ｎ個字。N=160。
+ * @apiSuccess {Number}  report_count 檢舉數
  * @apiSuccess (interview) {String="彰化縣","嘉義市","嘉義縣","新竹市","新竹縣","花蓮縣","高雄市","基隆市","金門縣","連江縣","苗栗縣","南投縣","新北市","澎湖縣","屏東縣","臺中市","臺南市","臺北市","臺東縣","桃園市","宜蘭縣","雲林縣"} experiences.region 面試地區
  * @apiSuccess (interview) {Object} [experiences.salary] 面談薪資
  * @apiSuccess (interview) {String="year","month","day","hour"} experiences.salary.type 面談薪資種類 (面談薪資存在的話，一定有此欄位)
@@ -210,6 +212,7 @@ function _generateGetExperienceViewModel(experience, user, like) {
         sections: experience.sections,
         like_count: experience.like_count,
         reply_count: experience.reply_count,
+        report_count: experience.report_count,
     };
 
     if (user) {
@@ -256,6 +259,7 @@ function _generateGetExperienceViewModel(experience, user, like) {
  * @apiSuccess {String}  sections.content 段落內容
  * @apiSuccess {Number}  like_count 讚數
  * @apiSuccess {Number}  reply_count 留言數
+ * @apiSuccess {Number}  report_count 檢舉數
  * @apiSuccess {Boolean}  liked 該名使用者是否已經讚過該篇經驗分享 (若使用者未登入，則不會回傳本欄位)
  * @apiSuccess (interview) {Object}  interview_time 面試時間
  * @apiSuccess (interview) {Number}  interview_time.year 面試時間的年份
