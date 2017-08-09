@@ -48,6 +48,7 @@ class ReplyModel {
                 experience_id: new ObjectId(experience_id),
                 floor: reply_count - 1,
                 like_count: 0,
+                report_count: 0,
                 created_at: new Date(),
             });
 

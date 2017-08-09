@@ -84,6 +84,19 @@ jobs:
                     if [ "${CIRCLE_PROJECT_USERNAME}" == "goodjoblife" ]; then
                         ./.circleci/deploy-docker.sh
                     fi
+    deploy-dev:
+        working_directory: ~/app
+        docker:
+            - image: buildpack-deps
+        steps:
+            - run:
+                name: Trigger Deploy
+                command: |
+                    if [ "${CIRCLE_PROJECT_USERNAME}" == "goodjoblife" ]; then
+                        curl --user ${CIRCLE_API_TOKEN_FOR_DEPLOY}: \
+                            --data build_parameters[CIRCLE_JOB]=build \
+                            https://circleci.com/api/v1.1/project/github/mark86092/goodjob-deploy-ci/tree/api-dev
+                    fi
     deploy-stage:
         working_directory: ~/app
         docker:
@@ -113,10 +126,18 @@ workflows:
             - build-docker:
                 filters:
                     branches:
-                        only: master
+                        only:
+                            - master
+                            - dev
                 requires:
                     - build-node-7
                     - build-node-8
+            - deploy-dev:
+                requires:
+                    - build-docker
+                filters:
+                    branches:
+                        only: dev
             - deploy-stage:
                 requires:
                     - build-docker

@@ -305,7 +305,8 @@ router.post('/', [
             company: {},
             like_count: 0,
             reply_count: 0,
-            // TODO 瀏覽次數？檢舉數？
+            report_count: 0,
+            // TODO 瀏覽次數？
             created_at: new Date(),
         });
         Object.assign(experience, pickupInterviewExperience(req.body));

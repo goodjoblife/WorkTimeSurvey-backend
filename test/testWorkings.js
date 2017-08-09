@@ -544,6 +544,22 @@ describe('Workings 工時資訊', () => {
                     assert.isNull(res.body[2].average[sort_field]);
                 });
         });
+
+        it('要回傳 [] 如果沒有搜尋到資料', async () => {
+            const res = await request(app)
+                .get('/workings/search_by/company/group_by/company')
+                .query({
+                    company: 'NO_COMPANY',
+                    group_sort_by: 'week_work_time',
+                    group_sort_order: 'ascending',
+                    access_token: 'faketoken',
+                })
+                .expect(200);
+
+            assert.isArray(res.body);
+            assert.lengthOf(res.body, 0, 'res.body is an empty array');
+        });
+
         after(() => db.collection('workings').remove({}));
 
         afterEach(() => {
@@ -779,6 +795,21 @@ describe('Workings 工時資訊', () => {
                     assert.isNotNull(res.body[0].average[sort_field]);
                     assert.isNull(res.body[2].average[sort_field]);
                 });
+        });
+
+        it('要回傳 [] 如果沒有搜尋到資料', async () => {
+            const res = await request(app)
+                .get('/workings/search_by/job_title/group_by/company')
+                .query({
+                    job_title: 'NO_JOB',
+                    group_sort_by: 'week_work_time',
+                    group_sort_order: 'ascending',
+                    access_token: 'faketoken',
+                })
+                .expect(200);
+
+            assert.isArray(res.body);
+            assert.lengthOf(res.body, 0, 'res.body is an empty array');
         });
 
         after(() => db.collection('workings').remove({}));
