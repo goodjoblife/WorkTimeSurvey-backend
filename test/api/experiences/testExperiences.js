@@ -610,6 +610,12 @@ describe('Experiences 面試和工作經驗資訊', () => {
             })
             .expect(401));
 
+        it('should return 422, while user did not set the status field', () => request(app).patch(`/experiences/${other_data_id.toString()}`)
+            .send({
+                access_token: 'fakeaccesstoken',
+            })
+            .expect(422));
+
         after(() => db.collection('experiences').deleteMany({}));
 
         after(() => {

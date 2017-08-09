@@ -328,6 +328,13 @@ function _isLegalStatus(value) {
     return legal_status.indexOf(value) > -1;
 }
 
+/**
+ * @api {patch} /experiences/:id 更新自已建立的經驗狀態 API
+ * @apiParam {String="published","hidden"} status 要更新成的狀態
+ * @apiGroup Experiences
+ * @apiSuccess {Boolean} success 是否成功點讚
+ * @apiSuccess {String} status 更新後狀態
+ */
 router.patch('/:id', [
     authentication_required.cachedFacebookAuthenticationMiddleware,
     wrap(async (req, res) => {
