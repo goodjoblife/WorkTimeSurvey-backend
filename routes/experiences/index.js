@@ -13,6 +13,7 @@ const {
     shouldIn,
 } = require('../../libs/validation');
 const authentication = require('../../middlewares/authentication_user');
+const authentication_required = require('../../middlewares/authentication');
 const wrap = require('../../libs/wrap');
 
 /**
@@ -317,6 +318,51 @@ router.get('/:id', [
         res.send(result);
     }),
 ]);
+
+
+function _isLegalStatus(value) {
+    const legal_status = [
+        'published',
+        'hidden',
+    ];
+    return legal_status.indexOf(value) > -1;
+}
+
+router.patch('/:id', [
+    authentication_required.cachedFacebookAuthenticationMiddleware,
+    wrap(async (req, res) => {
+        const id = req.params.id;
+        const status = req.body.status;
+        const user = req.user;
+        let result;
+
+        winston.info('experiences/id', {
+            id,
+            ip: req.ip,
+            ips: req.ips,
+        });
+
+        if (!_isLegalStatus(status)) {
+            throw new HttpError('status is illegal', 422);
+        }
+
+        const experience_model = new ExperienceModel(req.db);
+
+        try {
+            result = await experience_model.updateStatus(id, user._id, status);
+            res.send({
+                success: true,
+                status: result.value.status,
+            });
+        } catch (err) {
+            if (err instanceof ObjectNotExistError) {
+                throw new HttpError(err.message, 404);
+            }
+            throw err;
+        }
+    }),
+]);
+
 
 router.use('/', require('./replies'));
 router.use('/', require('./likes'));

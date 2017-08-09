@@ -519,4 +519,55 @@ describe('Experiences 面試和工作經驗資訊', () => {
             create_company_keyword_collection(db),
         ])));
     });
+
+    describe('PATCH /experiences/:id', () => {
+        let sandbox;
+        let mark_data_id;
+        let other_data_id;
+        const fake_user = {
+            _id: new ObjectId(),
+            facebook_id: '-1',
+            facebook: {
+                id: '-1',
+                name: 'markLin',
+            },
+        };
+        before('moch user', () => {
+            sandbox = sinon.sandbox.create();
+            const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication');
+            cachedFacebookAuthentication
+                .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
+                .resolves(fake_user);
+        });
+
+        before('seeding the data', () => {
+            const inter_data_1 = Object.assign(generateInterviewExperienceData(), {
+                status: 'published',
+                author_id: fake_user._id,
+            });
+            const inter_data_2 = Object.assign(generateInterviewExperienceData(), {
+                status: 'published',
+            });
+            return db.collection('experiences').insertMany([
+                inter_data_1,
+                inter_data_2,
+            ]).then((datas) => {
+                mark_data_id = datas.insertedIds[0];
+                other_data_id = datas.insertedIds[1];
+            });
+        });
+
+        it('should return 200, while user updates his experience', () => request(app).patch(`/experiences/${mark_data_id.toString()}`)
+                .send({
+                    access_token: 'fakeaccesstoken',
+                    status: 'hidden',
+                })
+                .expect(200)
+                .expect((res) => {
+                    assert.isTrue(res.body.success);
+                    assert.equal(res.body.status, "hidden");
+                }));
+
+        after(() => db.collection('experiences').deleteMany({}));
+    });
 });
