@@ -350,10 +350,15 @@ router.patch('/:id', [
 
         try {
             result = await experience_model.updateStatus(id, user._id, status);
-            res.send({
-                success: true,
-                status: result.value.status,
-            });
+
+            if (result.value) {
+                res.send({
+                    success: true,
+                    status: result.value.status,
+                });
+            } else {
+                throw new HttpError('user is unauthorized', 401);
+            }
         } catch (err) {
             if (err instanceof ObjectNotExistError) {
                 throw new HttpError(err.message, 404);
