@@ -557,7 +557,7 @@ describe('Experiences 面試和工作經驗資訊', () => {
             });
         });
 
-        it('should return 200, while user updates his experience', () => request(app).patch(`/experiences/${mark_data_id.toString()}`)
+        it('should return 200, while user updates his experience status', () => request(app).patch(`/experiences/${mark_data_id.toString()}`)
                 .send({
                     access_token: 'fakeaccesstoken',
                     status: 'hidden',
@@ -568,6 +568,16 @@ describe('Experiences 面試和工作經驗資訊', () => {
                     assert.equal(res.body.status, "hidden");
                 }));
 
+        it('should return 401, while user did not login', () => request(app).patch(`/experiences/${mark_data_id.toString()}`)
+                .send({
+                    status: 'hidden',
+                })
+                .expect(401));
+
         after(() => db.collection('experiences').deleteMany({}));
+
+        after(() => {
+            sandbox.restore();
+        });
     });
 });
