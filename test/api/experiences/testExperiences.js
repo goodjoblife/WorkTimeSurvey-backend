@@ -574,6 +574,13 @@ describe('Experiences 面試和工作經驗資訊', () => {
                 })
                 .expect(401));
 
+        it('should return 422, while user send error status', () => request(app).patch(`/experiences/${mark_data_id.toString()}`)
+                .send({
+                    access_token: 'fakeaccesstoken',
+                    status: 'xxxxxx',
+                })
+                .expect(422));
+
         after(() => db.collection('experiences').deleteMany({}));
 
         after(() => {
