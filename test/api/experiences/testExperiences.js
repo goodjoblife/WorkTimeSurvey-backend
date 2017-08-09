@@ -568,7 +568,10 @@ describe('Experiences 面試和工作經驗資訊', () => {
                 inter_data_2,
             ]).then((datas) => {
                 mark_data_id = datas.ops.find(data => data.author_id.equals(fake_user._id))._id;
-                other_data_id = datas.ops.find((data) => data.author_id.equals(fake_other_user._id))._id;
+                 /* eslint-disable */
+                other_data_id = datas.ops.find(data => { 
+                    return data.author_id.equals(fake_other_user._id);
+                })._id;
             });
         });
 
