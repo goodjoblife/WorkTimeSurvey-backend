@@ -105,74 +105,74 @@ describe('Experiences 面試和工作經驗資訊', () => {
             .expect(404));
 
         it('should get one interview experience, and it returns correct fields', () => request(app).get(`/experiences/${test_interview_experience_id}`)
-                .send({
-                    access_token: 'fakeaccesstoken',
-                })
-                .expect(200)
-                .expect((res) => {
-                    const experience = res.body;
-                    assert.property(experience, '_id');
-                    assert.propertyVal(experience, 'type', 'interview');
-                    assert.property(experience, 'company');
-                    assert.deepProperty(experience, 'company.name');
-                    assert.property(experience, 'region');
-                    assert.property(experience, 'job_title');
-                    assert.property(experience, 'title');
-                    assert.property(experience, 'sections');
-                    assert.property(experience, 'experience_in_year');
-                    assert.property(experience, 'education');
-                    assert.property(experience, 'like_count');
-                    assert.property(experience, 'reply_count');
-                    assert.property(experience, 'report_count');
-                    assert.property(experience, 'created_at');
-                    assert.property(experience, 'liked');
+            .send({
+                access_token: 'fakeaccesstoken',
+            })
+            .expect(200)
+            .expect((res) => {
+                const experience = res.body;
+                assert.property(experience, '_id');
+                assert.propertyVal(experience, 'type', 'interview');
+                assert.property(experience, 'company');
+                assert.deepProperty(experience, 'company.name');
+                assert.property(experience, 'region');
+                assert.property(experience, 'job_title');
+                assert.property(experience, 'title');
+                assert.property(experience, 'sections');
+                assert.property(experience, 'experience_in_year');
+                assert.property(experience, 'education');
+                assert.property(experience, 'like_count');
+                assert.property(experience, 'reply_count');
+                assert.property(experience, 'report_count');
+                assert.property(experience, 'created_at');
+                assert.property(experience, 'liked');
 
-                    assert.property(experience, 'interview_time');
-                    assert.deepProperty(experience, 'interview_time.year');
-                    assert.deepProperty(experience, 'interview_time.month');
-                    assert.property(experience, 'interview_result');
-                    assert.property(experience, 'overall_rating');
-                    assert.property(experience, 'salary');
-                    assert.deepProperty(experience, 'salary.type');
-                    assert.deepProperty(experience, 'salary.amount');
-                    assert.property(experience, 'interview_sensitive_questions');
-                    assert.property(experience, 'interview_qas');
+                assert.property(experience, 'interview_time');
+                assert.deepProperty(experience, 'interview_time.year');
+                assert.deepProperty(experience, 'interview_time.month');
+                assert.property(experience, 'interview_result');
+                assert.property(experience, 'overall_rating');
+                assert.property(experience, 'salary');
+                assert.deepProperty(experience, 'salary.type');
+                assert.deepProperty(experience, 'salary.amount');
+                assert.property(experience, 'interview_sensitive_questions');
+                assert.property(experience, 'interview_qas');
 
-                    assert.notProperty(experience, 'author_id');
-                }));
+                assert.notProperty(experience, 'author_id');
+            }));
 
         it('should get one work experience, and it returns correct fields ', () => request(app).get(`/experiences/${test_work_experience_id}`)
-                .send({
-                    access_token: 'fakeaccesstoken',
-                })
-                .expect(200)
-                .expect((res) => {
-                    const experience = res.body;
-                    assert.property(experience, '_id');
-                    assert.propertyVal(experience, 'type', 'work');
-                    assert.property(experience, 'company');
-                    assert.deepProperty(experience, 'company.name');
-                    assert.property(experience, 'region');
-                    assert.property(experience, 'job_title');
-                    assert.property(experience, 'title');
-                    assert.property(experience, 'sections');
-                    assert.property(experience, 'experience_in_year');
-                    assert.property(experience, 'education');
-                    assert.property(experience, 'like_count');
-                    assert.property(experience, 'reply_count');
-                    assert.property(experience, 'report_count');
-                    assert.property(experience, 'created_at');
-                    assert.property(experience, 'liked');
+            .send({
+                access_token: 'fakeaccesstoken',
+            })
+            .expect(200)
+            .expect((res) => {
+                const experience = res.body;
+                assert.property(experience, '_id');
+                assert.propertyVal(experience, 'type', 'work');
+                assert.property(experience, 'company');
+                assert.deepProperty(experience, 'company.name');
+                assert.property(experience, 'region');
+                assert.property(experience, 'job_title');
+                assert.property(experience, 'title');
+                assert.property(experience, 'sections');
+                assert.property(experience, 'experience_in_year');
+                assert.property(experience, 'education');
+                assert.property(experience, 'like_count');
+                assert.property(experience, 'reply_count');
+                assert.property(experience, 'report_count');
+                assert.property(experience, 'created_at');
+                assert.property(experience, 'liked');
 
-                    assert.property(experience, 'salary');
-                    assert.deepProperty(experience, 'salary.type');
-                    assert.deepProperty(experience, 'salary.amount');
-                    assert.property(experience, 'week_work_time');
-                    assert.property(experience, 'data_time');
-                    assert.property(experience, 'recommend_to_others');
+                assert.property(experience, 'salary');
+                assert.deepProperty(experience, 'salary.type');
+                assert.deepProperty(experience, 'salary.amount');
+                assert.property(experience, 'week_work_time');
+                assert.property(experience, 'data_time');
+                assert.property(experience, 'recommend_to_others');
 
-                    assert.notProperty(experience, 'author_id');
-                }));
+                assert.notProperty(experience, 'author_id');
+            }));
 
         after(() => db.collection('experiences').deleteMany({}));
 
@@ -351,62 +351,62 @@ describe('Experiences 面試和工作經驗資訊', () => {
             .expect(422));
 
         it('驗證『面試經驗』回傳欄位', () => request(app).get('/experiences')
-                .expect(200)
-                .expect((res) => {
-                    assert.property(res.body, 'total');
-                    assert.property(res.body, 'experiences');
-                    const experience = res.body.experiences[3];
-                    assert.property(experience, '_id');
-                    assert.propertyVal(experience, 'type', 'interview');
-                    assert.property(experience, 'created_at');
-                    assert.property(experience, 'company');
-                    assert.property(experience, 'job_title');
-                    assert.property(experience, 'title');
-                    assert.property(experience, 'preview');
-                    assert.property(experience, 'like_count');
-                    assert.property(experience, 'reply_count');
-                    assert.property(experience, 'report_count');
+            .expect(200)
+            .expect((res) => {
+                assert.property(res.body, 'total');
+                assert.property(res.body, 'experiences');
+                const experience = res.body.experiences[3];
+                assert.property(experience, '_id');
+                assert.propertyVal(experience, 'type', 'interview');
+                assert.property(experience, 'created_at');
+                assert.property(experience, 'company');
+                assert.property(experience, 'job_title');
+                assert.property(experience, 'title');
+                assert.property(experience, 'preview');
+                assert.property(experience, 'like_count');
+                assert.property(experience, 'reply_count');
+                assert.property(experience, 'report_count');
 
-                    assert.notProperty(experience, 'author_id');
-                    assert.notProperty(experience, 'overall_rating');
-                    assert.notProperty(experience, 'sections');
-                    assert.notProperty(experience, 'experience_in_year');
-                    assert.notProperty(experience, 'education');
-                    assert.notProperty(experience, 'interview_time');
-                    assert.notProperty(experience, 'interview_qas');
-                    assert.notProperty(experience, 'interview_result');
-                    assert.notProperty(experience, 'interview_sensitive_questions');
-                }));
+                assert.notProperty(experience, 'author_id');
+                assert.notProperty(experience, 'overall_rating');
+                assert.notProperty(experience, 'sections');
+                assert.notProperty(experience, 'experience_in_year');
+                assert.notProperty(experience, 'education');
+                assert.notProperty(experience, 'interview_time');
+                assert.notProperty(experience, 'interview_qas');
+                assert.notProperty(experience, 'interview_result');
+                assert.notProperty(experience, 'interview_sensitive_questions');
+            }));
 
         it('驗證『工作經驗』回傳欄位', () => request(app).get('/experiences')
-                .expect(200)
-                .expect((res) => {
-                    assert.property(res.body, 'total');
-                    assert.property(res.body, 'experiences');
-                    const experience = res.body.experiences[2];
-                    assert.property(experience, '_id');
-                    assert.propertyVal(experience, 'type', 'work');
-                    assert.property(experience, 'created_at');
-                    assert.property(experience, 'company');
-                    assert.property(experience, 'region');
-                    assert.property(experience, 'job_title');
-                    assert.property(experience, 'title');
-                    assert.property(experience, 'preview');
-                    assert.property(experience, 'salary');
-                    assert.property(experience, 'week_work_time');
-                    assert.property(experience, 'like_count');
-                    assert.property(experience, 'reply_count');
-                    assert.property(experience, 'report_count');
+            .expect(200)
+            .expect((res) => {
+                assert.property(res.body, 'total');
+                assert.property(res.body, 'experiences');
+                const experience = res.body.experiences[2];
+                assert.property(experience, '_id');
+                assert.propertyVal(experience, 'type', 'work');
+                assert.property(experience, 'created_at');
+                assert.property(experience, 'company');
+                assert.property(experience, 'region');
+                assert.property(experience, 'job_title');
+                assert.property(experience, 'title');
+                assert.property(experience, 'preview');
+                assert.property(experience, 'salary');
+                assert.property(experience, 'week_work_time');
+                assert.property(experience, 'like_count');
+                assert.property(experience, 'reply_count');
+                assert.property(experience, 'report_count');
 
-                    assert.notProperty(experience, 'author_id');
-                    assert.notProperty(experience, 'sections');
-                    assert.notProperty(experience, 'experience_in_year');
-                    assert.notProperty(experience, 'education');
-                    assert.notProperty(experience, 'recommend_to_others');
-                    assert.notProperty(experience, 'is_currently_employed');
-                    assert.notProperty(experience, 'job_ending_time');
-                    assert.notProperty(experience, 'data_time');
-                }));
+                assert.notProperty(experience, 'author_id');
+                assert.notProperty(experience, 'sections');
+                assert.notProperty(experience, 'experience_in_year');
+                assert.notProperty(experience, 'education');
+                assert.notProperty(experience, 'recommend_to_others');
+                assert.notProperty(experience, 'is_currently_employed');
+                assert.notProperty(experience, 'job_ending_time');
+                assert.notProperty(experience, 'data_time');
+            }));
 
         it('type = "interview" 正確取得 面試經驗', () => request(app).get('/experiences')
             .query({
@@ -572,56 +572,80 @@ describe('Experiences 面試和工作經驗資訊', () => {
                 inter_data_2,
             ]).then((datas) => {
                 mark_data_id = datas.ops.find(data => data.author_id.equals(fake_user._id))._id;
-                 /* eslint-disable */
-                other_data_id = datas.ops.find(data => { 
+                /* eslint-disable */
+                other_data_id = datas.ops.find(data => {
                     return data.author_id.equals(fake_other_user._id);
                 })._id;
             });
         });
 
-        it('should return 200, while user updates his experience status', () => request(app).patch(`/experiences/${mark_data_id.toString()}`)
-            .send({
-                access_token: 'fakeaccesstoken',
-                status: 'hidden',
-            })
-            .expect(200)
-            .expect((res) => {
+        it('should return 200, while user updates his experience status',
+            async () => {
+                const res = await request(app).patch(`/experiences/${mark_data_id.toString()}`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                        status: 'hidden',
+                    })
+
+                assert.equal(res.status, 200);
                 assert.isTrue(res.body.success);
                 assert.equal(res.body.status, "hidden");
-            }));
+            }
+        );
 
-        it('should return 401, while user did not login', () => request(app).patch(`/experiences/${mark_data_id.toString()}`)
-            .send({
-                status: 'hidden',
-            })
-            .expect(401));
+        it('should return 401, while user did not login',
+            async () => {
+                const res = await request(app).patch(`/experiences/${mark_data_id.toString()}`)
+                    .send({
+                        status: 'hidden',
+                    });
 
-        it('should return 422, while user send error status', () => request(app).patch(`/experiences/${mark_data_id.toString()}`)
-            .send({
-                access_token: 'fakeaccesstoken',
-                status: 'xxxxxx',
-            })
-            .expect(422));
+                assert.equal(res.status, 401);
+            }
+        )
+        it('should return 422, while user send error status',
+            async () => {
+                const res = await request(app).patch(`/experiences/${mark_data_id.toString()}`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                        status: 'xxxxxx',
+                    });
 
-        it('should return 422, while user send error status', () => request(app).patch(`/experiences/${mark_data_id.toString()}`)
-            .send({
-                access_token: 'fakeaccesstoken',
-                status: 'xxxxxx',
-            })
-            .expect(422));
+                assert.equal(res.status, 422);
+            }
+        );
 
-        it('should return 401, while user want to update not belong to him experience', () => request(app).patch(`/experiences/${other_data_id.toString()}`)
-            .send({
-                access_token: 'fakeaccesstoken',
-                status: 'hidden',
-            })
-            .expect(401));
+        it('should return 422, while user send error status',
+            async () => {
+                const res = await request(app).patch(`/experiences/${mark_data_id.toString()}`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                        status: 'xxxxxx',
+                    });
+                assert.equal(res.status, 422);
+            }
+        );
 
-        it('should return 422, while user did not set the status field', () => request(app).patch(`/experiences/${other_data_id.toString()}`)
-            .send({
-                access_token: 'fakeaccesstoken',
-            })
-            .expect(422));
+        it('should return 401, while user want to update not belong to him experience',
+            async () => {
+                const res = await request(app).patch(`/experiences/${other_data_id.toString()}`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                        status: 'hidden',
+                    });
+                assert.equal(res.status, 401);
+            }
+        );
+
+        it('should return 422, while user did not set the status field',
+            async () => {
+                const res = await request(app).patch(`/experiences/${other_data_id.toString()}`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                    })
+                assert.equal(res.status, 422);
+            }
+        );
 
         after(() => db.collection('experiences').deleteMany({}));
 
