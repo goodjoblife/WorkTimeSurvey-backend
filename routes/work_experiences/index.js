@@ -253,6 +253,7 @@ function pickupWorkExperience(input) {
  * @apiParam {Object[]} sections 整篇內容
  * @apiParam {String="0 < length <= 25"} sections.subtitle 段落標題
  * @apiParam {String="0 < length <= 5000"} sections.content 段落內容
+ * @apiParam {String="published","hidden"} [status="published"] 該篇文章的狀態
  * @apiSuccess {Boolean} success 是否上傳成功
  * @apiSuccess {Object} experience 經驗分享物件
  * @apiSuccess {String} experience._id  經驗分享id
