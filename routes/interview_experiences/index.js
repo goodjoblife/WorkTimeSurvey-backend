@@ -196,6 +196,7 @@ function pickupInterviewExperience(input) {
         interview_sensitive_questions,
         salary,
         overall_rating,
+        status,
     } = input;
 
     Object.assign(partial, {
@@ -240,6 +241,12 @@ function pickupInterviewExperience(input) {
     }
     if (salary) {
         partial.salary = salary;
+    }
+
+    if (status) {
+        partial.status = status;
+    } else {
+        partial.status = "published";
     }
     return partial;
 }

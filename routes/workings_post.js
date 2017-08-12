@@ -378,6 +378,10 @@ function main(req, res, next) {
         };
     }
 
+    if (!working.status) {
+        working.status = 'published';
+    }
+
     const collection = req.db.collection("workings");
     /*
      *  這邊處理需要呼叫async函數的部份

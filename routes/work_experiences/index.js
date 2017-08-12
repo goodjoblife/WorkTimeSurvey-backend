@@ -173,6 +173,7 @@ function pickupWorkExperience(input) {
         salary,
         week_work_time,
         recommend_to_others,
+        status,
     } = input;
 
     Object.assign(partial, {
@@ -214,6 +215,12 @@ function pickupWorkExperience(input) {
     }
     if (recommend_to_others) {
         partial.recommend_to_others = recommend_to_others;
+    }
+
+    if (status) {
+        partial.status = status;
+    } else {
+        partial.status = 'published';
     }
 
     return partial;
