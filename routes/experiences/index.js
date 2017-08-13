@@ -357,10 +357,6 @@ router.patch('/:id', [
         try {
             const experience = await experience_model.getExperienceById(id, { author_id: 1 });
 
-            if (!experience) {
-                throw new HttpError('the experience is not exist');
-            }
-
             if (!experience.author_id.equals(user._id)) {
                 throw new HttpError('user is unauthorized', 401);
             }

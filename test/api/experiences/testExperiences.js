@@ -647,6 +647,38 @@ describe('Experiences 面試和工作經驗資訊', () => {
             }
         );
 
+        it('should return 401, while user did not set the status field',
+            async () => {
+                const res = await request(app).patch(`/experiences/${other_data_id.toString()}`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                    })
+                assert.equal(res.status, 422);
+            }
+        );
+
+        it('should return 404, while the experience id is illegal',
+            async () => {
+                const res = await request(app).patch(`/experiences/xxxxxxxx`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                        status: 'published',
+                    })
+                assert.equal(res.status, 404);
+            }
+        );
+
+        it('should return 404, while the experience is not exist',
+            async () => {
+                const res = await request(app).patch(`/experiences/${(new ObjectId()).toString()}`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                        status: 'published',
+                    })
+                assert.equal(res.status, 404);
+            }
+        );
+
         after(() => db.collection('experiences').deleteMany({}));
 
         after(() => {
