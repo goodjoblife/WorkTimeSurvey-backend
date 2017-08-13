@@ -19,6 +19,7 @@ function generateGetExperiencesViewModel(experiences, total) {
             like_count: experience.like_count,
             reply_count: experience.reply_count,
             report_count: experience.report_count,
+            status: experience.status,
         };
         if (experience.type === 'interview') {
             experience_view_model = Object.assign(experience_view_model, {
@@ -42,6 +43,4 @@ function generateGetExperiencesViewModel(experiences, total) {
 
     return result;
 }
-module.exports = {
-    generateGetExperiencesViewModel,
-};
+module.exports = generateGetExperiencesViewModel;

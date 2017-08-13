@@ -44,7 +44,7 @@ router.get('/', [
         const sort = {
             created_at: -1,
         };
-        const type = req.query.type;
+        const type = req.query.type || "interview,work";
         const query = _generateDBQuery(user._id, type);
 
         if (!requiredNumberGreaterThanOrEqualTo(start, 0)) {
@@ -62,3 +62,5 @@ router.get('/', [
         res.send(generateGetExperiencesViewModel(experiences, total));
     })]
 );
+
+module.exports = router;
