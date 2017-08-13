@@ -626,7 +626,7 @@ describe('Experiences 面試和工作經驗資訊', () => {
             }
         );
 
-        it('should return 401, while user want to update not belong to him experience',
+        it('should return 403, while user want to update not belong to him experience',
             async () => {
                 const res = await request(app).patch(`/experiences/${other_data_id.toString()}`)
                     .send({
@@ -638,16 +638,6 @@ describe('Experiences 面試和工作經驗資訊', () => {
         );
 
         it('should return 422, while user did not set the status field',
-            async () => {
-                const res = await request(app).patch(`/experiences/${other_data_id.toString()}`)
-                    .send({
-                        access_token: 'fakeaccesstoken',
-                    })
-                assert.equal(res.status, 422);
-            }
-        );
-
-        it('should return 401, while user did not set the status field',
             async () => {
                 const res = await request(app).patch(`/experiences/${other_data_id.toString()}`)
                     .send({
