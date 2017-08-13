@@ -2,7 +2,6 @@ const express = require('express');
 
 const router = express.Router();
 const HttpError = require('../../../libs/errors').HttpError;
-const winston = require('winston');
 const ExperienceModel = require('../../../models/experience_model');
 const {
     requiredNumberInRange,
@@ -32,12 +31,6 @@ function _generateDBQuery(author_id, type) {
 router.get('/', [
     authentication.cachedFacebookAuthenticationMiddleware,
     wrap(async (req, res) => {
-        winston.info(req.originalUrl, {
-            query: req.query,
-            ip: req.ip,
-            ips: req.ips,
-        });
-
         const user = req.user;
         const start = parseInt(req.query.start, 10) || 0;
         const limit = Number(req.query.limit || 20);

@@ -84,6 +84,62 @@ describe('Experiences of Author Test', () => {
         }
     );
 
+    it('should be success, when the author get him work experiences',
+        async () => {
+            const res = await request(app).get(`/me/experiences`)
+                .query({
+                    access_token: 'fakeaccesstoken',
+                    type: 'work',
+                });
+            assert.equal(res.status, 200);
+            assert.lengthOf(res.body.experiences, 1);
+        }
+    );
+
+    it('should be success, when the author get him work,interview experiences',
+        async () => {
+            const res = await request(app).get(`/me/experiences`)
+                .query({
+                    access_token: 'fakeaccesstoken',
+                    type: 'work,interview',
+                });
+            assert.equal(res.status, 200);
+            assert.lengthOf(res.body.experiences, 2);
+        }
+    );
+
+    it('should be error, when setting limit than 100',
+        async () => {
+            const res = await request(app).get(`/me/experiences`)
+                .query({
+                    access_token: 'fakeaccesstoken',
+                    limit: 150,
+                });
+            assert.equal(res.status, 422);
+        }
+    );
+
+    it('should be error, when setting start less 0',
+        async () => {
+            const res = await request(app).get(`/me/experiences`)
+                .query({
+                    access_token: 'fakeaccesstoken',
+                    start: -5,
+                });
+            assert.equal(res.status, 422);
+        }
+    );
+
+    it('should be error, when no authorization',
+        async () => {
+            const res = await request(app).get(`/me/experiences`)
+                .query({
+                    start: -5,
+                });
+            assert.equal(res.status, 401);
+        }
+    );
+
     after(() => {
         sandbox.restore();
     });
