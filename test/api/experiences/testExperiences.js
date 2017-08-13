@@ -379,34 +379,34 @@ describe('Experiences 面試和工作經驗資訊', () => {
                 }));
 
         it('驗證『工作經驗』回傳欄位', () => request(app).get('/experiences')
-               .expect(200)
-               .expect((res) => {
-                   assert.property(res.body, 'total');
-                   assert.property(res.body, 'experiences');
-                   const experience = res.body.experiences[2];
-                   assert.property(experience, '_id');
-                   assert.propertyVal(experience, 'type', 'work');
-                   assert.property(experience, 'created_at');
-                   assert.property(experience, 'company');
-                   assert.property(experience, 'region');
-                   assert.property(experience, 'job_title');
-                   assert.property(experience, 'title');
-                   assert.property(experience, 'preview');
-                   assert.property(experience, 'salary');
-                   assert.property(experience, 'week_work_time');
-                   assert.property(experience, 'like_count');
-                   assert.property(experience, 'reply_count');
-                   assert.property(experience, 'report_count');
+                .expect(200)
+                .expect((res) => {
+                    assert.property(res.body, 'total');
+                    assert.property(res.body, 'experiences');
+                    const experience = res.body.experiences[2];
+                    assert.property(experience, '_id');
+                    assert.propertyVal(experience, 'type', 'work');
+                    assert.property(experience, 'created_at');
+                    assert.property(experience, 'company');
+                    assert.property(experience, 'region');
+                    assert.property(experience, 'job_title');
+                    assert.property(experience, 'title');
+                    assert.property(experience, 'preview');
+                    assert.property(experience, 'salary');
+                    assert.property(experience, 'week_work_time');
+                    assert.property(experience, 'like_count');
+                    assert.property(experience, 'reply_count');
+                    assert.property(experience, 'report_count');
 
-                   assert.notProperty(experience, 'author_id');
-                   assert.notProperty(experience, 'sections');
-                   assert.notProperty(experience, 'experience_in_year');
-                   assert.notProperty(experience, 'education');
-                   assert.notProperty(experience, 'recommend_to_others');
-                   assert.notProperty(experience, 'is_currently_employed');
-                   assert.notProperty(experience, 'job_ending_time');
-                   assert.notProperty(experience, 'data_time');
-               }));
+                    assert.notProperty(experience, 'author_id');
+                    assert.notProperty(experience, 'sections');
+                    assert.notProperty(experience, 'experience_in_year');
+                    assert.notProperty(experience, 'education');
+                    assert.notProperty(experience, 'recommend_to_others');
+                    assert.notProperty(experience, 'is_currently_employed');
+                    assert.notProperty(experience, 'job_ending_time');
+                    assert.notProperty(experience, 'data_time');
+                }));
 
         it('type = "interview" 正確取得 面試經驗', () => request(app).get('/experiences')
                 .query({
@@ -488,10 +488,10 @@ describe('Experiences 面試和工作經驗資訊', () => {
                 .expect(422));
 
         it('should be status 422 if limit > 100', () => request(app).get('/experiences')
-               .query({
-                   limit: 101,
-               })
-               .expect(422));
+                .query({
+                    limit: 101,
+                })
+                .expect(422));
 
         it('should be status 422 if start < 0', () => request(app).get('/experiences')
                 .query({
