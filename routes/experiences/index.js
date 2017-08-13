@@ -11,7 +11,7 @@ const {
     requiredNumberGreaterThanOrEqualTo,
     shouldIn,
 } = require('../../libs/validation');
-const authentication = require('../../middlewares/authentication_user');
+const { semiAuthentication } = require('../../middlewares/authentication');
 const wrap = require('../../libs/wrap');
 
 /**
@@ -273,7 +273,7 @@ function _generateGetExperienceViewModel(experience, user, like) {
  */
 /* eslint-enable */
 router.get('/:id', [
-    authentication.cachedAndSetUserMiddleware,
+    semiAuthentication('bearer', { session: false }),
     wrap(async (req, res) => {
         const id = req.params.id;
         let user = null;

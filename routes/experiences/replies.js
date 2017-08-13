@@ -2,8 +2,8 @@ const express = require('express');
 const HttpError = require('../../libs/errors').HttpError;
 const ReplyModel = require('../../models/reply_model');
 const ReplyLikeModel = require('../../models/reply_like_model');
-const authentication = require('../../middlewares/authentication');
-const authenticationUser = require('../../middlewares/authentication_user');
+const passport = require('passport');
+const { semiAuthentication } = require('../../middlewares/authentication');
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const {
     requiredNumberInRange,
@@ -73,7 +73,7 @@ function validationPostFields(body) {
  * @apiSuccess {String} reply.created_at 該留言的時間
  */
 router.post('/:id/replies', [
-    authentication.cachedFacebookAuthenticationMiddleware,
+    passport.authenticate('bearer', { session: false }),
     (req, res, next) => {
         try {
             validationPostFields(req.body);
@@ -125,7 +125,7 @@ router.post('/:id/replies', [
  * @apiSuccess {Number} replies.floor 樓層
  */
 router.get('/:id/replies', [
-    authenticationUser.cachedAndSetUserMiddleware,
+    semiAuthentication('bearer', { session: false }),
     (req, res, next) => {
         const experience_id = req.params.id;
         const limit = parseInt(req.query.limit, 10) || 20;

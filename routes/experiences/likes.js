@@ -2,7 +2,7 @@ const express = require('express');
 const winston = require('winston');
 const ExperienceLikeModel = require('../../models/experience_like_model');
 const ExperienceModel = require('../../models/experience_model');
-const authentication = require('../../middlewares/authentication');
+const passport = require('passport');
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const HttpError = require('../../libs/errors').HttpError;
 const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
@@ -15,7 +15,7 @@ const router = express.Router();
  * @apiSuccess {Boolean} success 是否成功點讚
  */
 router.post('/:id/likes', [
-    authentication.cachedFacebookAuthenticationMiddleware,
+    passport.authenticate('bearer', { session: false }),
     (req, res, next) => {
         const user = req.user;
         const experience_id = req.params.id;
@@ -55,7 +55,7 @@ router.post('/:id/likes', [
  * @apiSuccess {Boolean} success 是否成功取消讚
  */
 router.delete('/:id/likes', [
-    authentication.cachedFacebookAuthenticationMiddleware,
+    passport.authenticate('bearer', { session: false }),
     (req, res, next) => {
         const user = req.user;
         const experience_id = req.params.id;

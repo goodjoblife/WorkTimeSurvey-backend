@@ -3,12 +3,12 @@ const express = require('express');
 const router = express.Router();
 
 const HttpError = require('../libs/errors').HttpError;
-const authentication = require('../middlewares/authentication');
+const passport = require('passport');
 const authorization = require('../middlewares/authorization');
 const recommendation = require('../libs/recommendation');
 
 router.post('/me/recommendations', [
-    authentication.cachedFacebookAuthenticationMiddleware,
+    passport.authenticate('bearer', { session: false }),
     (req, res, next) => {
         const old_user = {
             id: req.user.facebook_id,
@@ -26,7 +26,7 @@ router.post('/me/recommendations', [
 ]);
 
 router.get('/me/permissions/search', [
-    authentication.cachedFacebookAuthenticationMiddleware,
+    passport.authenticate('bearer', { session: false }),
     authorization.cachedSearchPermissionAuthorizationMiddleware,
     // Middleware Error Handler
     (err, req, res, next) => {

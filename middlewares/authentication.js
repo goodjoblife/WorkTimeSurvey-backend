@@ -1,3 +1,4 @@
+const passport = require('passport');
 const authentication = require('../libs/authentication');
 const HttpError = require('../libs/errors').HttpError;
 
@@ -41,6 +42,18 @@ function cachedFacebookAuthenticationMiddleware(req, res, next) {
     }
 }
 
+function semiAuthentication(name, options = {}) {
+    return (req, res, next) => {
+        passport.authenticate(name, options, (err, user) => {
+            if (user) {
+                req.user = user;
+            }
+            next();
+        })(req, res, next);
+    };
+}
+
 module.exports = {
     cachedFacebookAuthenticationMiddleware,
+    semiAuthentication,
 };
