@@ -8,7 +8,6 @@ const app = require('../../../app');
 const MongoClient = require('mongodb').MongoClient;
 const ObjectId = require('mongodb').ObjectId;
 const sinon = require('sinon');
-require('sinon-as-promised');
 const config = require('config');
 const authentication = require('../../../libs/authentication');
 

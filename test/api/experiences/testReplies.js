@@ -3,7 +3,6 @@ const request = require('supertest');
 const app = require('../../../app');
 const { MongoClient, ObjectId } = require('mongodb');
 const sinon = require('sinon');
-require('sinon-as-promised');
 const config = require('config');
 
 const authentication = require('../../../libs/authentication');

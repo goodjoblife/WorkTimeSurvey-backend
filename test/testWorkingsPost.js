@@ -5,7 +5,6 @@ const request = require('supertest');
 const app = require('../app');
 const MongoClient = require('mongodb').MongoClient;
 const sinon = require('sinon');
-require('sinon-as-promised');
 const config = require('config');
 const facebook = require('../libs/facebook');
 const ObjectId = require('mongodb').ObjectId;
