@@ -5,7 +5,7 @@ const wrap = require('../../libs/wrap');
 const { HttpError } = require('../../libs/errors');
 const { requiredNumberInRange } = require('../../libs/validation');
 
-router.get('/company_keywords', wrap(async (req, res, next) => {
+router.get('/', wrap(async (req, res, next) => {
     const num = Number(req.query.num);
 
     if (!Number.isInteger(num)) {
