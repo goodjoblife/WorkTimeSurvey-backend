@@ -39,7 +39,7 @@ function legacyFacebookTokenStrategy() {
             .then(user => {
                 done(null, user);
             }, err => {
-                done(err, false);
+                done(null, false);
             });
     });
 }
