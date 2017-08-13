@@ -347,12 +347,6 @@ router.patch('/:id', [
         const user = req.user;
         let result;
 
-        winston.info('experiences/id', {
-            id,
-            ip: req.ip,
-            ips: req.ips,
-        });
-
         if (!_isLegalStatus(status)) {
             throw new HttpError('status is illegal', 422);
         }
