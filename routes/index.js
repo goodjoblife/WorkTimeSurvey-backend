@@ -26,7 +26,16 @@ router.post('/me/recommendations', [
 ]);
 
 router.get('/me/permissions/search', [
-    passport.authenticate('bearer', { session: false }),
+    (req, res, next) => {
+        passport.authenticate('bearer', { session: false }, (err, user) => {
+            if (user) {
+                req.user = user;
+                next();
+            } else {
+                res.send({ hasSearchPermission: false });
+            }
+        })(req, res, next);
+    },
     authorization.cachedSearchPermissionAuthorizationMiddleware,
     // Middleware Error Handler
     (err, req, res, next) => {
