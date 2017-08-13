@@ -222,10 +222,9 @@ class ExperienceModel {
             }
         );
     }
-    updateStatus(id, author_id, status) {
+    updateStatus(id, status) {
         return this.collection.findOneAndUpdate({
             _id: new mongo.ObjectId(id),
-            author_id,
         }, {
             $set: {
                 status,
