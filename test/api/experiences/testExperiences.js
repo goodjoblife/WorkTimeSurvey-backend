@@ -633,7 +633,7 @@ describe('Experiences 面試和工作經驗資訊', () => {
                         access_token: 'fakeaccesstoken',
                         status: 'hidden',
                     });
-                assert.equal(res.status, 401);
+                assert.equal(res.status, 403);
             }
         );
 

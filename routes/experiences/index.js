@@ -358,7 +358,7 @@ router.patch('/:id', [
             const experience = await experience_model.getExperienceById(id, { author_id: 1 });
 
             if (!experience.author_id.equals(user._id)) {
-                throw new HttpError('user is unauthorized', 401);
+                throw new HttpError('user is unauthorized', 403);
             }
 
             result = await experience_model.updateStatus(id, status);
