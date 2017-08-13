@@ -359,17 +359,24 @@ router.patch('/:id', [
 
         const experience_model = new ExperienceModel(req.db);
 
-        try {
-            result = await experience_model.updateStatus(id, user._id, status);
 
-            if (result.value) {
-                res.send({
-                    success: true,
-                    status: result.value.status,
-                });
-            } else {
+        try {
+            const experience = await experience_model.getExperienceById(id, { author_id: 1 });
+
+            if (!experience) {
+                throw new HttpError('the experience is not exist');
+            }
+
+            if (!experience.author_id.equals(user._id)) {
                 throw new HttpError('user is unauthorized', 401);
             }
+
+            result = await experience_model.updateStatus(id, status);
+
+            res.send({
+                success: true,
+                status: result.value.status,
+            });
         } catch (err) {
             if (err instanceof ObjectNotExistError) {
                 throw new HttpError(err.message, 404);
