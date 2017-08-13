@@ -58,6 +58,7 @@ app.use((req, res, next) => {
 });
 
 app.use(passport.initialize());
+passport.use(passportStrategies.legacyFacebookTokenStrategy());
 app.use('/', routes);
 app.use('/companies', require('./routes/companies'));
 app.use('/workings', require('./routes/workings'));
