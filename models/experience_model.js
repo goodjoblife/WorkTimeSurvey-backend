@@ -145,6 +145,24 @@ class ExperienceModel {
     }
 
     /**
+     * 根據id更新experience的report_count
+     * @param   {string} id - erperiences's id
+     * @returns {Promise}
+     *  - resolved : {
+     *        value: {
+     *            report_count: Current Report Count (after increment 1)
+     *        }
+     *    }
+     *
+     *  - reject : ObjectNotExistError/Default Error
+     */
+    incrementReportCount(id) {
+        const field = "report_count";
+        return this._incrementField(field, id);
+    }
+
+
+    /**
      * 根據id更新experience的like_count
      * @param   {string} id - erperiences's id
      * @returns {Promise}
