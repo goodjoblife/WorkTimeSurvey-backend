@@ -1,4 +1,3 @@
-const winston = require('winston');
 const express = require('express');
 const HttpError = require('../../libs/errors').HttpError;
 
