@@ -194,21 +194,13 @@ describe('Workings 工時資訊', () => {
         describe('generate payload', () => {
             it('generateWorkingTimeRelatedPayload', () => request(app).post('/workings')
                     .send(generateWorkingTimeRelatedPayload())
-                    .expect(200));
-
-            it('generateSalaryRelatedPayload', () => request(app).post('/workings')
-                    .send(generateSalaryRelatedPayload())
-                    .expect(200));
-
-            it('generateWorkingTimeRelatedPayload field test', () => request(app).post('/workings')
-                    .send(generateWorkingTimeRelatedPayload())
                     .expect(200)
                     .expect((res) => {
                         assert.equal(res.body.working.status, 'published');
                     })
                 );
 
-            it('generateSalaryRelatedPayload field test', () => request(app).post('/workings')
+            it('generateSalaryRelatedPayload', () => request(app).post('/workings')
                     .send(generateSalaryRelatedPayload())
                     .expect(200)
                     .expect((res) => {
