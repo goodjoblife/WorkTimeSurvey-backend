@@ -207,7 +207,7 @@ describe('Reports Test', () => {
                 user_id: fake_user._id,
                 reason_category: '我認為這篇文章內容不實',
                 reason: 'This is not true',
-                ref: DBRef('experiences', experience_id),
+                ref: DBRef('experiences', ObjectId(experience_id)),
             };
             return db.collection('reports').insertOne(testData);
         }));
