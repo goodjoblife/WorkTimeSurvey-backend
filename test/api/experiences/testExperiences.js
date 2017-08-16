@@ -545,7 +545,7 @@ describe('Experiences 面試和工作經驗資訊', () => {
             },
         };
 
-        before('moch user', () => {
+        before('mock user', () => {
             sandbox = sinon.sandbox.create();
             const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication');
             cachedFacebookAuthentication
