@@ -333,7 +333,6 @@ router.patch('/:id', [
         const id = req.params.id;
         const status = req.body.status;
         const user = req.user;
-        let result;
 
         if (!_isLegalStatus(status)) {
             throw new HttpError('status is illegal', 422);
@@ -349,7 +348,7 @@ router.patch('/:id', [
                 throw new HttpError('user is unauthorized', 403);
             }
 
-            result = await experience_model.updateStatus(id, status);
+            const result = await experience_model.updateStatus(id, status);
 
             res.send({
                 success: true,
