@@ -1018,6 +1018,16 @@ describe('Workings 工時資訊', () => {
             });
         });
 
+        describe('status part', () => {
+            it('status can be `hidden`', () =>
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({ status: 'hidden' }))
+                    .expect(200)
+                    .expect((res) => {
+                        assert.equal(res.body.working.status, 'hidden');
+                    }));
+        });
+
         afterEach(() => {
             sandbox.restore();
         });
