@@ -76,12 +76,6 @@ router.post('/:id/reports', [
         const experience_id = req.params.id;
 
         const report_model = new ReportModel(req.db);
-        winston.info("/experiences/:id/reports", {
-            id: experience_id,
-            ip: req.ip,
-            ips: req.ips,
-            data: req.body,
-        });
 
         const partial_report = {
             namespace: 'experiences',
@@ -127,12 +121,6 @@ router.get('/:id/reports', [
         if (!requiredNumberInRange(limit, 1000, 1)) {
             throw new HttpError("limit 格式錯誤", 422);
         }
-
-        winston.info("Get /experiences/:id/reports", {
-            id: experience_id,
-            ip: req.ip,
-            ips: req.ips,
-        });
 
         const report_model = new ReportModel(req.db);
 
