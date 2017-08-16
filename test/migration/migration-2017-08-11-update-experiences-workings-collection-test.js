@@ -1,4 +1,4 @@
-const migration = require('../../database/migrations/migration-2017-08-11-create-experiences-workings-collection');
+const migration = require('../../database/migrations/migration-2017-08-11-update-experiences-workings-collection');
 const chai = require('chai');
 const MongoClient = require('mongodb').MongoClient;
 const config = require('config');
