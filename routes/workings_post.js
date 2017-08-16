@@ -50,6 +50,7 @@ function collectData(req, res) {
         "gender",
         "is_currently_employed",
         "employment_type",
+        "status",
         // workingtime data
         "week_work_time",
         "overtime_frequency",
@@ -376,6 +377,10 @@ function main(req, res, next) {
             year: date.getFullYear(),
             month: date.getMonth() + 1,
         };
+    }
+
+    if (!working.status) {
+        working.status = 'published';
     }
 
     const collection = req.db.collection("workings");

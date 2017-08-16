@@ -3,7 +3,6 @@ chai.use(require("chai-as-promised"));
 
 const assert = chai.assert;
 const sinon = require('sinon');
-require('sinon-as-promised');
 const { ObjectId } = require('mongodb');
 
 const HttpError = require('../libs/errors').HttpError;

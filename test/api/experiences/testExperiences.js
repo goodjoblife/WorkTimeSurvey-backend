@@ -10,7 +10,6 @@ const {
 } = require('mongodb');
 const config = require('config');
 const sinon = require('sinon');
-require('sinon-as-promised');
 const authentication = require('../../../libs/authentication');
 const {
     generateInterviewExperienceData,
@@ -522,5 +521,142 @@ describe('Experiences 面試和工作經驗資訊', () => {
             create_title_keyword_collection(db),
             create_company_keyword_collection(db),
         ])));
+    });
+
+    describe('PATCH /experiences/:id', () => {
+        let sandbox;
+        let user_experience_id_string;
+        let other_user_experience_id_string;
+        const fake_user = {
+            _id: new ObjectId(),
+            facebook_id: '-1',
+            facebook: {
+                id: '-1',
+                name: 'markLin',
+            },
+        };
+
+        const fake_other_user = {
+            _id: new ObjectId(),
+            facebook_id: '-2',
+            facebook: {
+                id: '-2',
+                name: 'lin',
+            },
+        };
+
+        before('mock user', () => {
+            sandbox = sinon.sandbox.create();
+            const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication');
+            cachedFacebookAuthentication
+                .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
+                .resolves(fake_user);
+        });
+
+        before('seeding the data', async () => {
+            const inter_data_1 = Object.assign(generateInterviewExperienceData(), {
+                status: 'published',
+                author_id: fake_user._id,
+            });
+            const inter_data_2 = Object.assign(generateInterviewExperienceData(), {
+                status: 'published',
+                author_id: fake_other_user._id,
+            });
+
+            const insert_result = await db.collection('experiences').insertMany([inter_data_1, inter_data_2]);
+            user_experience_id_string = insert_result.insertedIds[0].toString();
+            other_user_experience_id_string = insert_result.insertedIds[1].toString();
+        });
+
+        it('should return 200, while user updates his experience status',
+            async () => {
+                const res = await request(app).patch(`/experiences/${user_experience_id_string}`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                        status: 'hidden',
+                    });
+
+                assert.equal(res.status, 200);
+                assert.isTrue(res.body.success);
+                assert.equal(res.body.status, "hidden");
+
+                const experience = await db.collection('experiences').findOne({
+                    _id: new ObjectId(user_experience_id_string),
+                });
+                assert.equal(experience.status, "hidden");
+            }
+        );
+
+        it('should return 401, while user did not login',
+            async () => {
+                const res = await request(app).patch(`/experiences/${user_experience_id_string}`)
+                    .send({
+                        status: 'hidden',
+                    });
+
+                assert.equal(res.status, 401);
+            }
+        );
+
+        it('should return 422, while user send error status',
+            async () => {
+                const res = await request(app).patch(`/experiences/${user_experience_id_string}`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                        status: 'xxxxxx',
+                    });
+
+                assert.equal(res.status, 422);
+            }
+        );
+
+        it('should return 403, while user want to update not belong to him experience',
+            async () => {
+                const res = await request(app).patch(`/experiences/${other_user_experience_id_string}`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                        status: 'hidden',
+                    });
+                assert.equal(res.status, 403);
+            }
+        );
+
+        it('should return 422, while user did not set the status field',
+            async () => {
+                const res = await request(app).patch(`/experiences/${other_user_experience_id_string}`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                    });
+                assert.equal(res.status, 422);
+            }
+        );
+
+        it('should return 404, while the experience id is illegal',
+            async () => {
+                const res = await request(app).patch(`/experiences/xxxxxxxx`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                        status: 'published',
+                    });
+                assert.equal(res.status, 404);
+            }
+        );
+
+        it('should return 404, while the experience is not exist',
+            async () => {
+                const res = await request(app).patch(`/experiences/${(new ObjectId()).toString()}`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                        status: 'published',
+                    });
+                assert.equal(res.status, 404);
+            }
+        );
+
+        after(() => db.collection('experiences').deleteMany({}));
+
+        after(() => {
+            sandbox.restore();
+        });
     });
 });

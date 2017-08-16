@@ -5,7 +5,6 @@ const request = require('supertest');
 const app = require('../app');
 const MongoClient = require('mongodb').MongoClient;
 const sinon = require('sinon');
-require('sinon-as-promised');
 const config = require('config');
 const facebook = require('../libs/facebook');
 const ObjectId = require('mongodb').ObjectId;
@@ -22,6 +21,7 @@ function generateWorkingTimeRelatedPayload(options) {
         overtime_frequency: '3',
         day_promised_work_time: '8',
         day_real_work_time: '10',
+        status: 'published',
     };
 
     const payload = {};
@@ -54,6 +54,7 @@ function generateSalaryRelatedPayload(options) {
         salary_type: 'year',
         salary_amount: '10000',
         experience_in_year: '10',
+        status: 'published',
     };
 
     const payload = {};
@@ -92,6 +93,7 @@ function generateAllPayload(options) {
         overtime_frequency: '3',
         day_promised_work_time: '8',
         day_real_work_time: '10',
+        status: 'published',
     };
 
     const payload = {};
@@ -191,11 +193,19 @@ describe('Workings 工時資訊', () => {
         describe('generate payload', () => {
             it('generateWorkingTimeRelatedPayload', () => request(app).post('/workings')
                     .send(generateWorkingTimeRelatedPayload())
-                    .expect(200));
+                    .expect(200)
+                    .expect((res) => {
+                        assert.equal(res.body.working.status, 'published');
+                    })
+                );
 
             it('generateSalaryRelatedPayload', () => request(app).post('/workings')
                     .send(generateSalaryRelatedPayload())
-                    .expect(200));
+                    .expect(200)
+                    .expect((res) => {
+                        assert.equal(res.body.working.status, 'published');
+                    })
+                );
         });
 
         describe('Common Data Validation Part', () => {
@@ -1005,6 +1015,16 @@ describe('Workings 工時資訊', () => {
                             assert.propertyVal(res.body.working.author, 'email', test_email);
                         });
             });
+        });
+
+        describe('status part', () => {
+            it('status can be `hidden`', () =>
+                request(app).post('/workings')
+                    .send(generateWorkingTimeRelatedPayload({ status: 'hidden' }))
+                    .expect(200)
+                    .expect((res) => {
+                        assert.equal(res.body.working.status, 'hidden');
+                    }));
         });
 
         afterEach(() => {
