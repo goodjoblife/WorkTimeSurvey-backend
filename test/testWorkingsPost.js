@@ -161,16 +161,15 @@ describe('Workings 工時資訊', () => {
                     .expect(401);
             });
 
-            it('需要回傳 401 如果不能 FB 登入', () => {
-                return request(app).post('/workings')
+            it('需要回傳 401 如果不能 FB 登入', () =>
+                request(app).post('/workings')
                     .send({
                         access_token: 'invalid',
                     })
                     .expect(401)
                     .then((res) => {
                         sinon.assert.calledOnce(cachedFacebookAuthentication);
-                    });
-            });
+                    }));
         });
 
         describe('generate payload', () => {
