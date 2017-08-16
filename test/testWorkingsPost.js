@@ -229,6 +229,16 @@ describe('Workings 工時資訊', () => {
                     }))
                     .expect(422));
 
+            it('should be 200, when user send hidden working', () => request(app).post('/workings')
+                    .send(generateSalaryRelatedPayload({
+                        status: "hidden",
+                    }))
+                    .expect(200)
+                    .expect((res) => {
+                        assert.equal(res.body.working.status, 'hidden');
+                    })
+                );
+
             describe('when is_currently_employed == "no"', () => {
                 it('job_ending_time_year and job_ending_time_month are required', () => request(app).post('/workings')
                         .send(generateWorkingTimeRelatedPayload({

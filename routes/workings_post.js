@@ -50,6 +50,7 @@ function collectData(req, res) {
         "gender",
         "is_currently_employed",
         "employment_type",
+        "status",
         // workingtime data
         "week_work_time",
         "overtime_frequency",
