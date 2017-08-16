@@ -167,13 +167,13 @@ function pickupWorkExperience(input) {
         sections,
         experience_in_year,
         education,
+        status,
         // work part
         is_currently_employed,
         job_ending_time,
         salary,
         week_work_time,
         recommend_to_others,
-        status,
     } = input;
 
     Object.assign(partial, {

@@ -189,6 +189,7 @@ function pickupInterviewExperience(input) {
         sections,
         experience_in_year,
         education,
+        status,
         // interview part
         interview_time,
         interview_qas,
@@ -196,7 +197,6 @@ function pickupInterviewExperience(input) {
         interview_sensitive_questions,
         salary,
         overall_rating,
-        status,
     } = input;
 
     Object.assign(partial, {
