@@ -44,26 +44,26 @@ describe('Reports Test', () => {
         let experience_id;
         let sandbox;
 
-        beforeEach('Create test data', () => {
+        beforeEach('Mock user', () => {
             sandbox = sinon.sandbox.create();
             const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication')
                 .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
                 .resolves(fake_user);
 
-            cachedFacebookAuthentication
+            return cachedFacebookAuthentication
                 .withArgs(sinon.match.object, sinon.match.object, 'other_fakeaccesstoken')
                 .resolves(fake_other_user);
-
-            return db.collection('experiences').insertOne({
-                type: 'interview',
-                author_id: new ObjectId(),
-                status: "published",
-                like_count: 0,
-                report_count: 0,
-            }).then((result) => {
-                experience_id = result.insertedId.toString();
-            });
         });
+
+        beforeEach('Create test data', () => db.collection('experiences').insertOne({
+            type: 'interview',
+            author_id: new ObjectId(),
+            status: "published",
+            like_count: 0,
+            report_count: 0,
+        }).then((result) => {
+            experience_id = result.insertedId.toString();
+        }));
 
         it('should return 200 and correct fields if succeed', () => {
             const req = request(app)
@@ -173,10 +173,6 @@ describe('Reports Test', () => {
             const pro1 = db.collection('reports').remove();
             const pro2 = db.collection('experiences').remove({});
             return Promise.all([pro1, pro2]);
-        });
-
-        afterEach(() => {
-            sandbox.restore();
         });
     });
 
