@@ -2,11 +2,10 @@ const express = require('express');
 
 const router = express.Router();
 const HttpError = require('../libs/errors').HttpError;
-const facebook = require('../libs/facebook');
-const winston = require('winston');
 const escapeRegExp = require('lodash/escapeRegExp');
 const post_helper = require('./workings_post');
 const middleware = require('./middleware');
+const authentication = require('../middlewares/authentication');
 
 router.get('/', middleware.sort_by);
 router.get('/', middleware.pagination);
@@ -72,25 +71,8 @@ router.post('/', (req, res, next) => {
     next();
 });
 
-/*
- *  When developing, you can set environment to skip facebook auth
- */
-if (!process.env.SKIP_FACEBOOK_AUTH) {
-    router.post('/', (req, res, next) => {
-        const access_token = req.body.access_token;
-
-        facebook.accessTokenAuth(access_token).then((facebookInfo) => {
-            winston.info("facebook auth success", { access_token, ip: req.ip, ips: req.ips });
-
-            req.custom.facebook = facebookInfo;
-            next();
-        }).catch((err) => {
-            winston.info("facebook auth fail", { access_token, ip: req.ip, ips: req.ips });
-
-            next(new HttpError("Unauthorized", 401));
-        });
-    });
-}
+router.post('/', authentication.cachedFacebookAuthenticationMiddleware);
+// req.user.facebook --> {id, name}
 
 router.post('/', (req, res, next) => {
     post_helper.collectData(req, res).then(next, next);
