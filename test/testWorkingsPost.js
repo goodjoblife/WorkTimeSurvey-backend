@@ -179,7 +179,7 @@ describe('Workings 工時資訊', () => {
                     .expect(200);
 
                 assert.deepPropertyVal(res.body, 'working.author.id', '-1');
-                assert.deepPropertyVal(res.body, 'working.author.name', 'test');
+                assert.deepPropertyVal(res.body, 'working.author.name', 'mark');
                 assert.deepPropertyVal(res.body, 'working.author.type', 'facebook');
             });
 
