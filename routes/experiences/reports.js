@@ -95,7 +95,7 @@ router.post('/:id/reports', [
             } else if (err instanceof ObjectNotExistError) {
                 next(new HttpError(err.message, 404));
             } else {
-                next(new HttpError("Internal Server Error", 500));
+                next(err);
             }
         });
     },
@@ -133,7 +133,7 @@ router.get('/:id/reports', [
             if (err instanceof ObjectNotExistError) {
                 next(new HttpError(err.message, 404));
             } else {
-                next(new HttpError("Internal Server Error", 500));
+                next(err);
             }
         });
     },
