@@ -5,7 +5,7 @@ const HttpError = require('../libs/errors').HttpError;
 const escapeRegExp = require('lodash/escapeRegExp');
 const post_helper = require('./workings_post');
 const middleware = require('./middleware');
-const authentication = require('../middlewares/authentication');
+const passport = require('passport');
 
 router.get('/', middleware.sort_by);
 router.get('/', middleware.pagination);
@@ -71,7 +71,7 @@ router.post('/', (req, res, next) => {
     next();
 });
 
-router.post('/', authentication.cachedFacebookAuthenticationMiddleware);
+router.post('/', passport.authenticate('bearer', { session: false }));
 // req.user.facebook --> {id, name}
 
 router.post('/', (req, res, next) => {
