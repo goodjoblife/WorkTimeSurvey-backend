@@ -10,7 +10,6 @@ const {
 } = require('mongodb');
 const config = require('config');
 const sinon = require('sinon');
-require('sinon-as-promised');
 const authentication = require('../../../libs/authentication');
 const {
     generateInterviewExperienceData,

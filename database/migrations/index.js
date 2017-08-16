@@ -15,4 +15,5 @@ module.exports = [
     'create-companyKeywords-collection',
     'create-jobTitleKeywords-collection',
     'migration-2017-08-08-create-reports-collection',
+    'migration-2017-08-11-update-experiences-workings-collection',
 ];

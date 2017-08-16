@@ -8,7 +8,6 @@ const {
     ObjectId,
 } = require('mongodb');
 const sinon = require('sinon');
-require('sinon-as-promised');
 const config = require('config');
 
 const authentication = require('../../../libs/authentication');
