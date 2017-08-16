@@ -43,11 +43,7 @@ function _reportViewModel(report) {
 }
 
 function _reportsViewModel(reports) {
-    const result = [];
-    reports.forEach((report) => {
-        result.push(_reportViewModel(report));
-    });
-    return result;
+    return reports.map((report) => _reportViewModel(report));
 }
 
 /* eslint-disable */
