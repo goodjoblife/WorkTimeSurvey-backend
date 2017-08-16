@@ -188,9 +188,15 @@ describe('Workings 工時資訊', () => {
         });
 
         describe('generate payload', () => {
-            it('generateWorkingTimeRelatedPayload', () => request(app).post('/workings')
+            it('generateWorkingTimeRelatedPayload', async () => {
+                const res = await request(app).post('/workings')
                     .send(generateWorkingTimeRelatedPayload())
-                    .expect(200));
+                    .expect(200);
+
+                assert.deepPropertyVal(res.body, 'working.author.id', '-1');
+                assert.deepPropertyVal(res.body, 'working.author.name', 'test');
+                assert.deepPropertyVal(res.body, 'working.author.type', 'facebook');
+            });
 
             it('generateSalaryRelatedPayload', () => request(app).post('/workings')
                     .send(generateSalaryRelatedPayload())
