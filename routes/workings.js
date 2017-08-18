@@ -11,8 +11,6 @@ const middleware = require('./middleware');
 router.get('/', middleware.sort_by);
 router.get('/', middleware.pagination);
 router.get('/', (req, res, next) => {
-    winston.info(req.originalUrl, { query: req.query, ip: req.ip, ips: req.ips });
-
     const collection = req.db.collection('workings');
     const opt = {
         company: 1,
@@ -102,8 +100,6 @@ router.post('/', (req, res, next) => {
 
 router.use('/search_by/company/group_by/company', middleware.group_sort_by);
 router.get('/search_by/company/group_by/company', (req, res, next) => {
-    winston.info(req.originalUrl, { query: req.query, ip: req.ip, ips: req.ips });
-
     // input parameter
     const company = req.query.company;
     if (!company || company === '') {
@@ -262,8 +258,6 @@ router.get('/search_by/company/group_by/company', (req, res, next) => {
 
 router.use('/search_by/job_title/group_by/company', middleware.group_sort_by);
 router.get('/search_by/job_title/group_by/company', (req, res, next) => {
-    winston.info(req.originalUrl, { query: req.query, ip: req.ip, ips: req.ips });
-
     // input parameter
     const job_title = req.query.job_title;
     if (!job_title || job_title === '') {
@@ -367,8 +361,6 @@ router.get('/search_by/job_title/group_by/company', (req, res, next) => {
  * @apiSuccess {String} ._id.name 公司名稱 (有可能是 Array)
  */
 router.get('/companies/search', (req, res, next) => {
-    winston.info("/workings/companies/search", { query: req.query, ip: req.ip, ips: req.ips });
-
     const search = req.query.key || "";
     const page = parseInt(req.query.page, 10) || 0;
 
@@ -420,8 +412,6 @@ router.get('/companies/search', (req, res, next) => {
  * @apiSuccess {String} ._id 職稱
  */
 router.get('/jobs/search', (req, res, next) => {
-    winston.info("/workings/jobs/search", { query: req.query, ip: req.ip, ips: req.ips });
-
     const search = req.query.key || "";
     const page = parseInt(req.query.page, 10) || 0;
 

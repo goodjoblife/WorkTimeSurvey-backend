@@ -189,6 +189,7 @@ function pickupInterviewExperience(input) {
         sections,
         experience_in_year,
         education,
+        status,
         // interview part
         interview_time,
         interview_qas,
@@ -241,6 +242,12 @@ function pickupInterviewExperience(input) {
     if (salary) {
         partial.salary = salary;
     }
+
+    if (status) {
+        partial.status = status;
+    } else {
+        partial.status = "published";
+    }
     return partial;
 }
 
@@ -283,6 +290,7 @@ function validationInputFields(data) {
     "曾詢問家庭狀況","曾詢問婚姻狀況","生育計畫",
     "曾要求繳交身分證","曾要求繳交保證金","曾詢問宗教信仰",
     "或其他 0 < length <= 20 的字串"} [interview_sensitive_questions] 面試中提及的特別問題陣列(較敏感/可能違法)
+ * @apiParam {String="published","hidden"} [status="published"] 該篇文章的狀態
  * @apiSuccess {Boolean} success 是否上傳成功
  * @apiSuccess {Object} experience 經驗分享物件
  * @apiSuccess {String} experience._id 經驗分享id

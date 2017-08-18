@@ -3,7 +3,6 @@ chai.use(require("chai-as-promised"));
 
 const assert = chai.assert;
 const sinon = require('sinon');
-require('sinon-as-promised');
 const request = require('supertest');
 
 const app = require('../app');

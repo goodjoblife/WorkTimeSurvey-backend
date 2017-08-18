@@ -1,11 +1,10 @@
 const express = require('express');
-
-const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
 const lodash = require('lodash');
-const winston = require('winston');
 const CompanyModel = require('../../models/company_model');
 const getCompanyName = require('../company_helper').getCompanyName;
+
+const router = express.Router();
 
 function _generateGetCompanyViewModel(companies) {
     const result = companies.map((company) => ({
@@ -25,8 +24,6 @@ function _generateGetCompanyViewModel(companies) {
  * @apiSuccess {Object[]} . Companies
  */
 router.get('/search', (req, res, next) => {
-    winston.info("/workings/search", { query: req.query, ip: req.ip, ips: req.ips });
-
     const search = req.query.key || "";
     const page = req.query.page || 0;
 

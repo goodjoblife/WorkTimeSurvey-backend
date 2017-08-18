@@ -8,7 +8,6 @@ const app = require('../../../app');
 const MongoClient = require('mongodb').MongoClient;
 const ObjectId = require('mongodb').ObjectId;
 const sinon = require('sinon');
-require('sinon-as-promised');
 const config = require('config');
 const authentication = require('../../../libs/authentication');
 
@@ -128,6 +127,7 @@ describe('experiences 面試和工作經驗資訊', () => {
                                 assert.deepEqual(experience.report_count, 0);
                                 assert.property(experience, 'created_at');
                                 assert.property(experience, 'data_time');
+                                assert.deepEqual(experience.status, 'published');
 
                                 // expected response
                                 assert.property(res.body, 'success');

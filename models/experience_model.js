@@ -222,6 +222,21 @@ class ExperienceModel {
             }
         );
     }
+    updateStatus(id, status) {
+        return this.collection.findOneAndUpdate({
+            _id: new mongo.ObjectId(id),
+        }, {
+            $set: {
+                status,
+            },
+        }, {
+            projection: {
+                _id: 1,
+                status: 1,
+            },
+            returnOriginal: false,
+        });
+    }
 }
 
 module.exports = ExperienceModel;

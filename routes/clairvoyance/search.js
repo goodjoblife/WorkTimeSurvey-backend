@@ -1,9 +1,8 @@
 const express = require('express');
-
-const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
 const escapeRegExp = require('lodash/escapeRegExp');
-const winston = require('winston');
+
+const router = express.Router();
 
 /**
  * @api {get} /clairvoyance/search/by-job 依據職稱搜尋工時資訊
@@ -22,7 +21,6 @@ const winston = require('winston');
  * @apiSuccess {Number} workings.week_work_time 最近一週工作時數
  */
 router.get('/by-job', (req, res, next) => {
-    winston.info('/clairvoyance/search/by-job', { job_title: req.query.job_title, ip: req.ip, ips: req.ips });
     const job_title = req.query.job_title;
     const page = req.query.page || 0;
 
@@ -93,8 +91,6 @@ router.get('/by-job', (req, res, next) => {
  * @apiSuccess {Number} workings.week_work_time 最近一週工作時數
  */
 router.get('/by-company', (req, res, next) => {
-    winston.info("/clairvoyance/search/by-company", { company: req.query.company, ip: req.ip, ips: req.ips });
-
     const company = req.query.company;
     const page = req.query.page || 0;
 

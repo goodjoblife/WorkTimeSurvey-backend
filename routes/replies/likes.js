@@ -1,13 +1,12 @@
 const express = require('express');
-
-const router = express.Router();
 const HttpError = require('../../libs/errors').HttpError;
 const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
-const winston = require('winston');
 const ReplyLikeModel = require('../../models/reply_like_model');
 const ReplyModel = require('../../models/reply_model');
 const authentication = require('../../middlewares/authentication');
+
+const router = express.Router();
 
 /**
  * @api {post} /replies/:id/likes 新增留言的讚 API
@@ -16,8 +15,6 @@ const authentication = require('../../middlewares/authentication');
  */
 router.post('/:reply_id/likes', authentication.cachedFacebookAuthenticationMiddleware);
 router.post('/:reply_id/likes', (req, res, next) => {
-    winston.info(req.originalUrl, { query: req.query, ip: req.ip, ips: req.ips });
-
     const reply_id = req.params.reply_id;
     if (typeof reply_id === 'undefined') {
         next(new HttpError('id error', 422));
@@ -55,8 +52,6 @@ router.post('/:reply_id/likes', (req, res, next) => {
  */
 router.delete('/:reply_id/likes', authentication.cachedFacebookAuthenticationMiddleware);
 router.delete('/:reply_id/likes', (req, res, next) => {
-    winston.info(req.originalUrl, { query: req.query, ip: req.ip, ips: req.ips });
-
     const reply_id = req.params.reply_id;
     if (typeof reply_id === 'undefined') {
         next(new HttpError('Not Found', 404));

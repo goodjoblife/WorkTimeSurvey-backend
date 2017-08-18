@@ -2,7 +2,6 @@ const assert = require('chai').assert;
 const request = require('supertest');
 const { MongoClient, ObjectId } = require('mongodb');
 const sinon = require('sinon');
-require('sinon-as-promised');
 const config = require('config');
 const app = require('../../../app');
 const authentication = require('../../../libs/authentication');

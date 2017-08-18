@@ -39,6 +39,7 @@ function generateInterviewExperienceData() {
         like_count: 0,
         reply_count: 0,
         report_count: 0,
+        status: 'published',
     };
 
     return interview_experience_data;
@@ -66,6 +67,7 @@ function generateWorkExperienceData() {
         like_count: 0,
         reply_count: 0,
         report_count: 0,
+        status: 'published',
         is_currently_employed: 'no',
         job_ending_time: {
             year: 2017,
