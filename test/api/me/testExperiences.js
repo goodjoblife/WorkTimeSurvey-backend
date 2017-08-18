@@ -16,6 +16,8 @@ const {
 describe('Experiences of Author Test', () => {
     let db;
     let sandbox;
+    let user_interview_experience_id;
+    let user_work_experience_id;
     const fake_user = {
         _id: new ObjectId(),
         facebook_id: '-1',
@@ -33,14 +35,12 @@ describe('Experiences of Author Test', () => {
             name: 'markLin002',
         },
     };
-    let user_interview_experience_id;
-    let user_work_experience_id;
 
     before(() => MongoClient.connect(config.get('MONGODB_URI')).then((_db) => {
         db = _db;
     }));
 
-    before('Moch User', () => {
+    before('Mock User', () => {
         sandbox = sinon.sandbox.create();
         sandbox.stub(authentication, 'cachedFacebookAuthentication')
             .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
