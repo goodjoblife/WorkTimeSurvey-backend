@@ -33,6 +33,8 @@ describe('Experiences of Author Test', () => {
             name: 'markLin002',
         },
     };
+    let user_interview_experience_id;
+    let user_work_experience_id;
 
     before(() => MongoClient.connect(config.get('MONGODB_URI')).then((_db) => {
         db = _db;
@@ -40,36 +42,35 @@ describe('Experiences of Author Test', () => {
 
     before('Moch User', () => {
         sandbox = sinon.sandbox.create();
-        const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication')
+        sandbox.stub(authentication, 'cachedFacebookAuthentication')
             .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
             .resolves(fake_user);
-
-        cachedFacebookAuthentication
-            .withArgs(sinon.match.object, sinon.match.object, 'other_fakeaccesstoken')
-            .resolves(fake_other_user);
     });
 
     before('Create Data', () => {
-        const work_data = Object.assign(generateWorkExperienceData(), {
+        const user_work_experience = Object.assign(generateWorkExperienceData(), {
             status: 'published',
             author_id: fake_user._id,
         });
 
-        const interview_data = Object.assign(generateInterviewExperienceData(), {
+        const user_interview_experience = Object.assign(generateInterviewExperienceData(), {
             status: 'published',
             author_id: fake_user._id,
         });
 
-        const interview_data_other = Object.assign(generateInterviewExperienceData(), {
+        const other_user_interview_experiencep = Object.assign(generateInterviewExperienceData(), {
             status: 'published',
             author_id: fake_other_user._id,
         });
 
         return db.collection('experiences').insertMany([
-            work_data,
-            interview_data,
-            interview_data_other,
-        ]);
+            user_work_experience,
+            user_interview_experience,
+            other_user_interview_experiencep,
+        ]).then((result) => {
+            user_work_experience_id = result.insertedIds[0];
+            user_interview_experience_id = result.insertedIds[1];
+        });
     });
 
     it('should be success, when the author get him experiences',
@@ -78,8 +79,13 @@ describe('Experiences of Author Test', () => {
                 .query({
                     access_token: 'fakeaccesstoken',
                 });
+
             assert.equal(res.status, 200);
-            assert.lengthOf(res.body.experiences, 2);
+            const experiences = res.body.experiences;
+            const work_experience = experiences.find(experience => experience.type === 'work');
+            const interview_experience = experiences.find(experience => experience.type === 'interview');
+            assert.equal(work_experience._id, user_work_experience_id);
+            assert.equal(interview_experience._id, user_interview_experience_id);
         }
     );
 
@@ -90,8 +96,11 @@ describe('Experiences of Author Test', () => {
                     access_token: 'fakeaccesstoken',
                     type: 'work',
                 });
+
             assert.equal(res.status, 200);
-            assert.lengthOf(res.body.experiences, 1);
+            const experiences = res.body.experiences;
+            assert.lengthOf(experiences, 1);
+            assert.equal(experiences[0]._id, user_work_experience_id);
         }
     );
 
@@ -102,18 +111,20 @@ describe('Experiences of Author Test', () => {
                     access_token: 'fakeaccesstoken',
                     type: 'work,interview',
                 });
+
             assert.equal(res.status, 200);
             assert.lengthOf(res.body.experiences, 2);
         }
     );
 
-    it('should be error, when setting limit than 100',
+    it('should be error 422, when setting limit than 100',
         async () => {
             const res = await request(app).get(`/me/experiences`)
                 .query({
                     access_token: 'fakeaccesstoken',
                     limit: 150,
                 });
+
             assert.equal(res.status, 422);
         }
     );
@@ -125,16 +136,15 @@ describe('Experiences of Author Test', () => {
                     access_token: 'fakeaccesstoken',
                     start: -5,
                 });
+
             assert.equal(res.status, 422);
         }
     );
 
     it('should be error, when no authorization',
         async () => {
-            const res = await request(app).get(`/me/experiences`)
-                .query({
-                    start: -5,
-                });
+            const res = await request(app).get(`/me/experiences`);
+
             assert.equal(res.status, 401);
         }
     );
