@@ -25,6 +25,8 @@ const wrap = require('../../libs/wrap');
  */
 function _queryToDBQuery(search_query, search_by, type) {
     const query = {};
+    query.status = 'published';
+
     if (!((search_by && search_query) || type)) {
         return query;
     }
@@ -49,9 +51,6 @@ function _queryToDBQuery(search_query, search_by, type) {
             };
         }
     }
-
-    query.status = 'published';
-
     return query;
 }
 
