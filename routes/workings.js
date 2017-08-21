@@ -464,9 +464,9 @@ function _isLegalStatus(value) {
 }
 
 /**
- * @api {patch} /experiences/:id 更新自已建立的經驗狀態 API
+ * @api {patch} /workings/:id 更新自已建立的工時與薪資狀態 API
  * @apiParam {String="published","hidden"} status 要更新成的狀態
- * @apiGroup Experiences
+ * @apiGroup Workings
  * @apiSuccess {Boolean} success 是否成功點讚
  * @apiSuccess {String} status 更新後狀態
  */
