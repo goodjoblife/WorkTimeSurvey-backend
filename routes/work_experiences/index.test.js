@@ -4,12 +4,12 @@ const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 const assert = chai.assert;
 const request = require('supertest');
-const app = require('../../../app');
+const app = require('../../app');
 const MongoClient = require('mongodb').MongoClient;
 const ObjectId = require('mongodb').ObjectId;
 const sinon = require('sinon');
 const config = require('config');
-const authentication = require('../../../libs/authentication');
+const authentication = require('../../libs/authentication');
 
 function generateWorkExperiencePayload(options) {
     const opt = options || {};

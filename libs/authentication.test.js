@@ -6,9 +6,9 @@ const sinon = require('sinon');
 const config = require('config');
 const MongoClient = require('mongodb').MongoClient;
 
-const authentication = require('../libs/authentication');
-const facebook = require('../libs/facebook');
-const _redis = require('../libs/redis');
+const authentication = require('./authentication');
+const facebook = require('./facebook');
+const _redis = require('./redis');
 
 const cachedFacebookAuthentication = authentication.cachedFacebookAuthentication;
 

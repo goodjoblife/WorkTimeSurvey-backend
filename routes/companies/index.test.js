@@ -1,6 +1,6 @@
 const assert = require('chai').assert;
 const request = require('supertest');
-const app = require('../app');
+const app = require('../../app');
 const MongoClient = require('mongodb').MongoClient;
 const config = require('config');
 

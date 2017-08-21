@@ -4,7 +4,7 @@ chai.use(require("chai-as-promised"));
 const assert = chai.assert;
 const MongoClient = require('mongodb').MongoClient;
 const config = require('config');
-const permission = require('../libs/search-permission');
+const permission = require('./search-permission');
 
 describe('Permission Library', () => {
     let db;

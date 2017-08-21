@@ -4,9 +4,9 @@ const {
     ObjectId,
 } = require('mongodb');
 const request = require('supertest');
-const app = require('../../../app');
+const app = require('../../app');
 const config = require('config');
-const create_capped_collection = require('../../../database/migrations/create-companyKeywords-collection');
+const create_capped_collection = require('./create-companyKeywords-collection');
 
 describe('Company Keywords Test', function () {
     let db = null;
