@@ -49,6 +49,9 @@ function _queryToDBQuery(search_query, search_by, type) {
             };
         }
     }
+
+    query.status = 'published';
+
     return query;
 }
 
