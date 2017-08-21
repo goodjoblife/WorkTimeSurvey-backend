@@ -1030,10 +1030,10 @@ describe('Workings 工時資訊', () => {
                 assert.isTrue(res.body.success);
                 assert.equal(res.body.status, "hidden");
 
-                const experience = await db.collection('workings').findOne({
+                const working = await db.collection('workings').findOne({
                     _id: user_working_id,
                 });
-                assert.equal(experience.status, "hidden");
+                assert.equal(working.status, "hidden");
             }
         );
 
