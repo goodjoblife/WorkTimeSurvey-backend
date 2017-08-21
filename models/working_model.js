@@ -33,6 +33,7 @@ class WorkingModel {
      * @param  {String} status
      * @returns {Promise}
      * @returns {ObjectId} _id - update experience id
+     * @returns {String} status - after updated , the status value
      */
     updateStatus(id_str, status) {
         return this.collection.findOneAndUpdate({

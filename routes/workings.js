@@ -482,12 +482,10 @@ router.patch('/:id', [
         }
 
         const working_model = new WorkingModel(req.db);
-
-
         try {
-            const working = await working_model.getExperienceById(id, { author_id: 1 });
+            const working = await working_model.getWorkingsById(id, { author: 1 });
 
-            if (!working.author_id.equals(user._id)) {
+            if (!working.author._id.equals(user._id)) {
                 throw new HttpError('user is unauthorized', 403);
             }
 
