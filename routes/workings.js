@@ -7,6 +7,10 @@ const winston = require('winston');
 const escapeRegExp = require('lodash/escapeRegExp');
 const post_helper = require('./workings_post');
 const middleware = require('./middleware');
+const authentication_required = require('../middlewares/authentication');
+const WorkingModel = require('../models/working_model');
+const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
+const wrap = require('../libs/wrap');
 
 router.get('/', middleware.sort_by);
 router.get('/', middleware.pagination);
@@ -450,5 +454,56 @@ router.get('/jobs/search', (req, res, next) => {
         next(new HttpError("Internal Server Error", 500));
     });
 });
+
+function _isLegalStatus(value) {
+    const legal_status = [
+        'published',
+        'hidden',
+    ];
+    return legal_status.indexOf(value) > -1;
+}
+
+/**
+ * @api {patch} /experiences/:id 更新自已建立的經驗狀態 API
+ * @apiParam {String="published","hidden"} status 要更新成的狀態
+ * @apiGroup Experiences
+ * @apiSuccess {Boolean} success 是否成功點讚
+ * @apiSuccess {String} status 更新後狀態
+ */
+router.patch('/:id', [
+    authentication_required.cachedFacebookAuthenticationMiddleware,
+    wrap(async (req, res) => {
+        const id = req.params.id;
+        const status = req.body.status;
+        const user = req.user;
+
+        if (!_isLegalStatus(status)) {
+            throw new HttpError('status is illegal', 422);
+        }
+
+        const working_model = new WorkingModel(req.db);
+
+
+        try {
+            const working = await working_model.getExperienceById(id, { author_id: 1 });
+
+            if (!working.author_id.equals(user._id)) {
+                throw new HttpError('user is unauthorized', 403);
+            }
+
+            const result = await working_model.updateStatus(id, status);
+
+            res.send({
+                success: true,
+                status: result.value.status,
+            });
+        } catch (err) {
+            if (err instanceof ObjectNotExistError) {
+                throw new HttpError(err.message, 404);
+            }
+            throw err;
+        }
+    }),
+]);
 
 module.exports = router;
