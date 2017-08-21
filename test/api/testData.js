@@ -88,7 +88,46 @@ function generateWorkExperienceData() {
     return work_experience_data;
 }
 
+function generateWorkingData() {
+    return {
+        author: {
+            type: 'facebook',
+            _id: new ObjectId(),
+        },
+        created_at: new Date(),
+        company: {
+            id: '123456789',
+            name: 'goodjob',
+        },
+        job_title: 'BackEnd Devdeloper',
+        sector: '台灣區',
+        gender: 'M',
+        is_currently_employed: 'no',
+        employment_type: 'xxxx',
+        week_work_time: 40,
+        overtime_frequency: 3,
+        day_promised_work_time: 8,
+        day_real_work_time: 12,
+        has_overtime_salary: 'yes',
+        has_compensatory_dayoff: 'yes',
+        experience_in_year: 10,
+        salary: {
+            type: 'day',
+            amount: 122,
+        },
+        estimated_hourly_wage: 122,
+        date_time: {
+            year: 2016,
+            month: 1,
+        },
+        recommended_by: new ObjectId(),
+        status: 'published',
+    };
+}
+
+
 module.exports = {
     generateInterviewExperienceData,
     generateWorkExperienceData,
+    generateWorkingData,
 };
