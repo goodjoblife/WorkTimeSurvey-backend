@@ -14,6 +14,7 @@ module.exports = [
     'migration-2017-05-09-create-replies-collection',
     'create-companyKeywords-collection',
     'create-jobTitleKeywords-collection',
+    'migration-2017-08-21-workings-author-to-users',
     'migration-2017-08-08-create-reports-collection',
     'migration-2017-08-11-update-experiences-workings-collection',
 ];

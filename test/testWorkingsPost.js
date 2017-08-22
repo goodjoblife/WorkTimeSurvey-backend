@@ -6,7 +6,7 @@ const app = require('../app');
 const MongoClient = require('mongodb').MongoClient;
 const sinon = require('sinon');
 const config = require('config');
-const facebook = require('../libs/facebook');
+const authentication = require('../libs/authentication');
 const ObjectId = require('mongodb').ObjectId;
 
 function generateWorkingTimeRelatedPayload(options) {
@@ -118,7 +118,15 @@ function generateAllPayload(options) {
 describe('Workings 工時資訊', () => {
     let db;
     let sandbox;
-    let accessTokenAuth;
+    let cachedFacebookAuthentication;
+    const fake_user = {
+        _id: new ObjectId(),
+        facebook_id: '-1',
+        facebook: {
+            id: '-1',
+            name: 'mark',
+        },
+    };
 
     before('DB: Setup', () => MongoClient.connect(config.get('MONGODB_URI')).then((_db) => {
         db = _db;
@@ -126,8 +134,11 @@ describe('Workings 工時資訊', () => {
 
     beforeEach(() => {
         sandbox = sinon.sandbox.create();
-        accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
-            .resolves({ id: '-1', name: 'test' });
+        cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication');
+        cachedFacebookAuthentication.withArgs(sinon.match.object, sinon.match.object, 'random')
+            .resolves(fake_user);
+        cachedFacebookAuthentication.withArgs(sinon.match.object, sinon.match.object, 'invalid')
+            .rejects();
     });
 
     describe('POST /workings', () => {
@@ -149,55 +160,32 @@ describe('Workings 工時資訊', () => {
         describe('Authentication & Authorization Part', () => {
             it('需要回傳 401 如果沒有 access_token', () => {
                 sandbox.restore();
-                accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
-                    .rejects(new Error('access_token is invalid'));
-
                 return request(app).post('/workings')
-                    .expect(401)
-                    .then((res) => {
-                        sinon.assert.calledOnce(accessTokenAuth);
-                    });
+                    .expect(401);
             });
 
-            it('需要回傳 401 如果 access_token 為空', () => {
-                sandbox.restore();
-                accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
-                    .rejects(new Error('access_token is invalid'));
-
-                return request(app).post('/workings')
+            it('需要回傳 401 如果不能 FB 登入', () =>
+                request(app).post('/workings')
                     .send({
-                        access_token: "",
+                        access_token: 'invalid',
                     })
                     .expect(401)
                     .then((res) => {
-                        sinon.assert.calledOnce(accessTokenAuth);
-                    });
-            });
-
-            it('需要回傳 401 如果不能 FB 登入', () => {
-                sandbox.restore();
-                accessTokenAuth = sandbox.stub(facebook, 'accessTokenAuth')
-                    .rejects(new Error('access_token is invalid'));
-
-                return request(app).post('/workings')
-                    .send({
-                        access_token: 'random',
-                    })
-                    .expect(401)
-                    .then((res) => {
-                        sinon.assert.calledOnce(accessTokenAuth);
-                    });
-            });
+                        sinon.assert.calledOnce(cachedFacebookAuthentication);
+                    }));
         });
 
         describe('generate payload', () => {
-            it('generateWorkingTimeRelatedPayload', () => request(app).post('/workings')
+            it('generateWorkingTimeRelatedPayload', async () => {
+                const res = await request(app).post('/workings')
                     .send(generateWorkingTimeRelatedPayload())
-                    .expect(200)
-                    .expect((res) => {
-                        assert.equal(res.body.working.status, 'published');
-                    })
-                );
+                    .expect(200);
+
+                assert.equal(res.body.working.status, 'published');
+                assert.deepPropertyVal(res.body, 'working.author.id', '-1');
+                assert.deepPropertyVal(res.body, 'working.author.name', 'mark');
+                assert.deepPropertyVal(res.body, 'working.author.type', 'facebook');
+            });
 
             it('generateSalaryRelatedPayload', () => request(app).post('/workings')
                     .send(generateSalaryRelatedPayload())
@@ -952,7 +940,7 @@ describe('Workings 工時資訊', () => {
                         }))
                         .expect(429))
                 .then(() => {
-                    sinon.assert.callCount(accessTokenAuth, 6);
+                    sinon.assert.callCount(cachedFacebookAuthentication, 6);
                 });
             });
 
@@ -977,7 +965,7 @@ describe('Workings 工時資訊', () => {
                                 assert.equal(res.body.working.company.name, 'GOODJOB');
                             }))
                     .then(() => {
-                        sinon.assert.callCount(accessTokenAuth, 2);
+                        sinon.assert.callCount(cachedFacebookAuthentication, 2);
                     }));
         });
 
