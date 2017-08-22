@@ -2,15 +2,13 @@ const express = require('express');
 
 const router = express.Router();
 const HttpError = require('../libs/errors').HttpError;
-const facebook = require('../libs/facebook');
-const winston = require('winston');
 const escapeRegExp = require('lodash/escapeRegExp');
 const post_helper = require('./workings_post');
 const middleware = require('./middleware');
-const authentication_required = require('../middlewares/authentication');
 const WorkingModel = require('../models/working_model');
 const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
 const wrap = require('../libs/wrap');
+const passport = require('passport');
 
 router.get('/', middleware.sort_by);
 router.get('/', middleware.pagination);
@@ -76,25 +74,8 @@ router.post('/', (req, res, next) => {
     next();
 });
 
-/*
- *  When developing, you can set environment to skip facebook auth
- */
-if (!process.env.SKIP_FACEBOOK_AUTH) {
-    router.post('/', (req, res, next) => {
-        const access_token = req.body.access_token;
-
-        facebook.accessTokenAuth(access_token).then((facebookInfo) => {
-            winston.info("facebook auth success", { access_token, ip: req.ip, ips: req.ips });
-
-            req.custom.facebook = facebookInfo;
-            next();
-        }).catch((err) => {
-            winston.info("facebook auth fail", { access_token, ip: req.ip, ips: req.ips });
-
-            next(new HttpError("Unauthorized", 401));
-        });
-    });
-}
+router.post('/', passport.authenticate('bearer', { session: false }));
+// req.user.facebook --> {id, name}
 
 router.post('/', (req, res, next) => {
     post_helper.collectData(req, res).then(next, next);
@@ -471,7 +452,7 @@ function _isLegalStatus(value) {
  * @apiSuccess {String} status 更新後狀態
  */
 router.patch('/:id', [
-    authentication_required.cachedFacebookAuthenticationMiddleware,
+    passport.authenticate('bearer', { session: false }),
     wrap(async (req, res) => {
         const id = req.params.id;
         const status = req.body.status;

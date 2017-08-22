@@ -11,8 +11,8 @@ const {
     requiredNumberGreaterThanOrEqualTo,
     shouldIn,
 } = require('../../libs/validation');
-const authentication = require('../../middlewares/authentication_user');
-const authentication_required = require('../../middlewares/authentication');
+const passport = require('passport');
+const { semiAuthentication } = require('../../middlewares/authentication');
 const wrap = require('../../libs/wrap');
 
 /**
@@ -25,6 +25,8 @@ const wrap = require('../../libs/wrap');
  */
 function _queryToDBQuery(search_query, search_by, type) {
     const query = {};
+    query.status = 'published';
+
     if (!((search_by && search_query) || type)) {
         return query;
     }
@@ -278,7 +280,7 @@ function _generateGetExperienceViewModel(experience, user, like) {
  */
 /* eslint-enable */
 router.get('/:id', [
-    authentication.cachedAndSetUserMiddleware,
+    semiAuthentication('bearer', { session: false }),
     wrap(async (req, res) => {
         const id = req.params.id;
         let user = null;
@@ -328,7 +330,7 @@ function _isLegalStatus(value) {
  * @apiSuccess {String} status 更新後狀態
  */
 router.patch('/:id', [
-    authentication_required.cachedFacebookAuthenticationMiddleware,
+    passport.authenticate('bearer', { session: false }),
     wrap(async (req, res) => {
         const id = req.params.id;
         const status = req.body.status;

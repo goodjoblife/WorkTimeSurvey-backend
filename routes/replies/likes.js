@@ -4,7 +4,7 @@ const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const ReplyLikeModel = require('../../models/reply_like_model');
 const ReplyModel = require('../../models/reply_model');
-const authentication = require('../../middlewares/authentication');
+const passport = require('passport');
 
 const router = express.Router();
 
@@ -13,7 +13,7 @@ const router = express.Router();
  * @apiGroup Replies Likes
  * @apiSuccess {Boolean} success 是否成功點讚
  */
-router.post('/:reply_id/likes', authentication.cachedFacebookAuthenticationMiddleware);
+router.post('/:reply_id/likes', passport.authenticate('bearer', { session: false }));
 router.post('/:reply_id/likes', (req, res, next) => {
     const reply_id = req.params.reply_id;
     if (typeof reply_id === 'undefined') {
@@ -50,7 +50,7 @@ router.post('/:reply_id/likes', (req, res, next) => {
  * @apiGroup Replies Likes
  * @apiSuccess {Boolean} success 是否成功取消讚
  */
-router.delete('/:reply_id/likes', authentication.cachedFacebookAuthenticationMiddleware);
+router.delete('/:reply_id/likes', passport.authenticate('bearer', { session: false }));
 router.delete('/:reply_id/likes', (req, res, next) => {
     const reply_id = req.params.reply_id;
     if (typeof reply_id === 'undefined') {
