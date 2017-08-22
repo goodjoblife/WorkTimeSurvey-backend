@@ -87,8 +87,9 @@ describe('Reports Test', () => {
 
             const check_reports_collection = req
                 .then(res =>
-                    db.collection('reports').findOne({ _id: ObjectId(res.body.report._id) })
+                    db.collection('reports').findOne({ ref: DBRef('experiences', ObjectId(experience_id_str)) })
                         .then((report) => {
+                            assert.isNotNull(report);
                             assert.equal(report.reason_category, '我認為這篇文章內容不實');
                             assert.equal(report.reason, 'This is not true');
                             assert.property(report, 'created_at');
