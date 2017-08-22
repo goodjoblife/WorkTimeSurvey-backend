@@ -1,9 +1,9 @@
 const express = require('express');
+const passport = require('passport');
 const HttpError = require('../../libs/errors').HttpError;
 
 const router = express.Router();
 const ReportModel = require('../../models/report_model');
-const authentication = require('../../middlewares/authentication');
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
 const {
@@ -59,7 +59,7 @@ function _reportsViewModel(reports) {
  */
 /* eslint-enable */
 router.post('/:id/reports', [
-    authentication.cachedFacebookAuthenticationMiddleware,
+    passport.authenticate('bearer', { session: false }),
     (req, res, next) => {
         try {
             validatePostFields(req.body);
