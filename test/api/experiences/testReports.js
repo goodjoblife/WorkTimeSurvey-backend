@@ -193,7 +193,7 @@ describe('Reports Test', () => {
         before('create test data', () => db.collection('experiences').insertOne({
             type: 'interview',
             author_id: fake_user._id,
-            report_count: 1,
+            report_count: 2,
         }).then((result) => {
             experience_id = result.insertedId.toString();
 
@@ -204,21 +204,37 @@ describe('Reports Test', () => {
                 reason: 'This is not true',
                 ref: DBRef('experiences', ObjectId(experience_id)),
             };
-            return db.collection('reports').insertOne(testData);
+            const testData2 = {
+                created_at: new Date(),
+                user_id: fake_other_user._id,
+                reason_category: '我認為這篇文章內容不實',
+                reason: 'This is not true',
+                ref: DBRef('experiences', ObjectId(experience_id)),
+            };
+
+            return Promise.all([
+                db.collection('reports').insertOne(testData),
+                db.collection('reports').insertOne(testData2),
+            ]);
         }));
 
         it('should get reports, and the fields are correct', () => request(app)
-                .get(`/experiences/${experience_id}/reports`)
-                .expect(200)
-                .expect((res) => {
-                    assert.property(res.body, 'reports');
-                    assert.isArray(res.body.reports);
-                    assert.notDeepProperty(res.body, 'reports.0.user_id');
-                    assert.deepProperty(res.body, 'reports.0.reason');
-                    assert.deepProperty(res.body, 'reports.0.reason_category');
-                    assert.deepProperty(res.body, 'reports.0.created_at');
-                }));
-
+            .get(`/experiences/${experience_id}/reports`)
+            .expect(200)
+            .expect((res) => {
+                assert.property(res.body, 'reports');
+                assert.isArray(res.body.reports);
+                assert.lengthOf(res.body.reports, 2);
+                assert.notDeepProperty(res.body, 'reports.0.user_id');
+                assert.deepProperty(res.body, 'reports.0.reason');
+                assert.deepProperty(res.body, 'reports.0.reason_category');
+                assert.deepProperty(res.body, 'reports.0.created_at');
+                assert.notDeepProperty(res.body, 'reports.1.user_id');
+                assert.deepProperty(res.body, 'reports.1.reason');
+                assert.deepProperty(res.body, 'reports.1.reason_category');
+                assert.deepProperty(res.body, 'reports.1.created_at');
+            }
+        ));
 
         it('set error reports and expect error code 404', () => request(app)
                 .get('/experiences/1111/reports')
