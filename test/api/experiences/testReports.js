@@ -40,7 +40,7 @@ describe('Reports Test', () => {
     }));
 
     describe('POST /experiences/:id/reports', () => {
-        let experience_id;
+        let experience_id_str;
         let sandbox;
 
         beforeEach('Mock user', () => {
@@ -61,12 +61,12 @@ describe('Reports Test', () => {
             like_count: 0,
             report_count: 0,
         }).then((result) => {
-            experience_id = result.insertedId.toString();
+            experience_id_str = result.insertedId.toString();
         }));
 
         it('should return 200 and correct fields if succeed', () => {
             const req = request(app)
-                .post(`/experiences/${experience_id}/reports`)
+                .post(`/experiences/${experience_id_str}/reports`)
                 .send(generatePayload('fakeaccesstoken'))
                 .expect(200)
                 .expect((res) => {
@@ -80,7 +80,7 @@ describe('Reports Test', () => {
 
             const check_experiences_collection = req
                 .then(() =>
-                    db.collection('experiences').findOne({ _id: ObjectId(experience_id) })
+                    db.collection('experiences').findOne({ _id: ObjectId(experience_id_str) })
                         .then((experience) => {
                             assert.equal(experience.report_count, 1);
                         }));
@@ -102,7 +102,7 @@ describe('Reports Test', () => {
         });
 
         it('should fail, because reason_category is required', () => request(app)
-                .post(`/experiences/${experience_id}/reports`)
+                .post(`/experiences/${experience_id_str}/reports`)
                 .send({
                     access_token: 'fakeaccesstoken',
                 })
@@ -113,22 +113,22 @@ describe('Reports Test', () => {
                 .send(generatePayload('fakeaccesstoken'))
                 .expect(404));
 
-        it('(! Need Index) should return 403, if post report 2 times', () => request(app).post(`/experiences/${experience_id}/reports`)
+        it('(! Need Index) should return 403, if post report 2 times', () => request(app).post(`/experiences/${experience_id_str}/reports`)
                 .send(generatePayload('fakeaccesstoken'))
                 .then(response => request(app)
-                        .post(`/experiences/${experience_id}/reports`)
+                        .post(`/experiences/${experience_id_str}/reports`)
                         .send(generatePayload('fakeaccesstoken'))
                         .expect(403)));
 
         it('should return 401, if user does not login', () => request(app)
-                .post(`/experiences/${experience_id}/reports`)
+                .post(`/experiences/${experience_id_str}/reports`)
                 .expect(401));
 
-        it('report_count should 1, if post report and get experience', () => request(app).post(`/experiences/${experience_id}/reports`)
+        it('report_count should 1, if post report and get experience', () => request(app).post(`/experiences/${experience_id_str}/reports`)
                 .send(generatePayload('fakeaccesstoken'))
                 .then(res => db.collection("experiences")
                         .find({
-                            _id: new ObjectId(experience_id),
+                            _id: new ObjectId(experience_id_str),
                         })
                         .toArray()
                         .then((result) => {
@@ -136,14 +136,14 @@ describe('Reports Test', () => {
                         })));
 
         it('(! Need Index), report_count should be 1, if post report 2 times (same user) and get experience', () => {
-            const uri = `/experiences/${experience_id}/reports`;
+            const uri = `/experiences/${experience_id_str}/reports`;
             return request(app).post(uri)
                 .send(generatePayload('fakeaccesstoken'))
                 .then(res => request(app).post(uri)
                         .send(generatePayload('fakeaccesstoken')))
                 .then(res => db.collection("experiences")
                         .find({
-                            _id: new ObjectId(experience_id),
+                            _id: new ObjectId(experience_id_str),
                         })
                         .toArray())
                 .then((result) => {
@@ -152,14 +152,14 @@ describe('Reports Test', () => {
         });
 
         it('report_count should be 2 , if post report 2 times(different user) and get experience', () => {
-            const uri = `/experiences/${experience_id}/reports`;
+            const uri = `/experiences/${experience_id_str}/reports`;
             return request(app).post(uri)
                 .send(generatePayload('fakeaccesstoken'))
                 .then(res => request(app).post(uri)
                         .send(generatePayload('other_fakeaccesstoken')))
                 .then(res => db.collection("experiences")
                         .find({
-                            _id: new ObjectId(experience_id),
+                            _id: new ObjectId(experience_id_str),
                         })
                         .toArray())
                 .then((result) => {
@@ -176,7 +176,7 @@ describe('Reports Test', () => {
     });
 
     describe('GET /experiences/:id/reports', () => {
-        let experience_id;
+        let experience_id_str;
         let sandbox = null;
 
         before('create user', () => {
@@ -195,21 +195,21 @@ describe('Reports Test', () => {
             author_id: fake_user._id,
             report_count: 2,
         }).then((result) => {
-            experience_id = result.insertedId.toString();
+            experience_id_str = result.insertedId.toString();
 
             const testData = {
                 created_at: new Date(),
                 user_id: fake_user._id,
                 reason_category: '我認為這篇文章內容不實',
                 reason: 'This is not true',
-                ref: DBRef('experiences', ObjectId(experience_id)),
+                ref: DBRef('experiences', ObjectId(experience_id_str)),
             };
             const testData2 = {
                 created_at: new Date(),
                 user_id: fake_other_user._id,
                 reason_category: '我認為這篇文章內容不實',
                 reason: 'This is not true',
-                ref: DBRef('experiences', ObjectId(experience_id)),
+                ref: DBRef('experiences', ObjectId(experience_id_str)),
             };
 
             return Promise.all([
@@ -219,7 +219,7 @@ describe('Reports Test', () => {
         }));
 
         it('should get reports, and the fields are correct', () => request(app)
-            .get(`/experiences/${experience_id}/reports`)
+            .get(`/experiences/${experience_id_str}/reports`)
             .expect(200)
             .expect((res) => {
                 assert.property(res.body, 'reports');
@@ -244,7 +244,7 @@ describe('Reports Test', () => {
                 .expect(404));
 
         it('limit = 2000  and expect error code 402', () => request(app)
-                .get(`/experiences/${experience_id}/reports`)
+                .get(`/experiences/${experience_id_str}/reports`)
                 .query({
                     access_token: 'fakeaccesstoken',
                     limit: 2000,

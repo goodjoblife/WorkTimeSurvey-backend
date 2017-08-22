@@ -69,7 +69,7 @@ router.post('/:id/reports', [
         }
 
         const user = req.user;
-        const experience_id = req.params.id;
+        const experience_id_str = req.params.id;
 
         const report_model = new ReportModel(req.db);
 
@@ -79,7 +79,7 @@ router.post('/:id/reports', [
             reason_category: req.body.reason_category,
             reason: req.body.reason,
         };
-        report_model.createReportToExperience(experience_id, partial_report).then((result) => {
+        report_model.createReportToExperience(experience_id_str, partial_report).then((result) => {
             const response = {
                 report: _reportViewModel(result.ops[0]),
             };
@@ -112,7 +112,7 @@ router.post('/:id/reports', [
 /* eslint-enable */
 router.get('/:id/reports', [
     (req, res, next) => {
-        const experience_id = req.params.id;
+        const experience_id_str = req.params.id;
         const limit = parseInt(req.query.limit, 10) || 100;
         const start = parseInt(req.query.start, 10) || 0;
 
@@ -122,7 +122,7 @@ router.get('/:id/reports', [
 
         const report_model = new ReportModel(req.db);
 
-        report_model.getReportsByExperienceId(experience_id, start, limit).then((reports) => {
+        report_model.getReportsByExperienceId(experience_id_str, start, limit).then((reports) => {
             const result = {
                 reports: _reportsViewModel(reports),
             };
