@@ -100,7 +100,7 @@ class ReportModel {
                 throw new ObjectNotExistError(`該篇${NAME_MAP[namespace]}不存在`);
             }
             Object.assign(partial_report, {
-                ref: new DBRef(namespace, Object(id_str)),
+                ref: new DBRef(namespace, ObjectId(id_str)),
                 created_at: new Date(),
             });
 
