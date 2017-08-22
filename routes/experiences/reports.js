@@ -57,6 +57,7 @@ function _reportsViewModel(reports) {
  * @apiSuccess {String} report.reason 檢舉的原因詳述。 若 reason_category = `這是廣告或垃圾訊息` 則不會有本欄位。但若為其他分類，則會有此欄位。
  * @apiSuccess {String} report.created_at 該檢舉的時間
  */
+/* eslint-enable */
 router.post('/:id/reports', [
     authentication.cachedFacebookAuthenticationMiddleware,
     (req, res, next) => {
@@ -96,6 +97,7 @@ router.post('/:id/reports', [
     },
 ]);
 
+/* eslint-disable */
 /**
  * @api {get} /experiences/:id/reports 取得單篇經驗的檢舉列表 API
  * @apiGroup Experiences Replies
@@ -107,6 +109,7 @@ router.post('/:id/reports', [
  * @apiSuccess {String} reports.reason 檢舉的原因詳述。 若 reason_category = `這是廣告或垃圾訊息` 則不會有本欄位。但若為其他分類，則會有此欄位。
  * @apiSuccess {String} reports.created_at 該檢舉的時間
  */
+/* eslint-enable */
 router.get('/:id/reports', [
     (req, res, next) => {
         const experience_id = req.params.id;
@@ -122,7 +125,7 @@ router.get('/:id/reports', [
         report_model.getReportsByExperienceId(experience_id, start, limit).then((reports) => {
             const result = {
                 reports: _reportsViewModel(reports),
-            }
+            };
             res.send(result);
         }).catch((err) => {
             if (err instanceof ObjectNotExistError) {
