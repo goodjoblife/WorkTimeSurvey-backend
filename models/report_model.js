@@ -99,16 +99,14 @@ class ReportModel {
             if (!is_exist) {
                 throw new ObjectNotExistError(`該篇${NAME_MAP[namespace]}不存在`);
             }
-            Object.assign(partial_report, {
+            document = Object.assign(partial_report, {
                 ref: new DBRef(namespace, ObjectId(id_str)),
                 created_at: new Date(),
             });
 
             return this.collection.insertOne(partial_report);
-        }).then((result) => {
-            document = result;
-            return model.incrementReportCount(id_str);
-        }).then(() => document)
+        }).then(() => model.incrementReportCount(id_str))
+        .then(() => document)
         .catch((err) => {
             if (err.code === 11000) { // E11000 duplicate key error
                 throw new DuplicateKeyError(`該篇${NAME_MAP[namespace]}已經被您檢舉過`);
@@ -185,7 +183,7 @@ class ReportModel {
      *      reason: String,
      *  }
      */
-    _getReportsByRefId(namespace, id_str, skip, limit, sort) {
+    _getReportsByRefId(namespace, id_str, skip = 0, limit = 20, sort = { created_at: 1 }) {
         const model = this._getModel(namespace);
         return model.isExist(id_str).then((is_exist) => {
             if (!is_exist) {

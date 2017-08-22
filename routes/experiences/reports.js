@@ -81,7 +81,7 @@ router.post('/:id/reports', [
         };
         report_model.createReportToExperience(experience_id_str, partial_report).then((result) => {
             const response = {
-                report: _reportViewModel(result.ops[0]),
+                report: _reportViewModel(result),
             };
 
             res.send(response);
