@@ -3,8 +3,8 @@ const request = require('supertest');
 const { MongoClient } = require('mongodb');
 const config = require('config');
 
-const app = require('../../../app');
-const create_capped_collection = require('../../../database/migrations/create-companyKeywords-collection');
+const app = require('../../app');
+const create_capped_collection = require('../../database/migrations/create-companyKeywords-collection');
 
 describe('company_keywords', () => {
     let db;

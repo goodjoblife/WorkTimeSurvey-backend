@@ -5,7 +5,7 @@ const HttpError = require('../../libs/errors').HttpError;
 const winston = require('winston');
 const ExperienceModel = require('../../models/experience_model');
 const helper = require('../company_helper');
-const authentication = require('../../middlewares/authentication');
+const passport = require('passport');
 const {
     requiredNonEmptyString,
     requiredNumber,
@@ -296,7 +296,7 @@ function validationInputFields(data) {
  * @apiSuccess {String} experience._id 經驗分享id
  */
 router.post('/', [
-    authentication.cachedFacebookAuthenticationMiddleware,
+    passport.authenticate('bearer', { session: false }),
     (req, res, next) => {
         try {
             validationInputFields(req.body);

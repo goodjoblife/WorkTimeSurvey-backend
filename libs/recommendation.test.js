@@ -6,7 +6,7 @@ const MongoClient = require('mongodb').MongoClient;
 const ObjectId = require('mongodb').ObjectId;
 const config = require('config');
 
-const recommendation = require('../libs/recommendation');
+const recommendation = require('./recommendation');
 
 describe('Recommendation Library', () => {
     describe('getRecommendationString', () => {

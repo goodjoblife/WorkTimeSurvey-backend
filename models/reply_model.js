@@ -134,6 +134,23 @@ class ReplyModel {
         );
     }
 
+    incrementReportCount(id) {
+        if (!this._isValidId(id)) {
+            return Promise.reject(new ObjectNotExistError("該留言不存在"));
+        }
+
+        return this.collection.updateOne(
+            {
+                _id: new ObjectId(id),
+            },
+            {
+                $inc: {
+                    report_count: 1,
+                },
+            }
+        );
+    }
+
     decrementLikeCount(id) {
         if (!this._isValidId(id)) {
             return Promise.reject(new ObjectNotExistError("該留言不存在"));

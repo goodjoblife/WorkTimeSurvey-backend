@@ -1,7 +1,7 @@
 const chai = require('chai');
 
 const assert = chai.assert;
-const validation = require('../../libs/validation');
+const validation = require('./validation');
 
 describe('Validation Library', () => {
     describe('#requiredString()', () => {

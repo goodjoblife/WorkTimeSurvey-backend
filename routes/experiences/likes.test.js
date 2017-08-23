@@ -2,7 +2,7 @@ const assert = require('chai').assert;
 
 const mongo = require('mongodb');
 const request = require('supertest');
-const app = require('../../../app');
+const app = require('../../app');
 const {
     MongoClient,
     ObjectId,
@@ -10,10 +10,10 @@ const {
 const sinon = require('sinon');
 const config = require('config');
 
-const authentication = require('../../../libs/authentication');
+const authentication = require('../../libs/authentication');
 const {
     generateInterviewExperienceData,
-} = require('../testData');
+} = require('./testData');
 
 describe('Experience Likes Test', () => {
     let db;

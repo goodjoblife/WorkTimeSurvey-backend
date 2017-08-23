@@ -119,7 +119,9 @@ workflows:
             - build-apidoc:
                 filters:
                     branches:
-                        only: master
+                        only:
+                            - master
+                            - dev
                 requires:
                     - build-node-7
                     - build-node-8

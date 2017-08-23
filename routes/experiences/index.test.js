@@ -3,21 +3,21 @@ chai.use(require('chai-datetime'));
 
 const assert = chai.assert;
 const request = require('supertest');
-const app = require('../../../app');
+const app = require('../../app');
 const {
     MongoClient,
     ObjectId,
 } = require('mongodb');
 const config = require('config');
 const sinon = require('sinon');
-const authentication = require('../../../libs/authentication');
+const authentication = require('../../libs/authentication');
 const {
     generateInterviewExperienceData,
     generateWorkExperienceData,
-} = require('../testData');
+} = require('./testData');
 
-const create_company_keyword_collection = require('../../../database/migrations/create-companyKeywords-collection');
-const create_title_keyword_collection = require('../../../database/migrations/create-jobTitleKeywords-collection');
+const create_company_keyword_collection = require('../../database/migrations/create-companyKeywords-collection');
+const create_title_keyword_collection = require('../../database/migrations/create-jobTitleKeywords-collection');
 
 describe('Experiences 面試和工作經驗資訊', () => {
     let db;
@@ -245,11 +245,23 @@ describe('Experiences 面試和工作經驗資訊', () => {
                 like_count: 0,
             });
 
+            const work_data_3 = Object.assign(generateWorkExperienceData(), {
+                company: {
+                    name: "GOODJOB1",
+                    id: "123",
+                },
+                job_title: "F2E",
+                created_at: new Date("2017-03-25T10:00:00.929Z"),
+                like_count: 0,
+                status: "hidden",
+            });
+
             return db.collection('experiences').insertMany([
                 inter_data_1,
                 work_data_1,
                 inter_data_2,
                 work_data_2,
+                work_data_3,
             ]);
         });
 

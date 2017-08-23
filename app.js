@@ -9,6 +9,8 @@ const logger = require('morgan');
 const winston = require('winston');
 // eslint-disable-next-line no-unused-expressions
 require('winston-mongodb').MongoDB;
+const passport = require('passport');
+const passportStrategies = require('./libs/passport-strategies');
 
 const routes = require('./routes/index');
 
@@ -54,6 +56,9 @@ app.use((req, res, next) => {
     });
     next();
 });
+
+app.use(passport.initialize());
+passport.use(passportStrategies.legacyFacebookTokenStrategy());
 app.use('/', routes);
 app.use('/companies', require('./routes/companies'));
 app.use('/workings', require('./routes/workings'));

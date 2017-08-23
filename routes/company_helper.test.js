@@ -5,7 +5,7 @@ chai.use(chaiAsPromised);
 const assert = chai.assert;
 const MongoClient = require('mongodb').MongoClient;
 const config = require('config');
-const helper = require('../../routes/company_helper');
+const helper = require('./company_helper');
 
 describe('company Helper', () => {
     describe('Get company by Id or query', () => {

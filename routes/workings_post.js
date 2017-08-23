@@ -13,7 +13,7 @@ function checkBodyField(req, field) {
 }
 
 /*
- * [req.custom.facebook]
+ * req.user.facebook
  *
  * req.custom.working
  * req.custom.company_query
@@ -32,13 +32,10 @@ function collectData(req, res) {
         author.email = req.body.email;
     }
 
-    if (req.custom.facebook) {
-        author.id = req.custom.facebook.id;
-        author.name = req.custom.facebook.name;
+    if (req.user.facebook) {
+        author.id = req.user.facebook.id;
+        author.name = req.user.facebook.name;
         author.type = "facebook";
-    } else {
-        author.id = "-1";
-        author.type = "test";
     }
 
     // pick these fields only

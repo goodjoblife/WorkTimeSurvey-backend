@@ -3,7 +3,7 @@ const chaiAsPromised = require("chai-as-promised");
 
 chai.use(chaiAsPromised);
 const assert = chai.assert;
-const facebook = require('../libs/facebook');
+const facebook = require('./facebook');
 const nock = require('nock');
 
 describe('libs/facebook.js', () => {
