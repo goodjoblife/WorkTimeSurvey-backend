@@ -12,6 +12,9 @@ defaults: &defaults
             command: npm run migrate
         - run:
             name: Unit test and API test
+            command: npm run test -- --timeout 30s
+        - run:
+            name: Unit test and API test
             command: npm run test:coverage -- --timeout 30s
         - run:
             name: Coveralls
