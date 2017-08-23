@@ -1,4 +1,4 @@
-const HttpError = require('../libs/errors').HttpError;
+const HttpError = require('../../libs/errors').HttpError;
 
 /*
  * Check the quota, limit queries <= 5

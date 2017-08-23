@@ -1,10 +1,10 @@
 const express = require('express');
 
 const router = express.Router();
-const HttpError = require('../libs/errors').HttpError;
+const HttpError = require('../../libs/errors').HttpError;
 const escapeRegExp = require('lodash/escapeRegExp');
 const post_helper = require('./workings_post');
-const middleware = require('./middleware');
+const middleware = require('../middleware');
 const passport = require('passport');
 
 router.get('/', middleware.sort_by);

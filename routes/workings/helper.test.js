@@ -5,8 +5,8 @@ chai.use(chaiAsPromised);
 const assert = chai.assert;
 const MongoClient = require('mongodb').MongoClient;
 const config = require('config');
-const HttpError = require('../libs/errors').HttpError;
-const helper = require('./workings_helper');
+const HttpError = require('../../libs/errors').HttpError;
+const helper = require('./helper');
 
 describe('Workings Helper', () => {
     describe('checkAndUpdateQuota', () => {

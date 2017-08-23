@@ -1,9 +1,9 @@
-const HttpError = require('../libs/errors').HttpError;
-const ObjectIdError = require('../libs/errors').ObjectIdError;
+const HttpError = require('../../libs/errors').HttpError;
+const ObjectIdError = require('../../libs/errors').ObjectIdError;
 const winston = require('winston');
-const helper = require('./workings_helper');
-const companyHelper = require('./company_helper');
-const recommendation = require('../libs/recommendation');
+const helper = require('./helper');
+const companyHelper = require('../company_helper');
+const recommendation = require('../../libs/recommendation');
 
 function checkBodyField(req, field) {
     if (req.body[field] && (typeof req.body[field] === "string") && req.body[field] !== "") {
