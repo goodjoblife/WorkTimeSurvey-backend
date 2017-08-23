@@ -6,10 +6,11 @@ const escapeRegExp = require('lodash/escapeRegExp');
 const post_helper = require('./workings_post');
 const middleware = require('../middleware');
 const passport = require('passport');
+const wrap = require('../../libs/wrap');
 
 router.get('/', middleware.sort_by);
 router.get('/', middleware.pagination);
-router.get('/', (req, res, next) => {
+router.get('/', wrap(async (req, res) => {
     const collection = req.db.collection('workings');
     const opt = {
         company: 1,
@@ -23,48 +24,40 @@ router.get('/', (req, res, next) => {
         estimated_hourly_wage: 1,
     };
 
-    let query = {
-        [req.custom.sort_by]: { $exists: true },
-    };
     const page = req.pagination.page;
     const limit = req.pagination.limit;
 
     const data = {};
-    collection
-        .count()
-        .then((count) => {
-            data.total = count;
+    data.total = await collection.count();
 
-            return collection
-                .find(query, opt)
-                .sort(req.custom.sort)
-                .skip(limit * page)
-                .limit(limit)
-                .toArray();
-        })
-        .then((defined_results) => {
-            if (defined_results.length < limit) {
-                return collection.find(query).count().then((count_defined_num) => {
-                    query = {
-                        [req.custom.sort_by]: { $exists: false },
-                    };
+    const defined_query = {
+        [req.custom.sort_by]: { $exists: true },
+    };
+    const undefined_query = {
+        [req.custom.sort_by]: { $exists: false },
+    };
 
-                    return collection.find(query, opt)
-                            .skip(((limit * page) + defined_results.length) - count_defined_num)
-                            .limit(limit - defined_results.length).toArray();
-                }).then(results => defined_results.concat(results));
-            }
-            return defined_results;
-        })
-        .then((results) => {
-            data.time_and_salary = results;
+    const defined_results = await collection
+        .find(defined_query, opt)
+        .sort(req.custom.sort)
+        .skip(limit * page)
+        .limit(limit)
+        .toArray();
 
-            res.send(data);
-        })
-        .catch((err) => {
-            next(new HttpError("Internal Server Error", 500));
-        });
-});
+    if (defined_results.length < limit) {
+        const count_defined_num = await collection.find(defined_query).count();
+
+        const undefined_results = await collection.find(undefined_query, opt)
+            .skip(((limit * page) + defined_results.length) - count_defined_num)
+            .limit(limit - defined_results.length)
+            .toArray();
+        data.time_and_salary = defined_results.concat(undefined_results);
+    } else {
+        data.time_and_salary = defined_results;
+    }
+
+    res.send(data);
+}));
 
 router.post('/', (req, res, next) => {
     req.custom = {};
