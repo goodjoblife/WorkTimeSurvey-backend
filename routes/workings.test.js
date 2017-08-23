@@ -11,7 +11,7 @@ const {
     ObjectId,
 } = require('mongodb');
 const authentication = require('../libs/authentication.js');
-const { generateWorkingData } = require('./api/testData');
+const { generateWorkingData } = require('../routes/experiences/testData');
 
 describe('Workings 工時資訊', () => {
     let db;
@@ -998,14 +998,14 @@ describe('Workings 工時資訊', () => {
                 status: 'published',
                 author: {
                     type: 'facebook',
-                    _id: fake_user._id,
+                    id: fake_user.facebook_id,
                 },
             });
             const other_user_working = Object.assign(generateWorkingData(), {
                 status: 'published',
                 author: {
                     type: 'facebook',
-                    _id: fake_other_user._id,
+                    id: fake_other_user.facebook_id,
                 },
             });
             const result = await db.collection('workings').insertMany([

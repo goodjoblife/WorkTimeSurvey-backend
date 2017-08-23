@@ -466,7 +466,7 @@ router.patch('/:id', [
         try {
             const working = await working_model.getWorkingsById(id, { author: 1 });
 
-            if (!working.author._id.equals(user._id)) {
+            if (!(working.author.id === user.facebook_id)) {
                 throw new HttpError('user is unauthorized', 403);
             }
 
