@@ -138,7 +138,9 @@ class ReportModel {
     getReportsByExperienceId(experience_id_str, skip = 0, limit = 100, sort = {
         created_at: 1,
     }) {
-        return this._getReportsByRefId(EXPERIENCES_COLLECTION, experience_id_str, skip, limit, sort);
+        return this._getReportsByRefId(
+            EXPERIENCES_COLLECTION, experience_id_str, skip, limit, sort
+        );
     }
 
     /**
