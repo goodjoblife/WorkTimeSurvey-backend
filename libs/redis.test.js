@@ -5,7 +5,7 @@ const assert = chai.assert;
 
 const redis = require('redis');
 const config = require('config');
-const _redis = require('../libs/redis');
+const _redis = require('./redis');
 
 describe('Redis Library', () => {
     describe('redisGetFB', () => {

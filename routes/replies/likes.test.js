@@ -3,8 +3,8 @@ const request = require('supertest');
 const { MongoClient, ObjectId } = require('mongodb');
 const sinon = require('sinon');
 const config = require('config');
-const app = require('../../../app');
-const authentication = require('../../../libs/authentication');
+const app = require('../../app');
+const authentication = require('../../libs/authentication');
 
 describe('POST /replies/:id/likes', () => {
     let db;

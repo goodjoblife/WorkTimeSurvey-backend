@@ -368,5 +368,6 @@ router.patch('/:id', [
 
 router.use('/', require('./replies'));
 router.use('/', require('./likes'));
+router.use('/', require('./reports'));
 
 module.exports = router;

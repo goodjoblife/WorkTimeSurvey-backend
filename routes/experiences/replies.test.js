@@ -1,11 +1,11 @@
 const assert = require('chai').assert;
 const request = require('supertest');
-const app = require('../../../app');
+const app = require('../../app');
 const { MongoClient, ObjectId } = require('mongodb');
 const sinon = require('sinon');
 const config = require('config');
 
-const authentication = require('../../../libs/authentication');
+const authentication = require('../../libs/authentication');
 
 describe('Replies Test', () => {
     let db;

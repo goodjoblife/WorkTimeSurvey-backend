@@ -1,9 +1,7 @@
-const assert = require('chai').assert;
-const {
-    MongoClient,
-} = require('mongodb');
+const { assert } = require('chai');
+const { MongoClient } = require('mongodb');
 const config = require('config');
-const create_capped_collection = require('../../../database/migrations/create-jobTitleKeywords-collection');
+const create_capped_collection = require('./create-jobTitleKeywords-collection');
 
 describe('Job title Keywords Test', function () {
     let db = null;
@@ -15,7 +13,7 @@ describe('Job title Keywords Test', function () {
     });
 
 
-    describe('Collecction job_title_keywords', function () {
+    describe('Collection job_title_keywords', function () {
         it('should return true, if the collection is capped', function () {
             return db.collection('job_title_keywords').isCapped()
                     .then((result) => {

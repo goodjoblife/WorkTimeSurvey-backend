@@ -3,7 +3,7 @@ chai.use(require("chai-as-promised"));
 
 const assert = chai.assert;
 
-const middlewares = require('../middlewares');
+const middlewares = require('./');
 
 describe('Redis middleware', () => {
     it('request should have property redis_client', (done) => {
