@@ -10,6 +10,60 @@ const wrap = require('../../libs/wrap');
 
 /* eslint-disable */
 /**
+ * @api {get} /workings/extreme 查詢薪資工時統計上 1% 外的值
+ * @apiGroup Workings
+ * @apiParam {String="created_at","week_work_time","estimated_hourly_wage"} [sorted_by="created_at"] 單筆資料排序的方式
+ * @apiParam {String="descending","ascending"} [order="descending"] 資料排序由大到小或由小到大。無資料者會被排到最下方
+ * @apiSuccess {Object[]} time_and_salary 薪時資料
+ */
+/* eslint-enable */
+router.get('/extreme', middleware.sort_by);
+router.get('/extreme', wrap(async (req, res) => {
+    const collection = req.db.collection('workings');
+    const opt = {
+        company: 1,
+        sector: 1,
+        created_at: 1,
+        job_title: 1,
+        data_time: 1,
+        week_work_time: 1,
+        overtime_frequency: 1,
+        salary: 1,
+        estimated_hourly_wage: 1,
+    };
+
+    const data = {};
+    const count = await collection.count();
+
+    const defined_query = {
+        [req.custom.sort_by]: { $exists: true },
+    };
+    const undefined_query = {
+        [req.custom.sort_by]: { $exists: false },
+    };
+
+    const skip = Math.floor(count * 0.01);
+
+    const defined_results = await collection
+        .find(defined_query, opt)
+        .sort(req.custom.sort)
+        .limit(skip)
+        .toArray();
+
+    if (defined_results.length < skip) {
+        const undefined_results = await collection.find(undefined_query, opt)
+            .limit(skip - defined_results.length)
+            .toArray();
+        data.time_and_salary = defined_results.concat(undefined_results);
+    } else {
+        data.time_and_salary = defined_results;
+    }
+
+    res.send(data);
+}));
+
+/* eslint-disable */
+/**
  * @api {get} /workings 查詢薪資與工時資料 API
  * @apiGroup Workings
  * @apiParam {String="created_at","week_work_time","estimated_hourly_wage"} [sorted_by="created_at"] 單筆資料排序的方式
@@ -39,6 +93,10 @@ router.get('/', wrap(async (req, res) => {
 
     const page = req.pagination.page;
     const limit = req.pagination.limit;
+    let is_skip = false;
+    if (req.query.skip === 'true') {
+        is_skip = true;
+    }
 
     const data = {};
     data.total = await collection.count();
@@ -50,10 +108,16 @@ router.get('/', wrap(async (req, res) => {
         [req.custom.sort_by]: { $exists: false },
     };
 
+
+    let skip = 0;
+    if (is_skip === true) {
+        skip = Math.floor(data.total * 0.01);
+    }
+
     const defined_results = await collection
         .find(defined_query, opt)
         .sort(req.custom.sort)
-        .skip(limit * page)
+        .skip(skip + (limit * page))
         .limit(limit)
         .toArray();
 
@@ -61,7 +125,7 @@ router.get('/', wrap(async (req, res) => {
         const count_defined_num = await collection.find(defined_query).count();
 
         const undefined_results = await collection.find(undefined_query, opt)
-            .skip(((limit * page) + defined_results.length) - count_defined_num)
+            .skip((skip + (limit * page) + defined_results.length) - count_defined_num)
             .limit(limit - defined_results.length)
             .toArray();
         data.time_and_salary = defined_results.concat(undefined_results);
