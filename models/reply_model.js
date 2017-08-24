@@ -57,6 +57,30 @@ class ReplyModel {
     }
 
     /**
+     * 用來驗證要留言是否存在
+     * @param  {string}  id_str - string
+     * @return {Promise}
+     *  - resolved : true/false
+     *  - reject : Default error
+     */
+    isExist(id_str) {
+        if (!mongo.ObjectId.isValid(id_str)) {
+            return Promise.resolve(false);
+        }
+
+        return this.collection.findOne({
+            _id: new mongo.ObjectId(id_str),
+        }, {
+            _id: 1,
+        }).then((result) => {
+            if (result) {
+                return true;
+            }
+            return false;
+        });
+    }
+
+    /**
      * 根據經驗文章id，取得文章留言
      * @param {string} experience_id - experience's id
      * @param {number} skip - start index (Default: 0)
