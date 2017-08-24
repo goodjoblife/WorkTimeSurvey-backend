@@ -8,6 +8,19 @@ const middleware = require('../middleware');
 const passport = require('passport');
 const wrap = require('../../libs/wrap');
 
+/* eslint-disable */
+/**
+ * @api {get} /workings 查詢面試及工作經驗 API
+ * @apiGroup Workings
+ * @apiParam {String="created_at","week_work_time","estimated_hourly_wage"} [sorted_by="created_at"] 單筆資料排序的方式
+ * @apiParam {String="descending","ascending"} [order="descending"] 資料排序由大到小或由小到大。無資料者會被排到最下方
+ * @apiParam {String="0"} [page=0] 分頁號碼
+ * @apiParam {String="0 < limit <= 50"} [limit=25] 單頁資料筆數
+ * @apiSuccess {Number} total 總資料數
+ * @apiSuccess {Number} page 目前在資料的第幾頁
+ * @apiSuccess {Object[]} time_and_salary 薪時資料
+ */
+/* eslint-enable */
 router.get('/', middleware.sort_by);
 router.get('/', middleware.pagination);
 router.get('/', wrap(async (req, res) => {
