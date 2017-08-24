@@ -172,7 +172,7 @@ describe('Workings 工時資訊', () => {
                         company: { name: "companyA" },
                         created_at: new Date("2016-11-13T06:10:04.023Z"),
                         job_title: "engineer1",
-                        week_work_time: 40,
+                        week_work_time: 40 - (i * 0.1),
                         overtime_frequency: 1,
                         salary: { amount: 22000, type: "month" },
                         estimated_hourly_wage: (i + 1) * 100, // 100 ~ 20000
