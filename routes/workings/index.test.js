@@ -164,6 +164,133 @@ describe('Workings 工時資訊', () => {
         });
     });
 
+    describe('GET /workings (左右極端值的測試)', () => {
+        describe('有資料的欄位夠多', () => {
+            before('Seeding some workings', () => {
+                const workings = Array.from({ length: 200 })
+                    .map((v, i) => ({
+                        company: { name: "companyA" },
+                        created_at: new Date("2016-11-13T06:10:04.023Z"),
+                        job_title: "engineer1",
+                        week_work_time: 40,
+                        overtime_frequency: 1,
+                        salary: { amount: 22000, type: "month" },
+                        estimated_hourly_wage: (i + 1) * 100, // 100 ~ 20000
+                        data_time: { year: 2016, month: 10 },
+                        sector: "Taipei", //optional
+                    }));
+                return db.collection('workings').insertMany(workings);
+            });
+
+            it(`skip 1% data, ascending`, async () => {
+                const res = await request(app).get('/workings')
+                    .query({
+                        sort_by: 'week_work_time',
+                        order: 'ascending',
+                        skip: 'true',
+                    })
+                    .expect(200);
+                assert.propertyVal(res.body, 'total', 200);
+                assert.property(res.body, 'time_and_salary');
+                assert.lengthOf(res.body.time_and_salary, 25);
+                assert.deepPropertyVal(res.body, 'time_and_salary.0.estimated_hourly_wage', 300);
+                assert.deepPropertyVal(res.body, 'time_and_salary.24.estimated_hourly_wage', 2700);
+            });
+
+            it(`skip 1% data, descending`, async () => {
+                const res = await request(app).get('/workings')
+                    .query({
+                        sort_by: 'week_work_time',
+                        order: 'descending',
+                        skip: 'true',
+                    })
+                    .expect(200);
+                assert.propertyVal(res.body, 'total', 200);
+                assert.property(res.body, 'time_and_salary');
+                assert.lengthOf(res.body.time_and_salary, 25);
+                assert.deepPropertyVal(res.body, 'time_and_salary.0.estimated_hourly_wage', 19800);
+                assert.deepPropertyVal(res.body, 'time_and_salary.1.estimated_hourly_wage', 19700);
+            });
+
+            after(() => db.collection('workings').deleteMany({}));
+        });
+
+        describe('有資料的欄位不夠多', () => {
+            before('Seeding some workings', async () => {
+                await db.collection('workings').insertMany([
+                    {
+                        company: { name: "companyA" },
+                        created_at: new Date("2016-11-13T06:10:04.023Z"),
+                        job_title: "engineer1",
+                        week_work_time: 40,
+                        overtime_frequency: 1,
+                        salary: { amount: 22000, type: "month" },
+                        estimated_hourly_wage: 100,
+                        data_time: { year: 2016, month: 10 },
+                        sector: "Taipei",
+                    },
+                    {
+                        company: { name: "companyA" },
+                        created_at: new Date("2016-11-13T06:10:04.023Z"),
+                        job_title: "engineer1",
+                        week_work_time: 40,
+                        overtime_frequency: 1,
+                        salary: { amount: 22000, type: "month" },
+                        estimated_hourly_wage: 200,
+                        data_time: { year: 2016, month: 10 },
+                        sector: "Taipei",
+                    },
+                ]);
+
+                const workings = Array.from({ length: 298 })
+                    .map((v, i) => ({
+                        company: { name: "companyA" },
+                        created_at: new Date("2016-11-13T06:10:04.023Z"),
+                        job_title: "engineer1",
+                        overtime_frequency: 1,
+                        salary: { amount: 22000, type: "month" },
+                        data_time: { year: 2016, month: 10 },
+                        sector: "Taipei", //optional
+                    }));
+                return db.collection('workings').insertMany(workings);
+            });
+
+            it(`skip 1% data, ascending`, async () => {
+                const res = await request(app).get('/workings/extreme')
+                    .query({
+                        sort_by: 'week_work_time',
+                        order: 'ascending',
+                        skip: 'true',
+                    })
+                    .expect(200);
+                assert.property(res.body, 'time_and_salary');
+                assert.lengthOf(res.body.time_and_salary, 3);
+                assert.deepPropertyVal(res.body, 'time_and_salary.0.estimated_hourly_wage', 100);
+                assert.deepPropertyVal(res.body, 'time_and_salary.1.estimated_hourly_wage', 200, 'in ascending order');
+                assert.deepProperty(res.body, 'time_and_salary.2');
+                assert.notProperty(res.body.time_and_salary[2], 'estimated_hourly_wage', 'should not exist');
+            });
+
+            it(`skip 1% data, descending`, async () => {
+                const res = await request(app).get('/workings/extreme')
+                    .query({
+                        sort_by: 'week_work_time',
+                        order: 'descending',
+                        skip: 'true',
+                    })
+                    .expect(200);
+                assert.property(res.body, 'time_and_salary');
+                assert.lengthOf(res.body.time_and_salary, 3);
+                assert.deepPropertyVal(res.body, 'time_and_salary.0.estimated_hourly_wage', 200);
+                assert.deepPropertyVal(res.body, 'time_and_salary.1.estimated_hourly_wage', 100, 'in descending order');
+                assert.deepProperty(res.body, 'time_and_salary.2');
+                assert.notProperty(res.body.time_and_salary[2], 'estimated_hourly_wage');
+            });
+
+            after(() => db.collection('workings').deleteMany({}));
+        });
+    });
+
     describe('GET /search_by/company/group_by/company', () => {
         let sandbox;
 
