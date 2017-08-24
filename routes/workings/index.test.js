@@ -185,7 +185,7 @@ describe('Workings 工時資訊', () => {
             it(`skip 1% data, ascending`, async () => {
                 const res = await request(app).get('/workings')
                     .query({
-                        sort_by: 'week_work_time',
+                        sort_by: 'estimated_hourly_wage',
                         order: 'ascending',
                         skip: 'true',
                     })
@@ -200,7 +200,7 @@ describe('Workings 工時資訊', () => {
             it(`skip 1% data, descending`, async () => {
                 const res = await request(app).get('/workings')
                     .query({
-                        sort_by: 'week_work_time',
+                        sort_by: 'estimated_hourly_wage',
                         order: 'descending',
                         skip: 'true',
                     })
@@ -258,7 +258,7 @@ describe('Workings 工時資訊', () => {
             it(`skip 1% data, ascending`, async () => {
                 const res = await request(app).get('/workings/extreme')
                     .query({
-                        sort_by: 'week_work_time',
+                        sort_by: 'estimated_hourly_wage',
                         order: 'ascending',
                         skip: 'true',
                     })
@@ -274,7 +274,7 @@ describe('Workings 工時資訊', () => {
             it(`skip 1% data, descending`, async () => {
                 const res = await request(app).get('/workings/extreme')
                     .query({
-                        sort_by: 'week_work_time',
+                        sort_by: 'estimated_hourly_wage',
                         order: 'descending',
                         skip: 'true',
                     })
