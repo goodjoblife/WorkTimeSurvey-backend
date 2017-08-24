@@ -10,7 +10,7 @@ const wrap = require('../../libs/wrap');
 
 /* eslint-disable */
 /**
- * @api {get} /workings 查詢面試及工作經驗 API
+ * @api {get} /workings 查詢薪資與工時資料 API
  * @apiGroup Workings
  * @apiParam {String="created_at","week_work_time","estimated_hourly_wage"} [sorted_by="created_at"] 單筆資料排序的方式
  * @apiParam {String="descending","ascending"} [order="descending"] 資料排序由大到小或由小到大。無資料者會被排到最下方
