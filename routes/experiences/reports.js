@@ -61,13 +61,8 @@ function _reportsViewModel(reports) {
 /* eslint-enable */
 router.post('/:id/reports', [
     passport.authenticate('bearer', { session: false }),
-    (req, res, next) => {
-        try {
-            validatePostFields(req.body);
-        } catch (err) {
-            next(err);
-            return;
-        }
+    wrap(async (req, res) => {
+        validatePostFields(req.body);
 
         const user = req.user;
         const experience_id_str = req.params.id;
@@ -80,22 +75,22 @@ router.post('/:id/reports', [
             reason_category: req.body.reason_category,
             reason: req.body.reason,
         };
-        report_model.createReportToExperience(experience_id_str, partial_report).then((result) => {
+        try {
+            const result = await report_model.createReportToExperience(experience_id_str, partial_report);
             const response = {
                 report: _reportViewModel(result),
             };
-
             res.send(response);
-        }).catch((err) => {
+        } catch (err) {
             if (err instanceof DuplicateKeyError) {
-                next(new HttpError(err.message, 403));
+                throw new HttpError(err.message, 403);
             } else if (err instanceof ObjectNotExistError) {
-                next(new HttpError(err.message, 404));
+                throw new HttpError(err.message, 404);
             } else {
-                next(err);
+                throw err;
             }
-        });
-    },
+        }
+    }),
 ]);
 
 /* eslint-disable */
