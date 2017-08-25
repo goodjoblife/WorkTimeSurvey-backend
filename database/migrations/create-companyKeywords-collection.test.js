@@ -27,25 +27,6 @@ describe('Company Keywords Test', function () {
         });
     });
 
-    describe('Get : /experiences (key word check)', function () {
-        it('should return 200', function () {
-            const query = (new ObjectId()).toString();
-            return request(app).get('/experiences')
-                .query({
-                    search_query: query.toString(),
-                    search_by: 'company',
-                })
-                .expect(200)
-                .then(() => db.collection('company_keywords')
-                        .findOne({
-                            word: query,
-                        }))
-                .then((result) => {
-                    assert.equal(result.word, query.toString());
-                });
-        });
-    });
-
     after(function () {
         return db.collection('company_keywords').drop()
             .then(() => create_capped_collection(db));
