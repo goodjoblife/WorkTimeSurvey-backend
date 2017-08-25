@@ -76,7 +76,8 @@ router.post('/:id/reports', [
             reason: req.body.reason,
         };
         try {
-            const result = await report_model.createReportToExperience(experience_id_str, partial_report);
+            const result = await report_model
+                .createReportToExperience(experience_id_str, partial_report);
             const response = {
                 report: _reportViewModel(result),
             };
