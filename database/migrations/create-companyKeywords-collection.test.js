@@ -1,10 +1,7 @@
 const assert = require('chai').assert;
 const {
     MongoClient,
-    ObjectId,
 } = require('mongodb');
-const request = require('supertest');
-const app = require('../../app');
 const config = require('config');
 const create_capped_collection = require('./create-companyKeywords-collection');
 
