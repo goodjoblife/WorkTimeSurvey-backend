@@ -14,6 +14,7 @@ const {
 const passport = require('passport');
 const { semiAuthentication } = require('../../middlewares/authentication');
 const wrap = require('../../libs/wrap');
+const generateGetExperiencesViewModel = require('../../view_models/get_experiences');
 
 /**
  * _queryToDBQuery
@@ -52,50 +53,6 @@ function _queryToDBQuery(search_query, search_by, type) {
         }
     }
     return query;
-}
-
-function _generateGetExperiencesViewModel(experiences, total) {
-    const MAX_PREVIEW_SIZE = 160;
-
-    const view_experiences = experiences.map(experience => {
-        let experience_view_model = {
-            _id: experience._id,
-            type: experience.type,
-            created_at: experience.created_at,
-            company: experience.company,
-            job_title: experience.job_title,
-            title: experience.title,
-            preview: (() => {
-                if (experience.sections[0]) {
-                    return experience.sections[0].content.substring(0, MAX_PREVIEW_SIZE);
-                }
-                return null;
-            })(),
-            like_count: experience.like_count,
-            reply_count: experience.reply_count,
-            report_count: experience.report_count,
-        };
-        if (experience.type === 'interview') {
-            experience_view_model = Object.assign(experience_view_model, {
-                region: experience.region,
-                salary: experience.salary,
-            });
-        } else if (experience.type === 'work') {
-            experience_view_model = Object.assign(experience_view_model, {
-                region: experience.region,
-                salary: experience.salary,
-                week_work_time: experience.week_work_time,
-            });
-        }
-        return experience_view_model;
-    });
-
-    const result = {
-        total,
-        experiences: view_experiences,
-    };
-
-    return result;
 }
 
 function _keyWordFactory(type) {
@@ -138,6 +95,8 @@ function _saveKeyWord(query, type, db) {
  * @apiSuccess {String} experiences.job_title 職稱
  * @apiSuccess {String} experiences.title 標題
  * @apiSuccess {string} experiences.preview 整篇內容的preview。直接使用第1個section的內容，至多前Ｎ個字。N=160。
+ * @apiSuccess {Number}  like_count 讚數 
+ * @apiSuccess {Number}  reply_count 留言數 
  * @apiSuccess {Number}  report_count 檢舉數
  * @apiSuccess (interview) {String="彰化縣","嘉義市","嘉義縣","新竹市","新竹縣","花蓮縣","高雄市","基隆市","金門縣","連江縣","苗栗縣","南投縣","新北市","澎湖縣","屏東縣","臺中市","臺南市","臺北市","臺東縣","桃園市","宜蘭縣","雲林縣"} experiences.region 面試地區
  * @apiSuccess (interview) {Object} [experiences.salary] 面談薪資
@@ -191,7 +150,7 @@ router.get('/', wrap(async (req, res) => {
     const total = await experience_model.getExperiencesCountByQuery(query);
     const experiences = await experience_model.getExperiences(query, sort, start, limit);
 
-    res.send(_generateGetExperiencesViewModel(experiences, total));
+    res.send(generateGetExperiencesViewModel(experiences, total));
 }));
 
 function _generateGetExperienceViewModel(experience, user, like) {

@@ -4,8 +4,6 @@ const app = require('../app');
 
 describe('CORS', () => {
     const client_origins = [
-        'http://localhost:8080',
-        'http://localhost:8000',
         'https://worktime.goodjob.life',
         'http://hello.goodjob.life',
     ];

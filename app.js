@@ -20,15 +20,17 @@ const app = express();
 app.set('trust proxy', 1);
 
 // Enable compress the traffic
-app.use(compression());
+if (app.get('env') === 'production') {
+    app.use(compression());
+}
 
 // winston logging setup
-if (app.get('env') !== 'test') {
+if (app.get('env') === 'production') {
     winston.add(winston.transports.MongoDB, {
         db: config.get('MONGODB_URI'),
     });
 }
-if (app.get('env') === 'test') {
+if (app.get('env') === 'test' || app.get('env') === 'developement') {
     winston.remove(winston.transports.Console);
 }
 
@@ -40,13 +42,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(expressMongoDb(config.get('MONGODB_URI')));
 app.use(require('./middlewares').expressRedisDb(config.get('REDIS_URL')));
 
-app.use(cors({
-    origin: [
-        /\.goodjob\.life$/,
-        'http://localhost:8080',
-        'http://localhost:8000',
-    ],
-}));
+if (config.get('CORS_ANY') === 'TRUE') {
+    app.use(cors());
+} else {
+    app.use(cors({
+        origin: [
+            /\.goodjob\.life$/,
+        ],
+    }));
+}
 
 app.use((req, res, next) => {
     winston.info(req.originalUrl, {
@@ -67,6 +71,7 @@ app.use('/experiences', require('./routes/experiences'));
 app.use('/replies', require('./routes/replies'));
 app.use('/interview_experiences', require('./routes/interview_experiences'));
 app.use('/work_experiences', require('./routes/work_experiences'));
+app.use('/me', require('./routes/me'));
 app.use('/job_title_keywords', require('./routes/job_title_keywords'));
 app.use('/company_keywords', require('./routes/company_keywords'));
 
