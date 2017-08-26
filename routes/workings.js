@@ -436,7 +436,7 @@ router.get('/jobs/search', (req, res, next) => {
     });
 });
 
-function _isLegalStatus(value) {
+function _isValidStatus(value) {
     const legal_status = [
         'published',
         'hidden',
@@ -458,30 +458,30 @@ router.patch('/:id', [
         const status = req.body.status;
         const user = req.user;
 
-        if (!_isLegalStatus(status)) {
+        if (!_isValidStatus(status)) {
             throw new HttpError('status is illegal', 422);
         }
 
         const working_model = new WorkingModel(req.db);
+        let working;
         try {
-            const working = await working_model.getWorkingsById(id, { author: 1 });
-
-            if (!(working.author.id === user.facebook_id)) {
-                throw new HttpError('user is unauthorized', 403);
-            }
-
-            const result = await working_model.updateStatus(id, status);
-
-            res.send({
-                success: true,
-                status: result.value.status,
-            });
+            working = await working_model.getWorkingsById(id, { author: 1 });
         } catch (err) {
             if (err instanceof ObjectNotExistError) {
                 throw new HttpError(err.message, 404);
             }
             throw err;
         }
+
+        if (!(working.author.id === user.facebook_id)) {
+            throw new HttpError('user is unauthorized', 403);
+        }
+
+        const result = await working_model.updateStatus(id, status);
+        res.send({
+            success: true,
+            status: result.value.status,
+        });
     }),
 ]);
 
