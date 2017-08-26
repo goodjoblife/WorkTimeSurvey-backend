@@ -241,7 +241,7 @@ function _generateGetExperienceViewModel(experience, user, like) {
 router.get('/:id', [
     semiAuthentication('bearer', { session: false }),
     wrap(async (req, res) => {
-        const id = req.params.id;
+        const id_str = req.params.id;
         let user = null;
 
         if (req.user) {
@@ -253,7 +253,7 @@ router.get('/:id', [
 
         let experience = null;
         try {
-            experience = await experience_model.getExperienceById(id);
+            experience = await experience_model.getExperienceById(id_str);
         } catch (err) {
             if (err instanceof ObjectNotExistError) {
                 throw new HttpError(err.message, 404);
@@ -261,9 +261,13 @@ router.get('/:id', [
             throw err;
         }
 
+        if (experience.status === 'hidden') {
+            throw new HttpError('forbidden', 403);
+        }
+
         let result;
         if (user) {
-            const like = await experience_like_model.getLikeByExperienceIdAndUser(id, user);
+            const like = await experience_like_model.getLikeByExperienceIdAndUser(id_str, user);
             result = _generateGetExperienceViewModel(experience, user, like);
         } else {
             result = _generateGetExperienceViewModel(experience);
