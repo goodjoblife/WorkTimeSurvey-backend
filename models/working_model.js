@@ -33,8 +33,10 @@ class WorkingModel {
      * @param  {Stirng} id_str - workings id string
      * @param  {String} status
      * @returns {Promise}
-     * @returns {ObjectId} _id - update working id
-     * @returns {String} status - after updated , the status value
+     *  - resolve : {
+     *    {ObjectId} _id - update working id
+     *    {String} status - after updated , the status value
+     * }
      */
     updateStatus(id_str, status) {
         return this.collection.findOneAndUpdate({

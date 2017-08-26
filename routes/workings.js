@@ -448,7 +448,7 @@ function _isValidStatus(value) {
  * @api {patch} /workings/:id 更新自已建立的工時與薪資狀態 API
  * @apiParam {String="published","hidden"} status 要更新成的狀態
  * @apiGroup Workings
- * @apiSuccess {Boolean} success 是否成功點讚
+ * @apiSuccess {Boolean} success 是否更新狀態成功
  * @apiSuccess {String} status 更新後狀態
  */
 router.patch('/:id', [
@@ -459,7 +459,7 @@ router.patch('/:id', [
         const user = req.user;
 
         if (!_isValidStatus(status)) {
-            throw new HttpError('status is illegal', 422);
+            throw new HttpError('status is invalid', 422);
         }
 
         const working_model = new WorkingModel(req.db);
