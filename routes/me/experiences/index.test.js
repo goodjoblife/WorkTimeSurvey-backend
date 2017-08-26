@@ -89,7 +89,7 @@ describe('Experiences of Author Test', () => {
         }
     );
 
-    it('should be success, when the author get him work experiences',
+    it('should get user work experiences ',
         async () => {
             const res = await request(app).get(`/me/experiences`)
                 .query({
@@ -104,7 +104,7 @@ describe('Experiences of Author Test', () => {
         }
     );
 
-    it('should be success, when the author get him work,interview experiences',
+    it('should get user work and interview experiences',
         async () => {
             const res = await request(app).get(`/me/experiences`)
                 .query({
@@ -117,7 +117,7 @@ describe('Experiences of Author Test', () => {
         }
     );
 
-    it('should be error 422, when setting limit than 100',
+    it('should be error 422, when limit > 100',
         async () => {
             const res = await request(app).get(`/me/experiences`)
                 .query({
@@ -129,7 +129,7 @@ describe('Experiences of Author Test', () => {
         }
     );
 
-    it('should be error, when setting start less 0',
+    it('should be error, when start < 0',
         async () => {
             const res = await request(app).get(`/me/experiences`)
                 .query({
@@ -141,7 +141,7 @@ describe('Experiences of Author Test', () => {
         }
     );
 
-    it('should be error, when no authorization',
+    it('should be error, when not authenticated',
         async () => {
             const res = await request(app).get(`/me/experiences`);
 
