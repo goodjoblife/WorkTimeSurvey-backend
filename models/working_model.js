@@ -10,21 +10,22 @@ class WorkingModel {
      * 使用 workings id 來取得 working
      * @param {String} id_str - working id string
      * @param {Object} opt - mongodb find field filter
-     * @param {Promise}
+     * @return {Promise}
      */
-    getWorkingsById(id_str, opt = {}) {
+    async getWorkingsById(id_str, opt = {}) {
         if (!this._isValidId(id_str)) {
-            return Promise.reject(new ObjectNotExistError("該筆資訊不存在"));
+            throw new ObjectNotExistError("該筆資訊不存在");
         }
 
-        return this.collection.findOne({
+        const result = await this.collection.findOne({
             _id: new mongo.ObjectId(id_str),
-        }, opt).then((result) => {
-            if (result) {
-                return result;
-            }
-            throw new ObjectNotExistError("該筆資訊不存在");
-        });
+        }, opt);
+
+        if (result) {
+            return result;
+        }
+
+        throw new ObjectNotExistError("該筆資訊不存在");
     }
 
     /**

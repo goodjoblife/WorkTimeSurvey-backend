@@ -1047,7 +1047,7 @@ describe('Workings 工時資訊', () => {
             }
         );
 
-        it('should return 422, when user send error status',
+        it('should return 422, when status is invalid',
             async () => {
                 const res = await request(app).patch(`/workings/${user_working_id.toString()}`)
                     .send({
@@ -1059,7 +1059,7 @@ describe('Workings 工時資訊', () => {
             }
         );
 
-        it('should return 403, when user want to update not belong to him working',
+        it('should return 403, when user want to update not belong to his working',
             async () => {
                 const res = await request(app).patch(`/workings/${other_user_working_id.toString()}`)
                     .send({
@@ -1091,7 +1091,7 @@ describe('Workings 工時資訊', () => {
             }
         );
 
-        it('should return 404, when the working is not exist',
+        it('should return 404, when the working is does not exist',
             async () => {
                 const res = await request(app).patch(`/working/${(new ObjectId()).toString()}`)
                     .send({
@@ -1103,7 +1103,7 @@ describe('Workings 工時資訊', () => {
         );
 
 
-        after(() => db.collection('workings').remove({}));
+        after(() => db.collection('workings').deleteMany({}));
 
         after(() => {
             sandbox.restore();
