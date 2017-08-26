@@ -8,8 +8,8 @@ const {
     requiredNumberGreaterThanOrEqualTo,
 } = require('../../../libs/validation');
 const wrap = require('../../../libs/wrap');
-const authentication = require('../../../middlewares/authentication');
 const generateGetExperiencesViewModel = require('../../../view_models/get_experiences');
+const passport = require('passport');
 
 function _generateDBQuery(author_id, type) {
     const query = {};
@@ -61,7 +61,7 @@ function _generateDBQuery(author_id, type) {
  */
 /* eslint-enable */
 router.get('/', [
-    authentication.cachedFacebookAuthenticationMiddleware,
+    passport.authenticate('bearer', { session: false }),
     wrap(async (req, res) => {
         const user = req.user;
         const start = parseInt(req.query.start, 10) || 0;

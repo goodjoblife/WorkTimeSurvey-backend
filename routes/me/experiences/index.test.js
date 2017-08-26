@@ -11,7 +11,7 @@ const authentication = require('../../../libs/authentication');
 const {
     generateInterviewExperienceData,
     generateWorkExperienceData,
-} = require('../testData');
+} = require('../../experiences/testData');
 
 describe('Experiences of Author Test', () => {
     let db;
