@@ -11,6 +11,7 @@ function generateGetWorkingsViewModel(workings, total) {
         overtime_frequency: working.overtime_frequency,
         salary: working.salary,
         week_work_time: working.week_work_time,
+        status: working.status,
     }));
 
     const result = {
