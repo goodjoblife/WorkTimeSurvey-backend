@@ -23,6 +23,18 @@ class WorkingModel {
             .limit(limit)
             .toArray();
     }
+
+    /**
+     * 取得搜尋的workings總數
+     * @param   {object}  query - mognodb find query
+     * @returns {Promise}
+     *  - {Number} resolved : 10
+     */
+    getWorkingsCountByQuery(query) {
+        return this.collection.find(query, {
+            _id: 1,
+        }).count();
+    }
 }
 
 module.exports = WorkingModel;

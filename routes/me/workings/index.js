@@ -12,7 +12,7 @@ router.get('/', [
     wrap(async (req, res) => {
         const user = req.user;
         const query = {
-            "author._id": user._id,
+            "author.id": user.facebook_id,
         };
 
         const working_model = new WorkingModel(req.db);
