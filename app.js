@@ -71,6 +71,7 @@ app.use('/experiences', require('./routes/experiences'));
 app.use('/replies', require('./routes/replies'));
 app.use('/interview_experiences', require('./routes/interview_experiences'));
 app.use('/work_experiences', require('./routes/work_experiences'));
+app.use('/me', require('./routes/me'));
 app.use('/job_title_keywords', require('./routes/job_title_keywords'));
 app.use('/company_keywords', require('./routes/company_keywords'));
 

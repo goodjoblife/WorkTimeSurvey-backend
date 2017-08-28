@@ -2,9 +2,7 @@ const ExperienceModel = require('./experience_model');
 const ReplyModel = require('./reply_model');
 const DuplicateKeyError = require('../libs/errors').DuplicateKeyError;
 const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
-const mongo = require('mongodb');
-const ObjectId = require('mongodb').ObjectId;
-const DBRef = require('mongodb').DBRef;
+const { ObjectId, DBRef } = require('mongodb');
 
 const EXPERIENCES_COLLECTION = 'experiences';
 const REPLIES_COLLECTION = 'replies';
@@ -92,30 +90,33 @@ class ReportModel {
      *  - reject : defaultError/ObjectNotExistError
      *
      */
-    _createReport(namespace, id_str, partial_report) {
+    async _createReport(namespace, id_str, partial_report) {
         const model = this._getModel(namespace);
-        let document;
-        return model.isExist(id_str).then((is_exist) => {
-            if (!is_exist) {
-                throw new ObjectNotExistError(`該篇${NAME_MAP[namespace]}不存在`);
-            }
-            Object.assign(partial_report, {
-                ref: new DBRef(namespace, ObjectId(id_str)),
-                created_at: new Date(),
-            });
 
-            return this.collection.insertOne(partial_report);
-        }).then((result) => {
-            document = result;
-            return model.incrementReportCount(id_str);
-        }).then(() => document)
-        .catch((err) => {
+        const is_exist = await model.isExist(id_str);
+
+        if (!is_exist) {
+            throw new ObjectNotExistError(`該篇${NAME_MAP[namespace]}不存在`);
+        }
+
+        const report = Object.assign(partial_report, {
+            ref: new DBRef(namespace, ObjectId(id_str)),
+            created_at: new Date(),
+        });
+
+        try {
+            await this.collection.insertOne(report);
+        } catch (err) {
             if (err.code === 11000) { // E11000 duplicate key error
                 throw new DuplicateKeyError(`該篇${NAME_MAP[namespace]}已經被您檢舉過`);
             } else {
                 throw err;
             }
-        });
+        }
+
+        await model.incrementReportCount(id_str);
+
+        return report;
     }
 
     /**
@@ -185,17 +186,21 @@ class ReportModel {
      *      reason: String,
      *  }
      */
-    _getReportsByRefId(namespace, id_str, skip, limit, sort) {
+    async _getReportsByRefId(namespace, id_str, skip = 0, limit = 20, sort = { created_at: 1 }) {
         const model = this._getModel(namespace);
-        return model.isExist(id_str).then((is_exist) => {
-            if (!is_exist) {
-                throw new ObjectNotExistError(`該篇${NAME_MAP[namespace]}不存在`);
-            }
-            return this.collection.find({
-                ref: new DBRef(namespace, new ObjectId(id_str)),
-            }).sort(sort).skip(skip).limit(limit)
+
+        const is_exist = await model.isExist(id_str);
+        if (!is_exist) {
+            throw new ObjectNotExistError(`該篇${NAME_MAP[namespace]}不存在`);
+        }
+
+        const query = {
+            ref: new DBRef(namespace, new ObjectId(id_str)),
+        };
+
+        return this.collection.find(query)
+            .sort(sort).skip(skip).limit(limit)
             .toArray();
-        });
     }
 
     /**
@@ -211,19 +216,17 @@ class ReportModel {
      *      reason: String,
      *  }
      */
-    getReportById(id_str) {
+    async getReportById(id_str) {
         if (!this._isValidId(id_str)) {
-            return Promise.reject(new ObjectNotExistError("該檢舉不存在"));
+            throw new ObjectNotExistError("該檢舉不存在");
         }
 
-        return this.collection.findOne({
-            _id: new ObjectId(id_str),
-        });
+        return this.collection.findOne({ _id: new ObjectId(id_str) });
     }
 
     // eslint-disable-next-line class-methods-use-this
     _isValidId(id_str) {
-        return (id_str && mongo.ObjectId.isValid(id_str));
+        return (id_str && ObjectId.isValid(id_str));
     }
 
     _getModel(namespace) {

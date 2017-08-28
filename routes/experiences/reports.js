@@ -4,6 +4,7 @@ const HttpError = require('../../libs/errors').HttpError;
 
 const router = express.Router();
 const ReportModel = require('../../models/report_model');
+const wrap = require('../../libs/wrap');
 const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
 const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
 const {
@@ -60,13 +61,8 @@ function _reportsViewModel(reports) {
 /* eslint-enable */
 router.post('/:id/reports', [
     passport.authenticate('bearer', { session: false }),
-    (req, res, next) => {
-        try {
-            validatePostFields(req.body);
-        } catch (err) {
-            next(err);
-            return;
-        }
+    wrap(async (req, res) => {
+        validatePostFields(req.body);
 
         const user = req.user;
         const experience_id_str = req.params.id;
@@ -79,22 +75,23 @@ router.post('/:id/reports', [
             reason_category: req.body.reason_category,
             reason: req.body.reason,
         };
-        report_model.createReportToExperience(experience_id_str, partial_report).then((result) => {
+        try {
+            const result = await report_model
+                .createReportToExperience(experience_id_str, partial_report);
             const response = {
-                report: _reportViewModel(result.ops[0]),
+                report: _reportViewModel(result),
             };
-
             res.send(response);
-        }).catch((err) => {
+        } catch (err) {
             if (err instanceof DuplicateKeyError) {
-                next(new HttpError(err.message, 403));
+                throw new HttpError(err.message, 403);
             } else if (err instanceof ObjectNotExistError) {
-                next(new HttpError(err.message, 404));
+                throw new HttpError(err.message, 404);
             } else {
-                next(err);
+                throw err;
             }
-        });
-    },
+        }
+    }),
 ]);
 
 /* eslint-disable */
@@ -111,9 +108,9 @@ router.post('/:id/reports', [
  */
 /* eslint-enable */
 router.get('/:id/reports', [
-    (req, res, next) => {
+    wrap(async (req, res) => {
         const experience_id_str = req.params.id;
-        const limit = parseInt(req.query.limit, 10) || 100;
+        const limit = parseInt(req.query.limit, 10) || 20;
         const start = parseInt(req.query.start, 10) || 0;
 
         if (!requiredNumberInRange(limit, 1000, 1)) {
@@ -122,19 +119,21 @@ router.get('/:id/reports', [
 
         const report_model = new ReportModel(req.db);
 
-        report_model.getReportsByExperienceId(experience_id_str, start, limit).then((reports) => {
+        try {
+            const reports = await report_model
+                .getReportsByExperienceId(experience_id_str, start, limit);
+
             const result = {
                 reports: _reportsViewModel(reports),
             };
             res.send(result);
-        }).catch((err) => {
+        } catch (err) {
             if (err instanceof ObjectNotExistError) {
-                next(new HttpError(err.message, 404));
-            } else {
-                next(err);
+                throw new HttpError(err.message, 404);
             }
-        });
-    },
+            throw err;
+        }
+    }),
 ]);
 
 module.exports = router;
