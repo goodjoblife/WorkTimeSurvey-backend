@@ -108,6 +108,31 @@ describe('Reports Test', () => {
                 })
                 .expect(422));
 
+        it('should return 200 and correct fields, while reason_category is "這是廣告或垃圾訊息" and reason is undefined', () => request(app)
+                .post(`/replies/${reply_id_str}/reports`)
+                .send({
+                    access_token: 'fakeaccesstoken',
+                    reason_category: '這是廣告或垃圾訊息',
+                })
+                .expect(200)
+                .expect((res) => {
+                    assert.property(res.body, 'report');
+                    assert.deepProperty(res.body, 'report._id');
+                    assert.deepPropertyVal(res.body, 'report.reason_category', '這是廣告或垃圾訊息');
+                    assert.notDeepProperty(res.body, 'report.reason');
+                    assert.deepProperty(res.body, 'report.created_at');
+                    assert.notDeepProperty(res.body, 'report.user');
+                })
+        );
+
+        it('should fail while reason_category is not "這是廣告或垃圾訊息" and reason is undefiend', () => request(app)
+                .post(`/replies/${reply_id_str}/reports`)
+                .send({
+                    access_token: 'fakeaccesstoken',
+                    reason_category: '我認為這篇文章內容不實',
+                })
+                .expect(422));
+
         it('should return 404, if reply does not exist', () => request(app)
                 .post('/replies/1111/reports')
                 .send(generatePayload('fakeaccesstoken'))

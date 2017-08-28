@@ -18,7 +18,7 @@ function validatePostFields(body) {
     if (!shouldIn(body.reason_category, ["這是廣告或垃圾訊息", "我認為這篇文章涉及人身攻擊、誹謗", "我認為這篇文章內容不實", "其他"])) {
         throw new HttpError("檢舉原因分類錯誤", 422);
     }
-    if (body.reason_category !== "這是廣告或垃圾訊息 ") {
+    if (body.reason_category !== "這是廣告或垃圾訊息") {
         if (!requiredNonEmptyString(body.reason)) {
             throw new HttpError("原因必填！", 422);
         } else if (!stringRequireLength(body.reason, 1, 500)) {
