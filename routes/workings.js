@@ -25,12 +25,14 @@ router.get('/', (req, res, next) => {
 
     let query = {
         [req.custom.sort_by]: { $exists: true },
+        status: 'published',
     };
     const page = req.pagination.page;
     const limit = req.pagination.limit;
 
     const data = {};
     collection
+        .find({ status: 'published' }, { _id: 1 })
         .count()
         .then((count) => {
             data.total = count;
@@ -97,6 +99,7 @@ router.get('/search_by/company/group_by/company', (req, res, next) => {
                     { 'company.name': new RegExp(escapeRegExp(company.toUpperCase())) },
                     { 'company.id': company },
                 ],
+                status: 'published',
             },
         },
         {
@@ -253,6 +256,7 @@ router.get('/search_by/job_title/group_by/company', (req, res, next) => {
         {
             $match: {
                 job_title: new RegExp(escapeRegExp(job_title.toUpperCase())),
+                status: 'published',
             },
         },
         {

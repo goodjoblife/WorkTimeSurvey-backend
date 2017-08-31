@@ -28,7 +28,8 @@ describe('Workings 工時資訊', () => {
                 salary: { amount: 22000, type: "month" },
                 estimated_hourly_wage: 100,
                 data_time: { year: 2016, month: 10 },
-                sector: "Taipei", //optional
+                sector: "Taipei", // optional
+                status: "published",
             },
             {
                 company: { name: "companyC" },
@@ -39,7 +40,8 @@ describe('Workings 工時資訊', () => {
                 salary: { amount: 22000, type: "month" },
                 estimated_hourly_wage: 120,
                 data_time: { year: 2016, month: 10 },
-                sector: "Taipei", //optional
+                sector: "Taipei", // optional
+                status: "published",
             },
             {
                 company: { name: "companyB" },
@@ -50,6 +52,7 @@ describe('Workings 工時資訊', () => {
                     // 有的沒有薪資資訊，當然也不會有估計時薪
                 data_time: { year: 2016, month: 10 },
                 sector: "Tainan",
+                status: "published",
             },
             {
                 company: { name: "companyB" },
@@ -59,6 +62,19 @@ describe('Workings 工時資訊', () => {
                 salary: { amount: 22000, type: "month" },
                 data_time: { year: 2016, month: 10 },
                 sector: "Tainan",
+                status: "published",
+            },
+            {
+                company: { name: "companyD" },
+                created_at: new Date("2016-11-13T06:10:04.023Z"),
+                job_title: "engineer1",
+                week_work_time: 40,
+                overtime_frequency: 1,
+                salary: { amount: 22000, type: "month" },
+                estimated_hourly_wage: 100,
+                data_time: { year: 2016, month: 10 },
+                sector: "Taipei", // optional
+                status: "hidden",
             },
         ]));
 
@@ -196,6 +212,7 @@ describe('Workings 工時資訊', () => {
                 },
                 estimated_hourly_wage: 100,
                 experience_in_year: 1,
+                status: "published",
             },
             {
                 job_title: "ENGINEER1",
@@ -224,6 +241,7 @@ describe('Workings 工時資訊', () => {
                 },
                 estimated_hourly_wage: 100,
                 experience_in_year: 1,
+                status: "published",
             },
             {
                 job_title: "ENGINEER2",
@@ -239,6 +257,7 @@ describe('Workings 工時資訊', () => {
                 has_overtime_salary: "yes",
                 is_overtime_salary_legal: "don't know",
                 has_compensatory_dayoff: "no",
+                status: "published",
             },
             {
                 job_title: "ENGINEER2",
@@ -253,6 +272,7 @@ describe('Workings 工時資訊', () => {
                 },
                 estimated_hourly_wage: 100,
                 experience_in_year: 1,
+                status: "published",
             },
             {
                 job_title: "ENGINEER3",
@@ -274,6 +294,7 @@ describe('Workings 工時資訊', () => {
                 },
                 estimated_hourly_wage: 100,
                 experience_in_year: 1,
+                status: "published",
             },
             {
                 job_title: "ENGINEER3",
@@ -303,6 +324,7 @@ describe('Workings 工時資訊', () => {
                 },
                 estimated_hourly_wage: 100,
                 experience_in_year: 1,
+                status: "published",
             },
             {
                 job_title: "ENGINEER4",
@@ -323,6 +345,28 @@ describe('Workings 工時資訊', () => {
                     amount: 22000,
                 },
                 experience_in_year: 1,
+                status: "published",
+            },
+            {
+                job_title: "ENGINEER4",
+                company: { name: "COMPANY1" },
+                is_currently_employed: 'yes',
+                employment_type: 'full-time',
+                created_at: new Date("2016-07-20T06:00:00.000Z"),
+                data_time: {
+                    year: 2016,
+                    month: 7,
+                },
+                author: {
+                },
+                    // no work time data
+                    //
+                salary: {
+                    type: 'month',
+                    amount: 22000,
+                },
+                experience_in_year: 1,
+                status: "hidden",
             },
         ]));
 
@@ -595,6 +639,7 @@ describe('Workings 工時資訊', () => {
                 },
                 estimated_hourly_wage: 100,
                 experience_in_year: 1,
+                status: "published",
             },
             {
                 job_title: "ENGINEER1",
@@ -620,6 +665,7 @@ describe('Workings 工時資訊', () => {
                 },
                 estimated_hourly_wage: 100,
                 experience_in_year: 1,
+                status: "published",
             },
             {
                 job_title: "ENGINEER2",
@@ -632,6 +678,7 @@ describe('Workings 工時資訊', () => {
                 overtime_frequency: 1,
                 day_promised_work_time: 9,
                 day_real_work_time: 10,
+                status: "published",
             },
             {
                 job_title: "ENGINEER2",
@@ -646,6 +693,7 @@ describe('Workings 工時資訊', () => {
                 },
                 estimated_hourly_wage: 100,
                 experience_in_year: 1,
+                status: "published",
             },
             {
                 job_title: "ENGINEER3",
@@ -665,6 +713,7 @@ describe('Workings 工時資訊', () => {
                 },
                 estimated_hourly_wage: 100,
                 experience_in_year: 1,
+                status: "published",
             },
             {
                 job_title: "ENGINEER4",
@@ -685,6 +734,28 @@ describe('Workings 工時資訊', () => {
                     amount: 22000,
                 },
                 experience_in_year: 1,
+                status: "published",
+            },
+            {
+                job_title: "ENGINEER1",
+                company: { name: "COMPANY3" },
+                is_currently_employed: 'yes',
+                employment_type: 'full-time',
+                created_at: new Date("2016-07-20T06:00:00.000Z"),
+                data_time: {
+                    year: 2016,
+                    month: 7,
+                },
+                author: {
+                },
+                    // no work time data
+                    //
+                salary: {
+                    type: 'month',
+                    amount: 22000,
+                },
+                experience_in_year: 1,
+                status: "hidden",
             },
         ]));
 
