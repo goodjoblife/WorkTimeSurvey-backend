@@ -437,11 +437,11 @@ router.get('/jobs/search', (req, res, next) => {
 });
 
 function _isValidStatus(value) {
-    const legal_status = [
+    const valid_status = [
         'published',
         'hidden',
     ];
-    return legal_status.indexOf(value) > -1;
+    return valid_status.indexOf(value) > -1;
 }
 
 /**

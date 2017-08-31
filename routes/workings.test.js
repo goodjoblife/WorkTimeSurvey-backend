@@ -1080,7 +1080,7 @@ describe('Workings 工時資訊', () => {
             }
         );
 
-        it('should return 404, when the working id is illegal',
+        it('should return 404, when the working id is invalid',
             async () => {
                 const res = await request(app).patch(`/workings/xxxxxxxx`)
                     .send({
