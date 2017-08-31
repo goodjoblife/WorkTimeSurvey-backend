@@ -69,7 +69,31 @@ describe('Get /me/workings ', () => {
         }
     );
 
-    it('should get user workings ',
+    it('should be currect fields ',
+        async () => {
+            const res = await request(app).get(`/me/workings`)
+                .query({
+                    access_token: 'fakeaccesstoken',
+                });
+
+            assert.equal(res.status, 200);
+            assert.property(res.body, 'total');
+            assert.property(res.body, 'time_and_salary');
+            assert.property(res.body.time_and_salary[0], '_id');
+            assert.property(res.body.time_and_salary[0], 'company');
+            assert.property(res.body.time_and_salary[0], 'sector');
+            assert.property(res.body.time_and_salary[0], 'created_at');
+            assert.property(res.body.time_and_salary[0], 'data_time');
+            assert.property(res.body.time_and_salary[0], 'estimated_hourly_wage');
+            assert.property(res.body.time_and_salary[0], 'job_title');
+            assert.property(res.body.time_and_salary[0], 'overtime_frequency');
+            assert.property(res.body.time_and_salary[0], 'salary');
+            assert.property(res.body.time_and_salary[0], 'week_work_time');
+            assert.property(res.body.time_and_salary[0], 'status');
+        }
+    );
+
+    it('should get workings of user and total equal 1 ',
         async () => {
             const res = await request(app).get(`/me/workings`)
                 .query({

@@ -2,8 +2,8 @@
 function generateGetWorkingsViewModel(workings, total) {
     const view_workings = workings.map(working => ({
         _id: working._id,
-        company: workings.company,
-        sector: workings.sector,
+        company: working.company,
+        sector: working.sector,
         created_at: working.created_at,
         data_time: working.data_time,
         estimated_hourly_wage: working.estimated_hourly_wage,

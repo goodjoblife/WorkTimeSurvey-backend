@@ -116,7 +116,7 @@ function generateWorkingData() {
             amount: 122,
         },
         estimated_hourly_wage: 122,
-        date_time: {
+        data_time: {
             year: 2016,
             month: 1,
         },
