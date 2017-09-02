@@ -55,7 +55,7 @@ function _reportsViewModel(reports) {
  * @apiSuccess {Object} report 該檢舉的物件
  * @apiSuccess {String} report._id 該檢舉的ID
  * @apiSuccess {String="這是廣告或垃圾訊息", "我認為這篇文章涉及人身攻擊、誹謗", "我認為這篇文章內容不實", "其他"} report.reason_category 檢舉的原因分類
- * @apiSuccess {String} report.reason 檢舉的原因詳述。 若 reason_category = `這是廣告或垃圾訊息` 則不會有本欄位。但若為其他分類，則會有此欄位。
+ * @apiSuccess {String} report.reason 檢舉的原因詳述。 當 reason_category = `這是廣告或垃圾訊息`，且 request 中未給 reason，則不會回傳此欄位（直接缺這個欄位，而非等於 undefined）。
  * @apiSuccess {String} report.created_at 該檢舉的時間
  */
 /* eslint-enable */
@@ -69,12 +69,17 @@ router.post('/:id/reports', [
 
         const report_model = new ReportModel(req.db);
 
-        const partial_report = {
+        let partial_report = {
             namespace: 'replies',
             user_id: user._id,
             reason_category: req.body.reason_category,
-            reason: req.body.reason,
         };
+
+        if (req.body.reason) {
+            partial_report = Object.assign(partial_report, {
+                reason: req.body.reason,
+            });
+        }
 
         try {
             const report = await report_model

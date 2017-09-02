@@ -108,7 +108,7 @@ describe('Reports Test', () => {
                 })
                 .expect(422));
 
-        it('should return 200 and correct fields, while reason_category is "這是廣告或垃圾訊息" and reason is undefined', () => request(app)
+        it('should return 200 and correct fields, while reason_category is "這是廣告或垃圾訊息" and reason is not given', () => request(app)
                 .post(`/replies/${reply_id_str}/reports`)
                 .send({
                     access_token: 'fakeaccesstoken',
