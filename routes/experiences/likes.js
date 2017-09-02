@@ -1,11 +1,15 @@
 const express = require('express');
 const winston = require('winston');
+const passport = require('passport');
+
 const ExperienceLikeModel = require('../../models/experience_like_model');
 const ExperienceModel = require('../../models/experience_model');
-const passport = require('passport');
-const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
-const HttpError = require('../../libs/errors').HttpError;
-const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
+const {
+    ObjectNotExistError,
+    HttpError,
+    DuplicateKeyError,
+} = require('../../libs/errors');
+const wrap = require('../../libs/wrap');
 
 const router = express.Router();
 
@@ -16,37 +20,35 @@ const router = express.Router();
  */
 router.post('/:id/likes', [
     passport.authenticate('bearer', { session: false }),
-    (req, res, next) => {
+    wrap(async (req, res, next) => {
         const user = req.user;
         const experience_id = req.params.id;
+
         const experience_like_model = new ExperienceLikeModel(req.db);
         const experience_model = new ExperienceModel(req.db);
 
-        experience_like_model
-            .createLike(experience_id, user)
-            .then(result => experience_model.incrementLikeCount(experience_id))
-            .then((result) => {
-                res.send({
-                    success: true,
-                });
-            })
-            .catch((err) => {
-                winston.info(req.originalUrl, {
-                    id: experience_id,
-                    ip: req.ip,
-                    ips: req.ips,
-                    err: err.message,
-                });
+        try {
+            await experience_like_model.createLike(experience_id, user);
+            await experience_model.incrementLikeCount(experience_id);
 
-                if (err instanceof DuplicateKeyError) {
-                    next(new HttpError(err.message, 403));
-                } else if (err instanceof ObjectNotExistError) {
-                    next(new HttpError(err.message, 404));
-                } else {
-                    next(new HttpError("Internal Server Error", 500));
-                }
+            res.send({ success: true });
+        } catch (err) {
+            winston.info(req.originalUrl, {
+                id: experience_id,
+                ip: req.ip,
+                ips: req.ips,
+                err: err.message,
             });
-    },
+
+            if (err instanceof DuplicateKeyError) {
+                next(new HttpError(err.message, 403));
+            } else if (err instanceof ObjectNotExistError) {
+                next(new HttpError(err.message, 404));
+            } else {
+                next(new HttpError("Internal Server Error", 500));
+            }
+        }
+    }),
 ]);
 
 /**
@@ -56,37 +58,35 @@ router.post('/:id/likes', [
  */
 router.delete('/:id/likes', [
     passport.authenticate('bearer', { session: false }),
-    (req, res, next) => {
+    wrap(async (req, res, next) => {
         const user = req.user;
         const experience_id = req.params.id;
+
         const experience_like_model = new ExperienceLikeModel(req.db);
         const experience_model = new ExperienceModel(req.db);
 
-        experience_like_model
-            .deleteLike(experience_id, user)
-            .then(() => experience_model.decrementLikeCount(experience_id))
-            .then((result) => {
-                res.send({
-                    success: true,
-                });
-            })
-            .catch((err) => {
-                winston.info(req.originalUrl, {
-                    id: experience_id,
-                    ip: req.ip,
-                    ips: req.ips,
-                    err: err.message,
-                });
+        try {
+            await experience_like_model.deleteLike(experience_id, user);
+            await experience_model.decrementLikeCount(experience_id);
 
-                if (err instanceof DuplicateKeyError) {
-                    next(new HttpError(err.message, 403));
-                } else if (err instanceof ObjectNotExistError) {
-                    next(new HttpError(err.message, 404));
-                } else {
-                    next(new HttpError("Internal Server Error", 500));
-                }
+            res.send({ success: true });
+        } catch (err) {
+            winston.info(req.originalUrl, {
+                id: experience_id,
+                ip: req.ip,
+                ips: req.ips,
+                err: err.message,
             });
-    },
+
+            if (err instanceof DuplicateKeyError) {
+                next(new HttpError(err.message, 403));
+            } else if (err instanceof ObjectNotExistError) {
+                next(new HttpError(err.message, 404));
+            } else {
+                next(new HttpError("Internal Server Error", 500));
+            }
+        }
+    }),
 ]);
 
 module.exports = router;

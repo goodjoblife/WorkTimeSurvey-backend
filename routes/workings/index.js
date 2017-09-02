@@ -7,7 +7,7 @@ const {
 } = require('../../libs/errors');
 const escapeRegExp = require('lodash/escapeRegExp');
 const post_helper = require('./workings_post');
-const middleware = require('../middleware');
+const middleware = require('./middleware');
 const WorkingModel = require('../../models/working_model');
 const passport = require('passport');
 const wrap = require('../../libs/wrap');
