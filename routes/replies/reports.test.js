@@ -45,11 +45,11 @@ describe('Reports Test', () => {
 
         beforeEach('Mock user', () => {
             sandbox = sinon.sandbox.create();
-            const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication')
+            const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication');
+            cachedFacebookAuthentication
                 .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
                 .resolves(fake_user);
-
-            return cachedFacebookAuthentication
+            cachedFacebookAuthentication
                 .withArgs(sinon.match.object, sinon.match.object, 'other_fakeaccesstoken')
                 .resolves(fake_other_user);
         });
@@ -101,7 +101,7 @@ describe('Reports Test', () => {
             ]);
         });
 
-        it('should fail, because reason_category is required', () => request(app)
+        it('should return 422, because reason_category is required', () => request(app)
                 .post(`/replies/${reply_id_str}/reports`)
                 .send({
                     access_token: 'fakeaccesstoken',
@@ -125,7 +125,7 @@ describe('Reports Test', () => {
                 })
         );
 
-        it('should fail while reason_category is not "這是廣告或垃圾訊息" and reason is undefiend', () => request(app)
+        it('should return 422, while reason_category is not "這是廣告或垃圾訊息" and reason is undefiend', () => request(app)
                 .post(`/replies/${reply_id_str}/reports`)
                 .send({
                     access_token: 'fakeaccesstoken',
