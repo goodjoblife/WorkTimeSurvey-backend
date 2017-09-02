@@ -50,6 +50,7 @@ class ReplyModel {
                 like_count: 0,
                 report_count: 0,
                 created_at: new Date(),
+                status: 'published',
             });
 
             return this.collection.insertOne(partial_reply);
