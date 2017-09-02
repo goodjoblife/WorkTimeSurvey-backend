@@ -29,8 +29,8 @@ const WorkingModel = require('../../../models/working_model');
  * @apiSuccess {Object} time_and_salary.salary 薪資資訊
  * @apiSuccess {Number} time_and_salary.salary.amount 薪資多寡
  * @apiSuccess {String= "hour","day","month","year"} time_and_salary.salary.type 薪資種類
- * @apiSuccess {Number} time_and_salary.salary.week_work_time 每周工時
- * @apiSuccess {String= "published","hidden"} time_and_salary.salary.status 狀態
+ * @apiSuccess {Number} time_and_salary.week_work_time 每周工時
+ * @apiSuccess {String= "published","hidden"} time_and_salary.status 狀態
  */
 /* eslint-enable */
 router.get('/', [
