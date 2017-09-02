@@ -5,6 +5,12 @@ const wrap = require('../../libs/wrap');
 const { HttpError } = require('../../libs/errors');
 const { requiredNumberInRange } = require('../../libs/validation');
 
+/**
+ * @api {get} /company_keywords 取得以公司搜尋的熱門關鍵字 API
+ * @apiGroup Popular Keywords
+ * @apiParam {Number=5} num 回傳的關鍵字數
+ * @apiSuccess {String[]} keywords 以公司查詢的熱門關鍵字列表
+ */
 router.get('/', wrap(async (req, res, next) => {
     const num = Number(req.query.num);
 
