@@ -29,13 +29,13 @@ describe('POST /replies/:id/likes', () => {
     }));
 
     beforeEach('Seed reply', async () => {
-        const published_reply = Object.assign(generateReplyData(),{
+        const published_reply = Object.assign(generateReplyData(), {
             experience_id,
             like_count: 0,
             status: 'published',
         });
 
-        const hidden_reply = Object.assign(generateReplyData(),{
+        const hidden_reply = Object.assign(generateReplyData(), {
             experience_id,
             like_count: 0,
             status: 'hidden',
