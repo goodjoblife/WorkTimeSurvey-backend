@@ -191,6 +191,34 @@ class ReplyModel {
             }
         );
     }
+
+    /**
+     * @param   {object}  query - mognodb find query
+     * @returns {Promise}
+     *  - resolved : 10 (Number)
+     */
+    getCount(query) {
+        return this.collection.find(query, { _id: 1 }).count();
+    }
+
+    /**
+     * 使用 query 來尋找文章
+     * @param {object} query - mongodb query
+     * @param {object} sort
+     * @param {number} skip = 0
+     * @param {number} limit = 20
+     * @param {object} opt = {} - mongodb find field filter
+     *
+     * @returns {Promise}
+     */
+    getReplies(query, sort, skip = 0, limit = 20, opt = {}) {
+        return this.collection
+            .find(query, opt)
+            .sort(sort)
+            .skip(skip)
+            .limit(limit)
+            .toArray();
+    }
 }
 
 module.exports = ReplyModel;
