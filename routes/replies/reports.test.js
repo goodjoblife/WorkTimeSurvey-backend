@@ -202,6 +202,7 @@ describe('Reports Test', () => {
 
     describe('GET /replies/:id/reports', () => {
         let reply_id_str;
+        let reply2_id_str;
         let sandbox = null;
 
         before('create user', () => {
@@ -215,33 +216,48 @@ describe('Reports Test', () => {
                 .resolves(fake_other_user);
         });
 
-        before('create test data', () => db.collection('replies').insertOne({
-            type: 'interview',
-            author_id: fake_user._id,
-            report_count: 2,
-        }).then((result) => {
-            reply_id_str = result.insertedId.toString();
+        before('create test data', async () => {
+            const reply1 = await db.collection('replies').insertOne({
+                content: "this is a reply",
+                author_id: new ObjectId(),
+                like_count: 0,
+                report_count: 2,
+            });
+            const reply2 = await db.collection('replies').insertOne({
+                content: "this is a reply 2",
+                author_id: new ObjectId(),
+                like_count: 0,
+                report_count: 1,
+            });
 
-            const testData = {
+            reply_id_str = reply1.insertedId.toString();
+            reply2_id_str = reply2.insertedId.toString();
+
+            // insert reports for reply1
+            await db.collection('reports').insertOne({
                 created_at: new Date(),
                 user_id: fake_user._id,
                 reason_category: '我認為這篇文章內容不實',
-                reason: 'This is not true',
+                reason: 'reply1 report',
                 ref: DBRef('replies', ObjectId(reply_id_str)),
-            };
-            const testData2 = {
+            });
+            await db.collection('reports').insertOne({
                 created_at: new Date(),
                 user_id: fake_other_user._id,
                 reason_category: '我認為這篇文章內容不實',
-                reason: 'This is not true',
+                reason: 'reply1 report',
                 ref: DBRef('replies', ObjectId(reply_id_str)),
-            };
+            });
 
-            return Promise.all([
-                db.collection('reports').insertOne(testData),
-                db.collection('reports').insertOne(testData2),
-            ]);
-        }));
+            // insert report for reply2
+            await db.collection('reports').insertOne({
+                created_at: new Date(),
+                user_id: fake_user._id,
+                reason_category: '我認為這篇文章內容不實',
+                reason: 'reply2 report',
+                ref: DBRef('replies', ObjectId(reply2_id_str)),
+            });
+        });
 
         it('should get reports, and the fields are correct', () => request(app)
             .get(`/replies/${reply_id_str}/reports`)
@@ -251,11 +267,11 @@ describe('Reports Test', () => {
                 assert.isArray(res.body.reports);
                 assert.lengthOf(res.body.reports, 2);
                 assert.notDeepProperty(res.body, 'reports.0.user_id');
-                assert.deepProperty(res.body, 'reports.0.reason');
+                assert.deepPropertyVal(res.body, 'reports.0.reason', 'reply1 report');
                 assert.deepProperty(res.body, 'reports.0.reason_category');
                 assert.deepProperty(res.body, 'reports.0.created_at');
                 assert.notDeepProperty(res.body, 'reports.1.user_id');
-                assert.deepProperty(res.body, 'reports.1.reason');
+                assert.deepPropertyVal(res.body, 'reports.1.reason', 'reply1 report');
                 assert.deepProperty(res.body, 'reports.1.reason_category');
                 assert.deepProperty(res.body, 'reports.1.created_at');
             }
