@@ -82,9 +82,9 @@ describe('Authorization middleware', () => {
                 });
             });
 
-            after(() => db.collection('users').remove({}));
+            after(() => db.collection('users').deleteMany({}));
 
-            after(() => db.collection('recommendations').remove({}));
+            after(() => db.collection('recommendations').deleteMany({}));
 
             after((done) => {
                 redis_client.flushall(done);
@@ -179,6 +179,6 @@ describe('Authorization middleware', () => {
             redis_client.flushall(done);
         });
 
-        after(() => db.collection('users').remove({}));
+        after(() => db.collection('users').deleteMany({}));
     });
 });

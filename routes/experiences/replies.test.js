@@ -316,9 +316,9 @@ describe('Replies Test', () => {
                 }));
 
         after(() => {
-            const pro1 = db.collection('replies').remove({});
-            const pro2 = db.collection('experiences').remove({});
-            const pro3 = db.collection('reply_likes').remove({});
+            const pro1 = db.collection('replies').deleteMany({});
+            const pro2 = db.collection('experiences').deleteMany({});
+            const pro3 = db.collection('reply_likes').deleteMany({});
             return Promise.all([pro1, pro2, pro3]);
         });
 

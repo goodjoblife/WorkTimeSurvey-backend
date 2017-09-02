@@ -51,6 +51,6 @@ describe('jobs', () => {
                     assert.lengthOf(res.body, 2);
                 }));
 
-        after(() => db.collection('job_titles').remove({}));
+        after(() => db.collection('job_titles').deleteMany({}));
     });
 });

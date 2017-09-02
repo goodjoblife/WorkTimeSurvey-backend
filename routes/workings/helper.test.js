@@ -31,6 +31,6 @@ describe('Workings Helper', () => {
 
         it('rejected with HttpError if quota is reached', () => assert.isRejected(helper.checkAndUpdateQuota(db, { id: '001', type: 'facebook' }), HttpError));
 
-        after(() => db.collection('users').remove({}));
+        after(() => db.collection('users').deleteMany({}));
     });
 });

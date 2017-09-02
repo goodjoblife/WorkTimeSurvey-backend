@@ -170,6 +170,6 @@ describe('Authentication Library', () => {
             sandbox.restore();
         });
 
-        after(() => db.collection('users').remove({}));
+        after(() => db.collection('users').deleteMany({}));
     });
 });
