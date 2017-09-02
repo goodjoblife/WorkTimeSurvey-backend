@@ -1,15 +1,28 @@
 const express = require('express');
 
 const router = express.Router();
-const HttpError = require('../libs/errors').HttpError;
+const {
+    HttpError,
+    ObjectNotExistError,
+} = require('../../libs/errors');
 const escapeRegExp = require('lodash/escapeRegExp');
 const post_helper = require('./workings_post');
-const middleware = require('./middleware');
+const middleware = require('../middleware');
+const WorkingModel = require('../../models/working_model');
 const passport = require('passport');
+const wrap = require('../../libs/wrap');
 
-router.get('/', middleware.sort_by);
-router.get('/', middleware.pagination);
-router.get('/', (req, res, next) => {
+/* eslint-disable */
+/**
+ * @api {get} /workings/extreme 查詢薪資工時統計上 1% 外的值
+ * @apiGroup Workings
+ * @apiParam {String="created_at","week_work_time","estimated_hourly_wage"} [sorted_by="created_at"] 單筆資料排序的方式
+ * @apiParam {String="descending","ascending"} [order="descending"] 資料排序由大到小或由小到大。無資料者會被排到最下方
+ * @apiSuccess {Object[]} time_and_salary 薪時資料
+ */
+/* eslint-enable */
+router.get('/extreme', middleware.sort_by);
+router.get('/extreme', wrap(async (req, res) => {
     const collection = req.db.collection('workings');
     const opt = {
         company: 1,
@@ -23,48 +36,109 @@ router.get('/', (req, res, next) => {
         estimated_hourly_wage: 1,
     };
 
-    let query = {
+    const data = {};
+    const count = await collection.count();
+
+    const defined_query = {
         [req.custom.sort_by]: { $exists: true },
     };
+    const undefined_query = {
+        [req.custom.sort_by]: { $exists: false },
+    };
+
+    const skip = Math.floor(count * 0.01);
+
+    const defined_results = await collection
+        .find(defined_query, opt)
+        .sort(req.custom.sort)
+        .limit(skip)
+        .toArray();
+
+    if (defined_results.length < skip) {
+        const undefined_results = await collection.find(undefined_query, opt)
+            .limit(skip - defined_results.length)
+            .toArray();
+        data.time_and_salary = defined_results.concat(undefined_results);
+    } else {
+        data.time_and_salary = defined_results;
+    }
+
+    res.send(data);
+}));
+
+/* eslint-disable */
+/**
+ * @api {get} /workings 查詢薪資與工時資料 API
+ * @apiGroup Workings
+ * @apiParam {String="created_at","week_work_time","estimated_hourly_wage"} [sorted_by="created_at"] 單筆資料排序的方式
+ * @apiParam {String="descending","ascending"} [order="descending"] 資料排序由大到小或由小到大。無資料者會被排到最下方
+ * @apiParam {String="0"} [page=0] 分頁號碼
+ * @apiParam {String="0 < limit <= 50"} [limit=25] 單頁資料筆數
+ * @apiSuccess {Number} total 總資料數
+ * @apiSuccess {Number} page 目前在資料的第幾頁
+ * @apiSuccess {Object[]} time_and_salary 薪時資料
+ */
+/* eslint-enable */
+router.get('/', middleware.sort_by);
+router.get('/', middleware.pagination);
+router.get('/', wrap(async (req, res) => {
+    const collection = req.db.collection('workings');
+    const opt = {
+        company: 1,
+        sector: 1,
+        created_at: 1,
+        job_title: 1,
+        data_time: 1,
+        week_work_time: 1,
+        overtime_frequency: 1,
+        salary: 1,
+        estimated_hourly_wage: 1,
+    };
+
     const page = req.pagination.page;
     const limit = req.pagination.limit;
+    let is_skip = false;
+    if (req.query.skip === 'true') {
+        is_skip = true;
+    }
 
     const data = {};
-    collection
-        .count()
-        .then((count) => {
-            data.total = count;
+    data.total = await collection.count();
 
-            return collection
-                .find(query, opt)
-                .sort(req.custom.sort)
-                .skip(limit * page)
-                .limit(limit)
-                .toArray();
-        })
-        .then((defined_results) => {
-            if (defined_results.length < limit) {
-                return collection.find(query).count().then((count_defined_num) => {
-                    query = {
-                        [req.custom.sort_by]: { $exists: false },
-                    };
+    const defined_query = {
+        [req.custom.sort_by]: { $exists: true },
+    };
+    const undefined_query = {
+        [req.custom.sort_by]: { $exists: false },
+    };
 
-                    return collection.find(query, opt)
-                            .skip(((limit * page) + defined_results.length) - count_defined_num)
-                            .limit(limit - defined_results.length).toArray();
-                }).then(results => defined_results.concat(results));
-            }
-            return defined_results;
-        })
-        .then((results) => {
-            data.time_and_salary = results;
 
-            res.send(data);
-        })
-        .catch((err) => {
-            next(new HttpError("Internal Server Error", 500));
-        });
-});
+    let skip = 0;
+    if (is_skip === true) {
+        skip = Math.floor(data.total * 0.01);
+    }
+
+    const defined_results = await collection
+        .find(defined_query, opt)
+        .sort(req.custom.sort)
+        .skip(skip + (limit * page))
+        .limit(limit)
+        .toArray();
+
+    if (defined_results.length < limit) {
+        const count_defined_num = await collection.find(defined_query).count();
+
+        const undefined_results = await collection.find(undefined_query, opt)
+            .skip((skip + (limit * page) + defined_results.length) - count_defined_num)
+            .limit(limit - defined_results.length)
+            .toArray();
+        data.time_and_salary = defined_results.concat(undefined_results);
+    } else {
+        data.time_and_salary = defined_results;
+    }
+
+    res.send(data);
+}));
 
 router.post('/', (req, res, next) => {
     req.custom = {};
@@ -432,5 +506,54 @@ router.get('/jobs/search', (req, res, next) => {
         next(new HttpError("Internal Server Error", 500));
     });
 });
+
+function _isValidStatus(value) {
+    const valid_status = [
+        'published',
+        'hidden',
+    ];
+    return valid_status.indexOf(value) > -1;
+}
+
+/**
+ * @api {patch} /workings/:id 更新自已建立的工時與薪資狀態 API
+ * @apiParam {String="published","hidden"} status 要更新成的狀態
+ * @apiGroup Workings
+ * @apiSuccess {Boolean} success 是否更新狀態成功
+ * @apiSuccess {String} status 更新後狀態
+ */
+router.patch('/:id', [
+    passport.authenticate('bearer', { session: false }),
+    wrap(async (req, res) => {
+        const id = req.params.id;
+        const status = req.body.status;
+        const user = req.user;
+
+        if (!_isValidStatus(status)) {
+            throw new HttpError('status is invalid', 422);
+        }
+
+        const working_model = new WorkingModel(req.db);
+        let working;
+        try {
+            working = await working_model.getWorkingsById(id, { author: 1 });
+        } catch (err) {
+            if (err instanceof ObjectNotExistError) {
+                throw new HttpError(err.message, 404);
+            }
+            throw err;
+        }
+
+        if (!(working.author.id === user.facebook_id)) {
+            throw new HttpError('user is unauthorized', 403);
+        }
+
+        const result = await working_model.updateStatus(id, status);
+        res.send({
+            success: true,
+            status: result.value.status,
+        });
+    }),
+]);
 
 module.exports = router;
