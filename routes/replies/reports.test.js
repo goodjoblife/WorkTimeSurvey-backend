@@ -63,42 +63,27 @@ describe('Reports Test', () => {
             reply_id_str = result.insertedId.toString();
         }));
 
-        it('should return 200 and correct fields if succeed', () => {
-            const req = request(app)
+        it('should return 200 and correct fields if succeed', async () => {
+            const res = await request(app)
                 .post(`/replies/${reply_id_str}/reports`)
                 .send(generatePayload('fakeaccesstoken'))
-                .expect(200)
-                .expect((res) => {
-                    assert.property(res.body, 'report');
-                    assert.deepProperty(res.body, 'report._id');
-                    assert.deepPropertyVal(res.body, 'report.reason_category', '我認為這篇文章內容不實');
-                    assert.deepPropertyVal(res.body, 'report.reason', 'This is not true');
-                    assert.deepProperty(res.body, 'report.created_at');
-                    assert.notDeepProperty(res.body, 'report.user');
-                });
+                .expect(200);
+            assert.property(res.body, 'report');
+            assert.deepProperty(res.body, 'report._id');
+            assert.deepPropertyVal(res.body, 'report.reason_category', '我認為這篇文章內容不實');
+            assert.deepPropertyVal(res.body, 'report.reason', 'This is not true');
+            assert.deepProperty(res.body, 'report.created_at');
+            assert.notDeepProperty(res.body, 'report.user');
 
-            const check_replies_collection = req
-                .then(() =>
-                    db.collection('replies').findOne({ _id: ObjectId(reply_id_str) })
-                        .then((reply) => {
-                            assert.equal(reply.report_count, 1);
-                        }));
+            const reply = await db.collection('replies').findOne({ _id: ObjectId(reply_id_str) });
+            assert.equal(reply.report_count, 1);
 
-            const check_reports_collection = req
-                .then(res =>
-                    db.collection('reports').findOne({ ref: DBRef('replies', ObjectId(reply_id_str)) })
-                        .then((report) => {
-                            assert.isNotNull(report);
-                            assert.equal(report.reason_category, '我認為這篇文章內容不實');
-                            assert.equal(report.reason, 'This is not true');
-                            assert.property(report, 'created_at');
-                            assert.deepEqual(report.user_id, fake_user._id);
-                        }));
-
-            return Promise.all([
-                check_replies_collection,
-                check_reports_collection,
-            ]);
+            const report = await db.collection('reports').findOne({ ref: DBRef('replies', ObjectId(reply_id_str)) });
+            assert.isNotNull(report);
+            assert.equal(report.reason_category, '我認為這篇文章內容不實');
+            assert.equal(report.reason, 'This is not true');
+            assert.property(report, 'created_at');
+            assert.deepEqual(report.user_id, fake_user._id);
         });
 
         it('should return 422, because reason_category is required', () => request(app)
@@ -176,20 +161,21 @@ describe('Reports Test', () => {
                 });
         });
 
-        it('report_count should be 2 , if post report 2 times(different user) and get reply', () => {
+        it('report_count should be 2 , if post report 2 times(different user) and get reply', async () => {
             const uri = `/replies/${reply_id_str}/reports`;
-            return request(app).post(uri)
-                .send(generatePayload('fakeaccesstoken'))
-                .then(res => request(app).post(uri)
-                        .send(generatePayload('other_fakeaccesstoken')))
-                .then(res => db.collection("replies")
-                        .find({
-                            _id: new ObjectId(reply_id_str),
-                        })
-                        .toArray())
-                .then((result) => {
-                    assert.equal(result[0].report_count, 2);
-                });
+            await request(app)
+                .post(uri)
+                .send(generatePayload('fakeaccesstoken'));
+            await request(app)
+                .post(uri)
+                .send(generatePayload('other_fakeaccesstoken'));
+
+            const result = await db.collection("replies")
+                .find({
+                    _id: new ObjectId(reply_id_str),
+                })
+                .toArray();
+            assert.equal(result[0].report_count, 2);
         });
 
         afterEach(() => {
