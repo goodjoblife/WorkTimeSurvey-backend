@@ -70,7 +70,6 @@ describe('company Helper', () => {
             name: 'GOODJOBMARK',
         }));
 
-        after('DB: 清除 companies', () => db.collection('companies').remove({}));
+        after('DB: 清除 companies', () => db.collection('companies').deleteMany({}));
     });
 });
-

@@ -59,6 +59,7 @@ describe('Reports Test', () => {
             author_id: new ObjectId(),
             like_count: 0,
             report_count: 0,
+            status: 'published',
         }).then((result) => {
             reply_id_str = result.insertedId.toString();
         }));
@@ -123,42 +124,47 @@ describe('Reports Test', () => {
                 .send(generatePayload('fakeaccesstoken'))
                 .expect(404));
 
-        it('(! Need Index) should return 403, if post report 2 times', () => request(app).post(`/replies/${reply_id_str}/reports`)
+        it('(! Need Index) should return 403, if post report 2 times', async () => {
+            await request(app)
+                .post(`/replies/${reply_id_str}/reports`)
+                .send(generatePayload('fakeaccesstoken'));
+
+            await request(app)
+                .post(`/replies/${reply_id_str}/reports`)
                 .send(generatePayload('fakeaccesstoken'))
-                .then(response => request(app)
-                        .post(`/replies/${reply_id_str}/reports`)
-                        .send(generatePayload('fakeaccesstoken'))
-                        .expect(403)));
+                .expect(403);
+        });
 
         it('should return 401, if user does not login', () => request(app)
                 .post(`/replies/${reply_id_str}/reports`)
                 .expect(401));
 
-        it('report_count should 1, if post report and get reply', () => request(app).post(`/replies/${reply_id_str}/reports`)
-                .send(generatePayload('fakeaccesstoken'))
-                .then(res => db.collection("replies")
-                        .find({
-                            _id: new ObjectId(reply_id_str),
-                        })
-                        .toArray()
-                        .then((result) => {
-                            assert.equal(result[0].report_count, 1);
-                        })));
+        it('report_count should 1, if post report and get reply', async () => {
+            await request(app)
+                .post(`/replies/${reply_id_str}/reports`)
+                .send(generatePayload('fakeaccesstoken'));
+            const result = await db.collection("replies")
+                .find({
+                    _id: new ObjectId(reply_id_str),
+                }).toArray();
 
-        it('(! Need Index), report_count should be 1, if post report 2 times (same user) and get reply', () => {
+            assert.equal(result[0].report_count, 1);
+        });
+
+        it('(! Need Index), report_count should be 1, if post report 2 times (same user) and get reply', async () => {
             const uri = `/replies/${reply_id_str}/reports`;
-            return request(app).post(uri)
-                .send(generatePayload('fakeaccesstoken'))
-                .then(res => request(app).post(uri)
-                        .send(generatePayload('fakeaccesstoken')))
-                .then(res => db.collection("replies")
-                        .find({
-                            _id: new ObjectId(reply_id_str),
-                        })
-                        .toArray())
-                .then((result) => {
-                    assert.equal(result[0].report_count, 1);
-                });
+            await request(app)
+                .post(uri)
+                .send(generatePayload('fakeaccesstoken'));
+            await request(app)
+                .post(uri)
+                .send(generatePayload('fakeaccesstoken'));
+            const result = await db.collection("replies")
+                .find({
+                    _id: new ObjectId(reply_id_str),
+                }).toArray();
+
+            assert.equal(result[0].report_count, 1);
         });
 
         it('report_count should be 2 , if post report 2 times(different user) and get reply', async () => {
@@ -178,11 +184,10 @@ describe('Reports Test', () => {
             assert.equal(result[0].report_count, 2);
         });
 
-        afterEach(() => {
+        afterEach(async () => {
             sandbox.restore();
-            const pro1 = db.collection('reports').remove();
-            const pro2 = db.collection('replies').remove({});
-            return Promise.all([pro1, pro2]);
+            await db.collection('reports').deleteMany({});
+            await db.collection('replies').deleteMany({});
         });
     });
 
@@ -208,12 +213,14 @@ describe('Reports Test', () => {
                 author_id: new ObjectId(),
                 like_count: 0,
                 report_count: 2,
+                status: 'published',
             });
             const reply2 = await db.collection('replies').insertOne({
                 content: "this is a reply 2",
                 author_id: new ObjectId(),
                 like_count: 0,
                 report_count: 1,
+                status: 'published',
             });
 
             reply_id_str = reply1.insertedId.toString();
@@ -278,10 +285,9 @@ describe('Reports Test', () => {
                 })
                 .expect(422));
 
-        after(() => {
-            const pro1 = db.collection('reports').remove({});
-            const pro2 = db.collection('replies').remove({});
-            return Promise.all([pro1, pro2]);
+        after(async () => {
+            await db.collection('reports').deleteMany({});
+            await db.collection('replies').deleteMany({});
         });
 
         after(() => {

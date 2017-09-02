@@ -423,9 +423,9 @@ describe('experiences 面試和工作經驗資訊', () => {
             });
         });
 
-        after('DB: 清除 experiences', () => db.collection('experiences').remove({}));
+        after('DB: 清除 experiences', () => db.collection('experiences').deleteMany({}));
 
-        after('DB: 清除 companies', () => db.collection('companies').remove({}));
+        after('DB: 清除 companies', () => db.collection('companies').deleteMany({}));
 
         afterEach(() => {
             sandbox.restore();

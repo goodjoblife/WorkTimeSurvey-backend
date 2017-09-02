@@ -196,8 +196,8 @@ describe('Reports Test', () => {
 
         afterEach(() => {
             sandbox.restore();
-            const pro1 = db.collection('reports').remove();
-            const pro2 = db.collection('experiences').remove({});
+            const pro1 = db.collection('reports').deleteMany({});
+            const pro2 = db.collection('experiences').deleteMany({});
             return Promise.all([pro1, pro2]);
         });
     });
@@ -279,9 +279,9 @@ describe('Reports Test', () => {
                 .expect(422));
 
         after(() => {
-            const pro1 = db.collection('reports').remove({});
-            const pro2 = db.collection('experiences').remove({});
-            const pro3 = db.collection('repoerts').remove({});
+            const pro1 = db.collection('reports').deleteMany({});
+            const pro2 = db.collection('experiences').deleteMany({});
+            const pro3 = db.collection('repoerts').deleteMany({});
             return Promise.all([pro1, pro2, pro3]);
         });
 

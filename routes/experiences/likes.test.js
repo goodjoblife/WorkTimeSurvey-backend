@@ -157,8 +157,8 @@ describe('Experience Likes Test', () => {
 
         afterEach(() => {
             sandbox.restore();
-            const pro1 = db.collection('experience_likes').remove();
-            const pro2 = db.collection('experiences').remove({});
+            const pro1 = db.collection('experience_likes').deleteMany();
+            const pro2 = db.collection('experiences').deleteMany({});
             return Promise.all([pro1, pro2]);
         });
     });
@@ -243,7 +243,7 @@ describe('Experience Likes Test', () => {
             ]);
         });
 
-        it('cannot delete like, beacause the user does not login and return 404', () => db.collection('experience_likes').remove({
+        it('cannot delete like, beacause the user does not login and return 404', () => db.collection('experience_likes').deleteMany({
             user_id: test_likes[0].user_id,
         }).then(result => request(app)
                     .delete(`/experiences/${experience_id_string_by_user}/likes`)
@@ -256,7 +256,7 @@ describe('Experience Likes Test', () => {
                         assert.equal(experience.like_count, 2, 'the like_count should be 2 (it can not change)');
                     }));
 
-        it('cannot delete like, beacause the like does not exist and return 404', () => db.collection('experience_likes').remove({
+        it('cannot delete like, beacause the like does not exist and return 404', () => db.collection('experience_likes').deleteMany({
             user_id: test_likes[0].user_id,
         }).then(result => request(app)
                     .delete(`/experiences/${experience_id_string_by_user}/likes`)
@@ -271,7 +271,7 @@ describe('Experience Likes Test', () => {
                         assert.equal(experience.like_count, 2, 'the like_count should be 2 (it can not change)');
                     }));
 
-        it('cannot delete like, because experience does not exist and return 404', () => db.collection('experience_likes').remove({
+        it('cannot delete like, because experience does not exist and return 404', () => db.collection('experience_likes').deleteMany({
             user_id: test_likes[0].user_id,
         }).then(result => request(app)
                     .delete('/experiences/123456789/likes')
@@ -332,8 +332,8 @@ describe('Experience Likes Test', () => {
 
         afterEach(() => {
             sandbox.restore();
-            const pro1 = db.collection('experience_likes').remove();
-            const pro2 = db.collection('experiences').remove({});
+            const pro1 = db.collection('experience_likes').deleteMany();
+            const pro2 = db.collection('experiences').deleteMany({});
             return Promise.all([pro1, pro2]);
         });
     });

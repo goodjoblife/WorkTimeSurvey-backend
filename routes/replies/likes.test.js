@@ -33,6 +33,7 @@ describe('POST /replies/:id/likes', () => {
             author_id: new ObjectId(),
             floor: 2,
             like_count: 0,
+            status: 'published',
         };
 
         return db.collection('replies').insertOne(reply)
@@ -197,6 +198,7 @@ describe('DELETE /replies/:id/likes', () => {
             author_id: fake_third_user._id,
             floor: 1,
             like_count: 2,
+            status: 'published',
         };
 
         return db.collection('replies').insertOne(reply)
