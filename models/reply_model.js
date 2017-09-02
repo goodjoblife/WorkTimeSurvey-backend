@@ -109,6 +109,7 @@ class ReplyModel {
             }
             return this.collection.find({
                 experience_id: new ObjectId(experience_id),
+                status: "published",
             }).sort(sort).skip(skip).limit(limit)
             .toArray();
         });
@@ -133,6 +134,7 @@ class ReplyModel {
 
         return this.collection.findOne({
             _id: new ObjectId(id),
+            status: "published",
         });
     }
 

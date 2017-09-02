@@ -6,6 +6,7 @@ const sinon = require('sinon');
 const config = require('config');
 
 const authentication = require('../../libs/authentication');
+const { generateReplyData } = require('../experiences/testData');
 
 describe('Replies Test', () => {
     let db;
@@ -163,19 +164,21 @@ describe('Replies Test', () => {
             experience_id = result.insertedId;
             experience_id_string = result.insertedId.toString();
 
-            const testDatas = [];
+            const test_replies = [];
             for (let i = 0; i < TEST_REPLIES_COUNT; i += 1) {
-                testDatas.push({
-                    created_at: new Date(),
+                test_replies.push(Object.assign(generateReplyData(), {
                     experience_id,
                     author_id: fake_user._id,
-                    content: "hello test0",
-                    like_count: 0,
-                    report_count: 0,
                     floor: i,
-                });
+                }));
             }
-            return db.collection('replies').insertMany(testDatas);
+            test_replies.push(Object.assign(generateReplyData(), {
+                experience_id,
+                author_id: fake_user._id,
+                status: 'hidden',
+            }));
+
+            return db.collection('replies').insertMany(test_replies);
         }).then((result) => {
             const reply1 = result.ops[0];
             const reply2 = result.ops[1];

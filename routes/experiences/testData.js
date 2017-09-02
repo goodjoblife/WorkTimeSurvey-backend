@@ -125,9 +125,22 @@ function generateWorkingData() {
     };
 }
 
+function generateReplyData() {
+    return {
+        created_at: new Date(),
+        experience_id: new ObjectId(),
+        author_id: new ObjectId(),
+        content: "hello test0",
+        like_count: 0,
+        report_count: 0,
+        floor: 1,
+        status: "published",
+    };
+}
 
 module.exports = {
     generateInterviewExperienceData,
     generateWorkExperienceData,
     generateWorkingData,
+    generateReplyData,
 };

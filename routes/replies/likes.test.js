@@ -5,6 +5,7 @@ const sinon = require('sinon');
 const config = require('config');
 const app = require('../../app');
 const authentication = require('../../libs/authentication');
+const { generateReplyData } = require('../experiences/testData');
 
 describe('POST /replies/:id/likes', () => {
     let db;
@@ -19,6 +20,7 @@ describe('POST /replies/:id/likes', () => {
         facebook: { id: '2', name: 'Mark Chen' },
     };
     let reply_id_string;
+    let hidden_reply_id_string;
     const experience_id = new ObjectId();
     let sandbox;
 
@@ -26,19 +28,26 @@ describe('POST /replies/:id/likes', () => {
         db = _db;
     }));
 
-    beforeEach('Seed reply', () => {
-        const reply = {
+    beforeEach('Seed reply', async () => {
+        const published_reply = Object.assign(generateReplyData(),{
             experience_id,
-            content: 'Hello',
-            author_id: new ObjectId(),
-            floor: 2,
             like_count: 0,
-        };
+            status: 'published',
+        });
 
-        return db.collection('replies').insertOne(reply)
-            .then((result) => {
-                reply_id_string = result.insertedId.toString();
-            });
+        const hidden_reply = Object.assign(generateReplyData(),{
+            experience_id,
+            like_count: 0,
+            status: 'hidden',
+        });
+
+        const replies = await db.collection('replies').insertMany([
+            published_reply,
+            hidden_reply,
+        ]);
+
+        reply_id_string = replies.insertedIds[0].toString();
+        hidden_reply_id_string = replies.insertedIds[1].toString();
     });
 
     beforeEach('Mock', () => {
@@ -155,6 +164,13 @@ describe('POST /replies/:id/likes', () => {
         return check_replies_collection;
     });
 
+    it('it should 404 if like the hidden reply', () => request(app)
+            .post(`/replies/${hidden_reply_id_string}/likes`)
+            .send({
+                access_token: 'fakeAccessToken',
+            })
+            .expect(404));
+
     afterEach(() => {
         sandbox.restore();
     });
@@ -190,19 +206,17 @@ describe('DELETE /replies/:id/likes', () => {
     }));
 
     // 插入一個留言（作者 3 號），有兩個按讚（作者 1, 2 號）
-    beforeEach('Seed replies', () => {
-        const reply = {
-            experience_id,
-            content: 'Hello',
-            author_id: fake_third_user._id,
-            floor: 1,
-            like_count: 2,
-        };
+    beforeEach('Seed replies', async () => {
+        const reply = await db.collection('replies').insertOne(
+            Object.assign(generateReplyData(), {
+                experience_id,
+                author_id: fake_third_user,
+                like_count: 2,
+                status: 'published',
+            })
+        );
 
-        return db.collection('replies').insertOne(reply)
-            .then((result) => {
-                reply_id_string = result.insertedId.toString();
-            });
+        reply_id_string = reply.insertedId.toString();
     });
 
     beforeEach('Seed reply_likes', () => {
