@@ -132,7 +132,7 @@ describe('Replies 留言', () => {
                     .expect(422)
         );
 
-        afterEach(() => db.collection('experiences').deleteMany({}));
+        afterEach(() => db.collection('replies').deleteMany({}));
 
         afterEach(() => {
             sandbox.restore();
