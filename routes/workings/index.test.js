@@ -264,6 +264,18 @@ describe('Workings 工時資訊', () => {
                         sector: "Taipei",
                         status: "published",
                     },
+                    {
+                        company: { name: "companyA" },
+                        created_at: new Date("2016-11-13T06:10:04.023Z"),
+                        job_title: "engineer1",
+                        week_work_time: 40,
+                        overtime_frequency: 1,
+                        salary: { amount: 22000, type: "month" },
+                        estimated_hourly_wage: 200,
+                        data_time: { year: 2016, month: 10 },
+                        sector: "Taipei",
+                        status: "hidden",
+                    },
                 ]);
 
                 const workings = Array.from({ length: 298 })
@@ -274,7 +286,8 @@ describe('Workings 工時資訊', () => {
                         overtime_frequency: 1,
                         salary: { amount: 22000, type: "month" },
                         data_time: { year: 2016, month: 10 },
-                        sector: "Taipei", //optional
+                        sector: "Taipei", // optional
+                        status: "published",
                     }));
                 return db.collection('workings').insertMany(workings);
             });
@@ -514,7 +527,7 @@ describe('Workings 工時資訊', () => {
                 .then((res) => {
                 }));
 
-        it('依照 company 來分群資料，結構正確 (workings.length >= 5)', () => request(app).get('/workings/search_by/company/group_by/company')
+        it('依照 company 來分群資料，結構正確 (workings.length = 5)', () => request(app).get('/workings/search_by/company/group_by/company')
                 .query({
                     company: 'COMPANY1',
                 })
@@ -529,7 +542,7 @@ describe('Workings 工時資訊', () => {
                     assert.deepProperty(res.body[0], 'average.estimated_hourly_wage');
                     assert.deepProperty(res.body[0], 'time_and_salary');
                     assert.isArray(res.body[0].time_and_salary);
-                    assert(res.body[0].time_and_salary.length >= 5);
+                    assert(res.body[0].time_and_salary.length = 5);
                     assert.deepProperty(res.body[0], 'time_and_salary.0.job_title');
                     // The first one don't have sector, see #183
                     // assert.deepProperty(res.body[0], 'time_and_salary.0.sector');

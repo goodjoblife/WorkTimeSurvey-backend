@@ -45,6 +45,7 @@ router.get('/extreme', wrap(async (req, res) => {
     };
     const undefined_query = {
         [req.custom.sort_by]: { $exists: false },
+        status: 'published',
     };
 
     const skip = Math.floor(count * 0.01);
