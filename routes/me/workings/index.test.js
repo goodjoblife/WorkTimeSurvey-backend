@@ -103,7 +103,7 @@ describe('Get /me/workings ', () => {
             assert.equal(res.status, 200);
             const workings = res.body.time_and_salary;
             assert.lengthOf(workings, 1);
-            assert.equal(workings[0]._id.toString(), user_working_id_str);
+            assert.equal(workings[0]._id, user_working_id_str);
         }
     );
 
