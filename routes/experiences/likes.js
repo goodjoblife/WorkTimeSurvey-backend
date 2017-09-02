@@ -4,7 +4,6 @@ const passport = require('passport');
 
 const ExperienceLikeModel = require('../../models/experience_like_model');
 const ExperienceModel = require('../../models/experience_model');
-const PopularExperienceLogsModel = require('../../models/popular_experience_logs_model');
 const {
     ObjectNotExistError,
     HttpError,
@@ -27,12 +26,10 @@ router.post('/:id/likes', [
 
         const experience_like_model = new ExperienceLikeModel(req.db);
         const experience_model = new ExperienceModel(req.db);
-        const popular_experience_logs_model = new PopularExperienceLogsModel(req.db);
 
         try {
             await experience_like_model.createLike(experience_id, user);
             await experience_model.incrementLikeCount(experience_id);
-            await popular_experience_logs_model.insertLog({ experience_id, user, action_type: 'like', value: 5 });
 
             res.send({ success: true });
         } catch (err) {
@@ -67,12 +64,10 @@ router.delete('/:id/likes', [
 
         const experience_like_model = new ExperienceLikeModel(req.db);
         const experience_model = new ExperienceModel(req.db);
-        const popular_experience_logs_model = new PopularExperienceLogsModel(req.db);
 
         try {
             await experience_like_model.deleteLike(experience_id, user);
             await experience_model.decrementLikeCount(experience_id);
-            await popular_experience_logs_model.insertLog({ experience_id, user, action_type: 'like', value: -5 });
 
             res.send({ success: true });
         } catch (err) {
