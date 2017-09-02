@@ -59,6 +59,7 @@ describe('Reports Test', () => {
             author_id: new ObjectId(),
             like_count: 0,
             report_count: 0,
+            status: 'published',
         }).then((result) => {
             reply_id_str = result.insertedId.toString();
         }));
@@ -208,12 +209,14 @@ describe('Reports Test', () => {
                 author_id: new ObjectId(),
                 like_count: 0,
                 report_count: 2,
+                status: 'published',
             });
             const reply2 = await db.collection('replies').insertOne({
                 content: "this is a reply 2",
                 author_id: new ObjectId(),
                 like_count: 0,
                 report_count: 1,
+                status: 'published',
             });
 
             reply_id_str = reply1.insertedId.toString();

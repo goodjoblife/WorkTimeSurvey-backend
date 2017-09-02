@@ -97,6 +97,7 @@ describe('Replies Test', () => {
                             assert.deepPropertyVal(res.body, 'reply.report_count', 0);
                             assert.property(reply, 'created_at');
                             assert.deepEqual(reply.author_id, fake_user._id);
+                            assert.deepPropertyVal(res.body, 'reply.status', 'published');
                         }));
 
             return Promise.all([
