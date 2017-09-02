@@ -2,11 +2,11 @@ const chai = require('chai');
 
 const assert = chai.assert;
 const request = require('supertest');
-const app = require('../app');
+const app = require('../../app');
 const MongoClient = require('mongodb').MongoClient;
 const sinon = require('sinon');
 const config = require('config');
-const authentication = require('../libs/authentication');
+const authentication = require('../../libs/authentication');
 const ObjectId = require('mongodb').ObjectId;
 
 function generateWorkingTimeRelatedPayload(options) {

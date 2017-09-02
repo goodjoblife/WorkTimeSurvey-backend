@@ -236,12 +236,14 @@ function _generateGetExperienceViewModel(experience, user, like) {
  * @apiSuccess (work) {Number}  data_time.year 留資料的時間或離職的年份
  * @apiSuccess (work) {Number="1,2,3...12"}  data_time.month 留資料的時間或離職的月份
  * @apiSuccess (work) {String}  [recommend_to_others="yes","no"] 是否推薦此工作
+ * @apiError (Error) 403 該篇文章已被隱藏
+ * @apiError (Error) 404 該篇文章不存在
  */
 /* eslint-enable */
 router.get('/:id', [
     semiAuthentication('bearer', { session: false }),
     wrap(async (req, res) => {
-        const id = req.params.id;
+        const id_str = req.params.id;
         let user = null;
 
         if (req.user) {
@@ -253,7 +255,7 @@ router.get('/:id', [
 
         let experience = null;
         try {
-            experience = await experience_model.getExperienceById(id);
+            experience = await experience_model.getExperienceById(id_str);
         } catch (err) {
             if (err instanceof ObjectNotExistError) {
                 throw new HttpError(err.message, 404);
@@ -261,9 +263,13 @@ router.get('/:id', [
             throw err;
         }
 
+        if (experience.status === 'hidden') {
+            throw new HttpError('the experience is hidden', 403);
+        }
+
         let result;
         if (user) {
-            const like = await experience_like_model.getLikeByExperienceIdAndUser(id, user);
+            const like = await experience_like_model.getLikeByExperienceIdAndUser(id_str, user);
             result = _generateGetExperienceViewModel(experience, user, like);
         } else {
             result = _generateGetExperienceViewModel(experience);

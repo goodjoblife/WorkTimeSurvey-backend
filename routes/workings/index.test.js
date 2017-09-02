@@ -3,10 +3,15 @@ chai.use(require('chai-datetime'));
 
 const assert = chai.assert;
 const request = require('supertest');
-const app = require('../app');
-const MongoClient = require('mongodb').MongoClient;
+const app = require('../../app');
 const sinon = require('sinon');
 const config = require('config');
+const {
+    MongoClient,
+    ObjectId,
+} = require('mongodb');
+const authentication = require('../../libs/authentication.js');
+const { generateWorkingData } = require('../experiences/testData');
 
 describe('Workings 工時資訊', () => {
     let db;
@@ -177,6 +182,133 @@ describe('Workings 工時資訊', () => {
 
         afterEach(() => {
             sandbox.restore();
+        });
+    });
+
+    describe('GET /workings (左右極端值的測試)', () => {
+        describe('有資料的欄位夠多', () => {
+            before('Seeding some workings', () => {
+                const workings = Array.from({ length: 200 })
+                    .map((v, i) => ({
+                        company: { name: "companyA" },
+                        created_at: new Date("2016-11-13T06:10:04.023Z"),
+                        job_title: "engineer1",
+                        week_work_time: 40 - (i * 0.1),
+                        overtime_frequency: 1,
+                        salary: { amount: 22000, type: "month" },
+                        estimated_hourly_wage: (i + 1) * 100, // 100 ~ 20000
+                        data_time: { year: 2016, month: 10 },
+                        sector: "Taipei", //optional
+                    }));
+                return db.collection('workings').insertMany(workings);
+            });
+
+            it(`skip 1% data, ascending`, async () => {
+                const res = await request(app).get('/workings')
+                    .query({
+                        sort_by: 'estimated_hourly_wage',
+                        order: 'ascending',
+                        skip: 'true',
+                    })
+                    .expect(200);
+                assert.propertyVal(res.body, 'total', 200);
+                assert.property(res.body, 'time_and_salary');
+                assert.lengthOf(res.body.time_and_salary, 25);
+                assert.deepPropertyVal(res.body, 'time_and_salary.0.estimated_hourly_wage', 300);
+                assert.deepPropertyVal(res.body, 'time_and_salary.24.estimated_hourly_wage', 2700);
+            });
+
+            it(`skip 1% data, descending`, async () => {
+                const res = await request(app).get('/workings')
+                    .query({
+                        sort_by: 'estimated_hourly_wage',
+                        order: 'descending',
+                        skip: 'true',
+                    })
+                    .expect(200);
+                assert.propertyVal(res.body, 'total', 200);
+                assert.property(res.body, 'time_and_salary');
+                assert.lengthOf(res.body.time_and_salary, 25);
+                assert.deepPropertyVal(res.body, 'time_and_salary.0.estimated_hourly_wage', 19800);
+                assert.deepPropertyVal(res.body, 'time_and_salary.1.estimated_hourly_wage', 19700);
+            });
+
+            after(() => db.collection('workings').deleteMany({}));
+        });
+
+        describe('有資料的欄位不夠多', () => {
+            before('Seeding some workings', async () => {
+                await db.collection('workings').insertMany([
+                    {
+                        company: { name: "companyA" },
+                        created_at: new Date("2016-11-13T06:10:04.023Z"),
+                        job_title: "engineer1",
+                        week_work_time: 40,
+                        overtime_frequency: 1,
+                        salary: { amount: 22000, type: "month" },
+                        estimated_hourly_wage: 100,
+                        data_time: { year: 2016, month: 10 },
+                        sector: "Taipei",
+                    },
+                    {
+                        company: { name: "companyA" },
+                        created_at: new Date("2016-11-13T06:10:04.023Z"),
+                        job_title: "engineer1",
+                        week_work_time: 40,
+                        overtime_frequency: 1,
+                        salary: { amount: 22000, type: "month" },
+                        estimated_hourly_wage: 200,
+                        data_time: { year: 2016, month: 10 },
+                        sector: "Taipei",
+                    },
+                ]);
+
+                const workings = Array.from({ length: 298 })
+                    .map((v, i) => ({
+                        company: { name: "companyA" },
+                        created_at: new Date("2016-11-13T06:10:04.023Z"),
+                        job_title: "engineer1",
+                        overtime_frequency: 1,
+                        salary: { amount: 22000, type: "month" },
+                        data_time: { year: 2016, month: 10 },
+                        sector: "Taipei", //optional
+                    }));
+                return db.collection('workings').insertMany(workings);
+            });
+
+            it(`skip 1% data, ascending`, async () => {
+                const res = await request(app).get('/workings/extreme')
+                    .query({
+                        sort_by: 'estimated_hourly_wage',
+                        order: 'ascending',
+                        skip: 'true',
+                    })
+                    .expect(200);
+                assert.property(res.body, 'time_and_salary');
+                assert.lengthOf(res.body.time_and_salary, 3);
+                assert.deepPropertyVal(res.body, 'time_and_salary.0.estimated_hourly_wage', 100);
+                assert.deepPropertyVal(res.body, 'time_and_salary.1.estimated_hourly_wage', 200, 'in ascending order');
+                assert.deepProperty(res.body, 'time_and_salary.2');
+                assert.notProperty(res.body.time_and_salary[2], 'estimated_hourly_wage', 'should not exist');
+            });
+
+            it(`skip 1% data, descending`, async () => {
+                const res = await request(app).get('/workings/extreme')
+                    .query({
+                        sort_by: 'estimated_hourly_wage',
+                        order: 'descending',
+                        skip: 'true',
+                    })
+                    .expect(200);
+                assert.property(res.body, 'time_and_salary');
+                assert.lengthOf(res.body.time_and_salary, 3);
+                assert.deepPropertyVal(res.body, 'time_and_salary.0.estimated_hourly_wage', 200);
+                assert.deepPropertyVal(res.body, 'time_and_salary.1.estimated_hourly_wage', 100, 'in descending order');
+                assert.deepProperty(res.body, 'time_and_salary.2');
+                assert.notProperty(res.body.time_and_salary[2], 'estimated_hourly_wage');
+            });
+
+            after(() => db.collection('workings').deleteMany({}));
         });
     });
 
@@ -1028,5 +1160,151 @@ describe('Workings 工時資訊', () => {
                 }));
 
         after(() => db.collection('workings').remove({}));
+    });
+    describe('PATCH /workings/:id', () => {
+        let sandbox;
+        let user_working_id;
+        let other_user_working_id;
+        const fake_user = {
+            _id: new ObjectId(),
+            facebook_id: '-1',
+            facebook: {
+                id: '-1',
+                name: 'markLin',
+            },
+        };
+
+        const fake_other_user = {
+            _id: new ObjectId(),
+            facebook_id: '-2',
+            facebook: {
+                id: '-2',
+                name: 'lin',
+            },
+        };
+
+        before('mock user', () => {
+            sandbox = sinon.sandbox.create();
+            const cachedFacebookAuthentication = sandbox.stub(authentication, 'cachedFacebookAuthentication');
+            cachedFacebookAuthentication
+                .withArgs(sinon.match.object, sinon.match.object, 'fakeaccesstoken')
+                .resolves(fake_user);
+        });
+
+        before('Seeding some workings', async () => {
+            const user_working = Object.assign(generateWorkingData(), {
+                status: 'published',
+                author: {
+                    type: 'facebook',
+                    id: fake_user.facebook_id,
+                },
+            });
+            const other_user_working = Object.assign(generateWorkingData(), {
+                status: 'published',
+                author: {
+                    type: 'facebook',
+                    id: fake_other_user.facebook_id,
+                },
+            });
+            const result = await db.collection('workings').insertMany([
+                user_working,
+                other_user_working,
+            ]);
+            user_working_id = result.insertedIds[0];
+            other_user_working_id = result.insertedIds[1];
+        });
+
+
+        it('should return 200, when user updates his working',
+            async () => {
+                const res = await request(app).patch(`/workings/${user_working_id.toString()}`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                        status: 'hidden',
+                    });
+
+                assert.equal(res.status, 200);
+                assert.isTrue(res.body.success);
+                assert.equal(res.body.status, "hidden");
+
+                const working = await db.collection('workings').findOne({
+                    _id: user_working_id,
+                });
+                assert.equal(working.status, "hidden");
+            }
+        );
+
+        it('should return 401, when user did not login',
+            async () => {
+                const res = await request(app).patch(`/workings/${user_working_id.toString()}`)
+                    .send({
+                        status: 'hidden',
+                    });
+
+                assert.equal(res.status, 401);
+            }
+        );
+
+        it('should return 422, when status is invalid',
+            async () => {
+                const res = await request(app).patch(`/workings/${user_working_id.toString()}`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                        status: 'xxxxxx',
+                    });
+
+                assert.equal(res.status, 422);
+            }
+        );
+
+        it('should return 403, when user want to update not belong to his working',
+            async () => {
+                const res = await request(app).patch(`/workings/${other_user_working_id.toString()}`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                        status: 'hidden',
+                    });
+                assert.equal(res.status, 403);
+            }
+        );
+
+        it('should return 422, when user did not set the status field',
+            async () => {
+                const res = await request(app).patch(`/workings/${user_working_id}`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                    });
+                assert.equal(res.status, 422);
+            }
+        );
+
+        it('should return 404, when the working id is invalid',
+            async () => {
+                const res = await request(app).patch(`/workings/xxxxxxxx`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                        status: 'published',
+                    });
+                assert.equal(res.status, 404);
+            }
+        );
+
+        it('should return 404, when the working is does not exist',
+            async () => {
+                const res = await request(app).patch(`/working/${(new ObjectId()).toString()}`)
+                    .send({
+                        access_token: 'fakeaccesstoken',
+                        status: 'published',
+                    });
+                assert.equal(res.status, 404);
+            }
+        );
+
+
+        after(() => db.collection('workings').deleteMany({}));
+
+        after(() => {
+            sandbox.restore();
+        });
     });
 });
