@@ -104,13 +104,15 @@ router.get('/', wrap(async (req, res) => {
     }
 
     const data = {};
-    data.total = await collection.count();
+    data.total = await collection.find({ status: 'published' }).count();
 
     const defined_query = {
         [req.custom.sort_by]: { $exists: true },
+        status: 'published',
     };
     const undefined_query = {
         [req.custom.sort_by]: { $exists: false },
+        status: 'published',
     };
 
 

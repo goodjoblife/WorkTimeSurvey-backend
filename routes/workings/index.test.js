@@ -198,7 +198,8 @@ describe('Workings 工時資訊', () => {
                         salary: { amount: 22000, type: "month" },
                         estimated_hourly_wage: (i + 1) * 100, // 100 ~ 20000
                         data_time: { year: 2016, month: 10 },
-                        sector: "Taipei", //optional
+                        sector: "Taipei", // optional
+                        status: "published",
                     }));
                 return db.collection('workings').insertMany(workings);
             });
@@ -249,6 +250,7 @@ describe('Workings 工時資訊', () => {
                         estimated_hourly_wage: 100,
                         data_time: { year: 2016, month: 10 },
                         sector: "Taipei",
+                        status: "published",
                     },
                     {
                         company: { name: "companyA" },
@@ -260,6 +262,7 @@ describe('Workings 工時資訊', () => {
                         estimated_hourly_wage: 200,
                         data_time: { year: 2016, month: 10 },
                         sector: "Taipei",
+                        status: "published",
                     },
                 ]);
 
