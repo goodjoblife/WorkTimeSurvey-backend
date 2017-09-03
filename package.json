@@ -9,7 +9,8 @@
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "lint": "eslint *.js libs/ routes/ test/ middlewares/ models/ database/ view_models/",
     "lint:fix": "npm run lint -- --fix",
-    "migrate": "node ./bin/migrate"
+    "migrate": "node ./bin/migrate",
+    "precommit": "lint-staged"
   },
   "repository": {
     "type": "git",
@@ -50,7 +51,9 @@
     "eslint-plugin-jsx-a11y": "^5.0.1",
     "eslint-plugin-prettier": "^2.2.0",
     "eslint-plugin-react": "^7.1.0",
+    "husky": "^0.14.3",
     "istanbul": "v1.1.0-alpha.1",
+    "lint-staged": "^4.0.4",
     "mocha": "^3.5.0",
     "nock": "^8.0.0",
     "prettier": "^1.6.1",
@@ -62,5 +65,11 @@
   },
   "apidoc": {
     "name": "GoodJob API"
+  },
+  "lint-staged": {
+    "*.js": [
+        "eslint --fix",
+        "git add"
+    ]
   }
 }
