@@ -100,7 +100,7 @@ class ReplyModel {
      *      report_count: 0,
      *  }
      */
-    getRepliesByExperienceId(experience_id, skip = 0, limit = 20, sort = {
+    getPublishedRepliesByExperienceId(experience_id, skip = 0, limit = 20, sort = {
         floor: 1,
     }) {
         const experience_model = new ExperienceModel(this._db);
@@ -135,7 +135,29 @@ class ReplyModel {
 
         return this.collection.findOne({
             _id: new ObjectId(id),
-            status: "published",
+        });
+    }
+
+    /**
+     * 根據reply id 來取得 published 留言
+     * @param {string} id - reply id
+     * @returns {Promise} -
+     * resolve {
+     *  _id : ObjectId,
+     *  experience_id : ObjectId,
+     *  author_id: ObjectId,
+     *  created_at: new Date(),
+     *  like_count: 0,
+     * }
+     */
+    getPublishedReplyById(id) {
+        if (!this._isValidId(id)) {
+            return Promise.reject(new ObjectNotExistError("該留言不存在"));
+        }
+
+        return this.collection.findOne({
+            status: 'published',
+            _id: new ObjectId(id),
         });
     }
 

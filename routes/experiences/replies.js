@@ -142,7 +142,8 @@ router.get('/:id/replies', [
             const reply_model = new ReplyModel(req.db);
             const reply_like_model = new ReplyLikeModel(req.db);
 
-            const replies = await reply_model.getRepliesByExperienceId(experience_id, start, limit);
+            const replies = await reply_model
+                        .getPublishedRepliesByExperienceId(experience_id, start, limit);
             const replies_ids = replies.map(reply => reply._id);
             const likes = await reply_like_model.getReplyLikesByRepliesIds(replies_ids);
             _createLikesField(replies, likes, user);

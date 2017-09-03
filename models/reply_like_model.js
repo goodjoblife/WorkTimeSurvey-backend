@@ -23,7 +23,7 @@ class ReplyLikeModel {
     createLike(reply_id, user) {
         const reply_model = new ReplyModel(this._db);
 
-        return reply_model.getReplyById(reply_id).then((reply) => {
+        return reply_model.getPublishedReplyById(reply_id).then((reply) => {
             if (!reply) {
                 throw new ObjectNotExistError("這篇留言不存在");
             }
@@ -79,7 +79,7 @@ class ReplyLikeModel {
     deleteLike(reply_id, user) {
         const reply_model = new ReplyModel(this._db);
 
-        return reply_model.getReplyById(reply_id).then((reply) => {
+        return reply_model.getPublishedReplyById(reply_id).then((reply) => {
             if (!reply) {
                 throw new ObjectNotExistError("這篇留言不存在");
             }
