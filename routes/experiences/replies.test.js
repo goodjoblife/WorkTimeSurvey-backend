@@ -6,6 +6,7 @@ const sinon = require('sinon');
 const config = require('config');
 
 const authentication = require('../../libs/authentication');
+const create_capped_collection = require('../../database/migrations/create-popularExperienceLogs-collection');
 
 describe('Replies Test', () => {
     let db;
@@ -57,6 +58,24 @@ describe('Replies Test', () => {
                 .then((result) => {
                     experience_id_string = result.insertedId.toString();
                 });
+        });
+
+        it('should insert one log', async () => {
+            await request(app)
+                .post(`/experiences/${experience_id_string}/replies`)
+                .send({
+                    access_token: 'fakeaccesstoken',
+                    content: "你好我是大留言",
+                });
+
+            const result = await db
+                .collection('popular_experience_logs')
+                .find({ experience_id: experience_id_string })
+                .toArray();
+
+            assert.equal(result.length, 1);
+            assert.equal(result[0].action_type, 'reply');
+            assert.equal(result[0].value, 10);
         });
 
         it('should 200 Success if succeed', () => {
@@ -132,7 +151,8 @@ describe('Replies Test', () => {
         afterEach(() => {
             const pro1 = db.collection('replies').deleteMany({});
             const pro2 = db.collection('experiences').deleteMany({});
-            return Promise.all([pro1, pro2]);
+            const pro3 = db.collection('popular_experience_logs').drop().then(() => create_capped_collection(db));
+            return Promise.all([pro1, pro2, pro3]);
         });
 
         afterEach(() => {
