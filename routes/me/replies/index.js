@@ -11,7 +11,7 @@ const wrap = require('../../../libs/wrap');
 const passport = require('passport');
 
 
-function generateGetReplyViewModel(
+function _generateGetReplyViewModel(
     { _id, content, like_count, report_count, created_at, floor, status }) {
     return {
         _id,
@@ -69,7 +69,7 @@ router.get('/', [
 
         res.send({
             total,
-            replies: replies.map(generateGetReplyViewModel),
+            replies: replies.map(_generateGetReplyViewModel),
         });
     }),
 ]);
