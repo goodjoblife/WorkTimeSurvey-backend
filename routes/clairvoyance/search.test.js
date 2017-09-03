@@ -189,5 +189,5 @@ describe('Clairvoyance 天眼通 API', () => {
         }
     });
 
-    after(() => db.collection('workings').remove({}));
+    after(() => db.collection('workings').deleteMany({}));
 });

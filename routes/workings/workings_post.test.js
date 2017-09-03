@@ -1019,12 +1019,12 @@ describe('Workings 工時資訊', () => {
             sandbox.restore();
         });
 
-        afterEach(() => db.collection('users').remove({}));
+        afterEach(() => db.collection('users').deleteMany({}));
 
-        after('DB: 清除 workings', () => db.collection('workings').remove({}));
+        after('DB: 清除 workings', () => db.collection('workings').deleteMany({}));
 
-        after('DB: 清除 companies', () => db.collection('companies').remove({}));
+        after('DB: 清除 companies', () => db.collection('companies').deleteMany({}));
 
-        after('DB: 清除 recommendations', () => db.collection('recommendations').remove({}));
+        after('DB: 清除 recommendations', () => db.collection('recommendations').deleteMany({}));
     });
 });

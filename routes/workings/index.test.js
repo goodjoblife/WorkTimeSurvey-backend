@@ -178,7 +178,7 @@ describe('Workings 工時資訊', () => {
                     assert.isUndefined(workings[1][sort_field]);
                 }));
 
-        after(() => db.collection('workings').remove({}));
+        after(() => db.collection('workings').deleteMany({}));
 
         afterEach(() => {
             sandbox.restore();
@@ -751,7 +751,7 @@ describe('Workings 工時資訊', () => {
             assert.lengthOf(res.body, 0, 'res.body is an empty array');
         });
 
-        after(() => db.collection('workings').remove({}));
+        after(() => db.collection('workings').deleteMany({}));
 
         afterEach(() => {
             sandbox.restore();
@@ -1030,7 +1030,7 @@ describe('Workings 工時資訊', () => {
             assert.lengthOf(res.body, 0, 'res.body is an empty array');
         });
 
-        after(() => db.collection('workings').remove({}));
+        after(() => db.collection('workings').deleteMany({}));
 
         afterEach(() => {
             sandbox.restore();
@@ -1100,7 +1100,7 @@ describe('Workings 工時資訊', () => {
                     assert.deepProperty(res.body, '0._id');
                 }));
 
-        after(() => db.collection('workings').remove({}));
+        after(() => db.collection('workings').deleteMany({}));
     });
 
     describe('GET /workings/jobs/search', () => {
@@ -1175,7 +1175,7 @@ describe('Workings 工時資訊', () => {
                     assert.deepProperty(res.body, '0._id');
                 }));
 
-        after(() => db.collection('workings').remove({}));
+        after(() => db.collection('workings').deleteMany({}));
     });
     describe('PATCH /workings/:id', () => {
         let sandbox;

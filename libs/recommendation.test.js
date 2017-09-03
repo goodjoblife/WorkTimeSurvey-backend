@@ -61,7 +61,7 @@ describe('Recommendation Library', () => {
             });
         });
 
-        after(() => db.collection('recommendations').remove({}));
+        after(() => db.collection('recommendations').deleteMany({}));
     });
 
     describe('getUserByRecommendationString', () => {
@@ -92,6 +92,6 @@ describe('Recommendation Library', () => {
             assert.isRejected(recommendation.getUserByRecommendationString(db, '0000')),
         ]));
 
-        after(() => db.collection('recommendations').remove({}));
+        after(() => db.collection('recommendations').deleteMany({}));
     });
 });

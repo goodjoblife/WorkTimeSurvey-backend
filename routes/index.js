@@ -1,49 +1,29 @@
 const express = require('express');
+const cors = require('cors');
 
 const router = express.Router();
 
-const HttpError = require('../libs/errors').HttpError;
-const passport = require('passport');
-const authorization = require('../middlewares/authorization');
-const recommendation = require('../libs/recommendation');
+const corsOption = {
+    origin: [
+        new RegExp(".*://www.104.com.tw"),
+        new RegExp(".*://104.com.tw"),
+        new RegExp("http://www.1111.com.tw"),
+        new RegExp("http://www.518.com.tw"),
+        new RegExp(".*://www.yes123.com.tw"),
+    ],
+};
 
-router.post('/me/recommendations', [
-    passport.authenticate('bearer', { session: false }),
-    (req, res, next) => {
-        const old_user = {
-            id: req.user.facebook_id,
-            type: 'facebook',
-        };
-        recommendation.getRecommendationString(req.db, old_user).then((recommendation_string) => {
-            res.send({
-                user: old_user,
-                recommendation_string,
-            });
-        }).catch((err) => {
-            next(new HttpError('Internal Server Error', 500));
-        });
-    },
-]);
-
-router.get('/me/permissions/search', [
-    (req, res, next) => {
-        passport.authenticate('bearer', { session: false }, (err, user) => {
-            if (user) {
-                req.user = user;
-                next();
-            } else {
-                res.send({ hasSearchPermission: false });
-            }
-        })(req, res, next);
-    },
-    authorization.cachedSearchPermissionAuthorizationMiddleware,
-    // Middleware Error Handler
-    (err, req, res, next) => {
-        res.send({ hasSearchPermission: false });
-    },
-    (req, res, next) => {
-        res.send({ hasSearchPermission: true });
-    },
-]);
+// please sort in alphabetical order
+router.use('/clairvoyance/search', cors(corsOption), require('./clairvoyance/search'));
+router.use('/companies', require('./companies'));
+router.use('/company_keywords', require('./company_keywords'));
+router.use('/experiences', require('./experiences'));
+router.use('/interview_experiences', require('./interview_experiences'));
+router.use('/jobs', require('./jobs'));
+router.use('/job_title_keywords', require('./job_title_keywords'));
+router.use('/me', require('./me'));
+router.use('/replies', require('./replies'));
+router.use('/workings', require('./workings'));
+router.use('/work_experiences', require('./work_experiences'));
 
 module.exports = router;

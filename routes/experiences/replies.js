@@ -1,26 +1,23 @@
 const express = require('express');
-const HttpError = require('../../libs/errors').HttpError;
+const passport = require('passport');
+
 const ReplyModel = require('../../models/reply_model');
 const ReplyLikeModel = require('../../models/reply_like_model');
-const passport = require('passport');
 const { semiAuthentication } = require('../../middlewares/authentication');
-const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
+const { HttpError, ObjectNotExistError } = require('../../libs/errors');
 const {
     requiredNumberInRange,
     requiredNonEmptyString,
     stringRequireLength,
 } = require('../../libs/validation');
+const wrap = require('../../libs/wrap');
 
 const router = express.Router();
 
 function _isExistUserLiked(reply_id, user, likes) {
-    /* eslint-disable array-callback-return */
-    const result = likes.find((like) => {
-        if (like.reply_id.equals(reply_id) && like.user_id.equals(user._id)) {
-            return like;
-        }
-    });
-    return !!(result);
+    return likes.some((like) =>
+        like.reply_id.equals(reply_id) && like.user_id.equals(user._id)
+    );
 }
 
 function _createLikesField(replies, likes, user) {
@@ -76,7 +73,7 @@ function validationPostFields(body) {
  */
 router.post('/:id/replies', [
     passport.authenticate('bearer', { session: false }),
-    (req, res, next) => {
+    wrap(async (req, res, next) => {
         try {
             validationPostFields(req.body);
         } catch (err) {
@@ -96,21 +93,19 @@ router.post('/:id/replies', [
             content,
         };
 
-        reply_model.createReply(experience_id, partial_reply).then((reply) => {
-            // 事實上 reply === partial_reply
-            const result = {
-                reply,
-            };
+        try {
+            const reply = await reply_model.createReply(experience_id, partial_reply);
 
-            res.send(result);
-        }).catch((err) => {
+            // 事實上 reply === partial_reply
+            res.send({ reply });
+        } catch (err) {
             if (err instanceof ObjectNotExistError) {
                 next(new HttpError(err.message, 404));
             } else {
                 next(new HttpError("Internal Server Error", 500));
             }
-        });
-    },
+        }
+    }),
 ]);
 
 /**
@@ -129,7 +124,7 @@ router.post('/:id/replies', [
  */
 router.get('/:id/replies', [
     semiAuthentication('bearer', { session: false }),
-    (req, res, next) => {
+    wrap(async (req, res, next) => {
         const experience_id = req.params.id;
         const limit = parseInt(req.query.limit, 10) || 20;
         const start = parseInt(req.query.start, 10) || 0;
@@ -143,25 +138,24 @@ router.get('/:id/replies', [
             user = req.user;
         }
 
-        const reply_model = new ReplyModel(req.db);
-        const reply_like_model = new ReplyLikeModel(req.db);
-        let result = null;
+        try {
+            const reply_model = new ReplyModel(req.db);
+            const reply_like_model = new ReplyLikeModel(req.db);
 
-        reply_model.getRepliesByExperienceId(experience_id, start, limit).then((replies) => {
-            result = replies;
+            const replies = await reply_model.getRepliesByExperienceId(experience_id, start, limit);
             const replies_ids = replies.map(reply => reply._id);
-            return reply_like_model.getReplyLikesByRepliesIds(replies_ids);
-        }).then((likes) => {
-            _createLikesField(result, likes, user);
-            res.send(_generateGetRepliesViewModel(result));
-        }).catch((err) => {
+            const likes = await reply_like_model.getReplyLikesByRepliesIds(replies_ids);
+            _createLikesField(replies, likes, user);
+
+            res.send(_generateGetRepliesViewModel(replies));
+        } catch (err) {
             if (err instanceof ObjectNotExistError) {
                 next(new HttpError(err.message, 404));
             } else {
                 next(new HttpError("Internal Server Error", 500));
             }
-        });
-    },
+        }
+    }),
 ]);
 
 module.exports = router;

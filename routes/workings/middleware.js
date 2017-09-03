@@ -1,6 +1,6 @@
-const HttpError = require('../libs/errors').HttpError;
-const authenticationLib = require('../libs/authentication');
-const authorizationLib = require('../libs/authorization');
+const HttpError = require('../../libs/errors').HttpError;
+const authenticationLib = require('../../libs/authentication');
+const authorizationLib = require('../../libs/authorization');
 
 function sort_by(req, res, next) {
     const _sort_by = req.query.sort_by || 'created_at';

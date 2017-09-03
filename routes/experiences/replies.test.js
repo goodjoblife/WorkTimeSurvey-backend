@@ -98,6 +98,7 @@ describe('Replies Test', () => {
                             assert.deepPropertyVal(res.body, 'reply.report_count', 0);
                             assert.property(reply, 'created_at');
                             assert.deepEqual(reply.author_id, fake_user._id);
+                            assert.deepPropertyVal(res.body, 'reply.status', 'published');
                         }));
 
             return Promise.all([
@@ -324,9 +325,9 @@ describe('Replies Test', () => {
                 }));
 
         after(() => {
-            const pro1 = db.collection('replies').remove({});
-            const pro2 = db.collection('experiences').remove({});
-            const pro3 = db.collection('reply_likes').remove({});
+            const pro1 = db.collection('replies').deleteMany({});
+            const pro2 = db.collection('experiences').deleteMany({});
+            const pro3 = db.collection('reply_likes').deleteMany({});
             return Promise.all([pro1, pro2, pro3]);
         });
 

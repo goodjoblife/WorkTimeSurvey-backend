@@ -106,6 +106,6 @@ describe('companies', () => {
                     assert.propertyVal(res.body[0], 'capital', 3000);
                 }));
 
-        after(() => db.collection('companies').remove({}));
+        after(() => db.collection('companies').deleteMany({}));
     });
 });

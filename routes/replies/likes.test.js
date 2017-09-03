@@ -210,7 +210,7 @@ describe('DELETE /replies/:id/likes', () => {
         const reply = await db.collection('replies').insertOne(
             Object.assign(generateReplyData(), {
                 experience_id,
-                author_id: fake_third_user,
+                author_id: fake_third_user._id,
                 like_count: 2,
                 status: 'published',
             })

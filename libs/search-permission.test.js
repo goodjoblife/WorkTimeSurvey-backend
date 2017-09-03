@@ -53,9 +53,9 @@ describe('Permission Library', () => {
                 return assert.becomes(permission.resolveSearchPermission(db, user), data.expected);
             });
 
-            after(() => db.collection('users').remove({}));
+            after(() => db.collection('users').deleteMany({}));
 
-            after(() => db.collection('recommendations').remove({}));
+            after(() => db.collection('recommendations').deleteMany({}));
         });
     });
 });

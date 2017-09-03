@@ -59,6 +59,7 @@ describe('Reports Test', () => {
             author_id: new ObjectId(),
             like_count: 0,
             report_count: 0,
+            status: 'published',
         }).then((result) => {
             reply_id_str = result.insertedId.toString();
         }));
@@ -185,8 +186,8 @@ describe('Reports Test', () => {
 
         afterEach(async () => {
             sandbox.restore();
-            await db.collection('reports').remove();
-            await db.collection('replies').remove({});
+            await db.collection('reports').deleteMany({});
+            await db.collection('replies').deleteMany({});
         });
     });
 
@@ -212,12 +213,14 @@ describe('Reports Test', () => {
                 author_id: new ObjectId(),
                 like_count: 0,
                 report_count: 2,
+                status: 'published',
             });
             const reply2 = await db.collection('replies').insertOne({
                 content: "this is a reply 2",
                 author_id: new ObjectId(),
                 like_count: 0,
                 report_count: 1,
+                status: 'published',
             });
 
             reply_id_str = reply1.insertedId.toString();
@@ -283,8 +286,8 @@ describe('Reports Test', () => {
                 .expect(422));
 
         after(async () => {
-            await db.collection('reports').remove({});
-            await db.collection('replies').remove({});
+            await db.collection('reports').deleteMany({});
+            await db.collection('replies').deleteMany({});
         });
 
         after(() => {
