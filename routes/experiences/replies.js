@@ -3,6 +3,7 @@ const passport = require('passport');
 
 const ReplyModel = require('../../models/reply_model');
 const ReplyLikeModel = require('../../models/reply_like_model');
+const PopularExperienceLogsModel = require('../../models/popular_experience_logs_model');
 const { semiAuthentication } = require('../../middlewares/authentication');
 const { HttpError, ObjectNotExistError } = require('../../libs/errors');
 const {
@@ -87,6 +88,7 @@ router.post('/:id/replies', [
         const content = req.body.content;
 
         const reply_model = new ReplyModel(req.db);
+        const popular_experience_logs_model = new PopularExperienceLogsModel(req.db);
 
         const partial_reply = {
             author_id: user._id,
@@ -95,6 +97,7 @@ router.post('/:id/replies', [
 
         try {
             const reply = await reply_model.createReply(experience_id, partial_reply);
+            await popular_experience_logs_model.insertLog({ experience_id, user, action_type: 'reply', value: 10 });
 
             // 事實上 reply === partial_reply
             res.send({ reply });
