@@ -23,7 +23,7 @@ function recordMigration(db, name) {
 async function migrate(db, name) {
     const result = await isMigrated(db, name);
     if (result === false) {
-        // eslint-disable-next-line
+        // eslint-disable-next-line global-require, import/no-dynamic-require
         const migration = require(`./migrations/${name}`);
 
         await migration(db);
