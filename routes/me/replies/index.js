@@ -85,7 +85,7 @@ router.get("/", [
         const experience_promises = replies
             .map(reply => reply.experience_id)
             .map(_id =>
-                experience_model.getExperienceById(_id.toString(), {
+                experience_model.findOneOrFail(_id, {
                     _id: 1,
                     title: 1,
                 })

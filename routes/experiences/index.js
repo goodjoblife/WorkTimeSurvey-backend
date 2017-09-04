@@ -2,8 +2,8 @@ const express = require("express");
 
 const router = express.Router();
 const HttpError = require("../../libs/errors").HttpError;
-const ObjectNotExistError = require("../../libs/errors").ObjectNotExistError;
 const escapeRegExp = require("lodash/escapeRegExp");
+const { ensureToObjectId } = require("../../models");
 const ExperienceModel = require("../../models/experience_model");
 const ExperienceLikeModel = require("../../models/experience_like_model");
 const {
@@ -268,15 +268,8 @@ router.get("/:id", [
         const experience_model = new ExperienceModel(req.db);
         const experience_like_model = new ExperienceLikeModel(req.db);
 
-        let experience = null;
-        try {
-            experience = await experience_model.getExperienceById(id_str);
-        } catch (err) {
-            if (err instanceof ObjectNotExistError) {
-                throw new HttpError(err.message, 404);
-            }
-            throw err;
-        }
+        const experience_id = ensureToObjectId(id_str);
+        const experience = await experience_model.findOneOrFail(experience_id);
 
         if (experience.status === "hidden") {
             throw new HttpError("the experience is hidden", 403);
@@ -321,27 +314,21 @@ router.patch("/:id", [
 
         const experience_model = new ExperienceModel(req.db);
 
-        try {
-            const experience = await experience_model.getExperienceById(id, {
-                author_id: 1,
-            });
+        const experience_id = ensureToObjectId(id);
+        const experience = await experience_model.findOneOrFail(experience_id, {
+            author_id: 1,
+        });
 
-            if (!experience.author_id.equals(user._id)) {
-                throw new HttpError("user is unauthorized", 403);
-            }
-
-            const result = await experience_model.updateStatus(id, status);
-
-            res.send({
-                success: true,
-                status: result.value.status,
-            });
-        } catch (err) {
-            if (err instanceof ObjectNotExistError) {
-                throw new HttpError(err.message, 404);
-            }
-            throw err;
+        if (!experience.author_id.equals(user._id)) {
+            throw new HttpError("user is unauthorized", 403);
         }
+
+        const result = await experience_model.updateStatus(id, status);
+
+        res.send({
+            success: true,
+            status: result.value.status,
+        });
     }),
 ]);
 

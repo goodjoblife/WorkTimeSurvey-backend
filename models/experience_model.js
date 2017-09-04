@@ -62,42 +62,19 @@ class ExperienceModel {
     }
 
     /**
-     * 使用 experience _id 來取得單篇文章
-     * @param   {string}  id - experience_id
+     * 透過 _id 來取得單篇文章
+     * @param {ObjectId} _id - experience_id
      * @param {object} opt - mongodb find field filter
      * @returns {Promise}
-     *  - resolved : {
-     *      type : "interview",
-     *      created_at : Date Object,
-     *      company : {
-     *          id : 1234,
-     *          name : "GoodJob"
-     *      }
-     *      job_title : "Backend Developer",
-     *      sections : [
-     *          {subtitle:"XXX",content:"Hello world"}
-     *      ],
-     *
+     *  - resolved : Experience
      *  - reject : ObjectNotExistError/Default Error
      */
-    getExperienceById(id, opt = {}) {
-        if (!this._isValidId(id)) {
-            return Promise.reject(new ObjectNotExistError("該文章不存在"));
+    async findOneOrFail(_id, opt = {}) {
+        const experience = await this.collection.findOne({ _id }, opt);
+        if (experience) {
+            return experience;
         }
-
-        return this.collection
-            .findOne(
-                {
-                    _id: new mongo.ObjectId(id),
-                },
-                opt
-            )
-            .then(result => {
-                if (result) {
-                    return result;
-                }
-                throw new ObjectNotExistError("該文章不存在");
-            });
+        throw new ObjectNotExistError("該文章不存在");
     }
 
     // eslint-disable-next-line class-methods-use-this
