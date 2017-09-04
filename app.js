@@ -4,7 +4,7 @@ const config = require("config");
 const cors = require("cors");
 const express = require("express");
 const expressMongoDb = require("express-mongo-db");
-const { HttpError } = require("./libs/errors");
+const { HttpError, ObjectNotExistError } = require("./libs/errors");
 const logger = require("morgan");
 const winston = require("winston");
 // eslint-disable-next-line no-unused-expressions
@@ -74,6 +74,11 @@ app.use((req, res, next) => {
 
 // logging any error except HttpError
 app.use((err, req, res, next) => {
+    if (err instanceof ObjectNotExistError) {
+        next(new HttpError("Not Found", 404));
+        return;
+    }
+
     if (err instanceof HttpError) {
         next(err);
         return;
