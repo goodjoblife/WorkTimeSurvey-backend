@@ -229,6 +229,19 @@ describe('Replies Test', () => {
                     assert.lengthOf(res.body.replies, TEST_REPLIES_COUNT);
                 }));
 
+        it('get experiences replies data and expect 200 replies (total is 201) ', () => request(app)
+                .get(`/experiences/${experience_id_string}/replies`)
+                .query({
+                    limit: 999,
+                })
+                .expect(200)
+                .expect((res) => {
+                    assert.property(res.body, 'replies');
+                    assert.notDeepProperty(res.body, 'replies.0.author_id');
+                    assert.isArray(res.body.replies);
+                    assert.lengthOf(res.body.replies, 200);
+                }));
+
         it('should not see liked (true/false) if not autheticated', () => request(app)
                 .get(`/experiences/${experience_id_string}/replies`)
                 .expect(200)
