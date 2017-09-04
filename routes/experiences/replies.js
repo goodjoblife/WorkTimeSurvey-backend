@@ -1,6 +1,8 @@
 const express = require("express");
 const passport = require("passport");
 
+const { ensureToObjectId } = require("../../models");
+const ExperienceModel = require("../../models/experience_model");
 const ReplyModel = require("../../models/reply_model");
 const ReplyLikeModel = require("../../models/reply_like_model");
 const { semiAuthentication } = require("../../middlewares/authentication");
@@ -73,19 +75,15 @@ function validationPostFields(body) {
  */
 router.post("/:id/replies", [
     passport.authenticate("bearer", { session: false }),
-    wrap(async (req, res, next) => {
-        try {
-            validationPostFields(req.body);
-        } catch (err) {
-            next(err);
-            return;
-        }
+    wrap(async (req, res) => {
+        validationPostFields(req.body);
 
         const user = req.user;
-        const experience_id = req.params.id;
+        const experience_id_string = req.params.id;
         // pick fields from post body
         const content = req.body.content;
 
+        const experience_model = new ExperienceModel(req.db);
         const reply_model = new ReplyModel(req.db);
 
         const partial_reply = {
@@ -93,21 +91,17 @@ router.post("/:id/replies", [
             content,
         };
 
-        try {
-            const reply = await reply_model.createReply(
-                experience_id,
-                partial_reply
-            );
+        const experience_id = ensureToObjectId(experience_id_string);
 
-            // 事實上 reply === partial_reply
-            res.send({ reply });
-        } catch (err) {
-            if (err instanceof ObjectNotExistError) {
-                next(new HttpError(err.message, 404));
-            } else {
-                next(new HttpError("Internal Server Error", 500));
-            }
-        }
+        await experience_model.findOneOrFail(experience_id, { _id: 1 });
+
+        const reply = await reply_model.createReply(
+            experience_id,
+            partial_reply
+        );
+
+        // 事實上 reply === partial_reply
+        res.send({ reply });
     }),
 ]);
 

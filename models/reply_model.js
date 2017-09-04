@@ -11,7 +11,7 @@ class ReplyModel {
 
     /**
      * 新增留言至工作經驗文章中
-     * @param  {string}   experience_id - experience's id
+     * @param  {Object}   experience_id - experience's id
      * @param  {string}   partial_reply - {
      *      author_id : ObjectId
      *      content : "hello",
@@ -29,35 +29,30 @@ class ReplyModel {
      *  - reject : defaultError/ObjectNotExistError
      *
      */
-    createReply(experience_id, partial_reply) {
+    async createReply(experience_id, partial_reply) {
         const experience_model = new ExperienceModel(this._db);
-        return experience_model
-            .isExist(experience_id)
-            .then(is_exist => {
-                if (!is_exist) {
-                    throw new ObjectNotExistError("該篇文章不存在");
-                }
 
-                return experience_model
-                    .incrementReplyCount(experience_id)
-                    .then(result => result.value.reply_count);
-            })
-            .then(reply_count => {
-                // 如果原本的 reply_count = 95，代表新增完這個留言後， reply_count = 96，則
-                // 這個留言的 floor 是 95 （樓層數從 0 開始）
+        const result = await experience_model.incrementReplyCount(
+            experience_id.toString()
+        );
 
-                Object.assign(partial_reply, {
-                    experience_id: new ObjectId(experience_id),
-                    floor: reply_count - 1,
-                    like_count: 0,
-                    report_count: 0,
-                    created_at: new Date(),
-                    status: "published",
-                });
+        const reply_count = result.value.reply_count;
 
-                return this.collection.insertOne(partial_reply);
-            })
-            .then(() => partial_reply);
+        // 如果原本的 reply_count = 95，代表新增完這個留言後， reply_count = 96，則
+        // 這個留言的 floor 是 95 （樓層數從 0 開始）
+
+        Object.assign(partial_reply, {
+            experience_id,
+            floor: reply_count - 1,
+            like_count: 0,
+            report_count: 0,
+            created_at: new Date(),
+            status: "published",
+        });
+
+        await this.collection.insertOne(partial_reply);
+
+        return partial_reply;
     }
 
     /**
