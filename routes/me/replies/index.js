@@ -43,6 +43,9 @@ function _generateGetReplyViewModel(
  * @apiSuccess {Number} replies.report_count 留言的檢舉數
  * @apiSuccess {String} replies.created_at 該留言的時間
  * @apiSuccess {Number} replies.floor 樓層
+ * @apiSuccess {Object} replies.experience 該留言對應的經驗
+ * @apiSuccess {String} replies.experience._id 經驗的ID
+ * @apiSuccess {String} replies.experience.title 經驗的標題
  * @apiSuccess {String="published","hidden"} replies.status 狀態
  */
 /* eslint-enable */
