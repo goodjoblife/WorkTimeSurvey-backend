@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const { HttpError } = require('../../../libs/errors');
 const ReplyModel = require('../../../models/reply_model');
+const ExperienceModel = require('../../../models/experience_model');
 const {
     requiredNumberInRange,
     requiredNumberGreaterThanOrEqualTo,
@@ -12,7 +13,7 @@ const passport = require('passport');
 
 
 function _generateGetReplyViewModel(
-    { _id, content, like_count, report_count, created_at, floor, status }) {
+    { _id, content, like_count, report_count, created_at, floor, status, experience }) {
     return {
         _id,
         content,
@@ -21,6 +22,10 @@ function _generateGetReplyViewModel(
         created_at,
         floor,
         status,
+        experience: {
+            _id: experience._id,
+            title: experience.title,
+        },
     };
 }
 
@@ -64,12 +69,20 @@ router.get('/', [
         };
 
         const reply_model = new ReplyModel(req.db);
+        const experience_model = new ExperienceModel(req.db);
         const total = await reply_model.getCount(query);
         const replies = await reply_model.getReplies(query, sort, start, limit);
 
+        const experience_promises = replies
+            .map(reply => reply.experience_id)
+            .map(_id => experience_model.getExperienceById(_id.toString(), { _id: 1, title: 1 }));
+        const experiences = await Promise.all(experience_promises);
+
         res.send({
             total,
-            replies: replies.map(_generateGetReplyViewModel),
+            replies: replies
+                .map((reply, i) => Object.assign(reply, { experience: experiences[i] }))
+                .map(_generateGetReplyViewModel),
         });
     }),
 ]);
