@@ -11,6 +11,8 @@ const authentication = require('../../../libs/authentication');
 
 describe('GET /me/replies', () => {
     let db;
+    let experience_1_id;
+    let experience_2_id;
     let sandbox;
     const fake_user = {
         _id: new ObjectId(),
@@ -44,12 +46,27 @@ describe('GET /me/replies', () => {
             .resolves(fake_other_user);
     });
 
+    before('Seed experiences', async () => {
+        const result = await db.collection('experiences').insertMany([
+            {
+                type: 'work',
+                title: 'my work experience',
+            },
+            {
+                type: 'interview',
+                title: 'my interview experience',
+            },
+        ]);
+
+        experience_1_id = result.insertedIds[0];
+        experience_2_id = result.insertedIds[1];
+    });
+
     before('Seed replies', async () => {
-        const experience_id = new ObjectId();
         const replies = [
             {
                 content: 'first reply',
-                experience_id,
+                experience_id: experience_1_id,
                 author_id: fake_user._id,
                 like_count: 0,
                 report_count: 0,
@@ -59,7 +76,7 @@ describe('GET /me/replies', () => {
             },
             {
                 content: 'second reply',
-                experience_id,
+                experience_id: experience_2_id,
                 author_id: fake_user._id,
                 like_count: 0,
                 report_count: 0,
@@ -69,7 +86,7 @@ describe('GET /me/replies', () => {
             },
             {
                 content: 'other reply',
-                experience_id,
+                experience_id: experience_1_id,
                 author_id: new ObjectId(),
                 like_count: 0,
                 report_count: 0,
@@ -100,11 +117,17 @@ describe('GET /me/replies', () => {
             assert.deepProperty(res.body, 'replies.0.created_at');
             assert.deepProperty(res.body, 'replies.0.floor');
             assert.deepProperty(res.body, 'replies.0.status');
+            assert.deepProperty(res.body, 'replies.0.experience');
+            assert.deepProperty(res.body, 'replies.0.experience._id');
+            assert.deepProperty(res.body, 'replies.0.experience.title');
             assert.notDeepProperty(res.body, 'replies.0.author_id');
+            assert.notDeepProperty(res.body, 'replies.0.experience.author_id');
 
             // ensure the order is reverse of created_at
             assert.deepPropertyVal(res.body, 'replies.0.content', 'second reply');
+            assert.deepPropertyVal(res.body, 'replies.0.experience.title', 'my interview experience');
             assert.deepPropertyVal(res.body, 'replies.1.content', 'first reply');
+            assert.deepPropertyVal(res.body, 'replies.1.experience.title', 'my work experience');
         }
     );
 
@@ -151,6 +174,8 @@ describe('GET /me/replies', () => {
     after(() => {
         sandbox.restore();
     });
+
+    after(() => db.collection('experiences').deleteMany({}));
 
     after(() => db.collection('replies').deleteMany({}));
 });
