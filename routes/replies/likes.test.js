@@ -41,13 +41,13 @@ describe('POST /replies/:id/likes', () => {
             status: 'hidden',
         });
 
-        const replies = await db.collection('replies').insertMany([
+        const insert_result = await db.collection('replies').insertMany([
             published_reply,
             hidden_reply,
         ]);
 
-        reply_id_string = replies.insertedIds[0].toString();
-        hidden_reply_id_string = replies.insertedIds[1].toString();
+        reply_id_string = insert_result.insertedIds[0].toString();
+        hidden_reply_id_string = insert_result.insertedIds[1].toString();
     });
 
     beforeEach('Mock', () => {
@@ -198,6 +198,7 @@ describe('DELETE /replies/:id/likes', () => {
         facebook: { id: '3', name: 'GoodJob' },
     };
     let reply_id_string;
+    let hidden_reply_id_string;
     const experience_id = new ObjectId();
     let sandbox;
 
@@ -205,18 +206,25 @@ describe('DELETE /replies/:id/likes', () => {
         db = _db;
     }));
 
-    // 插入一個留言（作者 3 號），有兩個按讚（作者 1, 2 號）
+    // 插入二個留言（作者 3 號），其中公開的留言有兩個按讚（作者 1, 2 號）
     beforeEach('Seed replies', async () => {
-        const reply = await db.collection('replies').insertOne(
+        const insert_result = await db.collection('replies').insertMany([
             Object.assign(generateReplyData(), {
                 experience_id,
                 author_id: fake_third_user._id,
                 like_count: 2,
                 status: 'published',
-            })
-        );
+            }),
+            Object.assign(generateReplyData(), {
+                experience_id,
+                author_id: fake_third_user._id,
+                like_count: 2,
+                status: 'hidden',
+            }),
+        ]);
 
-        reply_id_string = reply.insertedId.toString();
+        reply_id_string = insert_result.insertedIds[0].toString();
+        hidden_reply_id_string = insert_result.insertedIds[1].toString();
     });
 
     beforeEach('Seed reply_likes', () => {
@@ -321,6 +329,13 @@ describe('DELETE /replies/:id/likes', () => {
             .delete(`/replies/${reply_id_string}/likes`)
             .send({
                 access_token: 'thirdFakeAccessToken',
+            })
+            .expect(404));
+
+    it('it should 404 if dislike the hidden reply', () => request(app)
+            .delete(`/replies/${hidden_reply_id_string}/likes`)
+            .send({
+                access_token: 'fakeAccessToken',
             })
             .expect(404));
 

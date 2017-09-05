@@ -82,7 +82,7 @@ class ReplyModel {
     }
 
     /**
-     * 根據經驗文章id，取得文章留言
+     * 根據經驗文章id，取得 published 的留言
      * @param {string} experience_id - experience's id
      * @param {number} skip - start index (Default: 0)
      * @param {number} limit - limit (Default: 20)
@@ -139,7 +139,7 @@ class ReplyModel {
     }
 
     /**
-     * 根據reply id 來取得 published 留言
+     * 根據reply id 來取得 published 的留言
      * @param {string} id - reply id
      * @returns {Promise} -
      * resolve {
