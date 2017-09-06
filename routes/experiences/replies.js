@@ -1,22 +1,22 @@
-const express = require('express');
-const passport = require('passport');
+const express = require("express");
+const passport = require("passport");
 
-const ReplyModel = require('../../models/reply_model');
-const ReplyLikeModel = require('../../models/reply_like_model');
-const { semiAuthentication } = require('../../middlewares/authentication');
-const { HttpError, ObjectNotExistError } = require('../../libs/errors');
+const ReplyModel = require("../../models/reply_model");
+const ReplyLikeModel = require("../../models/reply_like_model");
+const { semiAuthentication } = require("../../middlewares/authentication");
+const { HttpError, ObjectNotExistError } = require("../../libs/errors");
 const {
     requiredNumberInRange,
     requiredNonEmptyString,
     stringRequireLength,
-} = require('../../libs/validation');
-const wrap = require('../../libs/wrap');
+} = require("../../libs/validation");
+const wrap = require("../../libs/wrap");
 
 const router = express.Router();
 
 function _isExistUserLiked(reply_id, user, likes) {
-    return likes.some((like) =>
-        like.reply_id.equals(reply_id) && like.user_id.equals(user._id)
+    return likes.some(
+        like => like.reply_id.equals(reply_id) && like.user_id.equals(user._id)
     );
 }
 
@@ -24,7 +24,7 @@ function _createLikesField(replies, likes, user) {
     if (!user) {
         return;
     }
-    replies.forEach((reply) => {
+    replies.forEach(reply => {
         // eslint-disable-next-line no-param-reassign
         reply.liked = _isExistUserLiked(reply._id, user, likes);
     });
@@ -34,7 +34,7 @@ function _generateGetRepliesViewModel(replies) {
     const result = {
         replies: [],
     };
-    replies.forEach((reply) => {
+    replies.forEach(reply => {
         result.replies.push({
             _id: reply._id,
             content: reply.content,
@@ -71,8 +71,8 @@ function validationPostFields(body) {
  * @apiSuccess {Number} reply.floor 該留言的樓層數 (整數, index from 0)
  * @apiSuccess {String} reply.created_at 該留言的時間
  */
-router.post('/:id/replies', [
-    passport.authenticate('bearer', { session: false }),
+router.post("/:id/replies", [
+    passport.authenticate("bearer", { session: false }),
     wrap(async (req, res, next) => {
         try {
             validationPostFields(req.body);
@@ -94,7 +94,10 @@ router.post('/:id/replies', [
         };
 
         try {
-            const reply = await reply_model.createReply(experience_id, partial_reply);
+            const reply = await reply_model.createReply(
+                experience_id,
+                partial_reply
+            );
 
             // 事實上 reply === partial_reply
             res.send({ reply });
@@ -122,8 +125,8 @@ router.post('/:id/replies', [
  * @apiSuccess {String} replies.created_at 該留言的時間
  * @apiSuccess {Number} replies.floor 樓層
  */
-router.get('/:id/replies', [
-    semiAuthentication('bearer', { session: false }),
+router.get("/:id/replies", [
+    semiAuthentication("bearer", { session: false }),
     wrap(async (req, res, next) => {
         const experience_id = req.params.id;
         const limit = parseInt(req.query.limit, 10) || 20;
@@ -142,10 +145,15 @@ router.get('/:id/replies', [
             const reply_model = new ReplyModel(req.db);
             const reply_like_model = new ReplyLikeModel(req.db);
 
-            const replies = await reply_model
-                        .getPublishedRepliesByExperienceId(experience_id, start, limit);
+            const replies = await reply_model.getPublishedRepliesByExperienceId(
+                experience_id,
+                start,
+                limit
+            );
             const replies_ids = replies.map(reply => reply._id);
-            const likes = await reply_like_model.getReplyLikesByRepliesIds(replies_ids);
+            const likes = await reply_like_model.getReplyLikesByRepliesIds(
+                replies_ids
+            );
             _createLikesField(replies, likes, user);
 
             res.send(_generateGetRepliesViewModel(replies));

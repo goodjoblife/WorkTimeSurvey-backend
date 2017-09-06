@@ -1,19 +1,26 @@
-const express = require('express');
+const express = require("express");
 
 const router = express.Router();
-const { HttpError } = require('../../../libs/errors');
-const ReplyModel = require('../../../models/reply_model');
-const ExperienceModel = require('../../../models/experience_model');
+const { HttpError } = require("../../../libs/errors");
+const ReplyModel = require("../../../models/reply_model");
+const ExperienceModel = require("../../../models/experience_model");
 const {
     requiredNumberInRange,
     requiredNumberGreaterThanOrEqualTo,
-} = require('../../../libs/validation');
-const wrap = require('../../../libs/wrap');
-const passport = require('passport');
+} = require("../../../libs/validation");
+const wrap = require("../../../libs/wrap");
+const passport = require("passport");
 
-
-function _generateGetReplyViewModel(
-    { _id, content, like_count, report_count, created_at, floor, status, experience }) {
+function _generateGetReplyViewModel({
+    _id,
+    content,
+    like_count,
+    report_count,
+    created_at,
+    floor,
+    status,
+    experience,
+}) {
     return {
         _id,
         content,
@@ -28,7 +35,6 @@ function _generateGetReplyViewModel(
         },
     };
 }
-
 
 /* eslint-disable */
 /**
@@ -49,8 +55,8 @@ function _generateGetReplyViewModel(
  * @apiSuccess {String="published","hidden"} replies.status 狀態
  */
 /* eslint-enable */
-router.get('/', [
-    passport.authenticate('bearer', { session: false }),
+router.get("/", [
+    passport.authenticate("bearer", { session: false }),
     wrap(async (req, res) => {
         const start = parseInt(req.query.start, 10) || 0;
         const limit = Number(req.query.limit || 20);
@@ -78,13 +84,20 @@ router.get('/', [
 
         const experience_promises = replies
             .map(reply => reply.experience_id)
-            .map(_id => experience_model.getExperienceById(_id.toString(), { _id: 1, title: 1 }));
+            .map(_id =>
+                experience_model.getExperienceById(_id.toString(), {
+                    _id: 1,
+                    title: 1,
+                })
+            );
         const experiences = await Promise.all(experience_promises);
 
         res.send({
             total,
             replies: replies
-                .map((reply, i) => Object.assign(reply, { experience: experiences[i] }))
+                .map((reply, i) =>
+                    Object.assign(reply, { experience: experiences[i] })
+                )
                 .map(_generateGetReplyViewModel),
         });
     }),

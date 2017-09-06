@@ -1,12 +1,11 @@
-const ExperienceModel = require('./experience_model');
-const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
-const mongo = require('mongodb');
-const ObjectId = require('mongodb').ObjectId;
+const ExperienceModel = require("./experience_model");
+const ObjectNotExistError = require("../libs/errors").ObjectNotExistError;
+const mongo = require("mongodb");
+const ObjectId = require("mongodb").ObjectId;
 
 class ReplyModel {
-
     constructor(db) {
-        this.collection = db.collection('replies');
+        this.collection = db.collection("replies");
         this._db = db;
     }
 
@@ -32,29 +31,33 @@ class ReplyModel {
      */
     createReply(experience_id, partial_reply) {
         const experience_model = new ExperienceModel(this._db);
-        return experience_model.isExist(experience_id).then((is_exist) => {
-            if (!is_exist) {
-                throw new ObjectNotExistError("該篇文章不存在");
-            }
+        return experience_model
+            .isExist(experience_id)
+            .then(is_exist => {
+                if (!is_exist) {
+                    throw new ObjectNotExistError("該篇文章不存在");
+                }
 
-            return experience_model
-                .incrementReplyCount(experience_id)
-                .then(result => result.value.reply_count);
-        }).then((reply_count) => {
-            // 如果原本的 reply_count = 95，代表新增完這個留言後， reply_count = 96，則
-            // 這個留言的 floor 是 95 （樓層數從 0 開始）
+                return experience_model
+                    .incrementReplyCount(experience_id)
+                    .then(result => result.value.reply_count);
+            })
+            .then(reply_count => {
+                // 如果原本的 reply_count = 95，代表新增完這個留言後， reply_count = 96，則
+                // 這個留言的 floor 是 95 （樓層數從 0 開始）
 
-            Object.assign(partial_reply, {
-                experience_id: new ObjectId(experience_id),
-                floor: reply_count - 1,
-                like_count: 0,
-                report_count: 0,
-                created_at: new Date(),
-                status: 'published',
-            });
+                Object.assign(partial_reply, {
+                    experience_id: new ObjectId(experience_id),
+                    floor: reply_count - 1,
+                    like_count: 0,
+                    report_count: 0,
+                    created_at: new Date(),
+                    status: "published",
+                });
 
-            return this.collection.insertOne(partial_reply);
-        }).then(() => partial_reply);
+                return this.collection.insertOne(partial_reply);
+            })
+            .then(() => partial_reply);
     }
 
     /**
@@ -69,16 +72,21 @@ class ReplyModel {
             return Promise.resolve(false);
         }
 
-        return this.collection.findOne({
-            _id: new mongo.ObjectId(id_str),
-        }, {
-            _id: 1,
-        }).then((result) => {
-            if (result) {
-                return true;
-            }
-            return false;
-        });
+        return this.collection
+            .findOne(
+                {
+                    _id: new mongo.ObjectId(id_str),
+                },
+                {
+                    _id: 1,
+                }
+            )
+            .then(result => {
+                if (result) {
+                    return true;
+                }
+                return false;
+            });
     }
 
     /**
@@ -100,19 +108,28 @@ class ReplyModel {
      *      report_count: 0,
      *  }
      */
-    getPublishedRepliesByExperienceId(experience_id, skip = 0, limit = 20, sort = {
-        floor: 1,
-    }) {
+    getPublishedRepliesByExperienceId(
+        experience_id,
+        skip = 0,
+        limit = 20,
+        sort = {
+            floor: 1,
+        }
+    ) {
         const experience_model = new ExperienceModel(this._db);
-        return experience_model.isExist(experience_id).then((is_exist) => {
+        return experience_model.isExist(experience_id).then(is_exist => {
             if (!is_exist) {
                 throw new ObjectNotExistError("該篇文章不存在");
             }
-            return this.collection.find({
-                experience_id: new ObjectId(experience_id),
-                status: "published",
-            }).sort(sort).skip(skip).limit(limit)
-            .toArray();
+            return this.collection
+                .find({
+                    experience_id: new ObjectId(experience_id),
+                    status: "published",
+                })
+                .sort(sort)
+                .skip(skip)
+                .limit(limit)
+                .toArray();
         });
     }
 
@@ -156,14 +173,14 @@ class ReplyModel {
         }
 
         return this.collection.findOne({
-            status: 'published',
+            status: "published",
             _id: new ObjectId(id),
         });
     }
 
     // eslint-disable-next-line class-methods-use-this
     _isValidId(id) {
-        return (id && mongo.ObjectId.isValid(id));
+        return id && mongo.ObjectId.isValid(id);
     }
 
     incrementLikeCount(id) {
@@ -218,11 +235,14 @@ class ReplyModel {
     }
 
     updateStatus(_id, status) {
-        return this.collection.updateOne({
-            _id,
-        }, {
-            $set: { status },
-        });
+        return this.collection.updateOne(
+            {
+                _id,
+            },
+            {
+                $set: { status },
+            }
+        );
     }
 
     /**

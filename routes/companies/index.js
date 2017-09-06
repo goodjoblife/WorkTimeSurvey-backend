@@ -1,13 +1,13 @@
-const express = require('express');
-const HttpError = require('../../libs/errors').HttpError;
-const lodash = require('lodash');
-const CompanyModel = require('../../models/company_model');
-const getCompanyName = require('../company_helper').getCompanyName;
+const express = require("express");
+const HttpError = require("../../libs/errors").HttpError;
+const lodash = require("lodash");
+const CompanyModel = require("../../models/company_model");
+const getCompanyName = require("../company_helper").getCompanyName;
 
 const router = express.Router();
 
 function _generateGetCompanyViewModel(companies) {
-    const result = companies.map((company) => ({
+    const result = companies.map(company => ({
         id: company.id,
         name: getCompanyName(company.name),
         capital: company.capital,
@@ -23,7 +23,7 @@ function _generateGetCompanyViewModel(companies) {
  * @apiParam {Number} [page=0]
  * @apiSuccess {Object[]} . Companies
  */
-router.get('/search', (req, res, next) => {
+router.get("/search", (req, res, next) => {
     const search = req.query.key || "";
     const page = req.query.page || 0;
 
@@ -34,8 +34,12 @@ router.get('/search', (req, res, next) => {
 
     const query = {
         $or: [
-                { name: new RegExp(`^${lodash.escapeRegExp(search.toUpperCase())}`) },
-                { id: search },
+            {
+                name: new RegExp(
+                    `^${lodash.escapeRegExp(search.toUpperCase())}`
+                ),
+            },
+            { id: search },
         ],
     };
 
@@ -50,12 +54,14 @@ router.get('/search', (req, res, next) => {
     const skip = 25 * page;
     const limit = 25;
 
-    company_model.searchCompany(query, sort_by, skip, limit).then((results) => {
-        res.send(_generateGetCompanyViewModel(results));
-    }).catch((err) => {
-        next(new HttpError("Internal Server Error", 500));
-    });
+    company_model
+        .searchCompany(query, sort_by, skip, limit)
+        .then(results => {
+            res.send(_generateGetCompanyViewModel(results));
+        })
+        .catch(err => {
+            next(new HttpError("Internal Server Error", 500));
+        });
 });
 
 module.exports = router;
-

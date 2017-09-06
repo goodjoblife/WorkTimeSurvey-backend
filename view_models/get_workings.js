@@ -1,4 +1,3 @@
-
 function generateGetWorkingsViewModel(workings, total) {
     const view_workings = workings.map(working => ({
         _id: working._id,

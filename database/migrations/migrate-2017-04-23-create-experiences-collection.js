@@ -1,5 +1,5 @@
-module.exports = (db) => {
-    const collecton = db.collection('experiences');
+module.exports = db => {
+    const collecton = db.collection("experiences");
 
     return Promise.all([
         // 職稱與公司名稱會被搜尋

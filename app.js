@@ -1,55 +1,55 @@
-const bodyParser = require('body-parser');
-const compression = require('compression');
-const config = require('config');
-const cors = require('cors');
-const express = require('express');
-const expressMongoDb = require('express-mongo-db');
-const { HttpError } = require('./libs/errors');
-const logger = require('morgan');
-const winston = require('winston');
+const bodyParser = require("body-parser");
+const compression = require("compression");
+const config = require("config");
+const cors = require("cors");
+const express = require("express");
+const expressMongoDb = require("express-mongo-db");
+const { HttpError } = require("./libs/errors");
+const logger = require("morgan");
+const winston = require("winston");
 // eslint-disable-next-line no-unused-expressions
-require('winston-mongodb').MongoDB;
-const passport = require('passport');
-const passportStrategies = require('./libs/passport-strategies');
+require("winston-mongodb").MongoDB;
+const passport = require("passport");
+const passportStrategies = require("./libs/passport-strategies");
 
-const routes = require('./routes');
+const routes = require("./routes");
 
 const app = express();
 
 // We are behind the proxy
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 
 // Enable compress the traffic
-if (app.get('env') === 'production') {
+if (app.get("env") === "production") {
     app.use(compression());
 }
 
 // winston logging setup
-if (app.get('env') === 'production') {
+if (app.get("env") === "production") {
     winston.add(winston.transports.MongoDB, {
-        db: config.get('MONGODB_URI'),
+        db: config.get("MONGODB_URI"),
     });
 }
-if (app.get('env') === 'test' || app.get('env') === 'developement') {
+if (app.get("env") === "test" || app.get("env") === "developement") {
     winston.remove(winston.transports.Console);
 }
 
-if (app.get('env') !== 'test') {
-    app.use(logger('dev'));
+if (app.get("env") !== "test") {
+    app.use(logger("dev"));
 }
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(expressMongoDb(config.get('MONGODB_URI')));
-app.use(require('./middlewares').expressRedisDb(config.get('REDIS_URL')));
+app.use(expressMongoDb(config.get("MONGODB_URI")));
+app.use(require("./middlewares").expressRedisDb(config.get("REDIS_URL")));
 
-if (config.get('CORS_ANY') === 'TRUE') {
+if (config.get("CORS_ANY") === "TRUE") {
     app.use(cors());
 } else {
-    app.use(cors({
-        origin: [
-            /\.goodjob\.life$/,
-        ],
-    }));
+    app.use(
+        cors({
+            origin: [/\.goodjob\.life$/],
+        })
+    );
 }
 
 app.use((req, res, next) => {
@@ -63,11 +63,11 @@ app.use((req, res, next) => {
 
 app.use(passport.initialize());
 passport.use(passportStrategies.legacyFacebookTokenStrategy());
-app.use('/', routes);
+app.use("/", routes);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
-    next(new HttpError('Not Found', 404));
+    next(new HttpError("Not Found", 404));
 });
 
 // error handlers
@@ -91,7 +91,7 @@ app.use((err, req, res, next) => {
 
 // development error handler
 // will print stacktrace
-if (app.get('env') === 'development') {
+if (app.get("env") === "development") {
     app.use((err, req, res, next) => {
         res.status(err.status || 500);
         res.send({

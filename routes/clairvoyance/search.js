@@ -1,6 +1,6 @@
-const express = require('express');
-const HttpError = require('../../libs/errors').HttpError;
-const escapeRegExp = require('lodash/escapeRegExp');
+const express = require("express");
+const HttpError = require("../../libs/errors").HttpError;
+const escapeRegExp = require("lodash/escapeRegExp");
 
 const router = express.Router();
 
@@ -20,13 +20,13 @@ const router = express.Router();
  * @apiSuccess {String} workings.job_title 職稱
  * @apiSuccess {Number} workings.week_work_time 最近一週工作時數
  */
-router.get('/by-job', (req, res, next) => {
+router.get("/by-job", (req, res, next) => {
     const job_title = req.query.job_title;
     const page = req.query.page || 0;
 
-    const collection = req.db.collection('workings');
+    const collection = req.db.collection("workings");
 
-    if (!job_title || job_title === '') {
+    if (!job_title || job_title === "") {
         next(new HttpError("job_title is required", 422));
         return;
     }
@@ -52,26 +52,29 @@ router.get('/by-job', (req, res, next) => {
 
     const data = {};
 
-    collection.find(db_query).count().then((count) => {
-        data.total_count = count;
-        data.total_page = Math.ceil(count / 25);
+    collection
+        .find(db_query)
+        .count()
+        .then(count => {
+            data.total_count = count;
+            data.total_page = Math.ceil(count / 25);
 
-        return collection
-            .find(db_query, opt)
-            .sort(db_sort)
-            .skip(25 * page)
-            .limit(25)
-            .toArray();
-    })
-    .then((workings) => {
-        data.page = page;
-        data.workings = workings;
+            return collection
+                .find(db_query, opt)
+                .sort(db_sort)
+                .skip(25 * page)
+                .limit(25)
+                .toArray();
+        })
+        .then(workings => {
+            data.page = page;
+            data.workings = workings;
 
-        res.send(data);
-    })
-    .catch((err) => {
-        next(new HttpError("Internal Server Error", 500));
-    });
+            res.send(data);
+        })
+        .catch(err => {
+            next(new HttpError("Internal Server Error", 500));
+        });
 });
 
 /**
@@ -90,13 +93,13 @@ router.get('/by-job', (req, res, next) => {
  * @apiSuccess {String} workings.job_title 職稱
  * @apiSuccess {Number} workings.week_work_time 最近一週工作時數
  */
-router.get('/by-company', (req, res, next) => {
+router.get("/by-company", (req, res, next) => {
     const company = req.query.company;
     const page = req.query.page || 0;
 
-    const collection = req.db.collection('workings');
+    const collection = req.db.collection("workings");
 
-    if (!company || company === '') {
+    if (!company || company === "") {
         next(new HttpError("company is required", 422));
         return;
     }
@@ -104,8 +107,8 @@ router.get('/by-company', (req, res, next) => {
     // mongodb query
     const q = {
         $or: [
-                { 'company.name': new RegExp(escapeRegExp(company.toUpperCase())) },
-                { 'company.id': company },
+            { "company.name": new RegExp(escapeRegExp(company.toUpperCase())) },
+            { "company.id": company },
         ],
     };
 
@@ -125,25 +128,28 @@ router.get('/by-company', (req, res, next) => {
 
     const data = {};
 
-    collection.find(q).count().then((count) => {
-        data.total_count = count;
-        data.total_page = Math.ceil(count / 25);
-        return collection
-            .find(q, opt)
-            .sort(s)
-            .skip(25 * page)
-            .limit(25)
-            .toArray();
-    })
-    .then((workings) => {
-        data.page = page;
-        data.workings = workings;
+    collection
+        .find(q)
+        .count()
+        .then(count => {
+            data.total_count = count;
+            data.total_page = Math.ceil(count / 25);
+            return collection
+                .find(q, opt)
+                .sort(s)
+                .skip(25 * page)
+                .limit(25)
+                .toArray();
+        })
+        .then(workings => {
+            data.page = page;
+            data.workings = workings;
 
-        res.send(data);
-    })
-    .catch((err) => {
-        next(new HttpError("Internal Server Error", 500));
-    });
+            res.send(data);
+        })
+        .catch(err => {
+            next(new HttpError("Internal Server Error", 500));
+        });
 });
 
 module.exports = router;

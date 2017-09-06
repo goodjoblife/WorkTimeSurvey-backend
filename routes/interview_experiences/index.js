@@ -1,18 +1,18 @@
-const express = require('express');
+const express = require("express");
 
 const router = express.Router();
-const HttpError = require('../../libs/errors').HttpError;
-const winston = require('winston');
-const ExperienceModel = require('../../models/experience_model');
-const helper = require('../company_helper');
-const passport = require('passport');
+const HttpError = require("../../libs/errors").HttpError;
+const winston = require("winston");
+const ExperienceModel = require("../../models/experience_model");
+const helper = require("../company_helper");
+const passport = require("passport");
 const {
     requiredNonEmptyString,
     requiredNumber,
     optionalNumber,
     shouldIn,
     stringRequireLength,
-} = require('../../libs/validation');
+} = require("../../libs/validation");
 
 function validateCommonInputFields(data) {
     if (!requiredNonEmptyString(data.company_query)) {
@@ -22,30 +22,32 @@ function validateCommonInputFields(data) {
     if (!requiredNonEmptyString(data.region)) {
         throw new HttpError("地區要填喔！", 422);
     }
-    if (!shouldIn(data.region, [
-        '彰化縣',
-        '嘉義市',
-        '嘉義縣',
-        '新竹市',
-        '新竹縣',
-        '花蓮縣',
-        '高雄市',
-        '基隆市',
-        '金門縣',
-        '連江縣',
-        '苗栗縣',
-        '南投縣',
-        '新北市',
-        '澎湖縣',
-        '屏東縣',
-        '臺中市',
-        '臺南市',
-        '臺北市',
-        '臺東縣',
-        '桃園市',
-        '宜蘭縣',
-        '雲林縣',
-    ])) {
+    if (
+        !shouldIn(data.region, [
+            "彰化縣",
+            "嘉義市",
+            "嘉義縣",
+            "新竹市",
+            "新竹縣",
+            "花蓮縣",
+            "高雄市",
+            "基隆市",
+            "金門縣",
+            "連江縣",
+            "苗栗縣",
+            "南投縣",
+            "新北市",
+            "澎湖縣",
+            "屏東縣",
+            "臺中市",
+            "臺南市",
+            "臺北市",
+            "臺東縣",
+            "桃園市",
+            "宜蘭縣",
+            "雲林縣",
+        ])
+    ) {
         throw new HttpError(`地區不允許 ${data.region}！`, 422);
     }
 
@@ -63,8 +65,11 @@ function validateCommonInputFields(data) {
     if (!data.sections || !(data.sections instanceof Array)) {
         throw new HttpError("內容要寫喔！", 422);
     }
-    data.sections.forEach((section) => {
-        if (!requiredNonEmptyString(section.subtitle) || !requiredNonEmptyString(section.content)) {
+    data.sections.forEach(section => {
+        if (
+            !requiredNonEmptyString(section.subtitle) ||
+            !requiredNonEmptyString(section.content)
+        ) {
             throw new HttpError("內容要寫喔！", 422);
         }
         if (!stringRequireLength(section.subtitle, 1, 25)) {
@@ -85,7 +90,20 @@ function validateCommonInputFields(data) {
     }
 
     if (data.education) {
-        if (!shouldIn(data.education, ['大學', '碩士', '博士', '高職', '五專', '二專', '二技', '高中', '國中', '國小'])) {
+        if (
+            !shouldIn(data.education, [
+                "大學",
+                "碩士",
+                "博士",
+                "高職",
+                "五專",
+                "二專",
+                "二技",
+                "高中",
+                "國中",
+                "國小",
+            ])
+        ) {
             throw new HttpError("最高學歷範圍錯誤", 422);
         }
     }
@@ -103,22 +121,24 @@ function validateInterviewInputFields(data) {
     }
     const now = new Date();
     if (data.interview_time.year <= now.getFullYear() - 10) {
-        throw new HttpError('面試年份需在10年內', 422);
+        throw new HttpError("面試年份需在10年內", 422);
     }
     if (data.interview_time.month < 1 || data.interview_time.month > 12) {
-        throw new HttpError('面試月份需在1~12月', 422);
+        throw new HttpError("面試月份需在1~12月", 422);
     }
-    if ((data.interview_time.year === now.getFullYear()
-                && data.interview_time.month > (now.getMonth() + 1))
-            || data.interview_time.year > now.getFullYear()) {
-        throw new HttpError('面試月份不可能比現在時間晚', 422);
+    if (
+        (data.interview_time.year === now.getFullYear() &&
+            data.interview_time.month > now.getMonth() + 1) ||
+        data.interview_time.year > now.getFullYear()
+    ) {
+        throw new HttpError("面試月份不可能比現在時間晚", 422);
     }
 
     if (data.interview_qas) {
         if (!(data.interview_qas instanceof Array)) {
             throw new HttpError("面試題目列表要是一個陣列", 422);
         }
-        data.interview_qas.forEach((qa) => {
+        data.interview_qas.forEach(qa => {
             if (!requiredNonEmptyString(qa.question)) {
                 throw new HttpError("面試題目內容要寫喔！", 422);
             }
@@ -148,7 +168,7 @@ function validateInterviewInputFields(data) {
         if (!(data.interview_sensitive_questions instanceof Array)) {
             throw new HttpError("面試中提及的特別問題要是一個陣列", 422);
         }
-        data.interview_sensitive_questions.forEach((question) => {
+        data.interview_sensitive_questions.forEach(question => {
             if (!requiredNonEmptyString(question)) {
                 throw new HttpError("面試中提及的特別問題要是 string！", 422);
             }
@@ -160,13 +180,13 @@ function validateInterviewInputFields(data) {
 
     if (data.salary) {
         if (!shouldIn(data.salary.type, ["year", "month", "day", "hour"])) {
-            throw new HttpError('薪資種類需為年薪/月薪/日薪/時薪', 422);
+            throw new HttpError("薪資種類需為年薪/月薪/日薪/時薪", 422);
         }
         if (!requiredNumber(data.salary.amount)) {
-            throw new HttpError('薪資需為數字', 422);
+            throw new HttpError("薪資需為數字", 422);
         }
         if (data.salary.amount < 0) {
-            throw new HttpError('薪資不小於0', 422);
+            throw new HttpError("薪資不小於0", 422);
         }
     }
 
@@ -174,7 +194,7 @@ function validateInterviewInputFields(data) {
         throw new HttpError("這次面試你給幾分？", 422);
     }
     if (!shouldIn(data.overall_rating, [1, 2, 3, 4, 5])) {
-        throw new HttpError('面試分數有誤', 422);
+        throw new HttpError("面試分數有誤", 422);
     }
 }
 
@@ -221,7 +241,7 @@ function pickupInterviewExperience(input) {
         partial.education = education;
     }
     if (interview_qas) {
-        partial.interview_qas = interview_qas.map((qas) => {
+        partial.interview_qas = interview_qas.map(qas => {
             const result = {
                 question: qas.question,
             };
@@ -255,7 +275,6 @@ function validationInputFields(data) {
     validateCommonInputFields(data);
     validateInterviewInputFields(data);
 }
-
 
 /**
  * @api {post} /interview_experiences 上傳面試經驗 API
@@ -295,8 +314,8 @@ function validationInputFields(data) {
  * @apiSuccess {Object} experience 經驗分享物件
  * @apiSuccess {String} experience._id 經驗分享id
  */
-router.post('/', [
-    passport.authenticate('bearer', { session: false }),
+router.post("/", [
+    passport.authenticate("bearer", { session: false }),
     (req, res, next) => {
         try {
             validationInputFields(req.body);
@@ -322,11 +341,16 @@ router.post('/', [
         const experience_model = new ExperienceModel(req.db);
 
         helper
-            .getCompanyByIdOrQuery(req.db, req.body.company_id, req.body.company_query)
-            .then((company) => {
+            .getCompanyByIdOrQuery(
+                req.db,
+                req.body.company_id,
+                req.body.company_query
+            )
+            .then(company => {
                 experience.company = company;
             })
-            .then(() => experience_model.createExperience(experience)).then(() => {
+            .then(() => experience_model.createExperience(experience))
+            .then(() => {
                 winston.info("interview experiences insert data success", {
                     id: experience._id,
                     ip: req.ip,
@@ -340,7 +364,7 @@ router.post('/', [
                     },
                 });
             })
-            .catch((err) => {
+            .catch(err => {
                 winston.info("interview experiences insert data fail", {
                     id: experience._id,
                     ip: req.ip,

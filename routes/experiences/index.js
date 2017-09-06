@@ -1,20 +1,20 @@
-const express = require('express');
+const express = require("express");
 
 const router = express.Router();
-const HttpError = require('../../libs/errors').HttpError;
-const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
-const escapeRegExp = require('lodash/escapeRegExp');
-const ExperienceModel = require('../../models/experience_model');
-const ExperienceLikeModel = require('../../models/experience_like_model');
+const HttpError = require("../../libs/errors").HttpError;
+const ObjectNotExistError = require("../../libs/errors").ObjectNotExistError;
+const escapeRegExp = require("lodash/escapeRegExp");
+const ExperienceModel = require("../../models/experience_model");
+const ExperienceLikeModel = require("../../models/experience_like_model");
 const {
     requiredNumberInRange,
     requiredNumberGreaterThanOrEqualTo,
     shouldIn,
-} = require('../../libs/validation');
-const passport = require('passport');
-const { semiAuthentication } = require('../../middlewares/authentication');
-const wrap = require('../../libs/wrap');
-const generateGetExperiencesViewModel = require('../../view_models/get_experiences');
+} = require("../../libs/validation");
+const passport = require("passport");
+const { semiAuthentication } = require("../../middlewares/authentication");
+const wrap = require("../../libs/wrap");
+const generateGetExperiencesViewModel = require("../../view_models/get_experiences");
 
 /**
  * _queryToDBQuery
@@ -26,7 +26,7 @@ const generateGetExperiencesViewModel = require('../../view_models/get_experienc
  */
 function _queryToDBQuery(search_query, search_by, type) {
     const query = {};
-    query.status = 'published';
+    query.status = "published";
 
     if (!((search_by && search_query) || type)) {
         return query;
@@ -35,15 +35,20 @@ function _queryToDBQuery(search_query, search_by, type) {
     if (search_by === "job_title") {
         query.job_title = new RegExp(escapeRegExp(search_query.toUpperCase()));
     } else if (search_query) {
-        query.$or = [{
-            'company.name': new RegExp(escapeRegExp(search_query.toUpperCase())),
-        }, {
-            'company.id': search_query,
-        }];
+        query.$or = [
+            {
+                "company.name": new RegExp(
+                    escapeRegExp(search_query.toUpperCase())
+                ),
+            },
+            {
+                "company.id": search_query,
+            },
+        ];
     }
 
     if (type) {
-        const types = type.split(',');
+        const types = type.split(",");
         if (types.length === 1) {
             query.type = types[0];
         } else {
@@ -57,10 +62,10 @@ function _queryToDBQuery(search_query, search_by, type) {
 
 function _keyWordFactory(type) {
     /* eslint-disable global-require */
-    if (type === 'company') {
-        return require('../../models/company_keywords_model');
-    } else if (type === 'job_title') {
-        return require('../../models/job_title_keywords_model');
+    if (type === "company") {
+        return require("../../models/company_keywords_model");
+    } else if (type === "job_title") {
+        return require("../../models/job_title_keywords_model");
     }
     /* eslint-enale global-require */
 }
@@ -109,49 +114,58 @@ function _saveKeyWord(query, type, db) {
  * @apiSuccess (work) {Number} experiences.salary.amount 工作薪資金額 (工作薪資存在的話，一定有此欄位)
  */
 /* eslint-enable */
-router.get('/', wrap(async (req, res) => {
-    const search_query = req.query.search_query;
-    const search_by = req.query.search_by;
-    const sort_field = req.query.sort || "created_at";
-    const start = parseInt(req.query.start, 10) || 0;
-    const limit = Number(req.query.limit || 20);
-    const type = req.query.type;
+router.get(
+    "/",
+    wrap(async (req, res) => {
+        const search_query = req.query.search_query;
+        const search_by = req.query.search_by;
+        const sort_field = req.query.sort || "created_at";
+        const start = parseInt(req.query.start, 10) || 0;
+        const limit = Number(req.query.limit || 20);
+        const type = req.query.type;
 
-    if (search_query) {
-        if (!search_by) {
-            throw new HttpError("search_by 不能為空", 422);
+        if (search_query) {
+            if (!search_by) {
+                throw new HttpError("search_by 不能為空", 422);
+            }
+            if (!shouldIn(search_by, ["company", "job_title"])) {
+                throw new HttpError("search_by 格式錯誤", 422);
+            }
         }
-        if (!shouldIn(search_by, ["company", "job_title"])) {
-            throw new HttpError("search_by 格式錯誤", 422);
+
+        if (!shouldIn(sort_field, ["created_at", "popularity"])) {
+            throw new HttpError("sort_by 格式錯誤", 422);
         }
-    }
 
-    if (!shouldIn(sort_field, ["created_at", "popularity"])) {
-        throw new HttpError("sort_by 格式錯誤", 422);
-    }
+        if (!requiredNumberGreaterThanOrEqualTo(start, 0)) {
+            throw new HttpError("start 格式錯誤", 422);
+        }
 
-    if (!requiredNumberGreaterThanOrEqualTo(start, 0)) {
-        throw new HttpError("start 格式錯誤", 422);
-    }
+        if (!requiredNumberInRange(limit, 100, 1)) {
+            throw new HttpError("limit 格式錯誤", 422);
+        }
 
-    if (!requiredNumberInRange(limit, 100, 1)) {
-        throw new HttpError("limit 格式錯誤", 422);
-    }
+        const query = _queryToDBQuery(search_query, search_by, type);
+        _saveKeyWord(search_query, search_by, req.db);
 
-    const query = _queryToDBQuery(search_query, search_by, type);
-    _saveKeyWord(search_query, search_by, req.db);
+        const db_sort_field =
+            sort_field === "popularity" ? "like_count" : sort_field;
+        const sort = {
+            [db_sort_field]: -1,
+        };
 
-    const db_sort_field = (sort_field === 'popularity') ? 'like_count' : sort_field;
-    const sort = {
-        [db_sort_field]: -1,
-    };
+        const experience_model = new ExperienceModel(req.db);
+        const total = await experience_model.getExperiencesCountByQuery(query);
+        const experiences = await experience_model.getExperiences(
+            query,
+            sort,
+            start,
+            limit
+        );
 
-    const experience_model = new ExperienceModel(req.db);
-    const total = await experience_model.getExperiencesCountByQuery(query);
-    const experiences = await experience_model.getExperiences(query, sort, start, limit);
-
-    res.send(generateGetExperiencesViewModel(experiences, total));
-}));
+        res.send(generateGetExperiencesViewModel(experiences, total));
+    })
+);
 
 function _generateGetExperienceViewModel(experience, user, like) {
     let result = {
@@ -171,19 +185,20 @@ function _generateGetExperienceViewModel(experience, user, like) {
     };
 
     if (user) {
-        result.liked = !!(like);
+        result.liked = !!like;
     }
 
-    if (experience.type === 'interview') {
+    if (experience.type === "interview") {
         result = Object.assign(result, {
             interview_time: experience.interview_time,
             interview_result: experience.interview_result,
             overall_rating: experience.overall_rating,
             salary: experience.salary,
-            interview_sensitive_questions: experience.interview_sensitive_questions,
+            interview_sensitive_questions:
+                experience.interview_sensitive_questions,
             interview_qas: experience.interview_qas,
         });
-    } else if (experience.type === 'work') {
+    } else if (experience.type === "work") {
         result = Object.assign(result, {
             salary: experience.salary,
             week_work_time: experience.week_work_time,
@@ -240,8 +255,8 @@ function _generateGetExperienceViewModel(experience, user, like) {
  * @apiError (Error) 404 該篇文章不存在
  */
 /* eslint-enable */
-router.get('/:id', [
-    semiAuthentication('bearer', { session: false }),
+router.get("/:id", [
+    semiAuthentication("bearer", { session: false }),
     wrap(async (req, res) => {
         const id_str = req.params.id;
         let user = null;
@@ -263,13 +278,16 @@ router.get('/:id', [
             throw err;
         }
 
-        if (experience.status === 'hidden') {
-            throw new HttpError('the experience is hidden', 403);
+        if (experience.status === "hidden") {
+            throw new HttpError("the experience is hidden", 403);
         }
 
         let result;
         if (user) {
-            const like = await experience_like_model.getLikeByExperienceIdAndUser(id_str, user);
+            const like = await experience_like_model.getLikeByExperienceIdAndUser(
+                id_str,
+                user
+            );
             result = _generateGetExperienceViewModel(experience, user, like);
         } else {
             result = _generateGetExperienceViewModel(experience);
@@ -278,12 +296,8 @@ router.get('/:id', [
     }),
 ]);
 
-
 function _isLegalStatus(value) {
-    const legal_status = [
-        'published',
-        'hidden',
-    ];
+    const legal_status = ["published", "hidden"];
     return legal_status.indexOf(value) > -1;
 }
 
@@ -294,25 +308,26 @@ function _isLegalStatus(value) {
  * @apiSuccess {Boolean} success 是否成功點讚
  * @apiSuccess {String} status 更新後狀態
  */
-router.patch('/:id', [
-    passport.authenticate('bearer', { session: false }),
+router.patch("/:id", [
+    passport.authenticate("bearer", { session: false }),
     wrap(async (req, res) => {
         const id = req.params.id;
         const status = req.body.status;
         const user = req.user;
 
         if (!_isLegalStatus(status)) {
-            throw new HttpError('status is illegal', 422);
+            throw new HttpError("status is illegal", 422);
         }
 
         const experience_model = new ExperienceModel(req.db);
 
-
         try {
-            const experience = await experience_model.getExperienceById(id, { author_id: 1 });
+            const experience = await experience_model.getExperienceById(id, {
+                author_id: 1,
+            });
 
             if (!experience.author_id.equals(user._id)) {
-                throw new HttpError('user is unauthorized', 403);
+                throw new HttpError("user is unauthorized", 403);
             }
 
             const result = await experience_model.updateStatus(id, status);
@@ -330,9 +345,8 @@ router.patch('/:id', [
     }),
 ]);
 
-
-router.use('/', require('./replies'));
-router.use('/', require('./likes'));
-router.use('/', require('./reports'));
+router.use("/", require("./replies"));
+router.use("/", require("./likes"));
+router.use("/", require("./reports"));
 
 module.exports = router;

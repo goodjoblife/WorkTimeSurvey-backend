@@ -1,6 +1,6 @@
-const express = require('express');
-const escapeRegExp = require('lodash/escapeRegExp');
-const wrap = require('../libs/wrap');
+const express = require("express");
+const escapeRegExp = require("lodash/escapeRegExp");
+const wrap = require("../libs/wrap");
 
 const router = express.Router();
 
@@ -14,22 +14,32 @@ const router = express.Router();
  * @apiSuccess {String} ._id 代號
  * @apiSuccess {String} .des 職稱名
  */
-router.get('/search', wrap(async (req, res) => {
-    const search = req.query.key || "";
-    const page = req.query.page || 0;
-    let q;
+router.get(
+    "/search",
+    wrap(async (req, res) => {
+        const search = req.query.key || "";
+        const page = req.query.page || 0;
+        let q;
 
-    if (search === "") {
-        q = { isFinal: true };
-    } else {
-        q = { des: new RegExp(escapeRegExp(search.toUpperCase())), isFinal: true };
-    }
+        if (search === "") {
+            q = { isFinal: true };
+        } else {
+            q = {
+                des: new RegExp(escapeRegExp(search.toUpperCase())),
+                isFinal: true,
+            };
+        }
 
-    const collection = req.db.collection('job_titles');
+        const collection = req.db.collection("job_titles");
 
-    const results = await collection.find(q, { isFinal: 0 }).skip(25 * page).limit(25).toArray();
+        const results = await collection
+            .find(q, { isFinal: 0 })
+            .skip(25 * page)
+            .limit(25)
+            .toArray();
 
-    res.send(results);
-}));
+        res.send(results);
+    })
+);
 
 module.exports = router;

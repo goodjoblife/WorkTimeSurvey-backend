@@ -1,12 +1,11 @@
-const DuplicateKeyError = require('../libs/errors').DuplicateKeyError;
-const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
-const ReplyModel = require('./reply_model');
-const ObjectId = require('mongodb').ObjectId;
+const DuplicateKeyError = require("../libs/errors").DuplicateKeyError;
+const ObjectNotExistError = require("../libs/errors").ObjectNotExistError;
+const ReplyModel = require("./reply_model");
+const ObjectId = require("mongodb").ObjectId;
 
 class ReplyLikeModel {
-
     constructor(db) {
-        this.collection = db.collection('reply_likes');
+        this.collection = db.collection("reply_likes");
         this._db = db;
     }
 
@@ -23,27 +22,32 @@ class ReplyLikeModel {
     createLike(reply_id, user) {
         const reply_model = new ReplyModel(this._db);
 
-        return reply_model.getPublishedReplyById(reply_id).then((reply) => {
-            if (!reply) {
-                throw new ObjectNotExistError("這篇留言不存在");
-            }
+        return reply_model
+            .getPublishedReplyById(reply_id)
+            .then(reply => {
+                if (!reply) {
+                    throw new ObjectNotExistError("這篇留言不存在");
+                }
 
-            const data = {
-                user_id: user._id,
-                created_at: new Date(),
-                reply_time: reply.created_at,
-                reply_id: new ObjectId(reply_id),
-                experience_id: reply.experience_id,
-            };
+                const data = {
+                    user_id: user._id,
+                    created_at: new Date(),
+                    reply_time: reply.created_at,
+                    reply_id: new ObjectId(reply_id),
+                    experience_id: reply.experience_id,
+                };
 
-            return this.collection.insertOne(data);
-        }).then(value => value.insertedId).catch((err) => {
-            if (err.code === 11000) { // E11000 duplicate key error
-                throw new DuplicateKeyError("該留言已經被按讚");
-            } else {
-                throw err;
-            }
-        });
+                return this.collection.insertOne(data);
+            })
+            .then(value => value.insertedId)
+            .catch(err => {
+                if (err.code === 11000) {
+                    // E11000 duplicate key error
+                    throw new DuplicateKeyError("該留言已經被按讚");
+                } else {
+                    throw err;
+                }
+            });
     }
 
     /**
@@ -61,11 +65,13 @@ class ReplyLikeModel {
      *  }
      */
     getReplyLikesByRepliesIds(ids) {
-        return this.collection.find({
-            reply_id: {
-                $in: ids,
-            },
-        }).toArray();
+        return this.collection
+            .find({
+                reply_id: {
+                    $in: ids,
+                },
+            })
+            .toArray();
     }
 
     /**
@@ -79,22 +85,25 @@ class ReplyLikeModel {
     deleteLike(reply_id, user) {
         const reply_model = new ReplyModel(this._db);
 
-        return reply_model.getPublishedReplyById(reply_id).then((reply) => {
-            if (!reply) {
-                throw new ObjectNotExistError("這篇留言不存在");
-            }
+        return reply_model
+            .getPublishedReplyById(reply_id)
+            .then(reply => {
+                if (!reply) {
+                    throw new ObjectNotExistError("這篇留言不存在");
+                }
 
-            const filter = {
-                user_id: user._id,
-                reply_id: new ObjectId(reply_id),
-            };
+                const filter = {
+                    user_id: user._id,
+                    reply_id: new ObjectId(reply_id),
+                };
 
-            return this.collection.deleteOne(filter);
-        }).then((result) => {
-            if (result.deletedCount === 0) {
-                throw new ObjectNotExistError("讚不存在");
-            }
-        });
+                return this.collection.deleteOne(filter);
+            })
+            .then(result => {
+                if (result.deletedCount === 0) {
+                    throw new ObjectNotExistError("讚不存在");
+                }
+            });
     }
 }
 
