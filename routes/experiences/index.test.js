@@ -874,4 +874,117 @@ describe("Experiences 面試和工作經驗資訊", () => {
             sandbox.restore();
         });
     });
+
+    describe("GET /experiences/:id/recommended", () => {
+        const num_of_data = 50;
+        let experience_id_str;
+
+        before("Seeding some experiences", async () => {
+            const data_array = [];
+            for (let i = 1; i <= num_of_data; i += 1) {
+                data_array.push(
+                    Object.assign(generateInterviewExperienceData(), {
+                        like_count: i,
+                    })
+                );
+            }
+
+            const result = await db
+                .collection("experiences")
+                .insertMany(data_array);
+
+            experience_id_str = result.insertedIds[num_of_data - 1]; // like_count of that experience is num_of_data
+        });
+
+        it("should return 10 recommended experiences, and query experience_id should be excluded", () =>
+            request(app)
+                .get(`/experiences/${experience_id_str}/recommended`)
+                .expect(200)
+                .expect(res => {
+                    assert.propertyVal(res.body, "total", 10);
+                    assert.property(res.body, "experiences");
+                    assert.lengthOf(res.body.experiences, 10);
+                    const largest_like_count = num_of_data - 20;
+                    for (let i = 0; i < 10; i += 1) {
+                        assert.isAbove(
+                            res.body.experiences[i].like_count,
+                            largest_like_count,
+                            "like_count is greater than 30"
+                        );
+                    }
+                }));
+
+        it("the query experience_id should be excluded (although this test is random)", () =>
+            request(app)
+                .get(`/experiences/${experience_id_str}/recommended`)
+                .expect(200)
+                .expect(res => {
+                    for (let i = 0; i < 10; i += 1) {
+                        assert.notEqual(
+                            res.body.experiences[i].like_count,
+                            num_of_data,
+                            `like_count shouldn't be ${num_of_data} since the experience should be excluded`
+                        );
+                    }
+                }));
+
+        it("should return correct fields if success", () =>
+            request(app)
+                .get(`/experiences/${experience_id_str}/recommended`)
+                .expect(200)
+                .expect(res => {
+                    assert.property(res.body, "total");
+                    assert.property(res.body, "experiences");
+                    const experience = res.body.experiences[3];
+                    assert.property(experience, "_id");
+                    assert.propertyVal(experience, "type", "interview");
+                    assert.property(experience, "created_at");
+                    assert.property(experience, "company");
+                    assert.property(experience, "job_title");
+                    assert.property(experience, "title");
+                    assert.property(experience, "preview");
+                    assert.property(experience, "like_count");
+                    assert.property(experience, "reply_count");
+                    assert.property(experience, "report_count");
+
+                    assert.notProperty(experience, "author_id");
+                    assert.notProperty(experience, "overall_rating");
+                    assert.notProperty(experience, "sections");
+                    assert.notProperty(experience, "experience_in_year");
+                    assert.notProperty(experience, "education");
+                    assert.notProperty(experience, "interview_time");
+                    assert.notProperty(experience, "interview_qas");
+                    assert.notProperty(experience, "interview_result");
+                    assert.notProperty(
+                        experience,
+                        "interview_sensitive_questions"
+                    );
+                }));
+
+        it("should be status 422 if limit = 0", () =>
+            request(app)
+                .get("/experiences")
+                .query({
+                    limit: 0,
+                })
+                .expect(422));
+
+        it("should be status 422 if limit < 0", () =>
+            request(app)
+                .get("/experiences")
+                .query({
+                    limit: -1,
+                })
+                .expect(422));
+
+        it("should be status 422 if limit > 100", () =>
+            request(app)
+                .get("/experiences")
+                .query({
+                    limit: 101,
+                })
+                .expect(422));
+
+        after(() => db.collection("experiences").deleteMany({}));
+    });
 });
