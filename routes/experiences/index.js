@@ -100,8 +100,8 @@ function _saveKeyWord(query, type, db) {
  * @apiSuccess {String} experiences.job_title 職稱
  * @apiSuccess {String} experiences.title 標題
  * @apiSuccess {string} experiences.preview 整篇內容的preview。直接使用第1個section的內容，至多前Ｎ個字。N=160。
- * @apiSuccess {Number}  experiences.like_count 讚數 
- * @apiSuccess {Number}  experiences.reply_count 留言數 
+ * @apiSuccess {Number}  experiences.like_count 讚數
+ * @apiSuccess {Number}  experiences.reply_count 留言數
  * @apiSuccess {Number}  experiences.report_count 檢舉數
  * @apiSuccess (interview) {String="彰化縣","嘉義市","嘉義縣","新竹市","新竹縣","花蓮縣","高雄市","基隆市","金門縣","連江縣","苗栗縣","南投縣","新北市","澎湖縣","屏東縣","臺中市","臺南市","臺北市","臺東縣","桃園市","宜蘭縣","雲林縣"} experiences.region 面試地區
  * @apiSuccess (interview) {Object} [experiences.salary] 面談薪資
@@ -344,6 +344,98 @@ router.patch("/:id", [
         }
     }),
 ]);
+
+function shuffle(array) {
+    const newArray = array.slice();
+    let currentIndex = array.length;
+    let temporaryValue;
+    let randomIndex;
+
+    // While there remain elements to shuffle...
+    while (currentIndex !== 0) {
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        // And swap it with the current element.
+        temporaryValue = newArray[currentIndex];
+        newArray[currentIndex] = newArray[randomIndex];
+        newArray[randomIndex] = temporaryValue;
+    }
+
+    return newArray;
+}
+
+/* eslint-disable */
+/**
+ * @api {get} /experiences/:id/recommended 取得你可能也想看的經驗分享列表 API
+ * @apiGroup Experiences
+ * @apiParam {String="0 < limit <=10 "} [limit = 10] 最多回傳limit筆資料
+ * @apiSuccess {Number} total 總資料數
+ * @apiSuccess {Object[]} experiences 經驗資料
+ * @apiSuccess {String} experiences._id 經驗分享 id
+ * @apiSuccess {String="interview","work"} experiences.type 經驗類別
+ * @apiSuccess {String} experiences.created_at 資料填寫時間
+ * @apiSuccess {Object} experiences.company 公司
+ * @apiSuccess {String} [experiences.company.id] 公司統編
+ * @apiSuccess {String} experiences.company.name 公司名稱
+ * @apiSuccess {String} experiences.job_title 職稱
+ * @apiSuccess {String} experiences.title 標題
+ * @apiSuccess {string} experiences.preview 整篇內容的preview。直接使用第1個section的內容，至多前Ｎ個字。N=160。
+ * @apiSuccess {Number}  experiences.like_count 讚數
+ * @apiSuccess {Number}  experiences.reply_count 留言數
+ * @apiSuccess {Number}  experiences.report_count 檢舉數
+ * @apiSuccess (interview) {String="彰化縣","嘉義市","嘉義縣","新竹市","新竹縣","花蓮縣","高雄市","基隆市","金門縣","連江縣","苗栗縣","南投縣","新北市","澎湖縣","屏東縣","臺中市","臺南市","臺北市","臺東縣","桃園市","宜蘭縣","雲林縣"} experiences.region 面試地區
+ * @apiSuccess (interview) {Object} [experiences.salary] 面談薪資
+ * @apiSuccess (interview) {String="year","month","day","hour"} experiences.salary.type 面談薪資種類 (面談薪資存在的話，一定有此欄位)
+ * @apiSuccess (interview) {Number="整數, >= 0"} experiences.salary.amount 面談薪資金額 (面談薪資存在的話，一定有此欄位)
+ * @apiSuccess (work) {String="彰化縣","嘉義市","嘉義縣","新竹市","新竹縣","花蓮縣","高雄市","基隆市","金門縣","連江縣","苗栗縣","南投縣","新北市","澎湖縣","屏東縣","臺中市","臺南市","臺北市","臺東縣","桃園市","宜蘭縣","雲林縣"} experiences.region 工作地區
+ * @apiSuccess (work) {String="整數或浮點數, 0 <= N <= 168"} [experiences.week_work_time] 一週工時
+ * @apiSuccess (work) {Object} [experiences.salary] 工作薪資
+ * @apiSuccess (work) {String="year","month","day","hour"} experiences.salary.type 工作薪資種類 (工作薪資存在的話，一定有此欄位)
+ * @apiSuccess (work) {Number} experiences.salary.amount 工作薪資金額 (工作薪資存在的話，一定有此欄位)
+ */
+/* eslint-enable */
+router.get(
+    "/:id/recommended",
+    wrap(async (req, res) => {
+        const id_str = req.params.id;
+        const limit = Number(req.query.limit || 10);
+
+        if (!requiredNumberInRange(limit, 10, 1)) {
+            throw new HttpError("limit 格式錯誤", 422);
+        }
+
+        const query = { status: "published" };
+        const sort = { like_count: -1 };
+
+        const experience_model = new ExperienceModel(req.db);
+        const experiences = await experience_model.getExperiences(
+            query,
+            sort,
+            0,
+            20
+        );
+
+        // here do some pre-process: remove same ID experience, and shuffle them.
+        const shuffled_experiences = shuffle(
+            experiences.filter(
+                experience => experience._id.toString() !== id_str
+            )
+        );
+        const length =
+            shuffled_experiences.length > limit
+                ? limit
+                : shuffled_experiences.length;
+
+        res.send(
+            generateGetExperiencesViewModel(
+                shuffled_experiences.slice(0, length),
+                length
+            )
+        );
+    })
+);
 
 router.use("/", require("./replies"));
 router.use("/", require("./likes"));
