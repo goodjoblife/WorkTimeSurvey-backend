@@ -345,6 +345,7 @@ router.patch("/:id", [
     }),
 ]);
 
+// reference: https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
 function shuffle(array) {
     const newArray = array.slice();
     let currentIndex = array.length;
