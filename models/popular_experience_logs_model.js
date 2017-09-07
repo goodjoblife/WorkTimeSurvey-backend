@@ -1,12 +1,15 @@
-
 class PopularExperienceLogsModel {
     constructor(db) {
-        this.collection = db.collection('popular_experience_logs');
+        this.collection = db.collection("popular_experience_logs");
     }
 
     insertLog({ experience_id, user, action_type }) {
         const log = { experience_id, user_id: user._id, action_type };
-        return this.collection.updateOne(log, { $setOnInsert: log }, { upsert: true });
+        return this.collection.updateOne(
+            log,
+            { $setOnInsert: log },
+            { upsert: true }
+        );
     }
 }
 
