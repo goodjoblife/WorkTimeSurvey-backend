@@ -7,6 +7,7 @@ const config = require("config");
 
 const authentication = require("../../libs/authentication");
 const { generateReplyData } = require("../experiences/testData");
+const { ensureToObjectId } = require("../../models");
 const create_capped_collection = require("../../database/migrations/create-popularExperienceLogs-collection");
 
 describe("Replies Test", () => {
@@ -82,7 +83,7 @@ describe("Replies Test", () => {
 
             const result = await db
                 .collection("popular_experience_logs")
-                .find({ experience_id: experience_id_string })
+                .find({ experience_id: ensureToObjectId(experience_id_string) })
                 .toArray();
 
             assert.equal(result.length, 1);
