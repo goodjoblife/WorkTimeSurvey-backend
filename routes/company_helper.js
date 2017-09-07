@@ -1,5 +1,5 @@
-const HttpError = require('../libs/errors').HttpError;
-const CompanyService = require('../models/company_model');
+const HttpError = require("../libs/errors").HttpError;
+const CompanyService = require("../models/company_model");
 
 function _getCompanyName(db_company_name) {
     if (Array.isArray(db_company_name)) {
@@ -18,7 +18,7 @@ function _getCompanyName(db_company_name) {
 function getCompanyByIdOrQuery(db, company_id, company_query) {
     const company_service = new CompanyService(db);
     if (company_id) {
-        return company_service.searchCompanyById(company_id).then((results) => {
+        return company_service.searchCompanyById(company_id).then(results => {
             if (results.length === 0) {
                 throw new HttpError("公司統編不正確", 422);
             }
@@ -29,11 +29,11 @@ function getCompanyByIdOrQuery(db, company_id, company_query) {
             };
         });
     }
-    return company_service.searchCompanyById(company_query).then((results) => {
+    return company_service.searchCompanyById(company_query).then(results => {
         if (results.length === 0) {
             return company_service
                 .searchCompanyByName(company_query.toUpperCase())
-                .then((nameResults) => {
+                .then(nameResults => {
                     if (nameResults.length === 1) {
                         return {
                             id: nameResults[0].id,

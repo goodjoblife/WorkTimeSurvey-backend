@@ -1,3 +1,6 @@
-module.exports = (db) => Promise.all([
-    db.collection('experience_likes').createIndex({ user_id: 1, experience_id: 1 }, { unique: true }),
-]);
+module.exports = db =>
+    Promise.all([
+        db
+            .collection("experience_likes")
+            .createIndex({ user_id: 1, experience_id: 1 }, { unique: true }),
+    ]);

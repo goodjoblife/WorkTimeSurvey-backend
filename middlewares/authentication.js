@@ -1,4 +1,4 @@
-const passport = require('passport');
+const passport = require("passport");
 
 function semiAuthentication(name, options = {}) {
     return (req, res, next) => {

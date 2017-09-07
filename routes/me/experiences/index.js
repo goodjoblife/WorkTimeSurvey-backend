@@ -1,22 +1,22 @@
-const express = require('express');
+const express = require("express");
 
 const router = express.Router();
-const HttpError = require('../../../libs/errors').HttpError;
-const ExperienceModel = require('../../../models/experience_model');
+const HttpError = require("../../../libs/errors").HttpError;
+const ExperienceModel = require("../../../models/experience_model");
 const {
     requiredNumberInRange,
     requiredNumberGreaterThanOrEqualTo,
-} = require('../../../libs/validation');
-const wrap = require('../../../libs/wrap');
-const generateGetExperiencesViewModel = require('../../../view_models/get_experiences');
-const passport = require('passport');
+} = require("../../../libs/validation");
+const wrap = require("../../../libs/wrap");
+const generateGetExperiencesViewModel = require("../../../view_models/get_experiences");
+const passport = require("passport");
 
 function _generateDBQuery(author_id, type) {
     const query = {};
     query.author_id = author_id;
 
     if (type) {
-        const types = type.split(',');
+        const types = type.split(",");
         if (types.length === 1) {
             query.type = types[0];
         } else {
@@ -61,8 +61,8 @@ function _generateDBQuery(author_id, type) {
  * @apiSuccess (work) {Number} experiences.salary.amount 工作薪資金額 (工作薪資存在的話，一定有此欄位)
  */
 /* eslint-enable */
-router.get('/', [
-    passport.authenticate('bearer', { session: false }),
+router.get("/", [
+    passport.authenticate("bearer", { session: false }),
     wrap(async (req, res) => {
         const user = req.user;
         const start = parseInt(req.query.start, 10) || 0;
@@ -83,10 +83,15 @@ router.get('/', [
 
         const experience_model = new ExperienceModel(req.db);
         const total = await experience_model.getExperiencesCountByQuery(query);
-        const experiences = await experience_model.getExperiences(query, sort, start, limit);
+        const experiences = await experience_model.getExperiences(
+            query,
+            sort,
+            start,
+            limit
+        );
 
         res.send(generateGetExperiencesViewModel(experiences, total));
-    })]
-);
+    }),
+]);
 
 module.exports = router;

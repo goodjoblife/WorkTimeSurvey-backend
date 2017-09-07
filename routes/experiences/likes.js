@@ -1,16 +1,16 @@
-const express = require('express');
-const winston = require('winston');
-const passport = require('passport');
+const express = require("express");
+const winston = require("winston");
+const passport = require("passport");
 
-const ExperienceLikeModel = require('../../models/experience_like_model');
-const ExperienceModel = require('../../models/experience_model');
-const PopularExperienceLogsModel = require('../../models/popular_experience_logs_model');
+const ExperienceLikeModel = require("../../models/experience_like_model");
+const ExperienceModel = require("../../models/experience_model");
+const PopularExperienceLogsModel = require("../../models/popular_experience_logs_model");
 const {
     ObjectNotExistError,
     HttpError,
     DuplicateKeyError,
-} = require('../../libs/errors');
-const wrap = require('../../libs/wrap');
+} = require("../../libs/errors");
+const wrap = require("../../libs/wrap");
 
 const router = express.Router();
 
@@ -19,20 +19,26 @@ const router = express.Router();
  * @apiGroup Experiences Likes
  * @apiSuccess {Boolean} success 是否成功點讚
  */
-router.post('/:id/likes', [
-    passport.authenticate('bearer', { session: false }),
+router.post("/:id/likes", [
+    passport.authenticate("bearer", { session: false }),
     wrap(async (req, res, next) => {
         const user = req.user;
         const experience_id = req.params.id;
 
         const experience_like_model = new ExperienceLikeModel(req.db);
         const experience_model = new ExperienceModel(req.db);
-        const popular_experience_logs_model = new PopularExperienceLogsModel(req.db);
+        const popular_experience_logs_model = new PopularExperienceLogsModel(
+            req.db
+        );
 
         try {
             await experience_like_model.createLike(experience_id, user);
             await experience_model.incrementLikeCount(experience_id);
-            await popular_experience_logs_model.insertLog({ experience_id, user, action_type: 'like' });
+            await popular_experience_logs_model.insertLog({
+                experience_id,
+                user,
+                action_type: "like",
+            });
 
             res.send({ success: true });
         } catch (err) {
@@ -59,8 +65,8 @@ router.post('/:id/likes', [
  * @apiGroup Experiences Likes
  * @apiSuccess {Boolean} success 是否成功取消讚
  */
-router.delete('/:id/likes', [
-    passport.authenticate('bearer', { session: false }),
+router.delete("/:id/likes", [
+    passport.authenticate("bearer", { session: false }),
     wrap(async (req, res, next) => {
         const user = req.user;
         const experience_id = req.params.id;

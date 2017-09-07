@@ -1,6 +1,10 @@
-module.exports = (db) => db.collection('authors').find().toArray()
-        .then((authors) => {
-            const user_collection = db.collection('users');
+module.exports = db =>
+    db
+        .collection("authors")
+        .find()
+        .toArray()
+        .then(authors => {
+            const user_collection = db.collection("users");
 
             const users = authors.map(author => {
                 const time_and_salary_count = author.queries_count;

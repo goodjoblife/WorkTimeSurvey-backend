@@ -1,5 +1,5 @@
-const ObjectId = require('mongodb').ObjectId;
-const ObjectIdError = require('./errors').ObjectIdError;
+const ObjectId = require("mongodb").ObjectId;
+const ObjectIdError = require("./errors").ObjectIdError;
 
 /*
  * 取得使用者的推薦字串
@@ -11,22 +11,28 @@ const ObjectIdError = require('./errors').ObjectIdError;
  * @rejected  error
  */
 function getRecommendationString(db, user) {
-    return db.collection('recommendations')
-        .findOneAndUpdate({
-            user,
-        }, {
-            // when insert, insert the user field
-            $set: { user },
-        }, {
-            // insert if not found
-            upsert: true,
-            // 返回改過的物件
-            returnOriginal: false,
-        })
+    return db
+        .collection("recommendations")
+        .findOneAndUpdate(
+            {
+                user,
+            },
+            {
+                // when insert, insert the user field
+                $set: { user },
+            },
+            {
+                // insert if not found
+                upsert: true,
+                // 返回改過的物件
+                returnOriginal: false,
+            }
+        )
         .then(result =>
             // result.value._id --> ObjectId
             // we want to get string
-            result.value._id.toHexString());
+            result.value._id.toHexString()
+        );
 }
 
 /*
@@ -45,17 +51,19 @@ function getRecommendationString(db, user) {
 function getUserByRecommendationString(db, recommendation_string) {
     return Promise.resolve()
         .then(() => {
-            if (typeof recommendation_string !== 'string') {
-                throw new Error('recommendation_string should be a string');
+            if (typeof recommendation_string !== "string") {
+                throw new Error("recommendation_string should be a string");
             }
             if (!ObjectId.isValid(recommendation_string)) {
-                throw new ObjectIdError("recommendation_string is not a valid string for ObjectId");
+                throw new ObjectIdError(
+                    "recommendation_string is not a valid string for ObjectId"
+                );
             }
             // new ObjectId may throw error
             return new ObjectId(recommendation_string);
         })
-        .then(_id => db.collection('recommendations').findOne({ _id }))
-        .then((result) => {
+        .then(_id => db.collection("recommendations").findOne({ _id }))
+        .then(result => {
             if (result === null) {
                 return null;
             }

@@ -1,5 +1,5 @@
-const express = require('express');
-const cors = require('cors');
+const express = require("express");
+const cors = require("cors");
 
 const router = express.Router();
 
@@ -14,16 +14,20 @@ const corsOption = {
 };
 
 // please sort in alphabetical order
-router.use('/clairvoyance/search', cors(corsOption), require('./clairvoyance/search'));
-router.use('/companies', require('./companies'));
-router.use('/company_keywords', require('./company_keywords'));
-router.use('/experiences', require('./experiences'));
-router.use('/interview_experiences', require('./interview_experiences'));
-router.use('/jobs', require('./jobs'));
-router.use('/job_title_keywords', require('./job_title_keywords'));
-router.use('/me', require('./me'));
-router.use('/replies', require('./replies'));
-router.use('/workings', require('./workings'));
-router.use('/work_experiences', require('./work_experiences'));
+router.use(
+    "/clairvoyance/search",
+    cors(corsOption),
+    require("./clairvoyance/search")
+);
+router.use("/companies", require("./companies"));
+router.use("/company_keywords", require("./company_keywords"));
+router.use("/experiences", require("./experiences"));
+router.use("/interview_experiences", require("./interview_experiences"));
+router.use("/jobs", require("./jobs"));
+router.use("/job_title_keywords", require("./job_title_keywords"));
+router.use("/me", require("./me"));
+router.use("/replies", require("./replies"));
+router.use("/workings", require("./workings"));
+router.use("/work_experiences", require("./work_experiences"));
 
 module.exports = router;

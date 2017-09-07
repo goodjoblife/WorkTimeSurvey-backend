@@ -1,8 +1,8 @@
-const MongoClient = require('mongodb').MongoClient;
-const migrations = require('./migrations');
-const config = require('config');
+const MongoClient = require("mongodb").MongoClient;
+const migrations = require("./migrations");
+const config = require("config");
 
-const collection_name = 'migrations';
+const collection_name = "migrations";
 
 async function isMigrated(db, name) {
     const result = await db.collection(collection_name).findOne({ _id: name });
@@ -23,7 +23,7 @@ function recordMigration(db, name) {
 async function migrate(db, name) {
     const result = await isMigrated(db, name);
     if (result === false) {
-        // eslint-disable-next-line
+        // eslint-disable-next-line global-require, import/no-dynamic-require
         const migration = require(`./migrations/${name}`);
 
         await migration(db);
@@ -35,8 +35,8 @@ async function migrate(db, name) {
     }
 }
 
-const main = async function () {
-    const db = await MongoClient.connect(config.get('MONGODB_URI'));
+const main = async function() {
+    const db = await MongoClient.connect(config.get("MONGODB_URI"));
 
     try {
         for (const name of migrations) {

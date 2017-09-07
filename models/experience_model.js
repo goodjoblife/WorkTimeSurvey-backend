@@ -1,10 +1,9 @@
-const mongo = require('mongodb');
-const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
+const mongo = require("mongodb");
+const ObjectNotExistError = require("../libs/errors").ObjectNotExistError;
 
 class ExperienceModel {
-
     constructor(db) {
-        this.collection = db.collection('experiences');
+        this.collection = db.collection("experiences");
     }
 
     /**
@@ -55,48 +54,32 @@ class ExperienceModel {
      *  - resolved : 10 (Number)
      */
     getExperiencesCountByQuery(query) {
-        return this.collection.find(query, {
-            _id: 1,
-        }).count();
+        return this.collection
+            .find(query, {
+                _id: 1,
+            })
+            .count();
     }
 
     /**
-     * 使用 experience _id 來取得單篇文章
-     * @param   {string}  id - experience_id
+     * 透過 _id 來取得單篇文章
+     * @param {ObjectId} _id - experience_id
      * @param {object} opt - mongodb find field filter
      * @returns {Promise}
-     *  - resolved : {
-     *      type : "interview",
-     *      created_at : Date Object,
-     *      company : {
-     *          id : 1234,
-     *          name : "GoodJob"
-     *      }
-     *      job_title : "Backend Developer",
-     *      sections : [
-     *          {subtitle:"XXX",content:"Hello world"}
-     *      ],
-     *
+     *  - resolved : Experience
      *  - reject : ObjectNotExistError/Default Error
      */
-    getExperienceById(id, opt = {}) {
-        if (!this._isValidId(id)) {
-            return Promise.reject(new ObjectNotExistError("該文章不存在"));
+    async findOneOrFail(_id, opt = {}) {
+        const experience = await this.collection.findOne({ _id }, opt);
+        if (experience) {
+            return experience;
         }
-
-        return this.collection.findOne({
-            _id: new mongo.ObjectId(id),
-        }, opt).then((result) => {
-            if (result) {
-                return result;
-            }
-            throw new ObjectNotExistError("該文章不存在");
-        });
+        throw new ObjectNotExistError("該文章不存在");
     }
 
     // eslint-disable-next-line class-methods-use-this
     _isValidId(id) {
-        return (id && mongo.ObjectId.isValid(id));
+        return id && mongo.ObjectId.isValid(id);
     }
 
     /**
@@ -111,16 +94,21 @@ class ExperienceModel {
             return Promise.resolve(false);
         }
 
-        return this.collection.findOne({
-            _id: new mongo.ObjectId(id),
-        }, {
-            _id: 1,
-        }).then((result) => {
-            if (result) {
-                return true;
-            }
-            return false;
-        });
+        return this.collection
+            .findOne(
+                {
+                    _id: new mongo.ObjectId(id),
+                },
+                {
+                    _id: 1,
+                }
+            )
+            .then(result => {
+                if (result) {
+                    return true;
+                }
+                return false;
+            });
     }
 
     createExperience(experience) {
@@ -161,7 +149,6 @@ class ExperienceModel {
         return this._incrementField(field, id);
     }
 
-
     /**
      * 根據id更新experience的like_count
      * @param   {string} id - erperiences's id
@@ -201,7 +188,8 @@ class ExperienceModel {
             throw new ObjectNotExistError("該文章不存在");
         }
 
-        return this.collection.findOneAndUpdate({ _id: new mongo.ObjectId(id) },
+        return this.collection.findOneAndUpdate(
+            { _id: new mongo.ObjectId(id) },
             {
                 $inc: {
                     [field]: 1,
@@ -221,12 +209,13 @@ class ExperienceModel {
             throw new ObjectNotExistError("該文章不存在");
         }
 
-        return this.collection.findOneAndUpdate({
-            _id: new mongo.ObjectId(id),
-            [field]: {
-                $gt: 0,
+        return this.collection.findOneAndUpdate(
+            {
+                _id: new mongo.ObjectId(id),
+                [field]: {
+                    $gt: 0,
+                },
             },
-        },
             {
                 $inc: {
                     [field]: -1,
@@ -241,19 +230,23 @@ class ExperienceModel {
         );
     }
     updateStatus(id, status) {
-        return this.collection.findOneAndUpdate({
-            _id: new mongo.ObjectId(id),
-        }, {
-            $set: {
-                status,
+        return this.collection.findOneAndUpdate(
+            {
+                _id: new mongo.ObjectId(id),
             },
-        }, {
-            projection: {
-                _id: 1,
-                status: 1,
+            {
+                $set: {
+                    status,
+                },
             },
-            returnOriginal: false,
-        });
+            {
+                projection: {
+                    _id: 1,
+                    status: 1,
+                },
+                returnOriginal: false,
+            }
+        );
     }
 }
 

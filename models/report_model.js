@@ -1,20 +1,19 @@
-const ExperienceModel = require('./experience_model');
-const ReplyModel = require('./reply_model');
-const DuplicateKeyError = require('../libs/errors').DuplicateKeyError;
-const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
-const { ObjectId, DBRef } = require('mongodb');
+const ExperienceModel = require("./experience_model");
+const ReplyModel = require("./reply_model");
+const DuplicateKeyError = require("../libs/errors").DuplicateKeyError;
+const ObjectNotExistError = require("../libs/errors").ObjectNotExistError;
+const { ObjectId, DBRef } = require("mongodb");
 
-const EXPERIENCES_COLLECTION = 'experiences';
-const REPLIES_COLLECTION = 'replies';
+const EXPERIENCES_COLLECTION = "experiences";
+const REPLIES_COLLECTION = "replies";
 const NAME_MAP = {
-    [EXPERIENCES_COLLECTION]: '經驗分享文章',
-    [REPLIES_COLLECTION]: '留言',
+    [EXPERIENCES_COLLECTION]: "經驗分享文章",
+    [REPLIES_COLLECTION]: "留言",
 };
 
 class ReportModel {
-
     constructor(db) {
-        this.collection = db.collection('reports');
+        this.collection = db.collection("reports");
         this._db = db;
     }
 
@@ -40,7 +39,11 @@ class ReportModel {
      *
      */
     createReportToExperience(experience_id_str, partial_report) {
-        return this._createReport(EXPERIENCES_COLLECTION, experience_id_str, partial_report);
+        return this._createReport(
+            EXPERIENCES_COLLECTION,
+            experience_id_str,
+            partial_report
+        );
     }
 
     /**
@@ -65,7 +68,11 @@ class ReportModel {
      *
      */
     createReportToReply(reply_id_str, partial_report) {
-        return this._createReport(REPLIES_COLLECTION, reply_id_str, partial_report);
+        return this._createReport(
+            REPLIES_COLLECTION,
+            reply_id_str,
+            partial_report
+        );
     }
 
     /**
@@ -107,7 +114,8 @@ class ReportModel {
         try {
             await this.collection.insertOne(report);
         } catch (err) {
-            if (err.code === 11000) { // E11000 duplicate key error
+            if (err.code === 11000) {
+                // E11000 duplicate key error
                 throw new DuplicateKeyError(`該篇${NAME_MAP[namespace]}已經被您檢舉過`);
             } else {
                 throw err;
@@ -136,11 +144,20 @@ class ReportModel {
      *      reason: String,
      *  }
      */
-    getReportsByExperienceId(experience_id_str, skip = 0, limit = 100, sort = {
-        created_at: 1,
-    }) {
+    getReportsByExperienceId(
+        experience_id_str,
+        skip = 0,
+        limit = 100,
+        sort = {
+            created_at: 1,
+        }
+    ) {
         return this._getReportsByRefId(
-            EXPERIENCES_COLLECTION, experience_id_str, skip, limit, sort
+            EXPERIENCES_COLLECTION,
+            experience_id_str,
+            skip,
+            limit,
+            sort
         );
     }
 
@@ -161,12 +178,22 @@ class ReportModel {
      *      reason: String,
      *  }
      */
-    getReportsByReplyId(reply_id_str, skip = 0, limit = 100, sort = {
-        created_at: 1,
-    }) {
-        return this._getReportsByRefId(REPLIES_COLLECTION, reply_id_str, skip, limit, sort);
+    getReportsByReplyId(
+        reply_id_str,
+        skip = 0,
+        limit = 100,
+        sort = {
+            created_at: 1,
+        }
+    ) {
+        return this._getReportsByRefId(
+            REPLIES_COLLECTION,
+            reply_id_str,
+            skip,
+            limit,
+            sort
+        );
     }
-
 
     /**
      * 根據經驗分享或留言，取得文章檢舉列表
@@ -186,7 +213,13 @@ class ReportModel {
      *      reason: String,
      *  }
      */
-    async _getReportsByRefId(namespace, id_str, skip = 0, limit = 20, sort = { created_at: 1 }) {
+    async _getReportsByRefId(
+        namespace,
+        id_str,
+        skip = 0,
+        limit = 20,
+        sort = { created_at: 1 }
+    ) {
         const model = this._getModel(namespace);
 
         const is_exist = await model.isExist(id_str);
@@ -198,8 +231,11 @@ class ReportModel {
             ref: new DBRef(namespace, new ObjectId(id_str)),
         };
 
-        return this.collection.find(query)
-            .sort(sort).skip(skip).limit(limit)
+        return this.collection
+            .find(query)
+            .sort(sort)
+            .skip(skip)
+            .limit(limit)
             .toArray();
     }
 
@@ -226,7 +262,7 @@ class ReportModel {
 
     // eslint-disable-next-line class-methods-use-this
     _isValidId(id_str) {
-        return (id_str && ObjectId.isValid(id_str));
+        return id_str && ObjectId.isValid(id_str);
     }
 
     _getModel(namespace) {

@@ -1,4 +1,3 @@
-
 function generateGetExperiencesViewModel(experiences, total) {
     const MAX_PREVIEW_SIZE = 160;
 
@@ -12,7 +11,10 @@ function generateGetExperiencesViewModel(experiences, total) {
             title: experience.title,
             preview: (() => {
                 if (experience.sections[0]) {
-                    return experience.sections[0].content.substring(0, MAX_PREVIEW_SIZE);
+                    return experience.sections[0].content.substring(
+                        0,
+                        MAX_PREVIEW_SIZE
+                    );
                 }
                 return null;
             })(),
@@ -21,12 +23,12 @@ function generateGetExperiencesViewModel(experiences, total) {
             report_count: experience.report_count,
             status: experience.status,
         };
-        if (experience.type === 'interview') {
+        if (experience.type === "interview") {
             experience_view_model = Object.assign(experience_view_model, {
                 region: experience.region,
                 salary: experience.salary,
             });
-        } else if (experience.type === 'work') {
+        } else if (experience.type === "work") {
             experience_view_model = Object.assign(experience_view_model, {
                 region: experience.region,
                 salary: experience.salary,

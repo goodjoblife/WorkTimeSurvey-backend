@@ -1,10 +1,9 @@
-const mongo = require('mongodb');
-const ObjectNotExistError = require('../libs/errors').ObjectNotExistError;
+const mongo = require("mongodb");
+const ObjectNotExistError = require("../libs/errors").ObjectNotExistError;
 
 class WorkingModel {
-
     constructor(db) {
-        this.collection = db.collection('workings');
+        this.collection = db.collection("workings");
     }
     /**
      * 使用 query 來取得 workings
@@ -16,7 +15,13 @@ class WorkingModel {
      *
      * @returns {Promise}
      */
-    getWorkings(query, sort = { create_id: -1 }, skip = 0, limit = 25, opt = {}) {
+    getWorkings(
+        query,
+        sort = { create_id: -1 },
+        skip = 0,
+        limit = 25,
+        opt = {}
+    ) {
         return this.collection
             .find(query, opt)
             .sort(sort)
@@ -32,9 +37,11 @@ class WorkingModel {
      *  - {Number} resolved : 10
      */
     getWorkingsCountByQuery(query) {
-        return this.collection.find(query, {
-            _id: 1,
-        }).count();
+        return this.collection
+            .find(query, {
+                _id: 1,
+            })
+            .count();
     }
 
     /**
@@ -48,9 +55,12 @@ class WorkingModel {
             throw new ObjectNotExistError("該筆資訊不存在");
         }
 
-        const result = await this.collection.findOne({
-            _id: new mongo.ObjectId(id_str),
-        }, opt);
+        const result = await this.collection.findOne(
+            {
+                _id: new mongo.ObjectId(id_str),
+            },
+            opt
+        );
 
         if (result) {
             return result;
@@ -70,24 +80,28 @@ class WorkingModel {
      * }
      */
     updateStatus(id_str, status) {
-        return this.collection.findOneAndUpdate({
-            _id: new mongo.ObjectId(id_str),
-        }, {
-            $set: {
-                status,
+        return this.collection.findOneAndUpdate(
+            {
+                _id: new mongo.ObjectId(id_str),
             },
-        }, {
-            projection: {
-                _id: 1,
-                status: 1,
+            {
+                $set: {
+                    status,
+                },
             },
-            returnOriginal: false,
-        });
+            {
+                projection: {
+                    _id: 1,
+                    status: 1,
+                },
+                returnOriginal: false,
+            }
+        );
     }
 
     // eslint-disable-next-line class-methods-use-this
     _isValidId(id) {
-        return (id && mongo.ObjectId.isValid(id));
+        return id && mongo.ObjectId.isValid(id);
     }
 }
 

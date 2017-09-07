@@ -1,21 +1,28 @@
-const express = require('express');
-const passport = require('passport');
-const HttpError = require('../../libs/errors').HttpError;
+const express = require("express");
+const passport = require("passport");
+const HttpError = require("../../libs/errors").HttpError;
 
 const router = express.Router();
-const ReportModel = require('../../models/report_model');
-const wrap = require('../../libs/wrap');
-const ObjectNotExistError = require('../../libs/errors').ObjectNotExistError;
-const DuplicateKeyError = require('../../libs/errors').DuplicateKeyError;
+const ReportModel = require("../../models/report_model");
+const wrap = require("../../libs/wrap");
+const ObjectNotExistError = require("../../libs/errors").ObjectNotExistError;
+const DuplicateKeyError = require("../../libs/errors").DuplicateKeyError;
 const {
     requiredNumberInRange,
     requiredNonEmptyString,
     stringRequireLength,
     shouldIn,
-} = require('../../libs/validation');
+} = require("../../libs/validation");
 
 function validatePostFields(body) {
-    if (!shouldIn(body.reason_category, ["這是廣告或垃圾訊息", "我認為這篇文章涉及人身攻擊、誹謗", "我認為這篇文章內容不實", "其他"])) {
+    if (
+        !shouldIn(body.reason_category, [
+            "這是廣告或垃圾訊息",
+            "我認為這篇文章涉及人身攻擊、誹謗",
+            "我認為這篇文章內容不實",
+            "其他",
+        ])
+    ) {
         throw new HttpError("檢舉原因分類錯誤", 422);
     }
     if (body.reason_category !== "這是廣告或垃圾訊息") {
@@ -43,7 +50,7 @@ function _reportViewModel(report) {
 }
 
 function _reportsViewModel(reports) {
-    return reports.map((report) => _reportViewModel(report));
+    return reports.map(report => _reportViewModel(report));
 }
 
 /* eslint-disable */
@@ -59,8 +66,8 @@ function _reportsViewModel(reports) {
  * @apiSuccess {String} report.created_at 該檢舉的時間
  */
 /* eslint-enable */
-router.post('/:id/reports', [
-    passport.authenticate('bearer', { session: false }),
+router.post("/:id/reports", [
+    passport.authenticate("bearer", { session: false }),
     wrap(async (req, res) => {
         validatePostFields(req.body);
 
@@ -70,7 +77,7 @@ router.post('/:id/reports', [
         const report_model = new ReportModel(req.db);
 
         let partial_report = {
-            namespace: 'replies',
+            namespace: "replies",
             user_id: user._id,
             reason_category: req.body.reason_category,
         };
@@ -82,8 +89,10 @@ router.post('/:id/reports', [
         }
 
         try {
-            const report = await report_model
-                .createReportToReply(reply_id_str, partial_report);
+            const report = await report_model.createReportToReply(
+                reply_id_str,
+                partial_report
+            );
 
             const response = {
                 report: _reportViewModel(report),
@@ -113,7 +122,7 @@ router.post('/:id/reports', [
  * @apiSuccess {String} reports.created_at 該檢舉的時間
  */
 /* eslint-enable */
-router.get('/:id/reports', [
+router.get("/:id/reports", [
     wrap(async (req, res) => {
         const reply_id_str = req.params.id;
         const limit = parseInt(req.query.limit, 10) || 20;
@@ -126,8 +135,11 @@ router.get('/:id/reports', [
         const report_model = new ReportModel(req.db);
 
         try {
-            const reports = await report_model
-                .getReportsByReplyId(reply_id_str, start, limit);
+            const reports = await report_model.getReportsByReplyId(
+                reply_id_str,
+                start,
+                limit
+            );
 
             const result = {
                 reports: _reportsViewModel(reports),

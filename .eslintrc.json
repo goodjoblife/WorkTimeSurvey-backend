@@ -4,24 +4,13 @@
         "node": true,
         "mocha": true
     },
-    "extends": ["airbnb"],
+    "extends": ["airbnb", "prettier"],
+    "plugins": ["prettier"],
     "parserOptions": {
         "ecmaVersion": 2017,
         "sourceType": "module"
     },
     "rules": {
-        "indent": [
-            "error",
-            4
-        ],
-        "quotes": [
-            "off",
-            "double"
-        ],
-        "comma-dangle": [
-            "error",
-            "always-multiline"
-        ],
         "no-unused-vars": [
             "error", {
                 "args": "none"
@@ -41,6 +30,12 @@
         "consistent-return": [
             0, {
                 "treatUndefinedAsUnspecified": true
+            }
+        ],
+        "prettier/prettier": [
+            "error", {
+                "tabWidth": 4,
+                "trailingComma": "es5"
             }
         ]
     }
