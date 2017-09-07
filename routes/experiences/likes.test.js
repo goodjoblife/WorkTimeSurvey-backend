@@ -133,7 +133,6 @@ describe('Experience Likes Test', () => {
 
                 assert.equal(result.length, 1);
                 assert.equal(result[0].action_type, 'like');
-                assert.equal(result[0].value, 5);
             }
         );
 
@@ -157,6 +156,29 @@ describe('Experience Likes Test', () => {
                 .toArray();
 
             assert.equal(result[0].like_count, 1);
+        });
+
+        it('Post like 2 times(same user) and get experience , and expected to insert one log', async () => {
+            const uri = `/experiences/${experience_id}/likes`;
+            await request(app)
+                .post(uri)
+                .send({
+                    access_token: 'fakeaccesstoken',
+                });
+            await request(app)
+                .post(uri)
+                .send({
+                    access_token: 'fakeaccesstoken',
+                });
+
+            const result = await db.collection("popular_experience_logs")
+                .find({
+                    experience_id,
+                })
+                .toArray();
+
+            assert.equal(result.length, 1);
+            assert.equal(result[0].action_type, 'like');
         });
 
         it('Post like 2 times(different user) and get experience , and expected like_count of experience should be 2 ', async () => {
@@ -203,7 +225,6 @@ describe('Experience Likes Test', () => {
             assert.equal(result.length, 2);
             assert.notEqual(result[0].user_id, result[1].user_id);
             assert.equal(result[0].action_type, 'like');
-            assert.equal(result[0].value, 5);
         });
 
         it('Test experience_likes index  , expected the index is exist ', async () => {
@@ -374,24 +395,6 @@ describe('Experience Likes Test', () => {
                 user_id: fake_user._id,
             });
             assert.equal(result.user_id.toString(), fake_user._id.toString(), 'the other experience`s like should exist');
-        });
-
-        it('delete like and expected to insert one log', async () => {
-            await request(app)
-                .delete(`/experiences/${experience_id_string_by_user}/likes`)
-                .send({
-                    access_token: 'fakeaccesstoken',
-                })
-                .expect(200);
-            const result = await db.collection("popular_experience_logs")
-                        .find({
-                            experience_id: experience_id_string_by_user,
-                        })
-                        .toArray();
-
-            assert.equal(result.length, 1);
-            assert.equal(result[0].action_type, 'like');
-            assert.equal(result[0].value, -5);
         });
 
         afterEach(() => {

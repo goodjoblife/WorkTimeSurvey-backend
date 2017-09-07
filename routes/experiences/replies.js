@@ -97,7 +97,7 @@ router.post('/:id/replies', [
 
         try {
             const reply = await reply_model.createReply(experience_id, partial_reply);
-            await popular_experience_logs_model.insertLog({ experience_id, user, action_type: 'reply', value: 10 });
+            await popular_experience_logs_model.insertLog({ experience_id, user, action_type: 'reply' });
 
             // 事實上 reply === partial_reply
             res.send({ reply });

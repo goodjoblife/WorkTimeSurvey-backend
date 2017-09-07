@@ -75,7 +75,6 @@ describe('Replies Test', () => {
 
             assert.equal(result.length, 1);
             assert.equal(result[0].action_type, 'reply');
-            assert.equal(result[0].value, 10);
         });
 
         it('should 200 Success if succeed', () => {
