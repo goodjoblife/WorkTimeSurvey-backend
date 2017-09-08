@@ -18,5 +18,5 @@ module.exports = [
     "migration-2017-08-08-create-reports-collection",
     "migration-2017-08-11-update-experiences-workings-collection",
     "migrations-2017-09-02-update-reply-status",
-    "create-popularExperienceLogs-collection",
+    "migrations-2017-09-08-create-popularExperienceLogs-collection",
 ];

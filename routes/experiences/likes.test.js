@@ -1,15 +1,14 @@
-const assert = require("chai").assert;
-
-const mongo = require("mongodb");
+const { assert } = require("chai");
 const request = require("supertest");
-const app = require("../../app");
 const { MongoClient, ObjectId } = require("mongodb");
 const sinon = require("sinon");
 const config = require("config");
 
+const app = require("../../app");
 const authentication = require("../../libs/authentication");
 const { generateInterviewExperienceData } = require("./testData");
 const create_capped_collection = require("../../database/migrations/create-popularExperienceLogs-collection");
+const { ensureToObjectId } = require("../../models");
 
 describe("Experience Likes Test", () => {
     let db;
@@ -35,7 +34,7 @@ describe("Experience Likes Test", () => {
     });
 
     describe("Post : /experiences/:id/likes", () => {
-        let experience_id;
+        let experience_id_string;
         let sandbox;
 
         beforeEach("Create test data", async () => {
@@ -63,12 +62,12 @@ describe("Experience Likes Test", () => {
                 status: "published",
                 like_count: 0,
             });
-            experience_id = result.insertedId.toString();
+            experience_id_string = result.insertedId.toString();
         });
 
         it("Post likes, and expected return success ", () =>
             request(app)
-                .post(`/experiences/${experience_id}/likes`)
+                .post(`/experiences/${experience_id_string}/likes`)
                 .send({
                     access_token: "fakeaccesstoken",
                 })
@@ -87,12 +86,12 @@ describe("Experience Likes Test", () => {
 
         it("(! Need Index), Post like 2 times , and expected return 403", async () => {
             await request(app)
-                .post(`/experiences/${experience_id}/likes`)
+                .post(`/experiences/${experience_id_string}/likes`)
                 .send({
                     access_token: "fakeaccesstoken",
                 });
             await request(app)
-                .post(`/experiences/${experience_id}/likes`)
+                .post(`/experiences/${experience_id_string}/likes`)
                 .send({
                     access_token: "fakeaccesstoken",
                 })
@@ -101,19 +100,19 @@ describe("Experience Likes Test", () => {
 
         it("User does not login , and expected return code 401", () =>
             request(app)
-                .post(`/experiences/${experience_id}/likes`)
+                .post(`/experiences/${experience_id_string}/likes`)
                 .expect(401));
 
         it("Post like and get experience , and expected like_count of experience should be 1 ", async () => {
             await request(app)
-                .post(`/experiences/${experience_id}/likes`)
+                .post(`/experiences/${experience_id_string}/likes`)
                 .send({
                     access_token: "fakeaccesstoken",
                 });
             const result = await db
                 .collection("experiences")
                 .find({
-                    _id: new mongo.ObjectId(experience_id),
+                    _id: ensureToObjectId(experience_id_string),
                 })
                 .toArray();
 
@@ -122,23 +121,23 @@ describe("Experience Likes Test", () => {
 
         it("Post like and get experience, and expected to insert one log", async () => {
             await request(app)
-                .post(`/experiences/${experience_id}/likes`)
+                .post(`/experiences/${experience_id_string}/likes`)
                 .send({
                     access_token: "fakeaccesstoken",
                 });
             const result = await db
                 .collection("popular_experience_logs")
                 .find({
-                    experience_id,
+                    experience_id: ensureToObjectId(experience_id_string),
                 })
                 .toArray();
 
-            assert.equal(result.length, 1);
+            assert.lengthOf(result, 1);
             assert.equal(result[0].action_type, "like");
         });
 
         it("(! Need Index), Post like 2 times (same user) and get experience , and like_count of experience should be 1 ", async () => {
-            const uri = `/experiences/${experience_id}/likes`;
+            const uri = `/experiences/${experience_id_string}/likes`;
             await request(app)
                 .post(uri)
                 .send({
@@ -152,7 +151,7 @@ describe("Experience Likes Test", () => {
             const result = await db
                 .collection("experiences")
                 .find({
-                    _id: new mongo.ObjectId(experience_id),
+                    _id: ensureToObjectId(experience_id_string),
                 })
                 .toArray();
 
@@ -160,7 +159,7 @@ describe("Experience Likes Test", () => {
         });
 
         it("Post like 2 times(same user) and get experience , and expected to insert one log", async () => {
-            const uri = `/experiences/${experience_id}/likes`;
+            const uri = `/experiences/${experience_id_string}/likes`;
             await request(app)
                 .post(uri)
                 .send({
@@ -175,16 +174,16 @@ describe("Experience Likes Test", () => {
             const result = await db
                 .collection("popular_experience_logs")
                 .find({
-                    experience_id,
+                    experience_id: ensureToObjectId(experience_id_string),
                 })
                 .toArray();
 
-            assert.equal(result.length, 1);
+            assert.lengthOf(result, 1);
             assert.equal(result[0].action_type, "like");
         });
 
         it("Post like 2 times(different user) and get experience , and expected like_count of experience should be 2 ", async () => {
-            const uri = `/experiences/${experience_id}/likes`;
+            const uri = `/experiences/${experience_id_string}/likes`;
             await request(app)
                 .post(uri)
                 .send({
@@ -198,7 +197,7 @@ describe("Experience Likes Test", () => {
             const result = await db
                 .collection("experiences")
                 .find({
-                    _id: new mongo.ObjectId(experience_id),
+                    _id: ensureToObjectId(experience_id_string),
                 })
                 .toArray();
 
@@ -206,7 +205,7 @@ describe("Experience Likes Test", () => {
         });
 
         it("Post like 2 times(different user) and get experience , and expected to insert two logs", async () => {
-            const uri = `/experiences/${experience_id}/likes`;
+            const uri = `/experiences/${experience_id_string}/likes`;
             await request(app)
                 .post(uri)
                 .send({
@@ -221,11 +220,11 @@ describe("Experience Likes Test", () => {
             const result = await db
                 .collection("popular_experience_logs")
                 .find({
-                    experience_id,
+                    experience_id: ensureToObjectId(experience_id_string),
                 })
                 .toArray();
 
-            assert.equal(result.length, 2);
+            assert.lengthOf(result, 2);
             assert.notEqual(result[0].user_id, result[1].user_id);
             assert.equal(result[0].action_type, "like");
         });
@@ -444,11 +443,14 @@ describe("Experience Likes Test", () => {
             sandbox.restore();
             const pro1 = db.collection("experience_likes").deleteMany({});
             const pro2 = db.collection("experiences").deleteMany({});
-            const pro3 = db
+            return Promise.all([pro1, pro2]);
+        });
+
+        afterEach(() =>
+            db
                 .collection("popular_experience_logs")
                 .drop()
-                .then(() => create_capped_collection(db));
-            return Promise.all([pro1, pro2, pro3]);
-        });
+                .then(() => create_capped_collection(db))
+        );
     });
 });

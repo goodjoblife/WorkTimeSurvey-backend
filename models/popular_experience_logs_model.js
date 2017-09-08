@@ -3,8 +3,8 @@ class PopularExperienceLogsModel {
         this.collection = db.collection("popular_experience_logs");
     }
 
-    insertLog({ experience_id, user, action_type }) {
-        const log = { experience_id, user_id: user._id, action_type };
+    insertLog({ experience_id, user_id, action_type }) {
+        const log = { experience_id, user_id, action_type };
         return this.collection.updateOne(
             log,
             { $setOnInsert: log },

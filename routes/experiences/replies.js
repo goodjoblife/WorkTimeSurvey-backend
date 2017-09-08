@@ -105,7 +105,7 @@ router.post("/:id/replies", [
         );
         await popular_experience_logs_model.insertLog({
             experience_id,
-            user,
+            user_id: user._id,
             action_type: "reply",
         });
 

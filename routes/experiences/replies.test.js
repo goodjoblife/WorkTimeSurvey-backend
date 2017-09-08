@@ -1,10 +1,10 @@
-const assert = require("chai").assert;
+const { assert } = require("chai");
 const request = require("supertest");
-const app = require("../../app");
 const { MongoClient, ObjectId } = require("mongodb");
 const sinon = require("sinon");
 const config = require("config");
 
+const app = require("../../app");
 const authentication = require("../../libs/authentication");
 const { generateReplyData } = require("../experiences/testData");
 const { ensureToObjectId } = require("../../models");
@@ -86,7 +86,7 @@ describe("Replies Test", () => {
                 .find({ experience_id: ensureToObjectId(experience_id_string) })
                 .toArray();
 
-            assert.equal(result.length, 1);
+            assert.lengthOf(result, 1);
             assert.equal(result[0].action_type, "reply");
         });
 
@@ -192,16 +192,19 @@ describe("Replies Test", () => {
         afterEach(() => {
             const pro1 = db.collection("replies").deleteMany({});
             const pro2 = db.collection("experiences").deleteMany({});
-            const pro3 = db
-                .collection("popular_experience_logs")
-                .drop()
-                .then(() => create_capped_collection(db));
-            return Promise.all([pro1, pro2, pro3]);
+            return Promise.all([pro1, pro2]);
         });
 
         afterEach(() => {
             sandbox.restore();
         });
+
+        afterEach(() =>
+            db
+                .collection("popular_experience_logs")
+                .drop()
+                .then(() => create_capped_collection(db))
+        );
     });
 
     describe("GET /experiences/:id/replies", () => {
