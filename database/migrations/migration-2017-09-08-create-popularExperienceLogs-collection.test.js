@@ -1,7 +1,7 @@
 const { assert } = require("chai");
 const { MongoClient } = require("mongodb");
 const config = require("config");
-const create_capped_collection = require("./create-popularExperienceLogs-collection");
+const create_capped_collection = require("./migration-2017-09-08-create-popularExperienceLogs-collection");
 
 describe("Popular Expereince Logs Test", function() {
     let db = null;

@@ -8,7 +8,7 @@ const app = require("../../app");
 const authentication = require("../../libs/authentication");
 const { generateReplyData } = require("../experiences/testData");
 const { ensureToObjectId } = require("../../models");
-const create_capped_collection = require("../../database/migrations/create-popularExperienceLogs-collection");
+const create_capped_collection = require("../../database/migrations/migration-2017-09-08-create-popularExperienceLogs-collection");
 
 describe("Replies Test", () => {
     let db;

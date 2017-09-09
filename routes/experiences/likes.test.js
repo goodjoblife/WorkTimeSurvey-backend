@@ -7,7 +7,7 @@ const config = require("config");
 const app = require("../../app");
 const authentication = require("../../libs/authentication");
 const { generateInterviewExperienceData } = require("./testData");
-const create_capped_collection = require("../../database/migrations/create-popularExperienceLogs-collection");
+const create_capped_collection = require("../../database/migrations/migration-2017-09-08-create-popularExperienceLogs-collection");
 const { ensureToObjectId } = require("../../models");
 
 describe("Experience Likes Test", () => {
