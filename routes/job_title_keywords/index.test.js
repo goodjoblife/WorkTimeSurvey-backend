@@ -26,6 +26,9 @@ describe("job_title_keywords", () => {
                     { word: "GoodJob2" },
                     { word: "GoodJob2" },
                     { word: "GoodJob3" },
+                    { word: "GoodJob4" },
+                    { word: "GoodJob5" },
+                    { word: "GoodJob6" },
                 ])
         );
 
@@ -58,6 +61,15 @@ describe("job_title_keywords", () => {
                 .get("/job_title_keywords")
                 .query({ num: "10.5" })
                 .expect(422));
+
+        it("number default will be 5", () =>
+            request(app)
+                .get("/job_title_keywords")
+                .expect(200)
+                .expect(res => {
+                    assert.isArray(res.body.keywords);
+                    assert.lengthOf(res.body.keywords, 5);
+                }));
 
         after(() =>
             db

@@ -14,7 +14,7 @@ const { requiredNumberInRange } = require("../../libs/validation");
 router.get(
     "/",
     wrap(async (req, res, next) => {
-        const num = Number(req.query.num);
+        const num = req.query.num ? Number(req.query.num) : 5;
 
         if (!Number.isInteger(num)) {
             throw new HttpError("number should be integer", 422);
