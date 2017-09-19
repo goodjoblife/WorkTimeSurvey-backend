@@ -72,25 +72,25 @@ describe("Validation Library", () => {
         });
     });
 
-    describe("#requiredNumberInRange(field,max,min)", () => {
+    describe("#requiredNumberInRange(field,min,max)", () => {
         it("should return true if max=10, min=0, field=5 ", () => {
-            assert.isTrue(validation.requiredNumberInRange(5, 10, 0));
+            assert.isTrue(validation.requiredNumberInRange(5, 0, 10));
         });
 
         it("should return true if max=10, min=0, field=0", () => {
-            assert.isTrue(validation.requiredNumberInRange(0, 10, 0));
+            assert.isTrue(validation.requiredNumberInRange(0, 0, 10));
         });
 
         it("should return true if max=10, min=0, field=10 ", () => {
-            assert.isTrue(validation.requiredNumberInRange(10, 10, 0));
+            assert.isTrue(validation.requiredNumberInRange(10, 0, 10));
         });
 
         it("should return false if max=10, min=0, field=11 ", () => {
-            assert.isFalse(validation.requiredNumberInRange(11, 10, 0));
+            assert.isFalse(validation.requiredNumberInRange(11, 0, 10));
         });
 
         it("should return false if max=10, min=0, field=NaN ", () => {
-            assert.isFalse(validation.requiredNumberInRange(NaN, 10, 0));
+            assert.isFalse(validation.requiredNumberInRange(NaN, 0, 10));
         });
     });
 
