@@ -248,6 +248,14 @@ class ExperienceModel {
             }
         );
     }
+    updateInterviewExperienceById(id, new_experience) {
+        return this.collection.update(
+            {
+                _id: id,
+            },
+            new_experience
+        );
+    }
 }
 
 module.exports = ExperienceModel;
