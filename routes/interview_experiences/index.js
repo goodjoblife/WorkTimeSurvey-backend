@@ -14,6 +14,7 @@ const {
     stringRequireLength,
 } = require("../../libs/validation");
 const wrap = require("../../libs/wrap");
+const { ensureToObjectId } = require("../../models/index");
 
 function validateCommonInputFields(data) {
     if (!requiredNonEmptyString(data.company_query)) {
@@ -329,7 +330,7 @@ router.post("/", [
         Object.assign(experience, {
             type: "interview",
             author_id: req.user._id,
-            // company 後面決定
+            // company 後面決
             company: {},
             like_count: 0,
             reply_count: 0,
@@ -416,7 +417,7 @@ router.post("/", [
  * @apiSuccess {Object} experience 經驗分享物件
  * @apiSuccess {String} experience._id 經驗分享id
  */
-router.put("/", [
+router.put("/:id", [
     passport.authenticate("bearer", { session: false }),
     wrap(async (req, res, next) => {
         const id_str = req.params.id;
@@ -426,7 +427,8 @@ router.put("/", [
 
         const experience = {};
         const experience_model = new ExperienceModel(req.db);
-        const old_experience = experience_model.findOneOrFail(id_str);
+        const id = ensureToObjectId(id_str);
+        const old_experience = await experience_model.findOneOrFail(id);
 
         if (!old_experience.author_id.equals(user._id)) {
             throw new HttpError("user is unauthorized", 403);
@@ -447,6 +449,7 @@ router.put("/", [
             like_count: old_experience.like_count,
             reply_count: old_experience.reply_count,
             report_count: old_experience.report_count,
+            created_at: old_experience.created_at,
             updated_at: new Date(),
         });
 
