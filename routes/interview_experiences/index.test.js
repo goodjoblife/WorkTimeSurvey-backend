@@ -895,6 +895,14 @@ describe("更新面試經驗 Interview Experience", () => {
             experience.created_at.getDate(),
             user_old_experience.created_at.getDate()
         );
+
+        const old_experience = await db
+            .collection("experiences_history")
+            .findOne({
+                ref_id: new ObjectId(user_old_experience_id_str),
+            });
+        assert.deepProperty(old_experience, "time_stamp");
+        assert.deepProperty(old_experience, "ref_id");
     });
     it("should return 403, when a user update other user`s experience", async () => {
         const new_interview_experience = generateInterviewExperiencePayload({
@@ -917,5 +925,16 @@ describe("更新面試經驗 Interview Experience", () => {
             .send(new_interview_experience);
 
         assert.equal(res.status, 401);
+    });
+
+    after("DB: Clear DB collections", () => {
+        db.collection("experiences").deleteMany({});
+        db.collection("experiences_history").deleteMany({});
+    });
+
+    after("DB: 清除 companies", () => db.collection("companies").deleteMany({}));
+
+    after(() => {
+        sandbox.restore();
     });
 });

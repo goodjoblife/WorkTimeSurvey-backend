@@ -4,6 +4,7 @@ const router = express.Router();
 const HttpError = require("../../libs/errors").HttpError;
 const winston = require("winston");
 const ExperienceModel = require("../../models/experience_model");
+const ExperienceHistoryModel = require("../../models/experience_history_model");
 const helper = require("../company_helper");
 const passport = require("passport");
 const {
@@ -427,12 +428,18 @@ router.put("/:id", [
 
         const experience = {};
         const experience_model = new ExperienceModel(req.db);
+        const experience_history_model = new ExperienceHistoryModel(req.db);
         const id = ensureToObjectId(id_str);
         const old_experience = await experience_model.findOneOrFail(id);
 
         if (!old_experience.author_id.equals(user._id)) {
             throw new HttpError("user is unauthorized", 403);
         }
+
+        old_experience.ref_id = id;
+        old_experience.time_stamp = new Date();
+        delete old_experience._id;
+        await experience_history_model.createExperienceHistory(old_experience);
 
         Object.assign(experience, pickupInterviewExperience(req.body));
         Object.assign(experience, {
@@ -454,7 +461,7 @@ router.put("/:id", [
         });
 
         const result = await experience_model.updateInterviewExperienceById(
-            old_experience._id,
+            id,
             experience
         );
 
@@ -466,4 +473,5 @@ router.put("/:id", [
         });
     }),
 ]);
+
 module.exports = router;
