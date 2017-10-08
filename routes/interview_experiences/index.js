@@ -381,7 +381,7 @@ router.post("/", [
 ]);
 
 /**
- * @api {put} /interview_experiences 更新面試經驗 API
+ * @api {put} /interview_experiences 修改面試經驗 API
  * @apiGroup Interview_Experiences
  * @apiParam {String} company_query 公司名稱 或 統一編號
  * @apiParam {String} [company_id] 公司統編 (如果自動完成有成功，會拿的到 company_id )
@@ -414,9 +414,7 @@ router.post("/", [
     "曾要求繳交身分證","曾要求繳交保證金","曾詢問宗教信仰",
     "或其他 0 < length <= 20 的字串"} [interview_sensitive_questions] 面試中提及的特別問題陣列(較敏感/可能違法)
  * @apiParam {String="published","hidden"} [status="published"] 該篇文章的狀態
- * @apiSuccess {Boolean} success 是否上傳成功
- * @apiSuccess {Object} experience 經驗分享物件
- * @apiSuccess {String} experience._id 經驗分享id
+ * @apiSuccess {Boolean} success 是否修改成功
  */
 router.put("/:id", [
     passport.authenticate("bearer", { session: false }),
@@ -460,7 +458,7 @@ router.put("/:id", [
             updated_at: new Date(),
         });
 
-        const result = await experience_model.updateInterviewExperienceById(
+        const result = await experience_model.updateExperienceById(
             id,
             experience
         );

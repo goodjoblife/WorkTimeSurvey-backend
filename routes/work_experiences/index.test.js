@@ -10,6 +10,7 @@ const ObjectId = require("mongodb").ObjectId;
 const sinon = require("sinon");
 const config = require("config");
 const authentication = require("../../libs/authentication");
+const { generateWorkExperienceData } = require("../experiences/testData");
 
 function generateWorkExperiencePayload(options) {
     const opt = options || {};
@@ -626,5 +627,173 @@ describe("experiences 面試和工作經驗資訊", () => {
         afterEach(() => {
             sandbox.restore();
         });
+    });
+});
+
+describe("更新工作經驗 Work Experience", () => {
+    let db;
+    let sandbox;
+    let user_old_experience;
+    let other_user_old_experience;
+    let user_old_experience_id_str;
+    let other_user_old_experience_id_str;
+    const fake_user = {
+        _id: new ObjectId(),
+        facebook_id: "-1",
+        facebook: {
+            id: "-1",
+            name: "markLin",
+        },
+    };
+
+    const other_fake_user = {
+        _id: new ObjectId(),
+        facebook_id: "-2",
+        facebook: {
+            id: "-2",
+            name: "lin",
+        },
+    };
+
+    before("DB: Setup", () =>
+        MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
+            db = _db;
+        })
+    );
+
+    before("Seed companies", () =>
+        db.collection("companies").insertMany([
+            {
+                id: "00000001",
+                name: "GOODJOB",
+            },
+            {
+                id: "00000002",
+                name: "GOODJOBGREAT",
+            },
+            {
+                id: "00000003",
+                name: "GOODJOBGREAT",
+            },
+        ])
+    );
+
+    before("Create Data", async () => {
+        user_old_experience = Object.assign(generateWorkExperienceData(), {
+            status: "published",
+            author_id: fake_user._id,
+            like_count: 10,
+            reply_count: 10,
+            report_count: 1,
+            created_at: (() => {
+                const date = new Date();
+                date.setDate(date.getDate() - 1);
+                return date;
+            })(),
+        });
+
+        other_user_old_experience = Object.assign(
+            generateWorkExperienceData(),
+            {
+                status: "published",
+                author_id: other_fake_user._id,
+            }
+        );
+
+        const insert_result = await db
+            .collection("experiences")
+            .insertMany([user_old_experience, other_user_old_experience]);
+
+        user_old_experience_id_str = insert_result.insertedIds[0].toString();
+        other_user_old_experience_id_str = insert_result.insertedIds[1].toString();
+    });
+
+    before("Stub cachedFacebookAuthentication", () => {
+        sandbox = sinon.sandbox.create();
+        sandbox
+            .stub(authentication, "cachedFacebookAuthentication")
+            .withArgs(sinon.match.object, sinon.match.object, "fakeaccesstoken")
+            .resolves(fake_user);
+    });
+
+    it("should be success, when the author update experience", async () => {
+        const new_work_experience = generateWorkExperiencePayload({
+            job_title: "我被修改了",
+        });
+        const res = await request(app)
+            .put(`/work_experiences/${user_old_experience_id_str}`)
+            .send(new_work_experience);
+
+        assert.equal(res.status, 200);
+        assert.equal(res.body.success, true);
+
+        const experience = await db.collection("experiences").findOne({
+            _id: new ObjectId(user_old_experience_id_str),
+        });
+
+        assert.deepPropertyVal(experience, "job_title", "我被修改了");
+        assert.deepPropertyVal(
+            experience,
+            "like_count",
+            user_old_experience.like_count
+        );
+        assert.deepPropertyVal(
+            experience,
+            "reply_count",
+            user_old_experience.reply_count
+        );
+        assert.deepPropertyVal(
+            experience,
+            "report_count",
+            user_old_experience.report_count
+        );
+        assert.deepProperty(experience, "updated_at");
+        assert.equal(experience.updated_at.getDate(), new Date().getDate());
+        assert.deepProperty(experience, "created_at");
+        assert.equal(
+            experience.created_at.getDate(),
+            user_old_experience.created_at.getDate()
+        );
+
+        const old_experience = await db
+            .collection("experiences_history")
+            .findOne({
+                ref_id: new ObjectId(user_old_experience_id_str),
+            });
+        assert.deepProperty(old_experience, "time_stamp");
+        assert.deepProperty(old_experience, "ref_id");
+    });
+    it("should return 403, when a user update other user`s experience", async () => {
+        const new_work_experience = generateWorkExperiencePayload({
+            job_title: "我被修改了",
+        });
+
+        const res = await request(app)
+            .put(`/work_experiences/${other_user_old_experience_id_str}`)
+            .send(new_work_experience);
+
+        assert.equal(res.status, 403);
+    });
+
+    it("should return 401, while user did not login", async () => {
+        const new_work_experience = generateWorkExperiencePayload();
+        delete new_work_experience.access_token;
+
+        const res = await request(app)
+            .put(`/work_experiences/${user_old_experience_id_str}`)
+            .send(new_work_experience);
+
+        assert.equal(res.status, 401);
+    });
+
+    after("DB: Clear DB collections", () => {
+        db.collection("experiences").deleteMany({});
+        db.collection("experiences_history").deleteMany({});
+    });
+
+    after("DB: 清除 companies", () => db.collection("companies").deleteMany({}));
+
+    after(() => {
+        sandbox.restore();
     });
 });
