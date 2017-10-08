@@ -415,10 +415,7 @@ router.put("/:id", [
         );
 
         res.send({
-            success: true,
-            experience: {
-                _id: result._id,
-            },
+            success: result.ok === 1,
         });
     }),
 ]);

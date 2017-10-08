@@ -331,7 +331,7 @@ router.post("/", [
         Object.assign(experience, {
             type: "interview",
             author_id: req.user._id,
-            // company 後面決
+            // company 後面決定
             company: {},
             like_count: 0,
             reply_count: 0,
@@ -457,10 +457,7 @@ router.put("/:id", [
         );
 
         res.send({
-            success: true,
-            experience: {
-                _id: result._id,
-            },
+            success: result.ok === 1,
         });
     }),
 ]);

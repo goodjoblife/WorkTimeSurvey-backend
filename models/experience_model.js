@@ -249,7 +249,7 @@ class ExperienceModel {
         );
     }
     updateExperienceById(id, new_experience) {
-        return this.collection.update(
+        return this.collection.findOneAndUpdate(
             {
                 _id: id,
             },
