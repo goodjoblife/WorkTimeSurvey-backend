@@ -443,14 +443,7 @@ router.put("/:id", [
         Object.assign(experience, {
             type: "interview",
             author_id: user._id,
-            company: (async () => {
-                const company = await helper.getCompanyByIdOrQuery(
-                    req.db,
-                    req.body.company_id,
-                    req.body.company_query
-                );
-                return company;
-            })(),
+            company: old_experience.company,
             like_count: old_experience.like_count,
             reply_count: old_experience.reply_count,
             report_count: old_experience.report_count,

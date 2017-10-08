@@ -731,7 +731,21 @@ describe("更新工作經驗 Work Experience", () => {
             _id: new ObjectId(user_old_experience_id_str),
         });
 
+        const keys = Object.keys(user_old_experience);
+        keys.forEach(value => {
+            assert.deepProperty(
+                experience,
+                value,
+                "Checking the new experience field equal old experience"
+            );
+        });
+
         assert.deepPropertyVal(experience, "job_title", "我被修改了");
+        assert.deepPropertyVal(
+            experience,
+            "company.id",
+            user_old_experience.company.id
+        );
         assert.deepPropertyVal(
             experience,
             "like_count",
@@ -755,13 +769,11 @@ describe("更新工作經驗 Work Experience", () => {
             user_old_experience.created_at.getDate()
         );
 
-        const old_experience = await db
-            .collection("experiences_history")
-            .findOne({
-                ref_id: new ObjectId(user_old_experience_id_str),
-            });
-        assert.deepProperty(old_experience, "time_stamp");
-        assert.deepProperty(old_experience, "ref_id");
+        const history = await db.collection("experiences_history").findOne({
+            ref_id: new ObjectId(user_old_experience_id_str),
+        });
+        assert.deepProperty(history, "time_stamp");
+        assert.deepProperty(history, "ref_id");
     });
     it("should return 403, when a user update other user`s experience", async () => {
         const new_work_experience = generateWorkExperiencePayload({
