@@ -185,8 +185,18 @@ router.get(
         }
 
         const collection = req.db.collection("workings");
+        const count = await collection.find({ status: "published" }).count();
+        const skip = Math.floor(count * 0.01);
+
         let results = await collection
             .aggregate([
+                {
+                    $match: {
+                        status: "published",
+                    },
+                },
+                { $sort: req.skip_sort_by },
+                { $skip: skip },
                 {
                     $match: {
                         $or: [
@@ -197,7 +207,6 @@ router.get(
                             },
                             { "company.id": company },
                         ],
-                        status: "published",
                     },
                 },
                 {
@@ -438,15 +447,23 @@ router.get(
         }
 
         const collection = req.db.collection("workings");
+        const count = await collection.find({ status: "published" }).count();
+        const skip = Math.floor(count * 0.01);
 
         let results = await collection
             .aggregate([
                 {
                     $match: {
+                        status: "published",
+                    },
+                },
+                { $sort: req.skip_sort_by },
+                { $skip: skip },
+                {
+                    $match: {
                         job_title: new RegExp(
                             escapeRegExp(job_title.toUpperCase())
                         ),
-                        status: "published",
                     },
                 },
                 {

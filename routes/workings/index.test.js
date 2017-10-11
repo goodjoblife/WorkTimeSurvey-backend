@@ -1066,6 +1066,51 @@ describe("Workings 工時資訊", () => {
         });
     });
 
+    describe("GET /workings/search_by/company/group_by/company (極端值的測試)", () => {
+        describe("not to group extreme 1% data", () => {
+            before("Seeding some workings", () => {
+                const workings = Array.from({ length: 200 }).map((v, i) => ({
+                    company: { name: "COMPANYA" },
+                    created_at: new Date("2017-10-10T06:10:04.023Z"),
+                    job_title: "ENGINEER1",
+                    week_work_time: 40 - i * 0.1, // 20.1 ~ 40
+                    overtime_frequency: 1,
+                    salary: { amount: 22000, type: "month" },
+                    estimated_hourly_wage: (i + 1) * 100, // 100 ~ 20000
+                    data_time: { year: 2017, month: 10 },
+                    status: "published",
+                }));
+                return db.collection("workings").insertMany(workings);
+            });
+
+            it(`skip 1% data, descending`, async () => {
+                const res = await request(app)
+                    .get("/workings/search_by/company/group_by/company")
+                    .query({
+                        company: "companyA",
+                        group_sort_by: "week_work_time",
+                        group_sort_order: "descending",
+                    })
+                    .expect(200);
+                console.log(res.body[0].time_and_salary[0]);
+                assert.propertyVal(res.body[0], "count", 198);
+                assert.lengthOf(res.body[0].time_and_salary, 198);
+                assert.propertyNotVal(
+                    res.body[0].time_and_salary[0],
+                    "week_work_time",
+                    40
+                );
+                assert.closeTo(
+                    res.body[0].time_and_salary[197].week_work_time,
+                    20.1,
+                    0.01
+                );
+            });
+
+            after(() => db.collection("workings").deleteMany({}));
+        });
+    });
+
     describe("GET /search_by/job_title/group_by/company", () => {
         let sandbox;
 
@@ -1428,6 +1473,49 @@ describe("Workings 工時資訊", () => {
 
         afterEach(() => {
             sandbox.restore();
+        });
+    });
+
+    describe("GET /workings/search_by/job_title/group_by/company (極端值的測試)", () => {
+        describe("not to group extreme 1% data", () => {
+            before("Seeding some workings", () => {
+                const workings = Array.from({ length: 200 }).map((v, i) => ({
+                    company: { name: "COMPANYA" },
+                    created_at: new Date("2017-10-10T06:10:04.023Z"),
+                    job_title: "ENGINEER1",
+                    week_work_time: 40 - i * 0.1, // 20.1 ~ 40
+                    overtime_frequency: 1,
+                    salary: { amount: 22000, type: "month" },
+                    estimated_hourly_wage: (i + 1) * 100, // 100 ~ 20000
+                    data_time: { year: 2017, month: 10 },
+                    status: "published",
+                }));
+                return db.collection("workings").insertMany(workings);
+            });
+
+            it(`skip 1% data, descending`, async () => {
+                const res = await request(app)
+                    .get("/workings/search_by/job_title/group_by/company")
+                    .query({
+                        job_title: "engineer1",
+                        group_sort_by: "week_work_time",
+                        group_sort_order: "descending",
+                    })
+                    .expect(200);
+                assert.lengthOf(res.body[0].time_and_salary, 198);
+                assert.propertyNotVal(
+                    res.body[0].time_and_salary[0],
+                    "week_work_time",
+                    40
+                );
+                assert.closeTo(
+                    res.body[0].time_and_salary[197].week_work_time,
+                    20.1,
+                    0.01
+                );
+            });
+
+            after(() => db.collection("workings").deleteMany({}));
         });
     });
 
