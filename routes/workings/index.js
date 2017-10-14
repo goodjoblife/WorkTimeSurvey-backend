@@ -171,7 +171,7 @@ router.post(
     (req, res, next) => {
         post_helper.validation(req, res).then(next, next);
     },
-    post_helper.main
+    wrap(post_helper.main)
 );
 
 router.use("/search_by/company/group_by/company", middleware.group_sort_by);

@@ -1,9 +1,8 @@
-const HttpError = require("../../libs/errors").HttpError;
-const ObjectIdError = require("../../libs/errors").ObjectIdError;
 const winston = require("winston");
 const helper = require("./helper");
 const companyHelper = require("../company_helper");
 const recommendation = require("../../libs/recommendation");
+const { HttpError, ObjectIdError } = require("../../libs/errors");
 
 function checkBodyField(req, field) {
     if (
@@ -370,7 +369,7 @@ function validation(req, res) {
     return Promise.resolve();
 }
 
-function main(req, res, next) {
+async function main(req, res, next) {
     const working = req.custom.working;
     const company_query = req.custom.company_query;
     const response_data = {
@@ -428,83 +427,71 @@ function main(req, res, next) {
      *
      * 其他情況看 issue #7
      */
-    companyHelper
-        .getCompanyByIdOrQuery(req.db, working.company.id, company_query)
-        .then(company => {
-            working.company = company;
-        })
-        .then(() => {
-            // 這邊嘗試從recommendation_string去取得推薦使用者的資訊
-            if (req.custom.recommendation_string) {
-                return recommendation
-                    .getUserByRecommendationString(
-                        req.db,
-                        req.custom.recommendation_string
-                    )
-                    .then(
-                        result => {
-                            // if no error but still cannot find user
-                            if (result === null) {
-                                return null;
-                            }
-                            return result;
-                        },
-                        err => {
-                            // if recommendation_string is not valid
-                            if (err instanceof ObjectIdError) {
-                                return null;
-                            }
-                            throw err;
-                        }
-                    );
+    try {
+        const company = await companyHelper.getCompanyByIdOrQuery(
+            req.db,
+            working.company.id,
+            company_query
+        );
+        working.company = company;
+
+        let rec_user = null;
+        // 這邊嘗試從recommendation_string去取得推薦使用者的資訊
+        if (req.custom.recommendation_string) {
+            try {
+                const result = await recommendation.getUserByRecommendationString(
+                    req.db,
+                    req.custom.recommendation_string
+                );
+
+                if (result !== null) {
+                    rec_user = result;
+                }
+            } catch (err) {
+                // if recommendation_string is valid
+                if (!(err instanceof ObjectIdError)) {
+                    throw err;
+                }
             }
-            return null;
-        })
-        .then(rec_user => {
-            if (rec_user !== null) {
-                working.recommended_by = rec_user;
-                return req.db
-                    .collection("recommendations")
-                    .update({ user: rec_user }, { $inc: { count: 1 } });
-            }
+        }
+        if (rec_user !== null) {
+            working.recommended_by = rec_user;
+            await req.db
+                .collection("recommendations")
+                .update({ user: rec_user }, { $inc: { count: 1 } });
+        } else if (req.custom.recommendation_string) {
             // 如果不是 user，依然把 recommendation_string 儲存起來
-            if (req.custom.recommendation_string) {
-                working.recommended_by = req.custom.recommendation_string;
-            }
-        })
-        .then(() => {
-            const author = working.author;
+            working.recommended_by = req.custom.recommendation_string;
+        }
 
-            return helper
-                .checkAndUpdateQuota(req.db, {
-                    id: author.id,
-                    type: author.type,
-                })
-                .then(queries_count => {
-                    response_data.queries_count = queries_count;
-                });
-        })
-        .then(() => collection.insert(working))
-        .then(() => {
-            winston.info("workings insert data success", {
-                id: working._id,
-                ip: req.ip,
-                ips: req.ips,
-            });
-            // delete some sensitive information before sending response
-            delete response_data.working.recommended_by;
-            res.send(response_data);
-        })
-        .catch(err => {
-            winston.info("workings insert data fail", {
-                id: working._id,
-                ip: req.ip,
-                ips: req.ips,
-                err,
-            });
+        const author = working.author;
 
-            next(err);
+        const queries_count = await helper.checkAndUpdateQuota(req.db, {
+            id: author.id,
+            type: author.type,
         });
+        response_data.queries_count = queries_count;
+
+        await collection.insert(working);
+
+        winston.info("workings insert data success", {
+            id: working._id,
+            ip: req.ip,
+            ips: req.ips,
+        });
+        // delete some sensitive information before sending response
+        delete response_data.working.recommended_by;
+        res.send(response_data);
+    } catch (err) {
+        winston.info("workings insert data fail", {
+            id: working._id,
+            ip: req.ip,
+            ips: req.ips,
+            err,
+        });
+
+        throw err;
+    }
 }
 
 module.exports = {
