@@ -21,7 +21,7 @@ function checkBodyField(req, field) {
  * req.custom.working
  * req.custom.company_query
  */
-function collectData(req, res) {
+function collectData(req, res, next) {
     req.custom.author = {};
     const author = req.custom.author;
     req.custom.working = {
@@ -91,7 +91,7 @@ function collectData(req, res) {
         req.custom.recommendation_string = req.body.recommendation_string;
     }
 
-    return Promise.resolve();
+    next();
 }
 
 /*
@@ -321,7 +321,7 @@ function validateSalaryData(req) {
     }
 }
 
-function validation(req, res) {
+function validation(req, res, next) {
     const data = req.custom.working;
     const custom = req.custom;
 
@@ -330,7 +330,7 @@ function validation(req, res) {
     } catch (err) {
         winston.info("validating fail", { ip: req.ip, ips: req.ips });
 
-        return Promise.reject(err);
+        throw err;
     }
 
     let hasWorkingTimeData = false;
@@ -349,7 +349,7 @@ function validation(req, res) {
         try {
             validateWorkingTimeData(req);
         } catch (err) {
-            return Promise.reject(err);
+            throw err;
         }
     }
 
@@ -358,23 +358,19 @@ function validation(req, res) {
         try {
             validateSalaryData(req);
         } catch (err) {
-            return Promise.reject(err);
+            throw err;
         }
     }
 
     if (!hasWorkingTimeData && !hasSalaryData) {
-        return Promise.reject(new HttpError("薪資或工時欄位擇一必填", 422));
+        throw new HttpError("薪資或工時欄位擇一必填", 422);
     }
 
-    return Promise.resolve();
+    next();
 }
 
-async function main(req, res, next) {
+async function normalizeData(req, res, next) {
     const working = req.custom.working;
-    const company_query = req.custom.company_query;
-    const response_data = {
-        working,
-    };
 
     /*
      * Normalize the data
@@ -416,10 +412,7 @@ async function main(req, res, next) {
         working.status = "published";
     }
 
-    const collection = req.db.collection("workings");
-    /*
-     *  這邊處理需要呼叫async函數的部份
-     */
+    const company_query = req.custom.company_query;
     /*
      * 如果使用者有給定 company id，將 company name 補成查詢到的公司
      *
@@ -427,14 +420,21 @@ async function main(req, res, next) {
      *
      * 其他情況看 issue #7
      */
-    try {
-        const company = await companyHelper.getCompanyByIdOrQuery(
-            req.db,
-            working.company.id,
-            company_query
-        );
-        working.company = company;
+    const company = await companyHelper.getCompanyByIdOrQuery(
+        req.db,
+        working.company.id,
+        company_query
+    );
+    working.company = company;
 
+    next();
+}
+async function main(req, res) {
+    const { working } = req.custom;
+    const response_data = { working };
+    const collection = req.db.collection("workings");
+
+    try {
         let rec_user = null;
         // 這邊嘗試從recommendation_string去取得推薦使用者的資訊
         if (req.custom.recommendation_string) {
@@ -481,6 +481,7 @@ async function main(req, res, next) {
         });
         // delete some sensitive information before sending response
         delete response_data.working.recommended_by;
+
         res.send(response_data);
     } catch (err) {
         winston.info("workings insert data fail", {
@@ -497,5 +498,6 @@ async function main(req, res, next) {
 module.exports = {
     collectData,
     validation,
+    normalizeData,
     main,
 };

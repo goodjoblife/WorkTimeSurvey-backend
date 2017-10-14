@@ -1,13 +1,14 @@
 const express = require("express");
-
-const router = express.Router();
-const { HttpError, ObjectNotExistError } = require("../../libs/errors");
+const passport = require("passport");
 const escapeRegExp = require("lodash/escapeRegExp");
+
 const post_helper = require("./workings_post");
 const middleware = require("./middleware");
 const WorkingModel = require("../../models/working_model");
-const passport = require("passport");
 const wrap = require("../../libs/wrap");
+const { HttpError, ObjectNotExistError } = require("../../libs/errors");
+
+const router = express.Router();
 
 /* eslint-disable */
 /**
@@ -165,12 +166,9 @@ router.post("/", passport.authenticate("bearer", { session: false }));
 
 router.post(
     "/",
-    (req, res, next) => {
-        post_helper.collectData(req, res).then(next, next);
-    },
-    (req, res, next) => {
-        post_helper.validation(req, res).then(next, next);
-    },
+    post_helper.collectData,
+    post_helper.validation,
+    wrap(post_helper.normalizeData),
     wrap(post_helper.main)
 );
 
