@@ -142,7 +142,7 @@ describe("Replies 留言", () => {
         });
     });
 
-    describe("PUT /replies/:id", () => {
+    describe.only("PUT /replies/:id", () => {
         let sandbox;
         let reply_id_string;
 
@@ -203,7 +203,7 @@ describe("Replies 留言", () => {
         it("should return 200, when autheticated user updates reply", async () => {
             const new_content = "哥是改過的留言";
             const res = await request(app)
-                .putj(`/replies/${reply_id_string}`)
+                .put(`/replies/${reply_id_string}`)
                 .send({
                     access_token: "fakeaccesstoken",
                     content: new_content,
@@ -222,7 +222,8 @@ describe("Replies 留言", () => {
                 .findOne({
                     ref_id: new ObjectId(reply_id_string),
                 });
-            assert.propertyVal(reply_history, "content", new_content);
+            assert.deepProperty(reply_history, "time_stamp");
+            assert.deepProperty(reply_history, "ref_id");
         });
 
         it("should return 404, when reply does not exist", () =>
