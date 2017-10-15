@@ -128,7 +128,7 @@ router.get("/:id/reports", [
         const limit = parseInt(req.query.limit, 10) || 20;
         const start = parseInt(req.query.start, 10) || 0;
 
-        if (!requiredNumberInRange(limit, 1000, 1)) {
+        if (!requiredNumberInRange(limit, 1, 1000)) {
             throw new HttpError("limit 格式錯誤", 422);
         }
 

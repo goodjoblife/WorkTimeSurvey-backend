@@ -18,7 +18,7 @@ router.get(
 
         if (!Number.isInteger(num)) {
             throw new HttpError("number should be integer", 422);
-        } else if (!requiredNumberInRange(num, 20, 1)) {
+        } else if (!requiredNumberInRange(num, 1, 20)) {
             throw new HttpError("number should be 1~20", 422);
         }
 

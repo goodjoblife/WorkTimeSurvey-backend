@@ -35,7 +35,7 @@ function requiredNumber(field) {
     return false;
 }
 
-function requiredNumberInRange(field, max, min) {
+function requiredNumberInRange(field, min, max) {
     if (typeof field !== "number" || isNaN(field)) {
         return false;
     }

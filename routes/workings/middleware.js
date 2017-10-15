@@ -39,6 +39,8 @@ function group_sort_by(req, res, next) {
 
     req.group_sort_by = {};
     req.group_sort_by[`average.${_group_sort_by}`] = group_sort_order;
+    req.skip_sort_by = {};
+    req.skip_sort_by[_group_sort_by] = group_sort_order;
     next();
 }
 

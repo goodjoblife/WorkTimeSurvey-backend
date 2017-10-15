@@ -141,7 +141,7 @@ router.get(
             throw new HttpError("start 格式錯誤", 422);
         }
 
-        if (!requiredNumberInRange(limit, 100, 1)) {
+        if (!requiredNumberInRange(limit, 1, 100)) {
             throw new HttpError("limit 格式錯誤", 422);
         }
 
@@ -390,7 +390,7 @@ router.get(
         const id_str = req.params.id;
         const limit = Number(req.query.limit || 10);
 
-        if (!requiredNumberInRange(limit, 10, 1)) {
+        if (!requiredNumberInRange(limit, 1, 10)) {
             throw new HttpError("limit 格式錯誤", 422);
         }
 

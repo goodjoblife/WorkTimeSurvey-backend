@@ -136,7 +136,7 @@ router.get("/:id/replies", [
         const start = parseInt(req.query.start, 10) || 0;
         let user;
 
-        if (!requiredNumberInRange(limit, 1000, 1)) {
+        if (!requiredNumberInRange(limit, 1, 1000)) {
             throw new HttpError("limit 格式錯誤", 422);
         }
 
