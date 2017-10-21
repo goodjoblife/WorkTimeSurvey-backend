@@ -248,10 +248,10 @@ class ExperienceModel {
             }
         );
     }
-    updateExperienceById(id, new_experience) {
+    updateExperienceById(_id, new_experience) {
         return this.collection.findOneAndUpdate(
             {
-                _id: id,
+                _id,
             },
             {
                 $set: new_experience,
