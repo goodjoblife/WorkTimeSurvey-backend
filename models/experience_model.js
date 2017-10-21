@@ -253,7 +253,9 @@ class ExperienceModel {
             {
                 _id: id,
             },
-            new_experience
+            {
+                $set: new_experience,
+            }
         );
     }
 }

@@ -398,16 +398,7 @@ router.put("/:id", [
         await experience_history_model.createExperienceHistory(old_experience);
 
         Object.assign(experience, pickupWorkExperience(req.body));
-        Object.assign(experience, {
-            type: "work",
-            author_id: user._id,
-            company: old_experience.company,
-            like_count: old_experience.like_count,
-            reply_count: old_experience.reply_count,
-            report_count: old_experience.report_count,
-            created_at: old_experience.created_at,
-            updated_at: new Date(),
-        });
+        experience.updated_at = new Date();
 
         const result = await experience_model.updateExperienceById(
             id,
