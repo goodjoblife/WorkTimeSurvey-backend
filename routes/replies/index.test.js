@@ -207,14 +207,15 @@ describe("Replies 留言", () => {
                 .send({
                     access_token: "fakeaccesstoken",
                     content: new_content,
-                })
-                .expect(200);
+                });
 
+            assert.equal(res.status, 200);
             assert.isTrue(res.body.success);
 
             const reply = await db
                 .collection("replies")
                 .findOne({ _id: new ObjectId(reply_id_string) });
+
             assert.propertyVal(reply, "content", new_content);
 
             const reply_history = await db
@@ -269,6 +270,8 @@ describe("Replies 留言", () => {
                 .expect(422));
 
         afterEach(() => db.collection("replies").deleteMany({}));
+
+        afterEach(() => db.collection("replies_history").deleteMany({}));
 
         afterEach(() => {
             sandbox.restore();
