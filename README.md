@@ -49,3 +49,7 @@ docker-compose run --rm node npm test
 docker-compose run --rm node npm run lint
 docker-compose run --rm node npm run lint:fix
 ```
+
+## API documentation
+- [master branch](https://goodjoblife.github.io/WorkTimeSurvey-backend/master/)
+- [dev branch](https://goodjoblife.github.io/WorkTimeSurvey-backend/dev/)
