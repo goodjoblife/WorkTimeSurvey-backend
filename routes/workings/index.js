@@ -3,6 +3,7 @@ const passport = require("passport");
 const escapeRegExp = require("lodash/escapeRegExp");
 
 const post_helper = require("./workings_post");
+const put_time_and_salary = require("./put_time_and_salary");
 const middleware = require("./middleware");
 const WorkingModel = require("../../models/working_model");
 const wrap = require("../../libs/wrap");
@@ -156,20 +157,30 @@ router.get(
     })
 );
 
-router.post("/", (req, res, next) => {
-    req.custom = {};
-    next();
-});
-
-router.post("/", passport.authenticate("bearer", { session: false }));
-// req.user.facebook --> {id, name}
-
 router.post(
     "/",
+    (req, res, next) => {
+        req.custom = {};
+        next();
+    },
+    passport.authenticate("bearer", { session: false }), // req.user.facebook --> {id, name}
     post_helper.collectData,
     post_helper.validation,
     wrap(post_helper.normalizeData),
     wrap(post_helper.main)
+);
+
+router.put(
+    "/:id",
+    (req, res, next) => {
+        req.custom = {};
+        next();
+    },
+    passport.authenticate("bearer", { session: false }), // req.user.facebook --> {id, name}
+    post_helper.collectData,
+    post_helper.validation,
+    wrap(post_helper.normalizeData),
+    wrap(put_time_and_salary)
 );
 
 router.use("/search_by/company/group_by/company", middleware.group_sort_by);
