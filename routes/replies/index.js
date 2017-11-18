@@ -10,6 +10,7 @@ const { HttpError, ObjectNotExistError } = require("../../libs/errors");
 const ReplyModel = require("../../models/reply_model");
 const ReplyHistoryModel = require("../../models/reply_history_model");
 const { ensureToObjectId } = require("../../models/index");
+const { replyToHistoryMap } = require("../../models/model_maps");
 
 const router = express.Router();
 
@@ -84,30 +85,21 @@ router.put("/:reply_id", [
         const reply_model = new ReplyModel(req.db);
         const reply_history_model = new ReplyHistoryModel(req.db);
 
-        try {
-            const old_reply = await reply_model.getReplyById(reply_id_str);
+        const old_reply = await reply_model.getReplyById(reply_id_str);
 
-            if (!old_reply.author_id.equals(user._id)) {
-                throw new HttpError("user is unauthorized", 403);
-            }
-
-            delete old_reply._id;
-            old_reply.ref_id = reply_id;
-            old_reply.time_stamp = new Date();
-
-            await reply_history_model.createReplyHistory(old_reply);
-
-            const result = await reply_model.updateReply(reply_id, content);
-
-            res.send({
-                success: result.ok === 1,
-            });
-        } catch (err) {
-            if (err instanceof ObjectNotExistError) {
-                throw new HttpError(err.message, 404);
-            }
-            throw err;
+        if (!old_reply.author_id.equals(user._id)) {
+            throw new HttpError("user is unauthorized", 403);
         }
+
+        const reply_history = replyToHistoryMap(old_reply);
+
+        await reply_history_model.createReplyHistory(reply_history);
+
+        const result = await reply_model.updateReply(reply_id, content);
+
+        res.send({
+            success: result.ok === 1,
+        });
     }),
 ]);
 

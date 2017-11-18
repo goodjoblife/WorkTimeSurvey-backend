@@ -223,8 +223,9 @@ describe("Replies 留言", () => {
                 .findOne({
                     ref_id: new ObjectId(reply_id_string),
                 });
-            assert.deepProperty(reply_history, "time_stamp");
+            assert.deepProperty(reply_history, "updated_at");
             assert.deepProperty(reply_history, "ref_id");
+            assert.ok(reply_history.ref_id.equals(reply._id));
         });
 
         it("should return 404, when reply does not exist", () =>
