@@ -16,6 +16,7 @@ const {
 } = require("../../libs/validation");
 const wrap = require("../../libs/wrap");
 const { ensureToObjectId } = require("../../models/index");
+const { experienceToHistoryMap } = require("../../models/model_maps");
 
 function validateCommonInputFields(data) {
     if (!requiredNonEmptyString(data.company_query)) {
@@ -392,10 +393,11 @@ router.put("/:id", [
             throw new HttpError("user is unauthorized", 403);
         }
 
-        old_experience.ref_id = id;
-        old_experience.time_stamp = new Date();
-        delete old_experience._id;
-        await experience_history_model.createExperienceHistory(old_experience);
+        const experience_history = experienceToHistoryMap(old_experience);
+
+        await experience_history_model.createExperienceHistory(
+            experience_history
+        );
 
         Object.assign(experience, pickupWorkExperience(req.body));
         experience.updated_at = new Date();

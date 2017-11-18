@@ -915,7 +915,7 @@ describe("更新面試經驗 Interview Experience", () => {
         const history = await db.collection("experiences_history").findOne({
             ref_id: new ObjectId(user_old_experience_id_str),
         });
-        assert.deepProperty(history, "time_stamp");
+        assert.deepProperty(history, "updated_at");
         assert.deepProperty(history, "ref_id");
     });
     it("should return 403, when a user update other user`s experience", async () => {

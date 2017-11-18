@@ -762,7 +762,11 @@ describe("更新工作經驗 Work Experience", () => {
             user_old_experience.report_count
         );
         assert.deepProperty(experience, "updated_at");
-        assert.equal(experience.updated_at.getDate(), new Date().getDate());
+        assert.equal(
+            experience.updated_at.getDate(),
+            new Date().getDate(),
+            "expect updated_at equals update Date (new Date day)"
+        );
         assert.deepProperty(experience, "created_at");
         assert.equal(
             experience.created_at.getDate(),
@@ -772,7 +776,7 @@ describe("更新工作經驗 Work Experience", () => {
         const history = await db.collection("experiences_history").findOne({
             ref_id: new ObjectId(user_old_experience_id_str),
         });
-        assert.deepProperty(history, "time_stamp");
+        assert.deepProperty(history, "updated_at");
         assert.deepProperty(history, "ref_id");
     });
     it("should return 403, when a user update other user`s experience", async () => {
