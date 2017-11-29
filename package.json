@@ -45,12 +45,8 @@
     "chai-datetime": "^1.4.1",
     "coveralls": "^2.13.0",
     "eslint": "^3.5.0",
-    "eslint-config-airbnb": "^15.0.1",
     "eslint-config-prettier": "^2.4.0",
-    "eslint-plugin-import": "^2.6.1",
-    "eslint-plugin-jsx-a11y": "^5.0.1",
     "eslint-plugin-prettier": "^2.2.0",
-    "eslint-plugin-react": "^7.1.0",
     "husky": "^0.14.3",
     "istanbul": "v1.1.0-alpha.1",
     "lint-staged": "^4.0.4",
@@ -68,8 +64,8 @@
   },
   "lint-staged": {
     "*.js": [
-        "eslint --fix",
-        "git add"
+      "eslint --fix",
+      "git add"
     ]
   }
 }
