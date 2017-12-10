@@ -228,9 +228,18 @@ describe("Replies 留言", () => {
             assert.ok(reply_history.ref_id.equals(reply._id));
         });
 
-        it("should return 404, when reply does not exist", () =>
+        it("should return 404, when reply_id is not valid", () =>
             request(app)
                 .put(`/replies/a_fake_reply_id`)
+                .send({
+                    access_token: "fakeaccesstoken",
+                    content: "哥是改過的留言",
+                })
+                .expect(404));
+
+        it("should return 404, when reply does not exist", () =>
+            request(app)
+                .put(`/replies/${new ObjectId()}`)
                 .send({
                     access_token: "fakeaccesstoken",
                     content: "哥是改過的留言",
