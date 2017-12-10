@@ -281,6 +281,22 @@ class ReplyModel {
             .limit(limit)
             .toArray();
     }
+
+    /**
+     * 透過 _id 來取得留言
+     * @param {ObjectId} _id - reply_id
+     * @param {object} opt - mongodb find field filter
+     * @returns {Promise}
+     *  - resolved : Reply
+     *  - reject : ObjectNotExistError/Default Error
+     */
+    async findOneOrFail(_id, opt = {}) {
+        const reply = await this.collection.findOne({ _id }, opt);
+        if (reply) {
+            return reply;
+        }
+        throw new ObjectNotExistError("該文章不存在");
+    }
 }
 
 module.exports = ReplyModel;

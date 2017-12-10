@@ -11,6 +11,7 @@ const ReplyModel = require("../../models/reply_model");
 const ReplyHistoryModel = require("../../models/reply_history_model");
 const { ensureToObjectId } = require("../../models/index");
 const { replyToHistoryMap } = require("../../models/model_maps");
+const replyPolicy = require("../../policies/reply_policy");
 
 const router = express.Router();
 
@@ -58,6 +59,18 @@ router.patch("/:reply_id", [
     }),
 ]);
 
+function validatePutInput(body) {
+    const MAX_CONTENT_SIZE = 1000;
+    const { content } = body;
+
+    if (!requiredNonEmptyString(content)) {
+        throw new HttpError("留言內容必填！", 422);
+    }
+    if (!stringRequireLength(content, 1, MAX_CONTENT_SIZE)) {
+        throw new HttpError("留言內容請少於 1000 個字元", 422);
+    }
+}
+
 /**
  * @api {put} /replies/:id 更新留言
  * @apiParam {String="0 < length <= 1000 "} content 更新留言內容
@@ -69,27 +82,21 @@ router.patch("/:reply_id", [
 router.put("/:reply_id", [
     passport.authenticate("bearer", { session: false }),
     wrap(async (req, res) => {
-        const reply_id_str = req.params.reply_id;
-        const content = req.body.content;
-        const user = req.user;
-        const MAX_CONTENT_SIZE = 1000;
-        const reply_id = ensureToObjectId(reply_id_str);
+        const reply_id = ensureToObjectId(req.params.reply_id);
 
-        if (!requiredNonEmptyString(content)) {
-            throw new HttpError("留言內容必填！", 422);
-        }
-        if (!stringRequireLength(content, 1, MAX_CONTENT_SIZE)) {
-            throw new HttpError("留言內容請少於 1000 個字元", 422);
-        }
+        validatePutInput(req.body);
 
         const reply_model = new ReplyModel(req.db);
         const reply_history_model = new ReplyHistoryModel(req.db);
 
-        const old_reply = await reply_model.getReplyById(reply_id_str);
+        const old_reply = await reply_model.findOneOrFail(reply_id);
 
-        if (!old_reply.author_id.equals(user._id)) {
-            throw new HttpError("user is unauthorized", 403);
+        // Apply policy
+        if (!replyPolicy.canUpdate(req.user, old_reply)) {
+            throw new HttpError("Forbidden", 403);
         }
+
+        const content = req.body.content;
 
         const reply_history = replyToHistoryMap(old_reply);
 
