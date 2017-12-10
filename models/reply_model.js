@@ -240,6 +240,20 @@ class ReplyModel {
         );
     }
 
+    updateReply(_id, content) {
+        return this.collection.findOneAndUpdate(
+            {
+                _id,
+            },
+            {
+                $set: {
+                    content,
+                    updated_at: new Date(),
+                },
+            }
+        );
+    }
+
     /**
      * @param   {object}  query - mognodb find query
      * @returns {Promise}
