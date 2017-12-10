@@ -1,4 +1,4 @@
-module.export.canUpdate = (user, reply) => {
+module.exports.canUpdate = (user, reply) => {
     if (reply.author_id.equals(user._id)) {
         return true;
     }
