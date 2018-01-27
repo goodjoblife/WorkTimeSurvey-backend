@@ -1,33 +1,32 @@
 function getDataNumOfUser(db, user) {
     return db
         .collection("users")
-        .find({ facebook_id: user.id })
-        .toArray()
-        .then(results => {
-            if (results.length === 0) {
-                return 0;
-            }
-            return results[0].time_and_salary_count || 0;
-        });
+        .findOne({ facebook_id: user.id })
+        .then(result => (result ? result.time_and_salary_count : 0));
 }
 
 function getRefNumOfUser(db, user) {
     return db
         .collection("recommendations")
-        .find({ user })
-        .toArray()
-        .then(results => {
-            if (results.length === 0) {
-                return 0;
-            }
-            return results[0].count || 0;
-        });
+        .findOne({ user })
+        .then(result => (result ? result.count : 0));
+}
+
+function getExperienceOfUser(db, user) {
+    return db
+        .collection("experiences")
+        .findOne({ "author._id": user.id })
+        .then(result => (result ? 1 : 0));
 }
 
 function resolveSearchPermission(db, user) {
     // get required values
     return (
-        Promise.all([getDataNumOfUser(db, user), getRefNumOfUser(db, user)])
+        Promise.all([
+            getDataNumOfUser(db, user),
+            getRefNumOfUser(db, user),
+            getExperienceOfUser(db, user),
+        ])
             // determine authorization
             .then(values => {
                 const sum = values.reduce((a, b) => a + b);

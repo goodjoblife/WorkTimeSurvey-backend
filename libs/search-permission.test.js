@@ -72,4 +72,23 @@ describe("Permission Library", () => {
             after(() => db.collection("recommendations").deleteMany({}));
         });
     });
+
+    describe("shared experiences", () => {
+        before(() =>
+            db
+                .collection("experiences")
+                .insert({ author: { type: "facebook", _id: "power.id" } })
+        );
+
+        it("search permission for user", async () => {
+            const user = {
+                id: "power.id",
+                type: "facebook",
+            };
+
+            assert.isTrue(await permission.resolveSearchPermission(db, user));
+        });
+
+        after(() => db.collection("experiences").deleteMany({}));
+    });
 });
