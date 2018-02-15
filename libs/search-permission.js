@@ -1,22 +1,35 @@
-function getDataNumOfUser(db, user) {
-    return db
+async function getDataNumOfUser(db, user) {
+    const result = await db
         .collection("users")
-        .findOne({ facebook_id: user.id })
-        .then(result => (result ? result.time_and_salary_count : 0));
+        .findOne({ facebook_id: user.id });
+
+    if (result) {
+        return result.time_and_salary_count || 0;
+    }
+    return 0;
 }
 
-function getRefNumOfUser(db, user) {
-    return db
-        .collection("recommendations")
-        .findOne({ user })
-        .then(result => (result ? result.count : 0));
+async function getRefNumOfUser(db, user) {
+    const result = await db.collection("recommendations").findOne({ user });
+
+    if (result) {
+        return result.count || 0;
+    }
+    return 0;
 }
 
-function getExperienceOfUser(db, user) {
-    return db
-        .collection("experiences")
-        .findOne({ "author._id": user.id })
-        .then(result => (result ? 1 : 0));
+async function getExperienceOfUser(db, legacy_user) {
+    const facebook_id = legacy_user.id;
+
+    const user = await db.collection("users").findOne({ facebook_id });
+
+    if (user) {
+        const result = await db
+            .collection("experiences")
+            .findOne({ author_id: user._id });
+        return result ? 1 : 0;
+    }
+    return 0;
 }
 
 function resolveSearchPermission(db, user) {

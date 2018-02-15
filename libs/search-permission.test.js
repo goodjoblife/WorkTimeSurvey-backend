@@ -3,6 +3,7 @@ chai.use(require("chai-as-promised"));
 
 const assert = chai.assert;
 const MongoClient = require("mongodb").MongoClient;
+const ObjectId = require("mongodb").ObjectId;
 const config = require("config");
 const permission = require("./search-permission");
 
@@ -74,11 +75,16 @@ describe("Permission Library", () => {
     });
 
     describe("shared experiences", () => {
-        before(() =>
-            db
+        before(async () => {
+            const user_id = ObjectId();
+            await db.collection("users").insertOne({
+                _id: user_id,
+                facebook_id: "power.id",
+            });
+            await db
                 .collection("experiences")
-                .insert({ author: { type: "facebook", _id: "power.id" } })
-        );
+                .insertOne({ author_id: user_id });
+        });
 
         it("search permission for user", async () => {
             const user = {
@@ -90,5 +96,6 @@ describe("Permission Library", () => {
         });
 
         after(() => db.collection("experiences").deleteMany({}));
+        after(() => db.collection("users").deleteMany({}));
     });
 });
