@@ -66,13 +66,13 @@ function validateCommonInputFields(data) {
         throw new HttpError("內容要寫喔！", 422);
     }
     data.sections.forEach(section => {
-        if (
-            !requiredNonEmptyString(section.subtitle) ||
-            !requiredNonEmptyString(section.content)
-        ) {
+        if (!requiredNonEmptyString(section.content)) {
             throw new HttpError("內容要寫喔！", 422);
         }
-        if (!stringRequireLength(section.subtitle, 1, 25)) {
+        if (
+            section.subtitle !== null &&
+            !stringRequireLength(section.subtitle, 1, 25)
+        ) {
             throw new HttpError("內容標題僅限 1~25 字！", 422);
         }
         if (!stringRequireLength(section.content, 1, 5000)) {
@@ -300,7 +300,7 @@ function validationInputFields(data) {
  * @apiParam {Number="整數, 1~5"} overall_rating 整體面試滿意度
  * @apiParam {String="0 < length <= 25 "} title 整篇經驗分享的標題
  * @apiParam {Object[]} sections 整篇內容
- * @apiParam {String="0 < length <= 25"} sections.subtitle 段落標題
+ * @apiParam {String="0 < length <= 25" || NULL} sections.subtitle 段落標題
  * @apiParam {String="0 < length <= 5000"} sections.content 段落內容
  * @apiParam {Object[]="Array maximum size: 30"} [interview_qas] 面試題目列表
  * @apiParam {String="0 < length <= 250"} interview_qas.question 面試題目 (interview_qas有的話，必填)

@@ -66,13 +66,13 @@ function validateCommonInputFields(data) {
         throw new HttpError("內容要寫喔！", 422);
     }
     data.sections.forEach(section => {
-        if (
-            !requiredNonEmptyString(section.subtitle) ||
-            !requiredNonEmptyString(section.content)
-        ) {
+        if (!requiredNonEmptyString(section.content)) {
             throw new HttpError("內容要寫喔！", 422);
         }
-        if (!stringRequireLength(section.subtitle, 1, 25)) {
+        if (
+            section.subtitle !== null &&
+            !stringRequireLength(section.subtitle, 1, 25)
+        ) {
             throw new HttpError("內容標題僅限 1~25 字！", 422);
         }
         if (!stringRequireLength(section.content, 1, 5000)) {
@@ -271,7 +271,7 @@ function pickupWorkExperience(input) {
  * @apiParam {String="yes","no"} [recommend_to_others] 是否推薦此工作
  * @apiParam {String="0 < length <= 25 "} title 整篇經驗分享的標題
  * @apiParam {Object[]} sections 整篇內容
- * @apiParam {String="0 < length <= 25"} sections.subtitle 段落標題
+ * @apiParam {String="0 < length <= 25" || NULL} sections.subtitle 段落標題
  * @apiParam {String="0 < length <= 5000"} sections.content 段落內容
  * @apiParam {String="published","hidden"} [status="published"] 該篇文章的狀態
  * @apiSuccess {Boolean} success 是否上傳成功

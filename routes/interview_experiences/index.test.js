@@ -276,6 +276,36 @@ describe("experiences 面試和工作經驗資訊", () => {
                     )
                     .expect(422));
 
+            it("subsection of title is undefined, expected return 422", () =>
+                request(app)
+                    .post("/interview_experiences")
+                    .send(
+                        generateInterviewExperiencePayload({
+                            sections: [
+                                {
+                                    subtitle: undefined,
+                                    content: "I am content",
+                                },
+                            ],
+                        })
+                    )
+                    .expect(422));
+
+            it("subsection of title is null, expected return 200", () =>
+                request(app)
+                    .post("/interview_experiences")
+                    .send(
+                        generateInterviewExperiencePayload({
+                            sections: [
+                                {
+                                    subtitle: null,
+                                    content: "I am content",
+                                },
+                            ],
+                        })
+                    )
+                    .expect(200));
+
             it("subtitle of word is more than 25 char, expected return 422", () => {
                 const words = new Array(40).join("慘");
                 return request(app)
