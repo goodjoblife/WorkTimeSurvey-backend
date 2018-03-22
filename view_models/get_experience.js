@@ -5,13 +5,14 @@ const isInterview = R.propEq("type", "interview");
 
 const isWork = R.propEq("type", "work");
 
+const isIntern = R.propEq("type", "intern");
+
 const commonSelector = R.pick([
     "_id",
     "type",
     "created_at",
     "company",
     "job_title",
-    "experience_in_year",
     "education",
     "region",
     "title",
@@ -28,6 +29,7 @@ const interviewSelector = R.pick([
     "salary",
     "interview_sensitive_questions",
     "interview_qas",
+    "experience_in_year",
 ]);
 
 const workSelector = R.pick([
@@ -35,6 +37,15 @@ const workSelector = R.pick([
     "week_work_time",
     "data_time",
     "recommend_to_others",
+    "experience_in_year",
+]);
+
+const internSelector = R.pick([
+    "salary",
+    "starting_year",
+    "period",
+    "week_work_time",
+    "overall_rating",
 ]);
 
 /**
@@ -42,7 +53,11 @@ const workSelector = R.pick([
  */
 const experienceView = combineSelector([
     commonSelector,
-    R.cond([[isInterview, interviewSelector], [isWork, workSelector]]),
+    R.cond([
+        [isInterview, interviewSelector],
+        [isWork, workSelector],
+        [isIntern, internSelector],
+    ]),
 ]);
 
 module.exports = {
