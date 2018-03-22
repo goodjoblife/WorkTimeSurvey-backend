@@ -166,7 +166,9 @@ router.get(
         const sort_field = req.query.sort || "created_at";
         const start = parseInt(req.query.start, 10) || 0;
         const limit = parseInt(req.query.limit, 10) || 20;
-        const type = req.query.type;
+        // 在插入實習經驗的時期，加上 interview,work as default value
+        // 避免前端的網頁出問題
+        const type = req.query.type || "interview,work";
 
         const query = _queryToDBQuery(search_query, search_by, type);
         _saveKeyWord(search_query, search_by, req.db);
