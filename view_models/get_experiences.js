@@ -7,6 +7,8 @@ const isInterview = R.propEq("type", "interview");
 
 const isWork = R.propEq("type", "work");
 
+const isIntern = R.propEq("type", "intern");
+
 const commonSelector = R.pick([
     "_id",
     "type",
@@ -34,13 +36,25 @@ const interviewSelector = R.pick(["region", "salary"]);
 
 const workSelector = R.pick(["region", "salary", "week_work_time"]);
 
+const internSelector = R.pick([
+    "region",
+    "salary",
+    "starting_year",
+    "period",
+    "week_work_time",
+]);
+
 /**
  * @param experience
  */
 const experienceView = combineSelector([
     commonSelector,
     previewSelector,
-    R.cond([[isInterview, interviewSelector], [isWork, workSelector]]),
+    R.cond([
+        [isInterview, interviewSelector],
+        [isWork, workSelector],
+        [isIntern, internSelector],
+    ]),
 ]);
 
 /**
