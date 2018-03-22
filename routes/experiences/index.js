@@ -16,6 +16,7 @@ const passport = require("passport");
 const { semiAuthentication } = require("../../middlewares/authentication");
 const wrap = require("../../libs/wrap");
 const { experiencesView } = require("../../view_models/get_experiences");
+const { experienceView } = require("../../view_models/get_experience");
 
 /**
  * paramter to DB query object
@@ -192,49 +193,6 @@ router.get(
     })
 );
 
-function _generateGetExperienceViewModel(experience, user, like) {
-    let result = {
-        _id: experience._id,
-        type: experience.type,
-        created_at: experience.created_at,
-        company: experience.company,
-        job_title: experience.job_title,
-        experience_in_year: experience.experience_in_year,
-        education: experience.education,
-        region: experience.region,
-        title: experience.title,
-        sections: experience.sections,
-        like_count: experience.like_count,
-        reply_count: experience.reply_count,
-        report_count: experience.report_count,
-    };
-
-    if (user) {
-        result.liked = !!like;
-    }
-
-    if (experience.type === "interview") {
-        result = Object.assign(result, {
-            interview_time: experience.interview_time,
-            interview_result: experience.interview_result,
-            overall_rating: experience.overall_rating,
-            salary: experience.salary,
-            interview_sensitive_questions:
-                experience.interview_sensitive_questions,
-            interview_qas: experience.interview_qas,
-        });
-    } else if (experience.type === "work") {
-        result = Object.assign(result, {
-            salary: experience.salary,
-            week_work_time: experience.week_work_time,
-            data_time: experience.data_time,
-            recommend_to_others: experience.recommend_to_others,
-        });
-    }
-
-    return result;
-}
-
 /* eslint-disable */
 /**
  * @api {get} /experiences/:id 顯示單篇面試或工作經驗 API
@@ -300,17 +258,17 @@ router.get("/:id", [
             throw new HttpError("the experience is hidden", 403);
         }
 
-        let result;
         if (user) {
             const like = await experience_like_model.getLikeByExperienceIdAndUser(
                 id_str,
                 user
             );
-            result = _generateGetExperienceViewModel(experience, user, like);
+            const result = experienceView(experience);
+            result.liked = !!like;
+            res.send(result);
         } else {
-            result = _generateGetExperienceViewModel(experience);
+            res.send(experienceView(experience));
         }
-        res.send(result);
     }),
 ]);
 
