@@ -1,48 +1,51 @@
-function generateGetExperiencesViewModel(experiences, total) {
-    const MAX_PREVIEW_SIZE = 160;
+const R = require("ramda");
+const { combineSelector } = require("./helper");
 
-    const view_experiences = experiences.map(experience => {
-        let experience_view_model = {
-            _id: experience._id,
-            type: experience.type,
-            created_at: experience.created_at,
-            company: experience.company,
-            job_title: experience.job_title,
-            title: experience.title,
-            preview: (() => {
-                if (experience.sections[0]) {
-                    return experience.sections[0].content.substring(
-                        0,
-                        MAX_PREVIEW_SIZE
-                    );
-                }
-                return null;
-            })(),
-            like_count: experience.like_count,
-            reply_count: experience.reply_count,
-            report_count: experience.report_count,
-            status: experience.status,
-        };
-        if (experience.type === "interview") {
-            experience_view_model = Object.assign(experience_view_model, {
-                region: experience.region,
-                salary: experience.salary,
-            });
-        } else if (experience.type === "work") {
-            experience_view_model = Object.assign(experience_view_model, {
-                region: experience.region,
-                salary: experience.salary,
-                week_work_time: experience.week_work_time,
-            });
-        }
-        return experience_view_model;
-    });
+const MAX_PREVIEW_SIZE = 160;
 
-    const result = {
-        total,
-        experiences: view_experiences,
+const isInterview = R.propEq("type", "interview");
+
+const isWork = R.propEq("type", "work");
+
+const commonSelector = R.pick([
+    "_id",
+    "type",
+    "created_at",
+    "company",
+    "job_title",
+    "title",
+    "like_count",
+    "reply_count",
+    "report_count",
+    "status",
+]);
+
+const previewSelector = experience => {
+    const section = R.head(experience.sections);
+    if (!section) {
+        return { preview: null };
+    }
+    return {
+        preview: section.content.substring(0, MAX_PREVIEW_SIZE),
     };
+};
 
-    return result;
-}
-module.exports = generateGetExperiencesViewModel;
+const interviewSelector = R.pick(["region", "salary"]);
+
+const workSelector = R.pick(["region", "salary", "week_work_time"]);
+
+/**
+ * @param experience
+ */
+const experienceView = combineSelector([
+    commonSelector,
+    previewSelector,
+    R.cond([[isInterview, interviewSelector], [isWork, workSelector]]),
+]);
+
+/**
+ * @param experiences
+ */
+const experiencesView = R.map(experienceView);
+
+module.exports.experiencesView = experiencesView;

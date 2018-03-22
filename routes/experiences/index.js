@@ -1,4 +1,5 @@
 const express = require("express");
+const R = require("ramda");
 
 const router = express.Router();
 const HttpError = require("../../libs/errors").HttpError;
@@ -14,10 +15,10 @@ const {
 const passport = require("passport");
 const { semiAuthentication } = require("../../middlewares/authentication");
 const wrap = require("../../libs/wrap");
-const generateGetExperiencesViewModel = require("../../view_models/get_experiences");
+const { experiencesView } = require("../../view_models/get_experiences");
 
 /**
- * _queryToDBQuery
+ * paramter to DB query object
  *
  * @param {string} search_query - search text
  * @param {string} search_by - "company" / "job_title"
@@ -25,16 +26,13 @@ const generateGetExperiencesViewModel = require("../../view_models/get_experienc
  * @returns {object} - mongodb find object
  */
 function _queryToDBQuery(search_query, search_by, type) {
-    const query = {};
-    query.status = "published";
-
-    if (!((search_by && search_query) || type)) {
-        return query;
-    }
+    const query = {
+        status: "published",
+    };
 
     if (search_by === "job_title") {
         query.job_title = new RegExp(escapeRegExp(search_query.toUpperCase()));
-    } else if (search_query) {
+    } else if (search_by === "company") {
         query.$or = [
             {
                 "company.name": new RegExp(
@@ -45,6 +43,8 @@ function _queryToDBQuery(search_query, search_by, type) {
                 "company.id": search_query,
             },
         ];
+    } else {
+        // not search, just list
     }
 
     if (type) {
@@ -56,7 +56,10 @@ function _queryToDBQuery(search_query, search_by, type) {
                 $in: types,
             };
         }
+    } else {
+        // all types is returned;
     }
+
     return query;
 }
 
@@ -77,6 +80,44 @@ function _saveKeyWord(query, type, db) {
 
     const keyword_model = new (_keyWordFactory(type))(db);
     return keyword_model.createKeyword(query);
+}
+
+function validateGetExperiencesInput(req) {
+    const {
+        // optional
+        search_query,
+        search_by,
+        sort,
+        start,
+        limit,
+    } = req.query;
+
+    if (search_query) {
+        if (!search_by) {
+            throw new HttpError("search_by 不能為空", 422);
+        }
+        if (!shouldIn(search_by, ["company", "job_title"])) {
+            throw new HttpError("search_by 格式錯誤", 422);
+        }
+    }
+
+    if (sort) {
+        if (!shouldIn(sort, ["created_at", "popularity"])) {
+            throw new HttpError("sort 格式錯誤", 422);
+        }
+    }
+
+    if (start) {
+        if (!requiredNumberGreaterThanOrEqualTo(parseInt(start, 10), 0)) {
+            throw new HttpError("start 格式錯誤", 422);
+        }
+    }
+
+    if (limit) {
+        if (!requiredNumberInRange(parseInt(limit), 1, 100)) {
+            throw new HttpError("limit 格式錯誤", 422);
+        }
+    }
 }
 
 /* eslint-disable */
@@ -117,33 +158,14 @@ function _saveKeyWord(query, type, db) {
 router.get(
     "/",
     wrap(async (req, res) => {
+        validateGetExperiencesInput(req);
+
         const search_query = req.query.search_query;
         const search_by = req.query.search_by;
         const sort_field = req.query.sort || "created_at";
         const start = parseInt(req.query.start, 10) || 0;
-        const limit = Number(req.query.limit || 20);
+        const limit = parseInt(req.query.limit, 10) || 20;
         const type = req.query.type;
-
-        if (search_query) {
-            if (!search_by) {
-                throw new HttpError("search_by 不能為空", 422);
-            }
-            if (!shouldIn(search_by, ["company", "job_title"])) {
-                throw new HttpError("search_by 格式錯誤", 422);
-            }
-        }
-
-        if (!shouldIn(sort_field, ["created_at", "popularity"])) {
-            throw new HttpError("sort_by 格式錯誤", 422);
-        }
-
-        if (!requiredNumberGreaterThanOrEqualTo(start, 0)) {
-            throw new HttpError("start 格式錯誤", 422);
-        }
-
-        if (!requiredNumberInRange(limit, 1, 100)) {
-            throw new HttpError("limit 格式錯誤", 422);
-        }
 
         const query = _queryToDBQuery(search_query, search_by, type);
         _saveKeyWord(search_query, search_by, req.db);
@@ -163,7 +185,10 @@ router.get(
             limit
         );
 
-        res.send(generateGetExperiencesViewModel(experiences, total));
+        res.send({
+            experiences: experiencesView(experiences),
+            total,
+        });
     })
 );
 
@@ -416,12 +441,12 @@ router.get(
                 ? limit
                 : shuffled_experiences.length;
 
-        res.send(
-            generateGetExperiencesViewModel(
-                shuffled_experiences.slice(0, length),
-                length
-            )
-        );
+        const maxLengthView = R.compose(experiencesView, R.take(length));
+
+        res.send({
+            experiences: maxLengthView(shuffled_experiences),
+            total: length,
+        });
     })
 );
 

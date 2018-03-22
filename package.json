@@ -34,6 +34,7 @@
     "morgan": "^1.7.0",
     "passport": "^0.4.0",
     "passport-http-bearer": "^1.0.1",
+    "ramda": "^0.25.0",
     "redis": "^2.6.3",
     "request": "^2.72.0",
     "winston": "^2.3.1",
