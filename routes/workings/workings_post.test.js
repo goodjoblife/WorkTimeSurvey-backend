@@ -475,6 +475,77 @@ describe("Workings 工時資訊", () => {
                         )
                         .expect(422));
             }
+
+            it("extra_info should be array", () =>
+                request(app)
+                    .post("/workings")
+                    .send(
+                        generateWorkingTimeRelatedPayload({
+                            extra_info: "ABC",
+                        })
+                    )
+                    .expect(422));
+
+            it("extra_info should have correct data structure", () =>
+                request(app)
+                    .post("/workings")
+                    .send(
+                        generateWorkingTimeRelatedPayload({
+                            extra_info: ["A", "B"],
+                        })
+                    )
+                    .expect(422));
+
+            it("extra_info should be fine", () =>
+                request(app)
+                    .post("/workings")
+                    .send(
+                        generateWorkingTimeRelatedPayload({
+                            extra_info: [
+                                { key: "mail", value: "nice@goodjob.com" },
+                            ],
+                        })
+                    )
+                    .expect(200)
+                    .expect(res => {
+                        assert.deepEqual(res.body.working.extra_info, [
+                            { key: "mail", value: "nice@goodjob.com" },
+                        ]);
+                    }));
+
+            it("will get campaign_name", () =>
+                request(app)
+                    .post("/workings")
+                    .send(
+                        generateWorkingTimeRelatedPayload({
+                            campaign_name: "engineer",
+                        })
+                    )
+                    .expect(200)
+                    .expect(res => {
+                        assert.propertyVal(
+                            res.body.working,
+                            "campaign_name",
+                            "engineer"
+                        );
+                    }));
+
+            it("will get about_this_job", () =>
+                request(app)
+                    .post("/workings")
+                    .send(
+                        generateWorkingTimeRelatedPayload({
+                            about_this_job: "I like my job",
+                        })
+                    )
+                    .expect(200)
+                    .expect(res => {
+                        assert.propertyVal(
+                            res.body.working,
+                            "about_this_job",
+                            "I like my job"
+                        );
+                    }));
         });
 
         describe("WorkingTime Validation Part", () => {

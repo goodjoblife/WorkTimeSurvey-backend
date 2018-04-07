@@ -61,11 +61,20 @@ function collectData(req, res, next) {
         "has_compensatory_dayoff",
         // salary data
         "experience_in_year",
+        // issue: https://github.com/goodjoblife/WorkTimeSurvey-backend/issues/476
+        "campaign_name",
+        "about_this_job",
     ].forEach((field, i) => {
         if (checkBodyField(req, field)) {
             working[field] = req.body[field];
         }
     });
+
+    // FIXME
+    if (req.body.extra_info) {
+        working.extra_info = req.body.extra_info;
+    }
+
     if (checkBodyField(req, "company_id")) {
         working.company.id = req.body.company_id;
     }
@@ -190,6 +199,20 @@ function validateCommonData(req) {
     if (data.gender) {
         if (["male", "female", "other"].indexOf(data.gender) === -1) {
             throw new HttpError("若性別有填寫，需為男/女/其他", 422);
+        }
+    }
+
+    // issue: https://github.com/goodjoblife/WorkTimeSurvey-backend/issues/476
+    if (data.extra_info) {
+        if (!Array.isArray(data.extra_info)) {
+            throw new HttpError("extra_info should be Array", 422);
+        }
+        if (
+            !data.extra_info.every(
+                e => typeof e.key === "string" && typeof e.value === "string"
+            )
+        ) {
+            throw new HttpError("extra_info data structure is wrong", 422);
         }
     }
 }
