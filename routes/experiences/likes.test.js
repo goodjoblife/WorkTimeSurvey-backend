@@ -450,7 +450,6 @@ describe("Experience Likes Test", () => {
             db
                 .collection("popular_experience_logs")
                 .drop()
-                .then(() => create_capped_collection(db))
-        );
+                .then(() => create_capped_collection(db)));
     });
 });

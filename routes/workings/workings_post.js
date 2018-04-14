@@ -181,7 +181,10 @@ function validateCommonData(req) {
         "dispatched-labor",
     ];
     if (employment_types.indexOf(data.employment_type) === -1) {
-        throw new HttpError("職務型態需為全職/兼職/實習/臨時工/約聘雇/派遣", 422);
+        throw new HttpError(
+            "職務型態需為全職/兼職/實習/臨時工/約聘雇/派遣",
+            422
+        );
     }
 
     if (data.gender) {

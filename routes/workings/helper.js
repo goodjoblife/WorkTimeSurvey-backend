@@ -51,7 +51,10 @@ function checkAndUpdateQuota(db, author) {
         .then(result => {
             if (result.value.time_and_salary_count > quota) {
                 return decrementWithoutError().then(() => {
-                    throw new HttpError(`您已經上傳${quota}次，已達最高上限`, 429);
+                    throw new HttpError(
+                        `您已經上傳${quota}次，已達最高上限`,
+                        429
+                    );
                 });
             }
 

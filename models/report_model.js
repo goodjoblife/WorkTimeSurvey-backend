@@ -116,7 +116,9 @@ class ReportModel {
         } catch (err) {
             if (err.code === 11000) {
                 // E11000 duplicate key error
-                throw new DuplicateKeyError(`該篇${NAME_MAP[namespace]}已經被您檢舉過`);
+                throw new DuplicateKeyError(
+                    `該篇${NAME_MAP[namespace]}已經被您檢舉過`
+                );
             } else {
                 throw err;
             }

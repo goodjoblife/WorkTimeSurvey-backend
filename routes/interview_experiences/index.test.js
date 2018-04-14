@@ -312,7 +312,9 @@ describe("experiences 面試和工作經驗資訊", () => {
                     .post("/interview_experiences")
                     .send(
                         generateInterviewExperiencePayload({
-                            sections: [{ subtitle: words, content: "喝喝面試官" }],
+                            sections: [
+                                { subtitle: words, content: "喝喝面試官" },
+                            ],
                         })
                     )
                     .expect(422);

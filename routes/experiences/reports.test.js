@@ -118,7 +118,10 @@ describe("Reports Test", () => {
                     })
                     .then(report => {
                         assert.isNotNull(report);
-                        assert.equal(report.reason_category, "我認為這篇文章內容不實");
+                        assert.equal(
+                            report.reason_category,
+                            "我認為這篇文章內容不實"
+                        );
                         assert.equal(report.reason, "This is not true");
                         assert.property(report, "created_at");
                         assert.deepEqual(report.user_id, fake_user._id);

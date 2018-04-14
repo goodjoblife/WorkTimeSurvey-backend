@@ -203,8 +203,7 @@ describe("Replies Test", () => {
             db
                 .collection("popular_experience_logs")
                 .drop()
-                .then(() => create_capped_collection(db))
-        );
+                .then(() => create_capped_collection(db)));
     });
 
     describe("GET /experiences/:id/replies", () => {
@@ -305,7 +304,11 @@ describe("Replies Test", () => {
                     assert.deepProperty(res.body, "replies.0.report_count");
                     assert.deepProperty(res.body, "replies.0.created_at");
                     assert.deepProperty(res.body, "replies.0.floor");
-                    assert.lengthOf(res.body.replies, 20, "不給 limit 的最大回傳數量");
+                    assert.lengthOf(
+                        res.body.replies,
+                        20,
+                        "不給 limit 的最大回傳數量"
+                    );
                 }));
 
         it("get experiences replies data and expect 200 replies ", () =>

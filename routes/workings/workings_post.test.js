@@ -304,8 +304,9 @@ describe("Workings 工時資訊", () => {
                             .send(
                                 generateWorkingTimeRelatedPayload({
                                     is_currently_employed: "no",
-                                    job_ending_time_year: (new Date().getFullYear() -
-                                        10).toString(),
+                                    job_ending_time_year: (
+                                        new Date().getFullYear() - 10
+                                    ).toString(),
                                     job_ending_time_month: "1",
                                 })
                             )
@@ -322,8 +323,9 @@ describe("Workings 工時資訊", () => {
                                     job_ending_time_year: now
                                         .getFullYear()
                                         .toString(),
-                                    job_ending_time_month: (now.getMonth() +
-                                        1).toString(),
+                                    job_ending_time_month: (
+                                        now.getMonth() + 1
+                                    ).toString(),
                                 })
                             )
                             .expect(200);
@@ -341,8 +343,9 @@ describe("Workings 工時資訊", () => {
                                     job_ending_time_year: nextMonth
                                         .getFullYear()
                                         .toString(),
-                                    job_ending_time_month: (nextMonth.getMonth() +
-                                        1).toString(),
+                                    job_ending_time_month: (
+                                        nextMonth.getMonth() + 1
+                                    ).toString(),
                                 })
                             )
                             .expect(422);
