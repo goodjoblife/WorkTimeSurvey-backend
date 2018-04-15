@@ -248,6 +248,16 @@ class ExperienceModel {
             }
         );
     }
+    updateExperienceById(_id, new_experience) {
+        return this.collection.findOneAndUpdate(
+            {
+                _id,
+            },
+            {
+                $set: new_experience,
+            }
+        );
+    }
 }
 
 module.exports = ExperienceModel;

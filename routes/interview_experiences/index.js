@@ -4,6 +4,7 @@ const router = express.Router();
 const HttpError = require("../../libs/errors").HttpError;
 const winston = require("winston");
 const ExperienceModel = require("../../models/experience_model");
+const ExperienceHistoryModel = require("../../models/experience_history_model");
 const helper = require("../company_helper");
 const passport = require("passport");
 const {
@@ -13,6 +14,9 @@ const {
     shouldIn,
     stringRequireLength,
 } = require("../../libs/validation");
+const wrap = require("../../libs/wrap");
+const { ensureToObjectId } = require("../../models/index");
+const { experienceToHistoryMap } = require("../../models/model_maps");
 
 function validateCommonInputFields(data) {
     if (!requiredNonEmptyString(data.company_query)) {
@@ -375,6 +379,79 @@ router.post("/", [
                 next(err);
             });
     },
+]);
+
+/**
+ * @api {put} /interview_experiences 修改面試經驗 API
+ * @apiGroup Interview_Experiences
+ * @apiParam {String} company_query 公司名稱 或 統一編號
+ * @apiParam {String} [company_id] 公司統編 (如果自動完成有成功，會拿的到 company_id )
+ * @apiParam {String=
+    "彰化縣","嘉義市","嘉義縣","新竹市","新竹縣",
+    "花蓮縣","高雄市","基隆市","金門縣","連江縣",
+    "苗栗縣","南投縣","新北市","澎湖縣","屏東縣",
+    "臺中市","臺南市","臺北市","臺東縣","桃園市",
+    "宜蘭縣","雲林縣" } region 面試地區
+ * @apiParam {String} job_title 應徵職稱
+ * @apiParam {Number="整數, 0 <= N <= 50"} [experience_in_year] 相關職務工作經驗
+ * @apiParam {String="大學","碩士","博士","高職","五專","二專","二技","高中","國中","國小"} [education] 最高學歷
+ * @apiParam {Object} interview_time 面試時間
+ * @apiParam {Number="整數, N >= current_year - 10"} interview_time.year 面試時間的年份
+ * @apiParam {Number="1,2,3...12"} interview_time.month 面試時間的月份
+ * @apiParam {String="錄取,未錄取,沒通知,或其他 0 < length <= 10 的字串"} interview_result 面試結果
+ * @apiParam {Object} [salary] 面談薪資
+ * @apiParam {String="year","month","day","hour"} salary.type 面談薪資種類 (若有上傳面談薪資欄位，本欄必填)
+ * @apiParam {Number="整數, >= 0"} salary.amount 面談薪資金額 (若有上傳面談薪資欄位，本欄必填)
+ * @apiParam {Number="整數, 1~5"} overall_rating 整體面試滿意度
+ * @apiParam {String="0 < length <= 25 "} title 整篇經驗分享的標題
+ * @apiParam {Object[]} sections 整篇內容
+ * @apiParam {String="0 < length <= 25"} sections.subtitle 段落標題
+ * @apiParam {String="0 < length <= 5000"} sections.content 段落內容
+ * @apiParam {Object[]="Array maximum size: 30"} [interview_qas] 面試題目列表
+ * @apiParam {String="0 < length <= 250"} interview_qas.question 面試題目 (interview_qas有的話，必填)
+ * @apiParam {String="0 < length <= 5000"} [interview_qas.answer] 面試題目的回答 (interview_qas有的話，選填)
+ * @apiParam {String[]=
+    "曾詢問家庭狀況","曾詢問婚姻狀況","生育計畫",
+    "曾要求繳交身分證","曾要求繳交保證金","曾詢問宗教信仰",
+    "或其他 0 < length <= 20 的字串"} [interview_sensitive_questions] 面試中提及的特別問題陣列(較敏感/可能違法)
+ * @apiParam {String="published","hidden"} [status="published"] 該篇文章的狀態
+ * @apiSuccess {Boolean} success 是否修改成功
+ */
+router.put("/:id", [
+    passport.authenticate("bearer", { session: false }),
+    wrap(async (req, res, next) => {
+        const id_str = req.params.id;
+        const user = req.user;
+
+        validationInputFields(req.body);
+
+        const experience = {};
+        const experience_model = new ExperienceModel(req.db);
+        const experience_history_model = new ExperienceHistoryModel(req.db);
+        const id = ensureToObjectId(id_str);
+        const old_experience = await experience_model.findOneOrFail(id);
+
+        if (!old_experience.author_id.equals(user._id)) {
+            throw new HttpError("user is unauthorized", 403);
+        }
+
+        const experience_history = experienceToHistoryMap(old_experience);
+        await experience_history_model.createExperienceHistory(
+            experience_history
+        );
+
+        Object.assign(experience, pickupInterviewExperience(req.body));
+        experience.updated_at = new Date();
+
+        const result = await experience_model.updateExperienceById(
+            id,
+            experience
+        );
+
+        res.send({
+            success: result.ok === 1,
+        });
+    }),
 ]);
 
 module.exports = router;
