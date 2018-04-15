@@ -91,12 +91,6 @@ const hasSalaryFields = body => {
     return false;
 };
 
-const collectWorking = combineSelector([
-    commonFieldsSelector,
-    R.ifElse(hasWorkingTimeFields, workingTimeFieldsSeletor, R.always({})),
-    R.ifElse(hasSalaryFields, salaryFeildsSelector, R.always({})),
-]);
-
 function validateIsCurrentlyEmployed(body) {
     if (!requiredNonEmptyString(body.is_currently_employed)) {
         throw new HttpError("是否在職必填", 422);
@@ -323,20 +317,46 @@ function validateRequestBody(body) {
     }
 }
 
-async function normalizeData(working, body, mongodb) {
-    if (working.is_currently_employed === "no") {
-        working.data_time = {
-            year: working.job_ending_time.year,
-            month: working.job_ending_time.month,
-        };
-    } else if (working.is_currently_employed === "yes") {
-        const date = new Date(working.created_at);
-        working.data_time = {
-            year: date.getFullYear(),
-            month: date.getMonth() + 1,
-        };
+const collectBaseWorking = combineSelector([
+    commonFieldsSelector,
+    R.ifElse(hasWorkingTimeFields, workingTimeFieldsSeletor, R.always({})),
+    R.ifElse(hasSalaryFields, salaryFeildsSelector, R.always({})),
+]);
+
+const collectAuthor = req => {
+    const author = {};
+    if (req.body.email) {
+        author.email = req.body.email;
+    }
+    if (req.user.facebook) {
+        author.id = req.user.facebook.id;
+        author.name = req.user.facebook.name;
+        author.type = "facebook";
     }
 
+    return author;
+};
+
+const collectDataTime = (working, created_at) => {
+    const { is_currently_employed } = working;
+    if (is_currently_employed === "no") {
+        const {
+            job_ending_time: { year, month },
+        } = working;
+        return (data_time = {
+            year,
+            month,
+        });
+    } else if (is_currently_employed === "yes") {
+        const date = new Date(created_at);
+        return (data_time = {
+            year: date.getFullYear(),
+            month: date.getMonth() + 1,
+        });
+    }
+};
+
+async function collectCompany(body, mongodb) {
     const company_query = body.company;
     const company_id = body.company_id;
     /*
@@ -351,86 +371,81 @@ async function normalizeData(working, body, mongodb) {
         company_id,
         company_query
     );
-    working.company = company;
-    return working;
+    return company;
 }
+
+const collectEstimatedHourlyWage = base_working => {
+    if (base_working.salary) {
+        return helper.calculateEstimatedHourlyWage(base_working);
+    }
+    return;
+};
 
 const postHandler = wrap(async (req, res) => {
     validateRequestBody(req.body);
 
-    let working = collectWorking(req.body);
+    const base_working = collectBaseWorking(req.body);
+    const created_at = new Date();
+    const author = collectAuthor(req);
+    const data_time = collectDataTime(base_working, created_at);
+    const company = await collectCompany(req.body, req.db);
+    const estimated_hourly_wage = collectEstimatedHourlyWage(base_working);
 
-    working.created_at = new Date();
+    const working = {
+        ...base_working,
+        created_at,
+        author,
+        data_time,
+        company,
+        // 如果是 undefined，不要有欄位
+        ...(estimated_hourly_wage ? { estimated_hourly_wage } : {}),
+    };
 
-    working.author = {};
-    if (req.body.email) {
-        working.author.email = req.body.email;
-    }
-    if (req.user.facebook) {
-        working.author.id = req.user.facebook.id;
-        working.author.name = req.user.facebook.name;
-        working.author.type = "facebook";
-    }
-
-    working = await normalizeData(working, req.body, req.db);
-
-    if (working.salary) {
-        const estimated_hourly_wage = helper.calculateEstimatedHourlyWage(
-            working
-        );
-        if (typeof estimated_hourly_wage !== "undefined") {
-            working.estimated_hourly_wage = estimated_hourly_wage;
-        }
-    }
-
-    const response_data = { working };
     const collection = req.db.collection("workings");
 
-    try {
-        let rec_user = null;
-        // 這邊嘗試從recommendation_string去取得推薦使用者的資訊
-        if (req.body.recommendation_string) {
-            try {
-                const result = await recommendation.getUserByRecommendationString(
-                    req.db,
-                    req.body.recommendation_string
-                );
+    let rec_user = null;
+    // 這邊嘗試從recommendation_string去取得推薦使用者的資訊
+    if (req.body.recommendation_string) {
+        try {
+            const result = await recommendation.getUserByRecommendationString(
+                req.db,
+                req.body.recommendation_string
+            );
 
-                if (result !== null) {
-                    rec_user = result;
-                }
-            } catch (err) {
-                // if recommendation_string is valid
-                if (!(err instanceof ObjectIdError)) {
-                    throw err;
-                }
+            if (result !== null) {
+                rec_user = result;
+            }
+        } catch (err) {
+            // if recommendation_string is valid
+            if (!(err instanceof ObjectIdError)) {
+                throw err;
             }
         }
-        if (rec_user !== null) {
-            working.recommended_by = rec_user;
-            await req.db
-                .collection("recommendations")
-                .update({ user: rec_user }, { $inc: { count: 1 } });
-        } else if (req.body.recommendation_string) {
-            // 如果不是 user，依然把 recommendation_string 儲存起來
-            working.recommended_by = req.body.recommendation_string;
-        }
-
-        const queries_count = await helper.checkAndUpdateQuota(req.db, {
-            id: working.author.id,
-            type: working.author.type,
-        });
-        response_data.queries_count = queries_count;
-
-        await collection.insert(working);
-
-        // delete some sensitive information before sending response
-        delete response_data.working.recommended_by;
-
-        res.send(response_data);
-    } catch (err) {
-        throw err;
     }
+    if (rec_user !== null) {
+        working.recommended_by = rec_user;
+        await req.db
+            .collection("recommendations")
+            .update({ user: rec_user }, { $inc: { count: 1 } });
+    } else if (req.body.recommendation_string) {
+        // 如果不是 user，依然把 recommendation_string 儲存起來
+        working.recommended_by = req.body.recommendation_string;
+    }
+
+    const queries_count = await helper.checkAndUpdateQuota(req.db, {
+        id: author.id,
+        type: author.type,
+    });
+
+    await collection.insert(working);
+
+    // delete some sensitive information before sending response
+    delete working.recommended_by;
+
+    res.send({
+        working,
+        queries_count,
+    });
 });
 
 module.exports = postHandler;
