@@ -79,7 +79,6 @@ router.get(
  * @apiParam {String="0"} [page=0] 分頁號碼
  * @apiParam {String="0 < limit <= 50"} [limit=25] 單頁資料筆數
  * @apiSuccess {Number} total 總資料數
- * @apiSuccess {Number} page 目前在資料的第幾頁
  * @apiSuccess {Object[]} time_and_salary 薪時資料
  */
 /* eslint-enable */
@@ -154,6 +153,19 @@ router.get(
     })
 );
 
+/* eslint-disable */
+/**
+ * @api {get} /campaigns/:campaign_name 查詢 campaign_name 薪資與工時資料 API
+ * @apiGroup Workings
+ * @apiParam {String="created_at","week_work_time","estimated_hourly_wage"} [sorted_by="created_at"] 單筆資料排序的方式
+ * @apiParam {String="descending","ascending"} [order="descending"] 資料排序由大到小或由小到大。無資料者會被排到最下方
+ * @apiParam {String="0"} [page=0] 分頁號碼
+ * @apiParam {String="0 < limit <= 50"} [limit=25] 單頁資料筆數
+ * @apiParam {String[]} [job_titles] 要搜尋的職稱
+ * @apiSuccess {Number} total 總資料數
+ * @apiSuccess {Object[]} time_and_salary 薪時資料
+ */
+/* eslint-enable */
 router.get("/campaigns/:campaign_name", middleware.sort_by);
 router.get("/campaigns/:campaign_name", middleware.pagination);
 router.get(
@@ -174,13 +186,18 @@ router.get(
             about_this_job: 1,
         };
 
-        const page = req.pagination.page;
-        const limit = req.pagination.limit;
+        const { page, limit } = req.pagination;
+        let job_titles = req.query.job_titles;
         const campaign_name = req.params.campaign_name;
-        const job_titles = req.query.job_titles;
+
+        if (job_titles && !job_titles.every(e => typeof e === "string")) {
+            next(new HttpError("job_titles need to be array of string", 422));
+            return;
+        }
 
         let base_query = { status: "published", campaign_name };
         if (job_titles) {
+            job_titles = job_titles.map(e => e.toUpperCase());
             base_query = {
                 $or: [base_query, { job_title: { $in: job_titles } }],
             };

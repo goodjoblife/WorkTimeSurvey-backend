@@ -1827,7 +1827,7 @@ describe("Workings 工時資訊", () => {
                 {
                     company: { name: "companyA" },
                     created_at: new Date("2017-11-13T00:00:00.000Z"),
-                    job_title: "engineer1",
+                    job_title: "ENGINEER1",
                     week_work_time: 40,
                     overtime_frequency: 1,
                     salary: { amount: 22000, type: "month" },
@@ -1839,7 +1839,7 @@ describe("Workings 工時資訊", () => {
                 {
                     company: { name: "companyB" },
                     created_at: new Date("2017-11-10T00:00:00.000Z"),
-                    job_title: "engineer2",
+                    job_title: "ENGINEER2",
                     week_work_time: 47.5,
                     overtime_frequency: 3,
                     data_time: { year: 2016, month: 10 },
@@ -1848,7 +1848,7 @@ describe("Workings 工時資訊", () => {
                 {
                     company: { name: "companyC" },
                     created_at: new Date("2017-11-14T00:00:00.000Z"),
-                    job_title: "engineer3",
+                    job_title: "ENGINEER3",
                     week_work_time: 50,
                     overtime_frequency: 1,
                     salary: { amount: 22000, type: "month" },
@@ -1904,7 +1904,7 @@ describe("Workings 工時資訊", () => {
             assert.deepPropertyVal(
                 res.body,
                 "time_and_salary.2.job_title",
-                "engineer2"
+                "ENGINEER2"
             );
         });
 
