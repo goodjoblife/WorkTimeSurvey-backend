@@ -99,31 +99,105 @@ router.get(
             overtime_frequency: 1,
             salary: 1,
             estimated_hourly_wage: 1,
+            about_this_job: 1,
         };
 
         const page = req.pagination.page;
         const limit = req.pagination.limit;
-        let is_skip = false;
-        if (req.query.skip === "true") {
-            is_skip = true;
-        }
 
-        const data = {};
-        data.total = await collection.find({ status: "published" }).count();
+        const base_query = { status: "published" };
+
+        const data = {
+            total: await collection.find(base_query).count(),
+        };
 
         const defined_query = {
             [req.custom.sort_by]: { $exists: true },
-            status: "published",
+            ...base_query,
         };
         const undefined_query = {
             [req.custom.sort_by]: { $exists: false },
-            status: "published",
+            ...base_query,
         };
 
-        let skip = 0;
-        if (is_skip === true) {
-            skip = Math.floor(data.total * 0.01);
+        const skip =
+            req.query.skip === "true" ? Math.floor(data.total * 0.01) : 0;
+
+        const defined_results = await collection
+            .find(defined_query, opt)
+            .sort(req.custom.sort)
+            .skip(skip + limit * page)
+            .limit(limit)
+            .toArray();
+
+        if (defined_results.length < limit) {
+            const count_defined_num = await collection
+                .find(defined_query)
+                .count();
+
+            const undefined_results = await collection
+                .find(undefined_query, opt)
+                .skip(
+                    skip +
+                        limit * page +
+                        defined_results.length -
+                        count_defined_num
+                )
+                .limit(limit - defined_results.length)
+                .toArray();
+            data.time_and_salary = defined_results.concat(undefined_results);
+        } else {
+            data.time_and_salary = defined_results;
         }
+
+        res.send(data);
+    })
+);
+
+router.get("/campaigns/:campaign_name", middleware.sort_by);
+router.get("/campaigns/:campaign_name", middleware.pagination);
+router.get(
+    "/campaigns/:campaign_name",
+    wrap(async (req, res) => {
+        const collection = req.db.collection("workings");
+        const opt = {
+            company: 1,
+            sector: 1,
+            created_at: 1,
+            job_title: 1,
+            data_time: 1,
+            week_work_time: 1,
+            overtime_frequency: 1,
+            salary: 1,
+            estimated_hourly_wage: 1,
+            campaign_name: 1,
+            about_this_job: 1,
+        };
+
+        const page = req.pagination.page;
+        const limit = req.pagination.limit;
+        const campaign_name = req.params.campaign_name;
+        const job_titles = req.query.job_titles;
+
+        const base_query = { status: "published", campaign_name };
+        if (job_titles) {
+            base_query.job_title = { $in: job_titles };
+        }
+        const data = {
+            total: await collection.find(base_query).count(),
+        };
+
+        const defined_query = {
+            [req.custom.sort_by]: { $exists: true },
+            ...base_query,
+        };
+        const undefined_query = {
+            [req.custom.sort_by]: { $exists: false },
+            ...base_query,
+        };
+
+        const skip =
+            req.query.skip === "true" ? Math.floor(data.total * 0.01) : 0;
 
         const defined_results = await collection
             .find(defined_query, opt)
