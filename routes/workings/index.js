@@ -179,9 +179,11 @@ router.get(
         const campaign_name = req.params.campaign_name;
         const job_titles = req.query.job_titles;
 
-        const base_query = { status: "published", campaign_name };
+        let base_query = { status: "published", campaign_name };
         if (job_titles) {
-            base_query.job_title = { $in: job_titles };
+            base_query = {
+                $or: [base_query, { job_title: { $in: job_titles } }],
+            };
         }
         const data = {
             total: await collection.find(base_query).count(),

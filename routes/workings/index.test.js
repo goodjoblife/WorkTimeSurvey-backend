@@ -1820,4 +1820,94 @@ describe("Workings 工時資訊", () => {
             sandbox.restore();
         });
     });
+
+    describe("GET /workings/campaigns/:campaign_name", () => {
+        before("Seeding some workings", () =>
+            db.collection("workings").insertMany([
+                {
+                    company: { name: "companyA" },
+                    created_at: new Date("2017-11-13T00:00:00.000Z"),
+                    job_title: "engineer1",
+                    week_work_time: 40,
+                    overtime_frequency: 1,
+                    salary: { amount: 22000, type: "month" },
+                    estimated_hourly_wage: 100,
+                    data_time: { year: 2016, month: 10 },
+                    status: "published",
+                    campaign_name: "engineer",
+                },
+                {
+                    company: { name: "companyB" },
+                    created_at: new Date("2017-11-10T00:00:00.000Z"),
+                    job_title: "engineer2",
+                    week_work_time: 47.5,
+                    overtime_frequency: 3,
+                    data_time: { year: 2016, month: 10 },
+                    status: "published",
+                },
+                {
+                    company: { name: "companyC" },
+                    created_at: new Date("2017-11-14T00:00:00.000Z"),
+                    job_title: "engineer3",
+                    week_work_time: 50,
+                    overtime_frequency: 1,
+                    salary: { amount: 22000, type: "month" },
+                    estimated_hourly_wage: 120,
+                    data_time: { year: 2016, month: 10 },
+                    status: "published",
+                    campaign_name: "engineer",
+                },
+            ])
+        );
+
+        it("query with campaign_name", async () => {
+            const res = await request(app)
+                .get("/workings/campaigns/engineer")
+                .expect(200);
+            assert.propertyVal(res.body, "total", 2);
+            assert.property(res.body, "time_and_salary");
+            assert.lengthOf(res.body.time_and_salary, 2);
+            assert.deepPropertyVal(
+                res.body,
+                "time_and_salary.0.campaign_name",
+                "engineer"
+            );
+            assert.deepPropertyVal(
+                res.body,
+                "time_and_salary.0.estimated_hourly_wage",
+                120
+            );
+            assert.deepPropertyVal(
+                res.body,
+                "time_and_salary.1.estimated_hourly_wage",
+                100
+            );
+        });
+
+        it("query with job_titles", async () => {
+            const res = await request(app)
+                .get("/workings/campaigns/engineer?job_titles[]=engineer2")
+                .expect(200);
+            assert.propertyVal(res.body, "total", 3);
+            assert.property(res.body, "time_and_salary");
+            assert.lengthOf(res.body.time_and_salary, 3);
+            assert.deepPropertyVal(
+                res.body,
+                "time_and_salary.0.campaign_name",
+                "engineer"
+            );
+            assert.deepPropertyVal(
+                res.body,
+                "time_and_salary.0.estimated_hourly_wage",
+                120
+            );
+            assert.deepPropertyVal(
+                res.body,
+                "time_and_salary.2.job_title",
+                "engineer2"
+            );
+        });
+
+        after(() => db.collection("workings").deleteMany({}));
+    });
 });
