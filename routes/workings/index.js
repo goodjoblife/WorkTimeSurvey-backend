@@ -9,6 +9,12 @@ const wrap = require("../../libs/wrap");
 const { HttpError, ObjectNotExistError } = require("../../libs/errors");
 const companiesSearchHandler = require("./companiesSearchHandler");
 const jobsSearchHandler = require("./jobsSearchHandler");
+const {
+    validSortQuery,
+    pickupSortQuery,
+    validGroupSortQuery,
+    pickupGroupSortQuery,
+} = require("./helper");
 
 const router = express.Router();
 
@@ -21,10 +27,12 @@ const router = express.Router();
  * @apiSuccess {Object[]} time_and_salary 薪時資料
  */
 /* eslint-enable */
-router.get("/extreme", middleware.sort_by);
 router.get(
     "/extreme",
     wrap(async (req, res) => {
+        validSortQuery(req.query);
+        const { sort, sort_by } = pickupSortQuery(req.query);
+
         const collection = req.db.collection("workings");
         const opt = {
             company: 1,
@@ -44,11 +52,11 @@ router.get(
         const count = await collection.find(base_query).count();
 
         const defined_query = {
-            [req.custom.sort_by]: { $exists: true },
+            [sort_by]: { $exists: true },
             ...base_query,
         };
         const undefined_query = {
-            [req.custom.sort_by]: { $exists: false },
+            [sort_by]: { $exists: false },
             ...base_query,
         };
 
@@ -56,7 +64,7 @@ router.get(
 
         const defined_results = await collection
             .find(defined_query, opt)
-            .sort(req.custom.sort)
+            .sort(sort)
             .limit(skip)
             .toArray();
 
@@ -86,11 +94,13 @@ router.get(
  * @apiSuccess {Object[]} time_and_salary 薪時資料
  */
 /* eslint-enable */
-router.get("/", middleware.sort_by);
 router.get("/", middleware.pagination);
 router.get(
     "/",
     wrap(async (req, res) => {
+        validSortQuery(req.query);
+        const { sort, sort_by } = pickupSortQuery(req.query);
+
         const collection = req.db.collection("workings");
         const opt = {
             company: 1,
@@ -115,11 +125,11 @@ router.get(
         };
 
         const defined_query = {
-            [req.custom.sort_by]: { $exists: true },
+            [sort_by]: { $exists: true },
             ...base_query,
         };
         const undefined_query = {
-            [req.custom.sort_by]: { $exists: false },
+            [sort_by]: { $exists: false },
             ...base_query,
         };
 
@@ -128,7 +138,7 @@ router.get(
 
         const defined_results = await collection
             .find(defined_query, opt)
-            .sort(req.custom.sort)
+            .sort(sort)
             .skip(skip + limit * page)
             .limit(limit)
             .toArray();
@@ -170,11 +180,13 @@ router.get(
  * @apiSuccess {Object[]} time_and_salary 薪時資料
  */
 /* eslint-enable */
-router.get("/campaigns/:campaign_name", middleware.sort_by);
 router.get("/campaigns/:campaign_name", middleware.pagination);
 router.get(
     "/campaigns/:campaign_name",
     wrap(async (req, res) => {
+        validSortQuery(req.query);
+        const { sort, sort_by } = pickupSortQuery(req.query);
+
         const collection = req.db.collection("workings");
         const opt = {
             company: 1,
@@ -221,11 +233,11 @@ router.get(
         };
 
         const defined_query = {
-            [req.custom.sort_by]: { $exists: true },
+            [sort_by]: { $exists: true },
             ...base_query,
         };
         const undefined_query = {
-            [req.custom.sort_by]: { $exists: false },
+            [sort_by]: { $exists: false },
             ...base_query,
         };
 
@@ -234,7 +246,7 @@ router.get(
 
         const defined_results = await collection
             .find(defined_query, opt)
-            .sort(req.custom.sort)
+            .sort(sort)
             .skip(skip + limit * page)
             .limit(limit)
             .toArray();
@@ -279,11 +291,14 @@ router.post(
     wrap(post_helper.main)
 );
 
-router.use("/search_by/company/group_by/company", middleware.group_sort_by);
 router.get(
     "/search_by/company/group_by/company",
     wrap(async (req, res) => {
         // input parameter
+        validGroupSortQuery(req.query);
+        const { skip_sort, group_sort, group_sort_by } = pickupGroupSortQuery(
+            req.query
+        );
         const company = req.query.company;
         if (!company || company === "") {
             throw new HttpError("company is required", 422);
@@ -300,7 +315,7 @@ router.get(
                         status: "published",
                     },
                 },
-                { $sort: req.skip_sort_by },
+                { $sort: skip_sort },
                 { $skip: skip },
                 {
                     $match: {
@@ -511,11 +526,10 @@ router.get(
                     },
                 },
                 {
-                    $sort: req.group_sort_by,
+                    $sort: group_sort,
                 },
             ])
             .toArray();
-        const sort_field = req.query.group_sort_by || "week_work_time";
 
         if (results.length === 0) {
             res.send(results);
@@ -524,11 +538,11 @@ router.get(
 
         // move null data to the end of array
         if (
-            results[0].average[sort_field] === null &&
-            results[results.length - 1].average[sort_field] !== null
+            results[0].average[group_sort_by] === null &&
+            results[results.length - 1].average[group_sort_by] !== null
         ) {
             let not_null_idx = 0;
-            while (results[not_null_idx].average[sort_field] === null) {
+            while (results[not_null_idx].average[group_sort_by] === null) {
                 not_null_idx += 1;
             }
 
@@ -541,11 +555,14 @@ router.get(
     })
 );
 
-router.use("/search_by/job_title/group_by/company", middleware.group_sort_by);
 router.get(
     "/search_by/job_title/group_by/company",
     wrap(async (req, res) => {
         // input parameter
+        validGroupSortQuery(req.query);
+        const { skip_sort, group_sort, group_sort_by } = pickupGroupSortQuery(
+            req.query
+        );
         const job_title = req.query.job_title;
         if (!job_title || job_title === "") {
             throw new HttpError("job_title is required", 422);
@@ -562,7 +579,7 @@ router.get(
                         status: "published",
                     },
                 },
-                { $sort: req.skip_sort_by },
+                { $sort: skip_sort },
                 { $skip: skip },
                 {
                     $match: {
@@ -620,11 +637,10 @@ router.get(
                     },
                 },
                 {
-                    $sort: req.group_sort_by,
+                    $sort: group_sort,
                 },
             ])
             .toArray();
-        const sort_field = req.query.group_sort_by || "week_work_time";
 
         if (results.length === 0) {
             res.send(results);
@@ -633,11 +649,11 @@ router.get(
 
         // move null data to the end of array
         if (
-            results[0].average[sort_field] === null &&
-            results[results.length - 1].average[sort_field] !== null
+            results[0].average[group_sort_by] === null &&
+            results[results.length - 1].average[group_sort_by] !== null
         ) {
             let not_null_idx = 0;
-            while (results[not_null_idx].average[sort_field] === null) {
+            while (results[not_null_idx].average[group_sort_by] === null) {
                 not_null_idx += 1;
             }
 
