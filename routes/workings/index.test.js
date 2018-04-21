@@ -1908,6 +1908,12 @@ describe("Workings 工時資訊", () => {
             );
         });
 
+        it("job_titles should be array", async () => {
+            await request(app)
+                .get("/workings/campaigns/engineer?job_titles=engineer2")
+                .expect(422);
+        });
+
         after(() => db.collection("workings").deleteMany({}));
     });
 });
