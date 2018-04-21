@@ -37,17 +37,18 @@ router.get(
             salary: 1,
             estimated_hourly_wage: 1,
         };
+        const base_query = { status: "published" };
 
         const data = {};
-        const count = await collection.count();
+        const count = await collection.find(base_query).count();
 
         const defined_query = {
             [req.custom.sort_by]: { $exists: true },
-            status: "published",
+            ...base_query,
         };
         const undefined_query = {
             [req.custom.sort_by]: { $exists: false },
-            status: "published",
+            ...base_query,
         };
 
         const skip = Math.floor(count * 0.01);
