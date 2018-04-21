@@ -192,9 +192,19 @@ router.get(
         let job_titles = req.query.job_titles;
         const campaign_name = req.params.campaign_name;
 
-        if (job_titles && !job_titles.every(e => typeof e === "string")) {
-            next(new HttpError("job_titles need to be array of string", 422));
-            return;
+        if (job_titles) {
+            if (!Array.isArray(job_titles)) {
+                throw new HttpError(
+                    "job_titles should be array, you should send through job_titles[]=xx",
+                    422
+                );
+            }
+            if (!job_titles.every(e => typeof e === "string")) {
+                throw new HttpError(
+                    "job_titles need to be array of string",
+                    422
+                );
+            }
         }
 
         let base_query = { status: "published", campaign_name };
