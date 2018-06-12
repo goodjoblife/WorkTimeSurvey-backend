@@ -20,7 +20,7 @@ function accessTokenAuth(access_token) {
 
         request.get(
             {
-                url: "https://graph.facebook.com/v2.6/me",
+                url: "https://graph.facebook.com/v3.0/me",
                 qs: {
                     access_token,
                     fields: "id,name",

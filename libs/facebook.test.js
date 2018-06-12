@@ -16,7 +16,7 @@ describe("libs/facebook.js", () => {
             const response = { error: "error" };
 
             nock("https://graph.facebook.com:443")
-                .get("/v2.6/me")
+                .get("/v3.0/me")
                 .query({
                     access_token,
                     fields: "id,name",
@@ -31,7 +31,7 @@ describe("libs/facebook.js", () => {
             const response = { id: "-1", name: "test" };
 
             nock("https://graph.facebook.com:443")
-                .get("/v2.6/me")
+                .get("/v3.0/me")
                 .query({
                     access_token,
                     fields: "id,name",
