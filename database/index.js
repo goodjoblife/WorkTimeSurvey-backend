@@ -35,7 +35,7 @@ async function migrate(db, name) {
 }
 
 const main = async function() {
-    const { db } = await connectMongo();
+    const { client, db } = await connectMongo();
 
     try {
         for (const name of migrations) {
@@ -46,7 +46,7 @@ const main = async function() {
     }
 
     try {
-        await db.close();
+        await client.close();
     } catch (err) {
         console.log(err);
     }

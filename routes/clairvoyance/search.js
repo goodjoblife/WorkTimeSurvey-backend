@@ -60,7 +60,8 @@ router.get("/by-job", (req, res, next) => {
             data.total_page = Math.ceil(count / 25);
 
             return collection
-                .find(db_query, opt)
+                .find(db_query)
+                .project(opt)
                 .sort(db_sort)
                 .skip(25 * page)
                 .limit(25)
@@ -135,7 +136,8 @@ router.get("/by-company", (req, res, next) => {
             data.total_count = count;
             data.total_page = Math.ceil(count / 25);
             return collection
-                .find(q, opt)
+                .find(q)
+                .project(opt)
                 .sort(s)
                 .skip(25 * page)
                 .limit(25)

@@ -13,6 +13,7 @@ services:
     command: npm run dev
     environment:
       - MONGODB_URI=mongodb://mongo/goodjob
+      - MONGODB_DBNAME=goodjob
       - REDIS_URL=redis://redis
       - NODE_ENV=development
   mongo:
