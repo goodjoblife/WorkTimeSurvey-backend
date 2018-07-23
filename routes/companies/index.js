@@ -1,21 +1,14 @@
 const express = require("express");
-const lodash = require("lodash");
 const R = require("ramda");
 const { HttpError } = require("../../libs/errors");
-const CompanyModel = require("../../models/company_model");
-const { getCompanyName } = require("../company_helper");
 const wrap = require("../../libs/wrap");
-const { combineSelector } = require("../../view_models/helper");
 
 const router = express.Router();
 
 /**
  * @param company
  */
-const companyView = combineSelector([
-    R.pick(["id", "capital"]),
-    company => ({ name: getCompanyName(company.name) }),
-]);
+const companyView = R.pick(["id", "capital", "name"]);
 
 /**
  * @param companies
@@ -41,34 +34,12 @@ router.get(
             return;
         }
 
-        const query = {
-            $or: [
-                {
-                    name: new RegExp(
-                        `^${lodash.escapeRegExp(search.toUpperCase())}`
-                    ),
-                },
-                { id: search },
-            ],
-        };
-
-        const sort_by = {
-            capital: -1,
-            type: -1,
-            name: 1,
-            id: 1,
-        };
-
-        const company_model = new CompanyModel(req.db);
-        const skip = 25 * page;
-        const limit = 25;
-
-        const companies = await company_model.searchCompany(
-            query,
-            sort_by,
-            skip,
-            limit
-        );
+        const company_model = req.manager.CompanyModel;
+        const companies = await company_model.search({
+            keyword: search,
+            start: 25 * page,
+            limit: 25,
+        });
 
         res.send(searchView(companies));
     })

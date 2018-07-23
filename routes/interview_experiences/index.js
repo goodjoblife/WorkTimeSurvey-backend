@@ -344,10 +344,11 @@ router.post("/", [
         Object.assign(experience, pickupInterviewExperience(req.body));
 
         const experience_model = new ExperienceModel(req.db);
+        const company_model = req.manager.CompanyModel;
 
         helper
             .getCompanyByIdOrQuery(
-                req.db,
+                company_model,
                 req.body.company_id,
                 req.body.company_query
             )

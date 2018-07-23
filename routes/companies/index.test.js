@@ -2,19 +2,23 @@ const assert = require("chai").assert;
 const request = require("supertest");
 const app = require("../../app");
 const { connectMongo } = require("../../models/connect");
+const ModelManager = require("../../models/manager");
 
 describe("companies", () => {
     let db;
+    let company_model;
 
     before(async () => {
         ({ db } = await connectMongo());
+        const manager = new ModelManager(db);
+        company_model = manager.CompanyModel;
     });
 
     describe("GET /companies/search", () => {
         const path = "/companies/search";
 
         before(() =>
-            db.collection("companies").insertMany([
+            company_model.collection.insertMany([
                 {
                     id: "00000001",
                     name: "MARK CHEN",
@@ -116,6 +120,6 @@ describe("companies", () => {
                     assert.propertyVal(res.body[0], "capital", 3000);
                 }));
 
-        after(() => db.collection("companies").deleteMany({}));
+        after(() => company_model.collection.deleteMany({}));
     });
 });

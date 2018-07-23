@@ -397,6 +397,7 @@ function validation(req, res, next) {
 
 async function normalizeData(req, res, next) {
     const working = req.custom.working;
+    const company_model = req.manager.CompanyModel;
 
     /*
      * Normalize the data
@@ -447,7 +448,7 @@ async function normalizeData(req, res, next) {
      * 其他情況看 issue #7
      */
     const company = await companyHelper.getCompanyByIdOrQuery(
-        req.db,
+        company_model,
         working.company.id,
         company_query
     );
