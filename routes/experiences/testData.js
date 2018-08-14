@@ -42,7 +42,7 @@ function generateInterviewExperienceData() {
         reply_count: 0,
         report_count: 0,
         status: "published",
-        is_archived: false,
+        is_archive: false,
         archive_reason: "",
     };
 
@@ -88,7 +88,7 @@ function generateWorkExperienceData() {
             month: 10,
         },
         recommend_to_others: "yes",
-        is_archived: false,
+        is_archive: false,
         archive_reason: "",
     };
 

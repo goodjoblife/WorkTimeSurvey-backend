@@ -1,6 +1,6 @@
 const { assert } = require("chai");
 const { connectMongo } = require("../../models/connect");
-const migration = require("./migration-2018-08-15-add-archived-to-experiences");
+const migration = require("./migration-2018-08-15-add-archive-to-experiences");
 
 describe("Migrate experiences (add adchived related field)", function() {
     let db;
@@ -17,7 +17,7 @@ describe("Migrate experiences (add adchived related field)", function() {
         await migration(db);
 
         const experience = await collection.findOne();
-        assert.propertyVal(experience, "is_archived", true);
+        assert.propertyVal(experience, "is_archive", false);
         assert.propertyVal(experience, "archive_reason", "");
     });
 
