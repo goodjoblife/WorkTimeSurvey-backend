@@ -157,6 +157,8 @@ describe("experiences 面試和工作經驗資訊", () => {
                 assert.deepEqual(experience.report_count, 0);
                 assert.deepEqual(experience.status, "published");
                 assert.property(experience, "created_at");
+                assert.equal(experience.is_archived, false);
+                assert.equal(experience.archive_reason, "");
             });
         });
 

@@ -169,6 +169,9 @@ describe("experiences 面試和工作經驗資訊", () => {
                                     "published"
                                 );
 
+                                assert.equal(experience.is_archived, false);
+                                assert.equal(experience.archive_reason, "");
+
                                 // expected response
                                 assert.property(res.body, "success");
                                 assert.equal(res.body.success, true);
