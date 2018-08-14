@@ -107,77 +107,59 @@ describe("experiences 面試和工作經驗資訊", () => {
                 .resolves(fake_user);
         });
 
-        describe("generate payload", () => {
-            it("generateWorkExperiencePayload", () =>
-                request(app)
-                    .post("/work_experiences")
-                    .send(generateWorkExperiencePayload())
-                    .expect(200)
-                    .then(res =>
-                        db
-                            .collection("experiences")
-                            .findOne({ _id: ObjectId(res.body.experience._id) })
-                            .then(experience => {
-                                // expected fields in db
-                                assert.equal(experience.type, "work");
-                                assert.deepEqual(
-                                    experience.author_id,
-                                    fake_user._id
-                                );
-                                assert.deepEqual(experience.company, {
-                                    id: "00000001",
-                                    name: "GOODJOB",
-                                });
-                                assert.equal(experience.region, "臺北市");
-                                assert.equal(
-                                    experience.job_title,
-                                    "JOB_TITLE_EXAMPLE"
-                                );
-                                assert.equal(experience.title, "title_example");
-                                assert.deepEqual(experience.sections, [
-                                    {
-                                        subtitle: "subtitle1",
-                                        content: "content1",
-                                    },
-                                ]);
-                                assert.equal(experience.experience_in_year, 10);
-                                assert.equal(experience.education, "大學");
-                                assert.equal(
-                                    experience.is_currently_employed,
-                                    "no"
-                                );
-                                assert.deepEqual(experience.job_ending_time, {
-                                    year: 2017,
-                                    month: 4,
-                                });
-                                assert.deepEqual(experience.salary, {
-                                    type: "year",
-                                    amount: 10000,
-                                });
-                                assert.equal(experience.week_work_time, 40);
-                                assert.equal(
-                                    experience.recommend_to_others,
-                                    "yes"
-                                );
-                                assert.deepEqual(experience.like_count, 0);
-                                assert.deepEqual(experience.reply_count, 0);
-                                assert.deepEqual(experience.report_count, 0);
-                                assert.property(experience, "created_at");
-                                assert.property(experience, "data_time");
-                                assert.deepEqual(
-                                    experience.status,
-                                    "published"
-                                );
+        it("should success", async () => {
+            const res = await request(app)
+                .post("/work_experiences")
+                .send(generateWorkExperiencePayload())
+                .expect(200);
 
-                                assert.equal(experience.is_archived, false);
-                                assert.equal(experience.archive_reason, "");
+            const experience = await db
+                .collection("experiences")
+                .findOne({ _id: ObjectId(res.body.experience._id) });
 
-                                // expected response
-                                assert.property(res.body, "success");
-                                assert.equal(res.body.success, true);
-                                assert.deepProperty(res.body, "experience._id");
-                            })
-                    ));
+            // expected fields in db
+            assert.equal(experience.type, "work");
+            assert.deepEqual(experience.author_id, fake_user._id);
+            assert.deepEqual(experience.company, {
+                id: "00000001",
+                name: "GOODJOB",
+            });
+            assert.equal(experience.region, "臺北市");
+            assert.equal(experience.job_title, "JOB_TITLE_EXAMPLE");
+            assert.equal(experience.title, "title_example");
+            assert.deepEqual(experience.sections, [
+                {
+                    subtitle: "subtitle1",
+                    content: "content1",
+                },
+            ]);
+            assert.equal(experience.experience_in_year, 10);
+            assert.equal(experience.education, "大學");
+            assert.equal(experience.is_currently_employed, "no");
+            assert.deepEqual(experience.job_ending_time, {
+                year: 2017,
+                month: 4,
+            });
+            assert.deepEqual(experience.salary, {
+                type: "year",
+                amount: 10000,
+            });
+            assert.equal(experience.week_work_time, 40);
+            assert.equal(experience.recommend_to_others, "yes");
+            assert.deepEqual(experience.like_count, 0);
+            assert.deepEqual(experience.reply_count, 0);
+            assert.deepEqual(experience.report_count, 0);
+            assert.property(experience, "created_at");
+            assert.property(experience, "data_time");
+            assert.deepEqual(experience.status, "published");
+
+            assert.equal(experience.is_archived, false);
+            assert.equal(experience.archive_reason, "");
+
+            // expected response
+            assert.property(res.body, "success");
+            assert.equal(res.body.success, true);
+            assert.deepProperty(res.body, "experience._id");
         });
 
         describe("Common Data Validation Part", () => {
@@ -213,25 +195,24 @@ describe("experiences 面試和工作經驗資訊", () => {
                     .expect(422));
 
             for (const input of ["新北市", "臺南市", "新竹市"]) {
-                it(`region should be ${input}`, () =>
-                    request(app)
+                it(`region should be ${input}`, async () => {
+                    const res = await request(app)
                         .post("/work_experiences")
                         .send(
                             generateWorkExperiencePayload({
                                 region: input,
                             })
                         )
-                        .expect(200)
-                        .then(res =>
-                            db
-                                .collection("experiences")
-                                .findOne({
-                                    _id: ObjectId(res.body.experience._id),
-                                })
-                                .then(experience => {
-                                    assert.equal(experience.region, input);
-                                })
-                        ));
+                        .expect(200);
+
+                    const experience = await db
+                        .collection("experiences")
+                        .findOne({
+                            _id: ObjectId(res.body.experience._id),
+                        });
+
+                    assert.equal(experience.region, input);
+                });
             }
 
             it("job_title is required", () =>
@@ -384,25 +365,24 @@ describe("experiences 面試和工作經驗資訊", () => {
                     .expect(422));
 
             for (const input of ["大學", "高中", "國中"]) {
-                it(`education could be ${input}`, () =>
-                    request(app)
+                it(`education could be ${input}`, async () => {
+                    const res = await request(app)
                         .post("/work_experiences")
                         .send(
                             generateWorkExperiencePayload({
                                 education: input,
                             })
                         )
-                        .expect(200)
-                        .then(res =>
-                            db
-                                .collection("experiences")
-                                .findOne({
-                                    _id: ObjectId(res.body.experience._id),
-                                })
-                                .then(experience => {
-                                    assert.equal(experience.education, input);
-                                })
-                        ));
+                        .expect(200);
+
+                    const experience = await db
+                        .collection("experiences")
+                        .findOne({
+                            _id: ObjectId(res.body.experience._id),
+                        });
+
+                    assert.equal(experience.education, input);
+                });
             }
         });
 
@@ -586,32 +566,31 @@ describe("experiences 面試和工作經驗資訊", () => {
                     .expect(422));
 
             describe("data_time should be reasonable", () => {
-                it('data_time\'s year & month should be today if is_currently_employed is "yes"', () =>
-                    request(app)
+                it('data_time\'s year & month should be today if is_currently_employed is "yes"', async () => {
+                    const res = await request(app)
                         .post("/work_experiences")
                         .send(
                             generateWorkExperiencePayload({
                                 is_currently_employed: "yes",
                             })
                         )
-                        .expect(200)
-                        .then(res =>
-                            db
-                                .collection("experiences")
-                                .findOne({
-                                    _id: ObjectId(res.body.experience._id),
-                                })
-                                .then(experience => {
-                                    const now = new Date();
-                                    assert.deepEqual(experience.data_time, {
-                                        year: now.getFullYear(),
-                                        month: now.getMonth() + 1,
-                                    });
-                                })
-                        ));
+                        .expect(200);
 
-                it('data_time should be job_ending_time if is_currently_employed is "no"', () =>
-                    request(app)
+                    const experience = await db
+                        .collection("experiences")
+                        .findOne({
+                            _id: ObjectId(res.body.experience._id),
+                        });
+
+                    const now = new Date();
+                    assert.deepEqual(experience.data_time, {
+                        year: now.getFullYear(),
+                        month: now.getMonth() + 1,
+                    });
+                });
+
+                it('data_time should be job_ending_time if is_currently_employed is "no"', async () => {
+                    const res = await request(app)
                         .post("/work_experiences")
                         .send(
                             generateWorkExperiencePayload({
@@ -622,20 +601,19 @@ describe("experiences 面試和工作經驗資訊", () => {
                                 },
                             })
                         )
-                        .expect(200)
-                        .then(res =>
-                            db
-                                .collection("experiences")
-                                .findOne({
-                                    _id: ObjectId(res.body.experience._id),
-                                })
-                                .then(experience => {
-                                    assert.deepEqual(experience.data_time, {
-                                        year: 2017,
-                                        month: 4,
-                                    });
-                                })
-                        ));
+                        .expect(200);
+
+                    const experience = await db
+                        .collection("experiences")
+                        .findOne({
+                            _id: ObjectId(res.body.experience._id),
+                        });
+
+                    assert.deepEqual(experience.data_time, {
+                        year: 2017,
+                        month: 4,
+                    });
+                });
             });
         });
 
@@ -650,13 +628,10 @@ describe("experiences 面試和工作經驗資訊", () => {
             });
         });
 
-        after("DB: 清除 experiences", () =>
-            db.collection("experiences").deleteMany({})
-        );
-
-        after("DB: 清除 companies", () =>
-            db.collection("companies").deleteMany({})
-        );
+        after(async () => {
+            await db.collection("experiences").deleteMany({});
+            await db.collection("companies").deleteMany({});
+        });
 
         afterEach(() => {
             sandbox.restore();

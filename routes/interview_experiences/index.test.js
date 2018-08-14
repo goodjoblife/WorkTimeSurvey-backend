@@ -109,57 +109,56 @@ describe("experiences 面試和工作經驗資訊", () => {
                 .resolves(fake_user);
         });
 
-        describe("generate payload", () => {
-            it("generateInterViewExperiencePayload", async () => {
-                const res = await request(app)
-                    .post("/interview_experiences")
-                    .send(generateInterviewExperiencePayload())
-                    .expect(200);
+        it("should success", async () => {
+            const res = await request(app)
+                .post("/interview_experiences")
+                .send(generateInterviewExperiencePayload())
+                .expect(200);
 
-                const experience = await db
-                    .collection("experiences")
-                    .findOne({ _id: ObjectId(res.body.experience._id) });
+            const experience = await db
+                .collection("experiences")
+                .findOne({ _id: ObjectId(res.body.experience._id) });
 
-                // expected fields in db
-                assert.equal(experience.type, "interview");
-                assert.deepEqual(experience.author_id, fake_user._id);
-                assert.deepEqual(experience.company, {
-                    id: "00000001",
-                    name: "GOODJOB",
-                });
-                assert.equal(experience.region, "臺北市");
-                assert.equal(experience.job_title, "JOB_TITLE_EXAMPLE");
-                assert.equal(experience.title, "title_example");
-                assert.deepEqual(experience.sections, [
-                    {
-                        subtitle: "subtitle1",
-                        content: "content1",
-                    },
-                ]);
-                assert.equal(experience.experience_in_year, 10);
-                assert.equal(experience.education, "大學");
-                assert.deepEqual(experience.interview_time, {
-                    year: 2017,
-                    month: 3,
-                });
-                assert.deepEqual(experience.interview_qas, [
-                    { question: "qas1", answer: "ans1" },
-                ]);
-                assert.deepEqual(experience.interview_result, "up");
-                assert.deepEqual(experience.interview_sensitive_questions, []);
-                assert.deepEqual(experience.salary, {
-                    type: "year",
-                    amount: 10000,
-                });
-                assert.deepEqual(experience.overall_rating, 5);
-                assert.deepEqual(experience.like_count, 0);
-                assert.deepEqual(experience.reply_count, 0);
-                assert.deepEqual(experience.report_count, 0);
-                assert.deepEqual(experience.status, "published");
-                assert.property(experience, "created_at");
-                assert.equal(experience.is_archived, false);
-                assert.equal(experience.archive_reason, "");
+            // expected fields in db
+            assert.equal(experience.type, "interview");
+            assert.deepEqual(experience.author_id, fake_user._id);
+            assert.deepEqual(experience.company, {
+                id: "00000001",
+                name: "GOODJOB",
             });
+            assert.equal(experience.region, "臺北市");
+            assert.equal(experience.job_title, "JOB_TITLE_EXAMPLE");
+            assert.equal(experience.title, "title_example");
+            assert.deepEqual(experience.sections, [
+                {
+                    subtitle: "subtitle1",
+                    content: "content1",
+                },
+            ]);
+            assert.equal(experience.experience_in_year, 10);
+            assert.equal(experience.education, "大學");
+            assert.deepEqual(experience.interview_time, {
+                year: 2017,
+                month: 3,
+            });
+            assert.deepEqual(experience.interview_qas, [
+                { question: "qas1", answer: "ans1" },
+            ]);
+            assert.deepEqual(experience.interview_result, "up");
+            assert.deepEqual(experience.interview_sensitive_questions, []);
+            assert.deepEqual(experience.salary, {
+                type: "year",
+                amount: 10000,
+            });
+            assert.deepEqual(experience.overall_rating, 5);
+            assert.deepEqual(experience.like_count, 0);
+            assert.deepEqual(experience.reply_count, 0);
+            assert.deepEqual(experience.report_count, 0);
+            assert.deepEqual(experience.status, "published");
+            assert.property(experience, "created_at");
+
+            assert.equal(experience.is_archived, false);
+            assert.equal(experience.archive_reason, "");
         });
 
         describe("Common Data Validation Part", () => {
