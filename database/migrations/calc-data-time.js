@@ -1,7 +1,7 @@
 module.exports = db =>
     db
         .collection("workings")
-        .find({}, { created_at: 1 })
+        .find({})
         .toArray()
         .then(data => {
             let promise_queue = Promise.resolve();

@@ -8,14 +8,9 @@ function _getCompanyName(db_company_name) {
 module.exports = db =>
     db
         .collection("workings")
-        .find(
-            {
-                "company.name": { $exists: true },
-            },
-            {
-                "company.name": 1,
-            }
-        )
+        .find({
+            "company.name": { $exists: true },
+        })
         .toArray()
         .then(data => {
             const promise_arr = [];
