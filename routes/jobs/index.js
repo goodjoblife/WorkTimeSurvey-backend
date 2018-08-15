@@ -1,6 +1,6 @@
 const express = require("express");
 const escapeRegExp = require("lodash/escapeRegExp");
-const wrap = require("../libs/wrap");
+const wrap = require("../../libs/wrap");
 
 const router = express.Router();
 
