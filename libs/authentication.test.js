@@ -25,23 +25,18 @@ describe("Authentication Library", () => {
             })
         );
 
-        before("Seed users", () =>
-            db
+        before("Seed users", async () => {
+            const result = await db.collection("users").insertOne({
+                facebook_id: "1",
+                facebook: {
+                    id: "1",
+                    name: "helloworld",
+                },
+            });
+            user = await db
                 .collection("users")
-                .insertOne({
-                    facebook_id: "1",
-                    facebook: {
-                        id: "1",
-                        name: "helloworld",
-                    },
-                })
-                .then(result =>
-                    db.collection("users").findOne({ _id: result.insertedId })
-                )
-                .then(_user => {
-                    user = _user;
-                })
-        );
+                .findOne({ _id: result.insertedId });
+        });
 
         beforeEach(() => {
             sandbox = sinon.sandbox.create();

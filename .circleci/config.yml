@@ -114,7 +114,6 @@ workflows:
                     branches:
                         only:
                             - master
-                            - dev
                 requires:
                     - build-node-8
                     - build-node-10

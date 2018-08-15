@@ -1,19 +1,18 @@
 const assert = require("chai").assert;
 const request = require("supertest");
 const app = require("../../app");
-const MongoClient = require("mongodb").MongoClient;
-const config = require("config");
+const { connectMongo } = require("../../models/connect");
 
 describe("companies", () => {
     let db;
 
-    before(() =>
-        MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
-            db = _db;
-        })
-    );
+    before(async () => {
+        ({ db } = await connectMongo());
+    });
 
-    describe("search", () => {
+    describe("GET /companies/search", () => {
+        const path = "/companies/search";
+
         before(() =>
             db.collection("companies").insertMany([
                 {
@@ -51,7 +50,7 @@ describe("companies", () => {
 
         it("包含兩個欄位：id, name", () =>
             request(app)
-                .get("/companies/search")
+                .get(path)
                 .query({ key: "MARK" })
                 .expect(200)
                 .expect(res => {
@@ -62,7 +61,7 @@ describe("companies", () => {
 
         it("搜尋 `MARK`", () =>
             request(app)
-                .get("/companies/search")
+                .get(path)
                 .query({ key: "MARK" })
                 .expect(200)
                 .expect(res => {
@@ -71,7 +70,7 @@ describe("companies", () => {
 
         it("搜尋 `公司`", () =>
             request(app)
-                .get("/companies/search")
+                .get(path)
                 .query({ key: "公司" })
                 .expect(200)
                 .expect(res => {
@@ -80,7 +79,7 @@ describe("companies", () => {
 
         it("搜尋 id `00000004`", () =>
             request(app)
-                .get("/companies/search")
+                .get(path)
                 .query({ key: "00000004" })
                 .expect(200)
                 .expect(res => {
@@ -92,7 +91,7 @@ describe("companies", () => {
 
         it("搜尋小寫關鍵字 `mark`", () =>
             request(app)
-                .get("/companies/search")
+                .get(path)
                 .query({ key: "mark" })
                 .expect(200)
                 .expect(res => {
@@ -101,12 +100,12 @@ describe("companies", () => {
 
         it("沒有關鍵字，要輸出錯誤", () =>
             request(app)
-                .get("/companies/search")
+                .get(path)
                 .expect(422));
 
         it("搜尋 id `00000006` 公司名稱為字串 ", () =>
             request(app)
-                .get("/companies/search")
+                .get(path)
                 .query({ key: "00000006" })
                 .expect(200)
                 .expect(res => {

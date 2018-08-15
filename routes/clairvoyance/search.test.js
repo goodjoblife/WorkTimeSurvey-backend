@@ -1,17 +1,14 @@
 const assert = require("chai").assert;
 const request = require("supertest");
 const app = require("../../app");
-const MongoClient = require("mongodb").MongoClient;
-const config = require("config");
+const { connectMongo } = require("../../models/connect");
 
 describe("Clairvoyance 天眼通 API", () => {
     let db;
 
-    before("DB: Setup", () =>
-        MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
-            db = _db;
-        })
-    );
+    before(async () => {
+        ({ db } = await connectMongo());
+    });
 
     before("Seeding some workings", () =>
         db.collection("workings").insertMany([
@@ -54,33 +51,34 @@ describe("Clairvoyance 天眼通 API", () => {
         ])
     );
 
-    describe("根據公司搜尋", () => {
+    describe("GET /clairvoyance/search/by-company", () => {
+        const path = "/clairvoyance/search/by-company";
+
         it("error 422 if no company provided", () =>
             request(app)
-                .get("/clairvoyance/search/by-company")
+                .get(path)
                 .expect(422));
 
-        it("Search and return the pagination results", () =>
-            request(app)
-                .get("/clairvoyance/search/by-company")
+        it("Search and return the pagination results", async () => {
+            const res = await request(app)
+                .get(path)
                 .query({ company: "MY GOODJOB LIFE" })
-                .expect(200)
-                .expect(res => {
-                    assert.propertyVal(res.body, "total_count", 3);
-                    assert.propertyVal(res.body, "page", 0);
-                    assert.property(res.body, "workings");
-                    assert.lengthOf(res.body.workings, 3);
-                    assert.deepProperty(res.body, "workings.0.job_title");
-                    assert.deepProperty(res.body, "workings.0.company");
-                    assert.deepProperty(res.body, "workings.0.week_work_time");
-                    assert.deepProperty(res.body, "workings.0.created_at");
-                    assert.notDeepProperty(res.body, "workings.0.author");
-                    assert.notDeepProperty(res.body, "workings.0._id");
-                }));
+                .expect(200);
+            assert.propertyVal(res.body, "total_count", 3);
+            assert.propertyVal(res.body, "page", 0);
+            assert.property(res.body, "workings");
+            assert.lengthOf(res.body.workings, 3);
+            assert.deepProperty(res.body, "workings.0.job_title");
+            assert.deepProperty(res.body, "workings.0.company");
+            assert.deepProperty(res.body, "workings.0.week_work_time");
+            assert.deepProperty(res.body, "workings.0.created_at");
+            assert.notDeepProperty(res.body, "workings.0.author");
+            assert.notDeepProperty(res.body, "workings.0._id");
+        });
 
         it("小寫 company 轉換成大寫", () =>
             request(app)
-                .get("/clairvoyance/search/by-company")
+                .get(path)
                 .query({ company: "my goodjob Life" })
                 .expect(200)
                 .expect(res => {
@@ -90,7 +88,7 @@ describe("Clairvoyance 天眼通 API", () => {
 
         it("company match any substring in workings.company.name", () =>
             request(app)
-                .get("/clairvoyance/search/by-company")
+                .get(path)
                 .query({ company: "GOODJOB" })
                 .expect(200)
                 .expect(res => {
@@ -98,34 +96,21 @@ describe("Clairvoyance 天眼通 API", () => {
                     assert.lengthOf(res.body.workings, 4);
                 }));
 
-        it("sort workings by created_at desc", () =>
-            request(app)
-                .get("/clairvoyance/search/by-company")
+        it("sort workings by created_at desc", async () => {
+            const res = await request(app)
+                .get(path)
                 .query({ company: "MY GOODJOB LIFE" })
-                .expect(200)
-                .expect(res => {
-                    assert.property(res.body, "workings");
-                    assert.lengthOf(res.body.workings, 3);
-                    assert.deepPropertyVal(
-                        res.body,
-                        "workings.0.week_work_time",
-                        30
-                    );
-                    assert.deepPropertyVal(
-                        res.body,
-                        "workings.1.week_work_time",
-                        20
-                    );
-                    assert.deepPropertyVal(
-                        res.body,
-                        "workings.2.week_work_time",
-                        40
-                    );
-                }));
+                .expect(200);
+            assert.property(res.body, "workings");
+            assert.lengthOf(res.body.workings, 3);
+            assert.deepPropertyVal(res.body, "workings.0.week_work_time", 30);
+            assert.deepPropertyVal(res.body, "workings.1.week_work_time", 20);
+            assert.deepPropertyVal(res.body, "workings.2.week_work_time", 40);
+        });
 
         it("根據統編搜尋", () =>
             request(app)
-                .get("/clairvoyance/search/by-company")
+                .get(path)
                 .query({ company: "00000002" })
                 .expect(200)
                 .expect(res => {
@@ -134,74 +119,60 @@ describe("Clairvoyance 天眼通 API", () => {
                 }));
     });
 
-    describe("根據職稱搜尋", () => {
+    describe("GET /clairvoyance/search/by-job", () => {
+        const path = "/clairvoyance/search/by-job";
+
         it("error 422 if no job_title provided", () =>
             request(app)
-                .get("/clairvoyance/search/by-job")
+                .get(path)
                 .expect(422));
 
-        it("Search and return the pagination results", () =>
-            request(app)
-                .get("/clairvoyance/search/by-job")
+        it("Search and return the pagination results", async () => {
+            const res = await request(app)
+                .get(path)
                 .query({ job_title: "TEST" })
-                .expect(200)
-                .expect(res => {
-                    assert.propertyVal(res.body, "total_count", 3);
-                    assert.propertyVal(res.body, "page", 0);
-                    assert.property(res.body, "workings");
-                    assert.lengthOf(res.body.workings, 3);
-                    assert.deepProperty(res.body, "workings.0.job_title");
-                    assert.deepProperty(res.body, "workings.0.company");
-                    assert.deepProperty(res.body, "workings.0.week_work_time");
-                    assert.deepProperty(res.body, "workings.0.created_at");
-                    assert.notDeepProperty(res.body, "workings.0.author");
-                    assert.notDeepProperty(res.body, "workings.0._id");
-                }));
+                .expect(200);
+            assert.propertyVal(res.body, "total_count", 3);
+            assert.propertyVal(res.body, "page", 0);
+            assert.property(res.body, "workings");
+            assert.lengthOf(res.body.workings, 3);
+            assert.deepProperty(res.body, "workings.0.job_title");
+            assert.deepProperty(res.body, "workings.0.company");
+            assert.deepProperty(res.body, "workings.0.week_work_time");
+            assert.deepProperty(res.body, "workings.0.created_at");
+            assert.notDeepProperty(res.body, "workings.0.author");
+            assert.notDeepProperty(res.body, "workings.0._id");
+        });
 
-        it("小寫 job_title 轉換成大寫", () =>
-            request(app)
-                .get("/clairvoyance/search/by-job")
+        it("小寫 job_title 轉換成大寫", async () => {
+            const res = await request(app)
+                .get(path)
                 .query({ job_title: "test pm" })
-                .expect(200)
-                .expect(res => {
-                    assert.property(res.body, "workings");
-                    assert.lengthOf(res.body.workings, 1);
-                }));
+                .expect(200);
+            assert.property(res.body, "workings");
+            assert.lengthOf(res.body.workings, 1);
+        });
 
-        it("job_title match any substring in workings.job_title", () =>
-            request(app)
-                .get("/clairvoyance/search/by-job")
+        it("job_title match any substring in workings.job_title", async () => {
+            const res = await request(app)
+                .get(path)
                 .query({ job_title: "TEST" })
-                .expect(200)
-                .expect(res => {
-                    assert.property(res.body, "workings");
-                    assert.lengthOf(res.body.workings, 3);
-                }));
+                .expect(200);
+            assert.property(res.body, "workings");
+            assert.lengthOf(res.body.workings, 3);
+        });
 
-        it("sort workings by created_at desc", () =>
-            request(app)
-                .get("/clairvoyance/search/by-job")
+        it("sort workings by created_at desc", async () => {
+            const res = await request(app)
+                .get(path)
                 .query({ job_title: "TEST" })
-                .expect(200)
-                .expect(res => {
-                    assert.property(res.body, "workings");
-                    assert.lengthOf(res.body.workings, 3);
-                    assert.deepPropertyVal(
-                        res.body,
-                        "workings.0.week_work_time",
-                        50
-                    );
-                    assert.deepPropertyVal(
-                        res.body,
-                        "workings.1.week_work_time",
-                        30
-                    );
-                    assert.deepPropertyVal(
-                        res.body,
-                        "workings.2.week_work_time",
-                        40
-                    );
-                }));
+                .expect(200);
+            assert.property(res.body, "workings");
+            assert.lengthOf(res.body.workings, 3);
+            assert.deepPropertyVal(res.body, "workings.0.week_work_time", 50);
+            assert.deepPropertyVal(res.body, "workings.1.week_work_time", 30);
+            assert.deepPropertyVal(res.body, "workings.2.week_work_time", 40);
+        });
     });
 
     describe("CORS", () => {
@@ -221,32 +192,27 @@ describe("Clairvoyance 天眼通 API", () => {
 
             describe(`CORS while in ${api_path}`, () => {
                 for (const origin of allowed_origins) {
-                    it(`${origin} is in cors list`, () =>
-                        request(app)
+                    it(`${origin} is in cors list`, async () => {
+                        const res = await request(app)
                             .get(api_path)
                             .set("origin", origin)
-                            .expect(422)
-                            .expect(res => {
-                                assert.propertyVal(
-                                    res.header,
-                                    "access-control-allow-origin",
-                                    origin
-                                );
-                            }));
+                            .expect(422);
+                        assert.propertyVal(
+                            res.header,
+                            "access-control-allow-origin",
+                            origin
+                        );
+                    });
                 }
             });
 
-            it("reject other origin", () =>
-                request(app)
+            it("reject other origin", async () => {
+                const res = await request(app)
                     .get(api_path)
                     .set("origin", "http://www.google.com.tw")
-                    .expect(422)
-                    .expect(res => {
-                        assert.notProperty(
-                            res.header,
-                            "access-control-allow-origin"
-                        );
-                    }));
+                    .expect(422);
+                assert.notProperty(res.header, "access-control-allow-origin");
+            });
         }
     });
 

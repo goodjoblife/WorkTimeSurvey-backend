@@ -335,6 +335,9 @@ router.post("/", [
             report_count: 0,
             // TODO 瀏覽次數？
             created_at: new Date(),
+            // 封存狀態
+            is_archive: false,
+            archive_reason: "",
         });
         Object.assign(experience, pickupInterviewExperience(req.body));
 

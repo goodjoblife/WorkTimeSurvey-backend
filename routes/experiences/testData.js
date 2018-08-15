@@ -42,6 +42,8 @@ function generateInterviewExperienceData() {
         reply_count: 0,
         report_count: 0,
         status: "published",
+        is_archive: false,
+        archive_reason: "",
     };
 
     return interview_experience_data;
@@ -86,6 +88,8 @@ function generateWorkExperienceData() {
             month: 10,
         },
         recommend_to_others: "yes",
+        is_archive: false,
+        archive_reason: "",
     };
 
     return work_experience_data;

@@ -42,7 +42,7 @@ describe("Recommendation Library", () => {
             );
         });
 
-        it("resolve with new recommendation string", () => {
+        it("resolve with new recommendation string", async () => {
             const user = {
                 id: "mark",
                 type: "facebook",
@@ -50,28 +50,20 @@ describe("Recommendation Library", () => {
 
             const main = recommendation.getRecommendationString(db, user);
 
-            return Promise.all([
-                assert.isFulfilled(main),
-                // 尋找 DB 中的 user _id 與回傳的相符
-                main
-                    .then(() =>
-                        db.collection("recommendations").findOne({ user })
-                    )
-                    .then(result =>
-                        assert.becomes(main, result._id.toHexString())
-                    ),
-            ]);
+            await assert.isFulfilled(main);
+            // 尋找 DB 中的 user _id 與回傳的相符
+            const result = await db
+                .collection("recommendations")
+                .findOne({ user });
+            await assert.becomes(main, result._id.toHexString());
         });
 
-        it("will return the same recommendation string", () => {
+        it("will return the same recommendation string", async () => {
             const user = { id: "mark", type: "facebook" };
 
-            const main1 = recommendation.getRecommendationString(db, user);
-            const main2 = recommendation.getRecommendationString(db, user);
-
-            return Promise.all([main1, main2]).then(([rec1, rec2]) => {
-                assert.equal(rec1, rec2);
-            });
+            const rec1 = await recommendation.getRecommendationString(db, user);
+            const rec2 = await recommendation.getRecommendationString(db, user);
+            assert.equal(rec1, rec2);
         });
 
         after(() => db.collection("recommendations").deleteMany({}));
@@ -116,17 +108,17 @@ describe("Recommendation Library", () => {
                 null
             ));
 
-        it("reject if format error", () =>
-            Promise.all([
-                // should be a string
-                assert.isRejected(
-                    recommendation.getUserByRecommendationString(db, 1234)
-                ),
-                // should be a single String of 12 bytes or a string of 24 hex characters
-                assert.isRejected(
-                    recommendation.getUserByRecommendationString(db, "0000")
-                ),
-            ]));
+        it("reject if format error", async () => {
+            // should be a string
+            await assert.isRejected(
+                recommendation.getUserByRecommendationString(db, 1234)
+            );
+
+            // should be a single String of 12 bytes or a string of 24 hex characters
+            await assert.isRejected(
+                recommendation.getUserByRecommendationString(db, "0000")
+            );
+        });
 
         after(() => db.collection("recommendations").deleteMany({}));
     });

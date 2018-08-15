@@ -1,9 +1,9 @@
 const assert = require("chai").assert;
 const request = require("supertest");
 const app = require("../../app");
-const { MongoClient, ObjectId, DBRef } = require("mongodb");
+const { ObjectId, DBRef } = require("mongodb");
+const { connectMongo } = require("../../models/connect");
 const sinon = require("sinon");
-const config = require("config");
 
 const authentication = require("../../libs/authentication");
 
@@ -34,11 +34,9 @@ describe("Reports Test", () => {
         },
     };
 
-    before("DB: Setup", () =>
-        MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
-            db = _db;
-        })
-    );
+    before(async () => {
+        ({ db } = await connectMongo());
+    });
 
     describe("POST /experiences/:id/reports", () => {
         let experience_id_str;
@@ -64,74 +62,53 @@ describe("Reports Test", () => {
                 .resolves(fake_other_user);
         });
 
-        beforeEach("Create test data", () =>
-            db
-                .collection("experiences")
-                .insertOne({
-                    type: "interview",
-                    author_id: new ObjectId(),
-                    status: "published",
-                    like_count: 0,
-                    report_count: 0,
-                })
-                .then(result => {
-                    experience_id_str = result.insertedId.toString();
-                })
-        );
+        beforeEach("Create test data", async () => {
+            const result = await db.collection("experiences").insertOne({
+                type: "interview",
+                author_id: new ObjectId(),
+                status: "published",
+                like_count: 0,
+                report_count: 0,
+            });
 
-        it("should return 200 and correct fields if succeed", () => {
-            const req = request(app)
+            experience_id_str = result.insertedId.toString();
+        });
+
+        it("should return 200 and correct fields if succeed", async () => {
+            const res = await request(app)
                 .post(`/experiences/${experience_id_str}/reports`)
                 .send(generatePayload("fakeaccesstoken"))
-                .expect(200)
-                .expect(res => {
-                    assert.property(res.body, "report");
-                    assert.deepProperty(res.body, "report._id");
-                    assert.deepPropertyVal(
-                        res.body,
-                        "report.reason_category",
-                        "我認為這篇文章內容不實"
-                    );
-                    assert.deepPropertyVal(
-                        res.body,
-                        "report.reason",
-                        "This is not true"
-                    );
-                    assert.deepProperty(res.body, "report.created_at");
-                    assert.notDeepProperty(res.body, "report.user");
-                });
+                .expect(200);
 
-            const check_experiences_collection = req.then(() =>
-                db
-                    .collection("experiences")
-                    .findOne({ _id: ObjectId(experience_id_str) })
-                    .then(experience => {
-                        assert.equal(experience.report_count, 1);
-                    })
+            assert.property(res.body, "report");
+            assert.deepProperty(res.body, "report._id");
+            assert.deepPropertyVal(
+                res.body,
+                "report.reason_category",
+                "我認為這篇文章內容不實"
             );
-
-            const check_reports_collection = req.then(res =>
-                db
-                    .collection("reports")
-                    .findOne({
-                        ref: DBRef("experiences", ObjectId(experience_id_str)),
-                    })
-                    .then(report => {
-                        assert.isNotNull(report);
-                        assert.equal(
-                            report.reason_category,
-                            "我認為這篇文章內容不實"
-                        );
-                        assert.equal(report.reason, "This is not true");
-                        assert.property(report, "created_at");
-                        assert.deepEqual(report.user_id, fake_user._id);
-                    })
+            assert.deepPropertyVal(
+                res.body,
+                "report.reason",
+                "This is not true"
             );
+            assert.deepProperty(res.body, "report.created_at");
+            assert.notDeepProperty(res.body, "report.user");
 
-            return Promise.all([
-                check_experiences_collection,
-                check_reports_collection,
-            ]);
+            const experience = await db
+                .collection("experiences")
+                .findOne({ _id: ObjectId(experience_id_str) });
+            assert.equal(experience.report_count, 1);
+
+            const report = await db.collection("reports").findOne({
+                ref: DBRef("experiences", ObjectId(experience_id_str)),
+            });
+
+            assert.isNotNull(report);
+            assert.equal(report.reason_category, "我認為這篇文章內容不實");
+            assert.equal(report.reason, "This is not true");
+            assert.property(report, "created_at");
+            assert.deepEqual(report.user_id, fake_user._id);
         });
 
         it("should fail, because reason_category is required", () =>
@@ -178,89 +155,70 @@ describe("Reports Test", () => {
                 .send(generatePayload("fakeaccesstoken"))
                 .expect(404));
 
-        it("(! Need Index) should return 403, if post report 2 times", () =>
-            request(app)
+        it("(! Need Index) should return 403, if post report 2 times", async () => {
+            await request(app)
+                .post(`/experiences/${experience_id_str}/reports`)
+                .send(generatePayload("fakeaccesstoken"));
+
+            await request(app)
                 .post(`/experiences/${experience_id_str}/reports`)
                 .send(generatePayload("fakeaccesstoken"))
-                .then(response =>
-                    request(app)
-                        .post(`/experiences/${experience_id_str}/reports`)
-                        .send(generatePayload("fakeaccesstoken"))
-                        .expect(403)
-                ));
+                .expect(403);
+        });
 
         it("should return 401, if user does not login", () =>
             request(app)
                 .post(`/experiences/${experience_id_str}/reports`)
                 .expect(401));
 
-        it("report_count should 1, if post report and get experience", () =>
-            request(app)
+        it("report_count should 1, if post report and get experience", async () => {
+            await request(app)
                 .post(`/experiences/${experience_id_str}/reports`)
-                .send(generatePayload("fakeaccesstoken"))
-                .then(res =>
-                    db
-                        .collection("experiences")
-                        .find({
-                            _id: new ObjectId(experience_id_str),
-                        })
-                        .toArray()
-                        .then(result => {
-                            assert.equal(result[0].report_count, 1);
-                        })
-                ));
+                .send(generatePayload("fakeaccesstoken"));
 
-        it("(! Need Index), report_count should be 1, if post report 2 times (same user) and get experience", () => {
-            const uri = `/experiences/${experience_id_str}/reports`;
-            return request(app)
-                .post(uri)
-                .send(generatePayload("fakeaccesstoken"))
-                .then(res =>
-                    request(app)
-                        .post(uri)
-                        .send(generatePayload("fakeaccesstoken"))
-                )
-                .then(res =>
-                    db
-                        .collection("experiences")
-                        .find({
-                            _id: new ObjectId(experience_id_str),
-                        })
-                        .toArray()
-                )
-                .then(result => {
-                    assert.equal(result[0].report_count, 1);
-                });
+            const experience = await db.collection("experiences").findOne({
+                _id: new ObjectId(experience_id_str),
+            });
+
+            assert.equal(experience.report_count, 1);
         });
 
-        it("report_count should be 2 , if post report 2 times(different user) and get experience", () => {
+        it("(! Need Index), report_count should be 1, if post report 2 times (same user) and get experience", async () => {
             const uri = `/experiences/${experience_id_str}/reports`;
-            return request(app)
+            await request(app)
                 .post(uri)
-                .send(generatePayload("fakeaccesstoken"))
-                .then(res =>
-                    request(app)
-                        .post(uri)
-                        .send(generatePayload("other_fakeaccesstoken"))
-                )
-                .then(res =>
-                    db
-                        .collection("experiences")
-                        .find({
-                            _id: new ObjectId(experience_id_str),
-                        })
-                        .toArray()
-                )
-                .then(result => {
-                    assert.equal(result[0].report_count, 2);
-                });
+                .send(generatePayload("fakeaccesstoken"));
+            await request(app)
+                .post(uri)
+                .send(generatePayload("fakeaccesstoken"));
+
+            const experience = await db.collection("experiences").findOne({
+                _id: new ObjectId(experience_id_str),
+            });
+
+            assert.equal(experience.report_count, 1);
         });
 
-        afterEach(() => {
+        it("report_count should be 2 , if post report 2 times(different user) and get experience", async () => {
+            const uri = `/experiences/${experience_id_str}/reports`;
+            await request(app)
+                .post(uri)
+                .send(generatePayload("fakeaccesstoken"));
+            await request(app)
+                .post(uri)
+                .send(generatePayload("other_fakeaccesstoken"));
+
+            const experience = await db.collection("experiences").findOne({
+                _id: new ObjectId(experience_id_str),
+            });
+
+            assert.equal(experience.report_count, 2);
+        });
+
+        afterEach(async () => {
             sandbox.restore();
-            const pro1 = db.collection("reports").deleteMany({});
-            const pro2 = db.collection("experiences").deleteMany({});
-            return Promise.all([pro1, pro2]);
+            await db.collection("reports").deleteMany({});
+            await db.collection("experiences").deleteMany({});
         });
     });
 
@@ -290,38 +248,32 @@ describe("Reports Test", () => {
                 .resolves(fake_other_user);
         });
 
-        before("create test data", () =>
-            db
-                .collection("experiences")
-                .insertOne({
-                    type: "interview",
-                    author_id: fake_user._id,
-                    report_count: 2,
-                })
-                .then(result => {
-                    experience_id_str = result.insertedId.toString();
+        before("create test data", async () => {
+            const result = await db.collection("experiences").insertOne({
+                type: "interview",
+                author_id: fake_user._id,
+                report_count: 2,
+            });
+            experience_id_str = result.insertedId.toString();
 
-                    const testData = {
-                        created_at: new Date(),
-                        user_id: fake_user._id,
-                        reason_category: "我認為這篇文章內容不實",
-                        reason: "This is not true",
-                        ref: DBRef("experiences", ObjectId(experience_id_str)),
-                    };
-                    const testData2 = {
-                        created_at: new Date(),
-                        user_id: fake_other_user._id,
-                        reason_category: "我認為這篇文章內容不實",
-                        reason: "This is not true",
-                        ref: DBRef("experiences", ObjectId(experience_id_str)),
-                    };
+            const testData = {
+                created_at: new Date(),
+                user_id: fake_user._id,
+                reason_category: "我認為這篇文章內容不實",
+                reason: "This is not true",
+                ref: DBRef("experiences", ObjectId(experience_id_str)),
+            };
+            const testData2 = {
+                created_at: new Date(),
+                user_id: fake_other_user._id,
+                reason_category: "我認為這篇文章內容不實",
+                reason: "This is not true",
+                ref: DBRef("experiences", ObjectId(experience_id_str)),
+            };
 
-                    return Promise.all([
-                        db.collection("reports").insertOne(testData),
-                        db.collection("reports").insertOne(testData2),
-                    ]);
-                })
-        );
+            await db.collection("reports").insertOne(testData);
+            await db.collection("reports").insertOne(testData2);
+        });
 
         it("should get reports, and the fields are correct", () =>
             request(app)
@@ -358,11 +310,10 @@ describe("Reports Test", () => {
                 })
                 .expect(422));
 
-        after(() => {
-            const pro1 = db.collection("reports").deleteMany({});
-            const pro2 = db.collection("experiences").deleteMany({});
-            const pro3 = db.collection("repoerts").deleteMany({});
-            return Promise.all([pro1, pro2, pro3]);
+        after(async () => {
+            await db.collection("reports").deleteMany({});
+            await db.collection("experiences").deleteMany({});
+            await db.collection("repoerts").deleteMany({});
         });
 
         after(() => {

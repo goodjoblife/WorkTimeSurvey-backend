@@ -1,8 +1,8 @@
 const { assert } = require("chai");
 const request = require("supertest");
-const { MongoClient, ObjectId } = require("mongodb");
+const { ObjectId } = require("mongodb");
+const { connectMongo } = require("../../models/connect");
 const sinon = require("sinon");
-const config = require("config");
 
 const app = require("../../app");
 const authentication = require("../../libs/authentication");
@@ -30,12 +30,13 @@ describe("Experience Likes Test", () => {
     };
 
     before(async () => {
-        db = await MongoClient.connect(config.get("MONGODB_URI"));
+        ({ db } = await connectMongo());
     });
 
-    describe("Post : /experiences/:id/likes", () => {
+    describe("POST /experiences/:id/likes", () => {
         let experience_id_string;
         let sandbox;
+        const path = id => `/experiences/${id}/likes`;
 
         beforeEach("Create test data", async () => {
             sandbox = sinon.sandbox.create();
@@ -67,7 +68,7 @@ describe("Experience Likes Test", () => {
 
         it("Post likes, and expected return success ", () =>
             request(app)
-                .post(`/experiences/${experience_id_string}/likes`)
+                .post(path(experience_id_string))
                 .send({
                     access_token: "fakeaccesstoken",
                 })
@@ -78,7 +79,7 @@ describe("Experience Likes Test", () => {
 
         it("Set error experience Id, and expected return 404", () =>
             request(app)
-                .post("/experiences/1111/likes")
+                .post(path("1111"))
                 .send({
                     access_token: "fakeaccesstoken",
                 })
@@ -86,12 +87,12 @@ describe("Experience Likes Test", () => {
 
         it("(! Need Index), Post like 2 times , and expected return 403", async () => {
             await request(app)
-                .post(`/experiences/${experience_id_string}/likes`)
+                .post(path(experience_id_string))
                 .send({
                     access_token: "fakeaccesstoken",
                 });
             await request(app)
-                .post(`/experiences/${experience_id_string}/likes`)
+                .post(path(experience_id_string))
                 .send({
                     access_token: "fakeaccesstoken",
                 })
@@ -100,12 +101,12 @@ describe("Experience Likes Test", () => {
 
         it("User does not login , and expected return code 401", () =>
             request(app)
-                .post(`/experiences/${experience_id_string}/likes`)
+                .post(path(experience_id_string))
                 .expect(401));
 
         it("Post like and get experience , and expected like_count of experience should be 1 ", async () => {
             await request(app)
-                .post(`/experiences/${experience_id_string}/likes`)
+                .post(path(experience_id_string))
                 .send({
                     access_token: "fakeaccesstoken",
                 });
@@ -121,7 +122,7 @@ describe("Experience Likes Test", () => {
 
         it("Post like and get experience, and expected to insert one log", async () => {
             await request(app)
-                .post(`/experiences/${experience_id_string}/likes`)
+                .post(path(experience_id_string))
                 .send({
                     access_token: "fakeaccesstoken",
                 });
@@ -137,14 +138,13 @@ describe("Experience Likes Test", () => {
         });
 
         it("(! Need Index), Post like 2 times (same user) and get experience , and like_count of experience should be 1 ", async () => {
-            const uri = `/experiences/${experience_id_string}/likes`;
             await request(app)
-                .post(uri)
+                .post(path(experience_id_string))
                 .send({
                     access_token: "fakeaccesstoken",
                 });
             await request(app)
-                .post(uri)
+                .post(path(experience_id_string))
                 .send({
                     access_token: "fakeaccesstoken",
                 });
@@ -159,14 +159,13 @@ describe("Experience Likes Test", () => {
         });
 
         it("Post like 2 times(same user) and get experience , and expected to insert one log", async () => {
-            const uri = `/experiences/${experience_id_string}/likes`;
             await request(app)
-                .post(uri)
+                .post(path(experience_id_string))
                 .send({
                     access_token: "fakeaccesstoken",
                 });
             await request(app)
-                .post(uri)
+                .post(path(experience_id_string))
                 .send({
                     access_token: "fakeaccesstoken",
                 });
@@ -183,14 +182,13 @@ describe("Experience Likes Test", () => {
         });
 
         it("Post like 2 times(different user) and get experience , and expected like_count of experience should be 2 ", async () => {
-            const uri = `/experiences/${experience_id_string}/likes`;
             await request(app)
-                .post(uri)
+                .post(path(experience_id_string))
                 .send({
                     access_token: "fakeaccesstoken",
                 });
             await request(app)
-                .post(uri)
+                .post(path(experience_id_string))
                 .send({
                     access_token: "other_fakeaccesstoken",
                 });
@@ -205,14 +203,13 @@ describe("Experience Likes Test", () => {
         });
 
         it("Post like 2 times(different user) and get experience , and expected to insert two logs", async () => {
-            const uri = `/experiences/${experience_id_string}/likes`;
             await request(app)
-                .post(uri)
+                .post(path(experience_id_string))
                 .send({
                     access_token: "fakeaccesstoken",
                 });
             await request(app)
-                .post(uri)
+                .post(path(experience_id_string))
                 .send({
                     access_token: "other_fakeaccesstoken",
                 });
@@ -245,12 +242,13 @@ describe("Experience Likes Test", () => {
         });
     });
 
-    describe("Delete : /experiences/:id/likes", () => {
+    describe("DELETE /experiences/:id/likes", () => {
         let experience_id_string_by_user = null;
         let experience_id_by_user = null;
         let experience_id_by_other_user = null;
         let test_likes = null;
         let sandbox;
+        const path = id => `/experiences/${id}/likes`;
 
         beforeEach("mock user", () => {
             sandbox = sinon.sandbox.create();
@@ -321,7 +319,7 @@ describe("Experience Likes Test", () => {
 
         it("should delete the record, and return success", async () => {
             await request(app)
-                .delete(`/experiences/${experience_id_string_by_user}/likes`)
+                .delete(path(experience_id_string_by_user))
                 .send({
                     access_token: "fakeaccesstoken",
                 })
@@ -348,7 +346,7 @@ describe("Experience Likes Test", () => {
                 user_id: test_likes[0].user_id,
             });
             await request(app)
-                .delete(`/experiences/${experience_id_string_by_user}/likes`)
+                .delete(path(experience_id_string_by_user))
                 .expect(401);
 
             const experience = await db.collection("experiences").findOne({
@@ -366,7 +364,7 @@ describe("Experience Likes Test", () => {
                 user_id: test_likes[0].user_id,
             });
             await request(app)
-                .delete(`/experiences/${experience_id_string_by_user}/likes`)
+                .delete(path(experience_id_string_by_user))
                 .send({
                     access_token: "fakeaccesstoken",
                 })
@@ -386,7 +384,7 @@ describe("Experience Likes Test", () => {
                 user_id: test_likes[0].user_id,
             });
             await request(app)
-                .delete("/experiences/123456789/likes")
+                .delete(path("123456789"))
                 .send({
                     access_token: "fakeaccesstoken",
                 })
@@ -403,7 +401,7 @@ describe("Experience Likes Test", () => {
 
         it("should not delete others`s like if user cancels the like of an experience", async () => {
             await request(app)
-                .delete(`/experiences/${experience_id_string_by_user}/likes`)
+                .delete(path(experience_id_string_by_user))
                 .send({
                     access_token: "fakeaccesstoken",
                 })
@@ -422,7 +420,7 @@ describe("Experience Likes Test", () => {
 
         it("should not delete the other experiences`s like, when the user cancels the like of an experience", async () => {
             await request(app)
-                .delete(`/experiences/${experience_id_string_by_user}/likes`)
+                .delete(path(experience_id_string_by_user))
                 .send({
                     access_token: "fakeaccesstoken",
                 })
@@ -439,17 +437,15 @@ describe("Experience Likes Test", () => {
             );
         });
 
-        afterEach(() => {
+        afterEach(async () => {
             sandbox.restore();
-            const pro1 = db.collection("experience_likes").deleteMany({});
-            const pro2 = db.collection("experiences").deleteMany({});
-            return Promise.all([pro1, pro2]);
+            await db.collection("experience_likes").deleteMany({});
+            await db.collection("experiences").deleteMany({});
         });
 
-        afterEach(() =>
-            db
-                .collection("popular_experience_logs")
-                .drop()
-                .then(() => create_capped_collection(db)));
+        afterEach(async () => {
+            await db.collection("popular_experience_logs").drop();
+            await create_capped_collection(db);
+        });
     });
 });

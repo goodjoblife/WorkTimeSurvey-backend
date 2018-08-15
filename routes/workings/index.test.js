@@ -107,42 +107,42 @@ describe("Workings 工時資訊", () => {
                         assert.lengthOf(res.body.time_and_salary, 4);
                     }));
 
-            it(`return correct default order with SORT_FIELD: ${sort_field}`, () =>
-                request(app)
+            it(`return correct default order with SORT_FIELD: ${sort_field}`, async () => {
+                const res = await request(app)
                     .get("/workings")
                     .query({
                         sort_by: sort_field,
                     })
-                    .expect(200)
-                    .expect(res => {
-                        if (sort_field === undefined) {
-                            sort_field = "created_at";
-                        }
+                    .expect(200);
 
-                        const workings = res.body.time_and_salary;
-                        let undefined_start_idx = workings.length;
+                if (sort_field === undefined) {
+                    sort_field = "created_at";
+                }
 
-                        for (const idx in workings) {
-                            if (workings[idx][sort_field] === undefined) {
-                                undefined_start_idx = idx;
-                                break;
-                            }
-                        }
+                const workings = res.body.time_and_salary;
+                let undefined_start_idx = workings.length;
 
-                        for (let idx = 1; idx < undefined_start_idx; idx += 1) {
-                            assert(
-                                workings[idx][sort_field] <=
-                                    workings[idx - 1][sort_field]
-                            );
-                        }
-                        for (
-                            let idx = undefined_start_idx;
-                            idx < workings.length;
-                            idx += 1
-                        ) {
-                            assert.isUndefined(workings[idx][sort_field]);
-                        }
-                    }));
+                for (const idx in workings) {
+                    if (workings[idx][sort_field] === undefined) {
+                        undefined_start_idx = idx;
+                        break;
+                    }
+                }
+
+                for (let idx = 1; idx < undefined_start_idx; idx += 1) {
+                    assert(
+                        workings[idx][sort_field] <=
+                            workings[idx - 1][sort_field]
+                    );
+                }
+                for (
+                    let idx = undefined_start_idx;
+                    idx < workings.length;
+                    idx += 1
+                ) {
+                    assert.isUndefined(workings[idx][sort_field]);
+                }
+            });
         }
 
         it(`sort_by ascending order with default SORT_FIELD 'created_at'`, () =>
@@ -165,33 +165,28 @@ describe("Workings 工時資訊", () => {
                     }
                 }));
 
-        it(`sort_by ascending order with SORT_FIELD 'week_work_time'`, () =>
-            request(app)
+        it(`sort_by ascending order with SORT_FIELD 'week_work_time'`, async () => {
+            const res = await request(app)
                 .get("/workings")
                 .query({
                     sort_by: "week_work_time",
                     order: "ascending",
                 })
-                .expect(200)
-                .expect(res => {
-                    const sort_field = "week_work_time";
-                    const workings = res.body.time_and_salary;
+                .expect(200);
 
-                    const undefined_idx = 3;
-                    for (let idx = 1; idx < undefined_idx; idx += 1) {
-                        assert(
-                            workings[idx][sort_field] >=
-                                workings[idx - 1][sort_field]
-                        );
-                    }
-                    for (
-                        let idx = undefined_idx;
-                        idx < workings.length;
-                        idx += 1
-                    ) {
-                        assert.isUndefined(workings[idx][sort_field]);
-                    }
-                }));
+            const sort_field = "week_work_time";
+            const workings = res.body.time_and_salary;
+
+            const undefined_idx = 3;
+            for (let idx = 1; idx < undefined_idx; idx += 1) {
+                assert(
+                    workings[idx][sort_field] >= workings[idx - 1][sort_field]
+                );
+            }
+            for (let idx = undefined_idx; idx < workings.length; idx += 1) {
+                assert.isUndefined(workings[idx][sort_field]);
+            }
+        });
 
         it(`欄位是 undefined 的資料全部會被放在 defined 的資料的後面`, () =>
             request(app)

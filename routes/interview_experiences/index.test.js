@@ -5,10 +5,9 @@ chai.use(chaiAsPromised);
 const assert = chai.assert;
 const request = require("supertest");
 const app = require("../../app");
-const MongoClient = require("mongodb").MongoClient;
+const { connectMongo } = require("../../models/connect");
 const ObjectId = require("mongodb").ObjectId;
 const sinon = require("sinon");
-const config = require("config");
 const authentication = require("../../libs/authentication");
 
 function generateInterviewExperiencePayload(options) {
@@ -75,11 +74,9 @@ describe("experiences 面試和工作經驗資訊", () => {
         },
     };
 
-    before("DB: Setup", () =>
-        MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
-            db = _db;
-        })
-    );
+    before(async () => {
+        ({ db } = await connectMongo());
+    });
 
     describe("POST /interview_experiences", () => {
         let sandbox;
@@ -112,71 +109,56 @@ describe("experiences 面試和工作經驗資訊", () => {
                 .resolves(fake_user);
         });
 
-        describe("generate payload", () => {
-            it("generateInterViewExperiencePayload", () =>
-                request(app)
-                    .post("/interview_experiences")
-                    .send(generateInterviewExperiencePayload())
-                    .expect(200)
-                    .then(res =>
-                        db
-                            .collection("experiences")
-                            .findOne({ _id: ObjectId(res.body.experience._id) })
-                            .then(experience => {
-                                // expected fields in db
-                                assert.equal(experience.type, "interview");
-                                assert.deepEqual(
-                                    experience.author_id,
-                                    fake_user._id
-                                );
-                                assert.deepEqual(experience.company, {
-                                    id: "00000001",
-                                    name: "GOODJOB",
-                                });
-                                assert.equal(experience.region, "臺北市");
-                                assert.equal(
-                                    experience.job_title,
-                                    "JOB_TITLE_EXAMPLE"
-                                );
-                                assert.equal(experience.title, "title_example");
-                                assert.deepEqual(experience.sections, [
-                                    {
-                                        subtitle: "subtitle1",
-                                        content: "content1",
-                                    },
-                                ]);
-                                assert.equal(experience.experience_in_year, 10);
-                                assert.equal(experience.education, "大學");
-                                assert.deepEqual(experience.interview_time, {
-                                    year: 2017,
-                                    month: 3,
-                                });
-                                assert.deepEqual(experience.interview_qas, [
-                                    { question: "qas1", answer: "ans1" },
-                                ]);
-                                assert.deepEqual(
-                                    experience.interview_result,
-                                    "up"
-                                );
-                                assert.deepEqual(
-                                    experience.interview_sensitive_questions,
-                                    []
-                                );
-                                assert.deepEqual(experience.salary, {
-                                    type: "year",
-                                    amount: 10000,
-                                });
-                                assert.deepEqual(experience.overall_rating, 5);
-                                assert.deepEqual(experience.like_count, 0);
-                                assert.deepEqual(experience.reply_count, 0);
-                                assert.deepEqual(experience.report_count, 0);
-                                assert.deepEqual(
-                                    experience.status,
-                                    "published"
-                                );
-                                assert.property(experience, "created_at");
-                            })
-                    ));
+        it("should success", async () => {
+            const res = await request(app)
+                .post("/interview_experiences")
+                .send(generateInterviewExperiencePayload())
+                .expect(200);
+
+            const experience = await db
+                .collection("experiences")
+                .findOne({ _id: ObjectId(res.body.experience._id) });
+
+            // expected fields in db
+            assert.equal(experience.type, "interview");
+            assert.deepEqual(experience.author_id, fake_user._id);
+            assert.deepEqual(experience.company, {
+                id: "00000001",
+                name: "GOODJOB",
+            });
+            assert.equal(experience.region, "臺北市");
+            assert.equal(experience.job_title, "JOB_TITLE_EXAMPLE");
+            assert.equal(experience.title, "title_example");
+            assert.deepEqual(experience.sections, [
+                {
+                    subtitle: "subtitle1",
+                    content: "content1",
+                },
+            ]);
+            assert.equal(experience.experience_in_year, 10);
+            assert.equal(experience.education, "大學");
+            assert.deepEqual(experience.interview_time, {
+                year: 2017,
+                month: 3,
+            });
+            assert.deepEqual(experience.interview_qas, [
+                { question: "qas1", answer: "ans1" },
+            ]);
+            assert.deepEqual(experience.interview_result, "up");
+            assert.deepEqual(experience.interview_sensitive_questions, []);
+            assert.deepEqual(experience.salary, {
+                type: "year",
+                amount: 10000,
+            });
+            assert.deepEqual(experience.overall_rating, 5);
+            assert.deepEqual(experience.like_count, 0);
+            assert.deepEqual(experience.reply_count, 0);
+            assert.deepEqual(experience.report_count, 0);
+            assert.deepEqual(experience.status, "published");
+            assert.property(experience, "created_at");
+
+            assert.equal(experience.is_archive, false);
+            assert.equal(experience.archive_reason, "");
         });
 
         describe("Common Data Validation Part", () => {
@@ -755,25 +737,23 @@ describe("experiences 面試和工作經驗資訊", () => {
                     .expect(422));
 
             for (const input of ["大學", "高中", "國中"]) {
-                it(`education should be ${input}`, () =>
-                    request(app)
+                it(`education should be ${input}`, async () => {
+                    const res = await request(app)
                         .post("/interview_experiences")
                         .send(
                             generateInterviewExperiencePayload({
                                 education: input,
                             })
                         )
-                        .expect(200)
-                        .then(res =>
-                            db
-                                .collection("experiences")
-                                .findOne({
-                                    _id: ObjectId(res.body.experience._id),
-                                })
-                                .then(experience => {
-                                    assert.equal(experience.education, input);
-                                })
-                        ));
+                        .expect(200);
+
+                    const experience = await db
+                        .collection("experiences")
+                        .findOne({
+                            _id: ObjectId(res.body.experience._id),
+                        });
+                    assert.equal(experience.education, input);
+                });
             }
         });
 
@@ -788,13 +768,10 @@ describe("experiences 面試和工作經驗資訊", () => {
             });
         });
 
-        after("DB: 清除 experiences", () =>
-            db.collection("experiences").deleteMany({})
-        );
-
-        after("DB: 清除 companies", () =>
-            db.collection("companies").deleteMany({})
-        );
+        after(async () => {
+            await db.collection("experiences").deleteMany({});
+            await db.collection("companies").deleteMany({});
+        });
 
         afterEach(() => {
             sandbox.restore();

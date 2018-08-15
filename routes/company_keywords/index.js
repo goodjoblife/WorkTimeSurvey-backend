@@ -22,26 +22,12 @@ router.get(
             throw new HttpError("number should be 1~20", 422);
         }
 
-        const collection = req.db.collection("company_keywords");
+        const companyKeywordModel = req.manager.CompanyKeywordModel;
 
-        const results = await collection
-            .aggregate([
-                {
-                    $group: {
-                        _id: "$word",
-                        count: { $sum: 1 },
-                    },
-                },
-                { $sort: { count: -1 } },
-                { $limit: num },
-            ])
-            .toArray();
+        const results = await companyKeywordModel.aggregate({ limit: num });
+        const keywords = results.map(result => result._id);
 
-        const keywords = {
-            keywords: results.map(result => result._id),
-        };
-
-        res.send(keywords);
+        res.send({ keywords });
     })
 );
 

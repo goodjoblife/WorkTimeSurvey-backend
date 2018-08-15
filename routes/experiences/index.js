@@ -64,22 +64,20 @@ function _queryToDBQuery(search_query, search_by, type) {
     return query;
 }
 
-function _keyWordFactory(type) {
-    /* eslint-disable global-require */
+function _keywordFactory(type, manager) {
     if (type === "company") {
-        return require("../../models/company_keywords_model");
+        return manager.CompanyKeywordModel;
     } else if (type === "job_title") {
-        return require("../../models/job_title_keywords_model");
+        return manager.JobTitleKeywordModel;
     }
-    /* eslint-enale global-require */
 }
 
-function _saveKeyWord(query, type, db) {
+function _saveKeyWord(query, type, manager) {
     if (!query) {
         return;
     }
 
-    const keyword_model = new (_keyWordFactory(type))(db);
+    const keyword_model = _keywordFactory(type, manager);
     return keyword_model.createKeyword(query);
 }
 
@@ -171,7 +169,7 @@ router.get(
         const type = req.query.type || "interview,work";
 
         const query = _queryToDBQuery(search_query, search_by, type);
-        _saveKeyWord(search_query, search_by, req.db);
+        _saveKeyWord(search_query, search_by, req.manager);
 
         const db_sort_field =
             sort_field === "popularity" ? "like_count" : sort_field;

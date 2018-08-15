@@ -34,25 +34,22 @@ describe("Permission Library", () => {
         describe(`correctly authorize user with ${JSON.stringify(
             data
         )}`, () => {
-            before(() => {
+            before(async () => {
                 // insert test data into db
                 if (data.counts) {
-                    return db
-                        .collection("users")
-                        .insert({
-                            facebook_id: "peter.shih",
-                            time_and_salary_count:
-                                data.counts.time_and_salary_count,
-                        })
-                        .then(() =>
-                            db.collection("recommendations").insert({
-                                user: {
-                                    id: "peter.shih",
-                                    type: "facebook",
-                                },
-                                count: data.counts.reference_count,
-                            })
-                        );
+                    await db.collection("users").insert({
+                        facebook_id: "peter.shih",
+                        time_and_salary_count:
+                            data.counts.time_and_salary_count,
+                    });
+
+                    await db.collection("recommendations").insert({
+                        user: {
+                            id: "peter.shih",
+                            type: "facebook",
+                        },
+                        count: data.counts.reference_count,
+                    });
                 }
             });
 
@@ -68,9 +65,10 @@ describe("Permission Library", () => {
                 );
             });
 
-            after(() => db.collection("users").deleteMany({}));
-
-            after(() => db.collection("recommendations").deleteMany({}));
+            after(async () => {
+                await db.collection("users").deleteMany({});
+                await db.collection("recommendations").deleteMany({});
+            });
         });
     });
 
@@ -95,7 +93,9 @@ describe("Permission Library", () => {
             assert.isTrue(await permission.resolveSearchPermission(db, user));
         });
 
-        after(() => db.collection("experiences").deleteMany({}));
-        after(() => db.collection("users").deleteMany({}));
+        after(async () => {
+            await db.collection("experiences").deleteMany({});
+            await db.collection("users").deleteMany({});
+        });
     });
 });

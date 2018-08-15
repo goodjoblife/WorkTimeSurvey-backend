@@ -492,6 +492,9 @@ async function main(req, res) {
 
         const author = working.author;
 
+        working.is_archive = false;
+        working.archive_reason = "";
+
         const queries_count = await helper.checkAndUpdateQuota(req.db, {
             id: author.id,
             type: author.type,

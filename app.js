@@ -4,6 +4,7 @@ const config = require("config");
 const cors = require("cors");
 const express = require("express");
 const expressMongoDb = require("express-mongo-db");
+const { graphqlExpress, graphiqlExpress } = require("apollo-server-express");
 const { HttpError, ObjectNotExistError } = require("./libs/errors");
 const logger = require("morgan");
 const winston = require("winston");
@@ -12,7 +13,9 @@ require("winston-mongodb").MongoDB;
 const passport = require("passport");
 const passportStrategies = require("./libs/passport-strategies");
 
+const ModelManager = require("./models/manager");
 const routes = require("./routes");
+const schema = require("./schema");
 
 const app = express();
 
@@ -41,6 +44,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(expressMongoDb(config.get("MONGODB_URI")));
 app.use(require("./middlewares").expressRedisDb(config.get("REDIS_URL")));
+app.use((req, res, next) => {
+    req.manager = new ModelManager(req.db);
+    next();
+});
 
 if (config.get("CORS_ANY") === "TRUE") {
     app.use(cors());
@@ -64,6 +71,14 @@ app.use((req, res, next) => {
 app.use(passport.initialize());
 passport.use(passportStrategies.legacyFacebookTokenStrategy());
 app.use("/", routes);
+
+if (app.get("env") === "development") {
+    app.get("/graphiql", graphiqlExpress({ endpointURL: "/graphql" }));
+}
+app.use(
+    "/graphql",
+    graphqlExpress(({ db, manager }) => ({ schema, context: { db, manager } }))
+);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

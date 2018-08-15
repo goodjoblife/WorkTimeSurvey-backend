@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node ./bin/www",
     "dev": "nodemon ./bin/www",
-    "test": "mocha --recursive libs routes test middlewares models database",
+    "test": "mocha --recursive libs routes test middlewares models database schema",
     "lint": "eslint \"./**/*.js\"",
     "lint:fix": "npm run lint -- --fix",
     "migrate": "node ./bin/migrate",
@@ -21,6 +21,7 @@
     "url": "https://github.com/goodjoblife/WorkTimeSurvey-backend/issues"
   },
   "dependencies": {
+    "apollo-server-express": "^1.3.6",
     "body-parser": "^1.15.1",
     "compression": "^1.6.2",
     "config": "^1.25.1",
@@ -28,6 +29,8 @@
     "debug": "^2.2.0",
     "express": "^4.13.4",
     "express-mongo-db": "^2.0.3",
+    "graphql": "^0.13.2",
+    "graphql-tools": "^3.0.5",
     "lodash": "^4.13.1",
     "mongodb": "^2.2.25",
     "morgan": "^1.7.0",

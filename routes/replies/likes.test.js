@@ -77,117 +77,73 @@ describe("POST /replies/:id/likes", () => {
             })
             .expect(404));
 
-    it("it should 200 success if succeed", () => {
-        const req = request(app)
+    it("it should 200 success if succeed", async () => {
+        const res = await request(app)
             .post(`/replies/${reply_id_string}/likes`)
             .send({
                 access_token: "fakeAccessToken",
             })
-            .expect(200)
-            .expect(res => {
-                assert.deepEqual(res.body, { success: true });
-            });
+            .expect(200);
+        assert.deepEqual(res.body, { success: true });
 
-        const check_reply_likes_collection = req
-            .then(() =>
-                db.collection("reply_likes").findOne({
-                    reply_id: new ObjectId(reply_id_string),
-                    user_id: fake_user._id,
-                })
-            )
-            .then(record => {
-                assert.isNotNull(record, "expect record is retrieved in db");
-                assert.deepEqual(
-                    record.reply_id,
-                    new ObjectId(reply_id_string)
-                );
-                assert.deepEqual(record.experience_id, experience_id);
-            });
+        const record = await db.collection("reply_likes").findOne({
+            reply_id: new ObjectId(reply_id_string),
+            user_id: fake_user._id,
+        });
+        assert.isNotNull(record, "expect record is retrieved in db");
+        assert.deepEqual(record.reply_id, new ObjectId(reply_id_string));
+        assert.deepEqual(record.experience_id, experience_id);
 
-        const check_replies_collection = req
-            .then(() =>
-                db.collection("replies").findOne({
-                    _id: new ObjectId(reply_id_string),
-                })
-            )
-            .then(reply => {
-                assert.isNotNull(reply, "expect reply is retrieved in db");
-                assert.propertyVal(reply, "like_count", 1);
-            });
-
-        return Promise.all([
-            check_reply_likes_collection,
-            check_replies_collection,
-        ]);
+        const reply = await db.collection("replies").findOne({
+            _id: new ObjectId(reply_id_string),
+        });
+        assert.isNotNull(reply, "expect reply is retrieved in db");
+        assert.propertyVal(reply, "like_count", 1);
     });
 
-    it("it should 200 success if other user like the same reply", () => {
-        const req = request(app)
+    it("it should 200 success if other user like the same reply", async () => {
+        await request(app)
             .post(`/replies/${reply_id_string}/likes`)
             .send({
                 access_token: "fakeAccessToken",
             })
-            .expect(200)
-            .then(() =>
-                request(app)
-                    .post(`/replies/${reply_id_string}/likes`)
-                    .send({
-                        access_token: "otherFakeAccessToken",
-                    })
-                    .expect(200)
-            );
+            .expect(200);
+        await request(app)
+            .post(`/replies/${reply_id_string}/likes`)
+            .send({
+                access_token: "otherFakeAccessToken",
+            })
+            .expect(200);
 
-        const check = req
-            .then(() =>
-                db.collection("replies").findOne({
-                    _id: new ObjectId(reply_id_string),
-                })
-            )
-            .then(reply => {
-                assert.isNotNull(reply, "expect reply is retrieved in db");
-                assert.propertyVal(reply, "like_count", 2);
-            });
+        const reply = await db.collection("replies").findOne({
+            _id: new ObjectId(reply_id_string),
+        });
 
-        return check;
+        assert.isNotNull(reply, "expect reply is retrieved in db");
+        assert.propertyVal(reply, "like_count", 2);
     });
 
-    it("it should 403 Forbidden if like again", () => {
-        const req = request(app)
+    it("it should 403 Forbidden if like again", async () => {
+        const res = await request(app)
             .post(`/replies/${reply_id_string}/likes`)
             .send({
                 access_token: "fakeAccessToken",
             })
-            .expect(200)
-            .expect(res => {
-                assert.deepEqual(res.body, { success: true });
-            });
+            .expect(200);
+        assert.deepEqual(res.body, { success: true });
+        await request(app)
+            .post(`/replies/${reply_id_string}/likes`)
+            .send({
+                access_token: "fakeAccessToken",
+            })
+            .expect(403);
 
-        const other_req = req.then(() =>
-            request(app)
-                .post(`/replies/${reply_id_string}/likes`)
-                .send({
-                    access_token: "fakeAccessToken",
-                })
-                .expect(403)
-        );
+        const reply = await db.collection("replies").findOne({
+            _id: new ObjectId(reply_id_string),
+        });
 
-        const check_replies_collection = other_req
-            .then(() =>
-                db.collection("replies").findOne({
-                    _id: new ObjectId(reply_id_string),
-                })
-            )
-            .then(reply => {
-                assert.isNotNull(reply, "expect reply is retrieved in db");
-                assert.propertyVal(
-                    reply,
-                    "like_count",
-                    1,
-                    "like_count is still 1"
-                );
-            });
-
-        return check_replies_collection;
+        assert.isNotNull(reply, "expect reply is retrieved in db");
+        assert.propertyVal(reply, "like_count", 1, "like_count is still 1");
     });
 
     it("it should 404 if like the hidden reply", () =>
@@ -202,9 +158,10 @@ describe("POST /replies/:id/likes", () => {
         sandbox.restore();
     });
 
-    afterEach(() => db.collection("replies").deleteMany({}));
-
-    afterEach(() => db.collection("reply_likes").deleteMany({}));
+    afterEach(async () => {
+        await db.collection("replies").deleteMany({});
+        await db.collection("reply_likes").deleteMany({});
+    });
 });
 
 describe("DELETE /replies/:id/likes", () => {
@@ -306,83 +263,53 @@ describe("DELETE /replies/:id/likes", () => {
             })
             .expect(404));
 
-    it("it should 200 success if succeed", () => {
-        const req = request(app)
+    it("it should 200 success if succeed", async () => {
+        const res = await request(app)
             .delete(`/replies/${reply_id_string}/likes`)
             .send({
                 access_token: "fakeAccessToken",
             })
-            .expect(200)
-            .expect(res => {
-                assert.deepEqual(res.body, { success: true });
-            });
+            .expect(200);
+        assert.deepEqual(res.body, { success: true });
 
-        const check_reply_likes_collection = req
-            .then(() =>
-                db.collection("reply_likes").findOne({
-                    reply_id: new ObjectId(reply_id_string),
-                    user_id: fake_user._id,
-                })
-            )
-            .then(record => {
-                assert.isNull(record, "expect nothing is trieved in db");
-            });
+        const record = await db.collection("reply_likes").findOne({
+            reply_id: new ObjectId(reply_id_string),
+            user_id: fake_user._id,
+        });
+        assert.isNull(record, "expect nothing is trieved in db");
 
-        const check_replies_collection = req
-            .then(() =>
-                db.collection("replies").findOne({
-                    _id: new ObjectId(reply_id_string),
-                })
-            )
-            .then(reply => {
-                assert.isNotNull(reply, "expect reply is retrieved in db");
-                assert.propertyVal(
-                    reply,
-                    "like_count",
-                    1,
-                    "should change from 2 to 1"
-                );
-            });
-
-        return Promise.all([
-            check_reply_likes_collection,
-            check_replies_collection,
-        ]);
+        const reply = await db.collection("replies").findOne({
+            _id: new ObjectId(reply_id_string),
+        });
+        assert.isNotNull(reply, "expect reply is retrieved in db");
+        assert.propertyVal(reply, "like_count", 1, "should change from 2 to 1");
     });
 
-    it("it should 200 success if other user dislike the same reply", () => {
-        const req = request(app)
+    it("it should 200 success if other user dislike the same reply", async () => {
+        await request(app)
             .delete(`/replies/${reply_id_string}/likes`)
             .send({
                 access_token: "fakeAccessToken",
             })
-            .expect(200)
-            .then(() =>
-                request(app)
-                    .delete(`/replies/${reply_id_string}/likes`)
-                    .send({
-                        access_token: "otherFakeAccessToken",
-                    })
-                    .expect(200)
-            );
+            .expect(200);
+        await request(app)
+            .delete(`/replies/${reply_id_string}/likes`)
+            .send({
+                access_token: "otherFakeAccessToken",
+            })
+            .expect(200);
 
-        const check_like_count = req
-            .then(() =>
-                db.collection("replies").findOne({
-                    _id: new ObjectId(reply_id_string),
-                })
-            )
-            .then(reply => {
-                assert.isNotNull(reply, "expect reply is retrieved in db");
-                assert.propertyVal(
-                    reply,
-                    "like_count",
-                    0,
-                    "should change from 2 to 1 then 0"
-                );
-            });
+        const reply = await db.collection("replies").findOne({
+            _id: new ObjectId(reply_id_string),
+        });
 
-        return check_like_count;
+        assert.isNotNull(reply, "expect reply is retrieved in db");
+        assert.propertyVal(
+            reply,
+            "like_count",
+            0,
+            "should change from 2 to 1 then 0"
+        );
     });
 
     it("it should 404 NotFound if dislike a no like reply", () =>
@@ -405,7 +332,8 @@ describe("DELETE /replies/:id/likes", () => {
         sandbox.restore();
     });
 
-    afterEach(() => db.collection("replies").deleteMany({}));
-
-    afterEach(() => db.collection("reply_likes").deleteMany({}));
+    afterEach(async () => {
+        await db.collection("replies").deleteMany({});
+        await db.collection("reply_likes").deleteMany({});
+    });
 });

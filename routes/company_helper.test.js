@@ -3,19 +3,16 @@ const chaiAsPromised = require("chai-as-promised");
 
 chai.use(chaiAsPromised);
 const assert = chai.assert;
-const MongoClient = require("mongodb").MongoClient;
-const config = require("config");
+const { connectMongo } = require("../models/connect");
 const helper = require("./company_helper");
 
 describe("company Helper", () => {
     describe("Get company by Id or query", () => {
         let db;
 
-        before("DB: Setup", () =>
-            MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
-                db = _db;
-            })
-        );
+        before(async () => {
+            ({ db } = await connectMongo());
+        });
 
         before("Seed companies", () =>
             db.collection("companies").insertMany([
