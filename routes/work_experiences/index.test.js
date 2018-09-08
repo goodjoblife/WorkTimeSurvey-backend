@@ -153,8 +153,8 @@ describe("experiences 面試和工作經驗資訊", () => {
             assert.property(experience, "data_time");
             assert.deepEqual(experience.status, "published");
 
-            assert.equal(experience.is_archive, false);
-            assert.equal(experience.archive_reason, "");
+            assert.equal(experience.archive.is_archived, false);
+            assert.equal(experience.archive.reason, "");
 
             // expected response
             assert.property(res.body, "success");

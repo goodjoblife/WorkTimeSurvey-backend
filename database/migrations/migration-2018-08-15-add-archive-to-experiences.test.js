@@ -17,8 +17,8 @@ describe("Migrate experiences (add adchived related field)", function() {
         await migration(db);
 
         const experience = await collection.findOne();
-        assert.propertyVal(experience, "is_archive", false);
-        assert.propertyVal(experience, "archive_reason", "");
+        assert.propertyVal(experience, "archive.is_archived", false);
+        assert.propertyVal(experience, "archive.reason", "");
     });
 
     after(async () => {

@@ -5,8 +5,10 @@ module.exports = async db => {
         {},
         {
             $set: {
-                is_archive: false,
-                archive_reason: "",
+                archive: {
+                    is_archived: false,
+                    reason: "",
+                },
             },
         }
     );
