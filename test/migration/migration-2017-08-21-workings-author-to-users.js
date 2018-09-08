@@ -1,13 +1,12 @@
 const { assert } = require("chai");
-const { MongoClient } = require("mongodb");
-const config = require("config");
+const { connectMongo } = require("../../models/connect");
 const migration = require("../../database/migrations/migration-2017-08-21-workings-author-to-users");
 
 describe("migration-2017-08-21-workings-author-to-users", () => {
     let db;
 
     before(async () => {
-        db = await MongoClient.connect(config.get("MONGODB_URI"));
+        ({ db } = await connectMongo());
     });
 
     before("Seed workings", () =>

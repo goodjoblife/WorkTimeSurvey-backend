@@ -2,9 +2,8 @@ const chai = require("chai");
 chai.use(require("chai-as-promised"));
 
 const assert = chai.assert;
-const MongoClient = require("mongodb").MongoClient;
+const { connectMongo } = require("../models/connect");
 const ObjectId = require("mongodb").ObjectId;
-const config = require("config");
 
 const recommendation = require("./recommendation");
 
@@ -12,11 +11,9 @@ describe("Recommendation Library", () => {
     describe("getRecommendationString", () => {
         let db;
 
-        before(() =>
-            MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
-                db = _db;
-            })
-        );
+        before(async () => {
+            ({ db } = await connectMongo());
+        });
 
         before(() =>
             db.collection("recommendations").insertMany([
@@ -72,11 +69,9 @@ describe("Recommendation Library", () => {
     describe("getUserByRecommendationString", () => {
         let db;
 
-        before(() =>
-            MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
-                db = _db;
-            })
-        );
+        before(async () => {
+            ({ db } = await connectMongo());
+        });
 
         before(() =>
             db.collection("recommendations").insertMany([

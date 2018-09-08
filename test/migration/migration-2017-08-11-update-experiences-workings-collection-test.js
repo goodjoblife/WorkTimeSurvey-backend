@@ -1,17 +1,15 @@
 const migration = require("../../database/migrations/migration-2017-08-11-update-experiences-workings-collection");
 const chai = require("chai");
-const MongoClient = require("mongodb").MongoClient;
-const config = require("config");
+const { connectMongo } = require("../../models/connect");
 
 const assert = chai.assert;
 
 describe("Migration 2017-08-11 create-status-test", () => {
     let db;
-    before(() =>
-        MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
-            db = _db;
-        })
-    );
+
+    before(async () => {
+        ({ db } = await connectMongo());
+    });
 
     before("Create the test data", () => {
         const test_experiences = [

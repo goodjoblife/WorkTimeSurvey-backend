@@ -1,17 +1,12 @@
 const { assert } = require("chai");
-const { MongoClient } = require("mongodb");
-const config = require("config");
+const { connectMongo } = require("../../models/connect");
 const create_capped_collection = require("./migration-2017-09-08-create-popularExperienceLogs-collection");
 
 describe("Popular Expereince Logs Test", function() {
     let db = null;
 
-    before(function() {
-        return MongoClient.connect(config.get("MONGODB_URI")).then(function(
-            _db
-        ) {
-            db = _db;
-        });
+    before(async () => {
+        ({ db } = await connectMongo());
     });
 
     describe("Collection popular_experience_logs", function() {

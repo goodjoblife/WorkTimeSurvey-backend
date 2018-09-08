@@ -3,9 +3,8 @@ const chai = require("chai");
 const assert = chai.assert;
 const request = require("supertest");
 const app = require("../../app");
-const MongoClient = require("mongodb").MongoClient;
+const { connectMongo } = require("../../models/connect");
 const sinon = require("sinon");
-const config = require("config");
 const authentication = require("../../libs/authentication");
 const ObjectId = require("mongodb").ObjectId;
 
@@ -128,11 +127,9 @@ describe("POST /workings", () => {
         },
     };
 
-    before("DB: Setup", () =>
-        MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
-            db = _db;
-        })
-    );
+    before(async () => {
+        ({ db } = await connectMongo());
+    });
 
     beforeEach(() => {
         sandbox = sinon.sandbox.create();

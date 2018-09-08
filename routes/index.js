@@ -20,11 +20,9 @@ router.use(
     require("./clairvoyance/search")
 );
 router.use("/companies", require("./companies"));
-router.use("/company_keywords", require("./company_keywords"));
 router.use("/experiences", require("./experiences"));
 router.use("/interview_experiences", require("./interview_experiences"));
 router.use("/jobs", require("./jobs"));
-router.use("/job_title_keywords", require("./job_title_keywords"));
 router.use("/me", require("./me"));
 router.use("/replies", require("./replies"));
 router.use("/workings", require("./workings"));

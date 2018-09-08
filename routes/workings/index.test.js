@@ -5,19 +5,17 @@ const assert = chai.assert;
 const request = require("supertest");
 const app = require("../../app");
 const sinon = require("sinon");
-const config = require("config");
-const { MongoClient, ObjectId } = require("mongodb");
+const { ObjectId } = require("mongodb");
+const { connectMongo } = require("../../models/connect");
 const authentication = require("../../libs/authentication.js");
 const { generateWorkingData } = require("../experiences/testData");
 
 describe("Workings 工時資訊", () => {
     let db;
 
-    before("DB: Setup", () =>
-        MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
-            db = _db;
-        })
-    );
+    before(async () => {
+        ({ db } = await connectMongo());
+    });
 
     describe("GET /workings", () => {
         let sandbox;

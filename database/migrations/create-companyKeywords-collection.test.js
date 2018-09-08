@@ -1,17 +1,12 @@
 const assert = require("chai").assert;
-const { MongoClient } = require("mongodb");
-const config = require("config");
+const { connectMongo } = require("../../models/connect");
 const create_capped_collection = require("./create-companyKeywords-collection");
 
 describe("Company Keywords Test", function() {
     let db = null;
 
-    before(function() {
-        return MongoClient.connect(config.get("MONGODB_URI")).then(function(
-            _db
-        ) {
-            db = _db;
-        });
+    before(async () => {
+        ({ db } = await connectMongo());
     });
 
     describe("Collection company_keywords", function() {

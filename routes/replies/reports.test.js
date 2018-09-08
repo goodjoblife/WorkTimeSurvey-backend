@@ -1,9 +1,9 @@
 const assert = require("chai").assert;
 const request = require("supertest");
 const app = require("../../app");
-const { MongoClient, ObjectId, DBRef } = require("mongodb");
+const { ObjectId, DBRef } = require("mongodb");
+const { connectMongo } = require("../../models/connect");
 const sinon = require("sinon");
-const config = require("config");
 
 const authentication = require("../../libs/authentication");
 
@@ -34,11 +34,9 @@ describe("Reports Test", () => {
         },
     };
 
-    before("DB: Setup", () =>
-        MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
-            db = _db;
-        })
-    );
+    before(async () => {
+        ({ db } = await connectMongo());
+    });
 
     describe("POST /replies/:id/reports", () => {
         let reply_id_str;

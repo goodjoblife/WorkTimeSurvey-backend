@@ -2,8 +2,8 @@ const chai = require("chai");
 chai.use(require("chai-datetime"));
 const request = require("supertest");
 const app = require("../../app");
-const { MongoClient, ObjectId } = require("mongodb");
-const config = require("config");
+const { ObjectId } = require("mongodb");
+const { connectMongo } = require("../../models/connect");
 const sinon = require("sinon");
 const authentication = require("../../libs/authentication");
 
@@ -12,8 +12,8 @@ const { assert } = chai;
 describe("Replies 留言", () => {
     let db;
 
-    before("DB: Setup", async () => {
-        db = await MongoClient.connect(config.get("MONGODB_URI"));
+    before(async () => {
+        ({ db } = await connectMongo());
     });
 
     describe("PATCH /replies/:id", () => {

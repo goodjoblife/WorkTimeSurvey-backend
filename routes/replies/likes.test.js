@@ -1,8 +1,8 @@
 const assert = require("chai").assert;
 const request = require("supertest");
-const { MongoClient, ObjectId } = require("mongodb");
+const { ObjectId } = require("mongodb");
+const { connectMongo } = require("../../models/connect");
 const sinon = require("sinon");
-const config = require("config");
 const app = require("../../app");
 const authentication = require("../../libs/authentication");
 const { generateReplyData } = require("../experiences/testData");
@@ -24,11 +24,9 @@ describe("POST /replies/:id/likes", () => {
     const experience_id = new ObjectId();
     let sandbox;
 
-    before("DB: Setup", () =>
-        MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
-            db = _db;
-        })
-    );
+    before(async () => {
+        ({ db } = await connectMongo());
+    });
 
     beforeEach("Seed reply", async () => {
         const published_reply = Object.assign(generateReplyData(), {
@@ -186,11 +184,9 @@ describe("DELETE /replies/:id/likes", () => {
     const experience_id = new ObjectId();
     let sandbox;
 
-    before("DB: Setup", () =>
-        MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
-            db = _db;
-        })
-    );
+    before(async () => {
+        ({ db } = await connectMongo());
+    });
 
     // 插入二個留言（作者 3 號），其中公開的留言有兩個按讚（作者 1, 2 號）
     beforeEach("Seed replies", async () => {

@@ -300,8 +300,10 @@ router.post("/", [
             // TODO 瀏覽次數？
             created_at: new Date(),
             // 封存狀態
-            is_archive: false,
-            archive_reason: "",
+            archive: {
+                is_archived: false,
+                reason: "",
+            },
         });
         Object.assign(experience, pickupWorkExperience(req.body));
 

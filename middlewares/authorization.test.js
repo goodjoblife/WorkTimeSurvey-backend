@@ -2,7 +2,8 @@ const chai = require("chai");
 chai.use(require("chai-as-promised"));
 
 const assert = chai.assert;
-const { MongoClient, ObjectId } = require("mongodb");
+const { ObjectId } = require("mongodb");
+const { connectMongo } = require("../models/connect");
 const redis = require("redis");
 const HttpError = require("../libs/errors").HttpError;
 const authorization = require("../middlewares/authorization");
@@ -12,11 +13,9 @@ describe("Authorization middleware", () => {
     let db;
     let redis_client;
 
-    before("Setup MongoDB", () =>
-        MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
-            db = _db;
-        })
-    );
+    before(async () => {
+        ({ db } = await connectMongo());
+    });
 
     before("Setup Redis", () => {
         redis_client = redis.createClient({ url: config.get("REDIS_URL") });

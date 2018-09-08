@@ -1,6 +1,5 @@
-const MongoClient = require("mongodb").MongoClient;
+const { connectMongo } = require("../models/connect");
 const migrations = require("./migrations");
-const config = require("config");
 
 const collection_name = "migrations";
 
@@ -36,7 +35,7 @@ async function migrate(db, name) {
 }
 
 const main = async function() {
-    const db = await MongoClient.connect(config.get("MONGODB_URI"));
+    const { db } = await connectMongo();
 
     try {
         for (const name of migrations) {

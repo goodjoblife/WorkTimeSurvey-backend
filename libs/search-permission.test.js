@@ -2,19 +2,16 @@ const chai = require("chai");
 chai.use(require("chai-as-promised"));
 
 const assert = chai.assert;
-const MongoClient = require("mongodb").MongoClient;
+const { connectMongo } = require("../models/connect");
 const ObjectId = require("mongodb").ObjectId;
-const config = require("config");
 const permission = require("./search-permission");
 
 describe("Permission Library", () => {
     let db;
 
-    before("Setup MongoDB", () =>
-        MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
-            db = _db;
-        })
-    );
+    before(async () => {
+        ({ db } = await connectMongo());
+    });
 
     const test_data = [{ expected: false }];
     [1, 0, undefined].forEach(time_and_salary_count => {

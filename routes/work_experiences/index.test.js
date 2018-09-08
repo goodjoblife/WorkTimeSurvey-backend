@@ -5,10 +5,9 @@ chai.use(chaiAsPromised);
 const assert = chai.assert;
 const request = require("supertest");
 const app = require("../../app");
-const MongoClient = require("mongodb").MongoClient;
+const { connectMongo } = require("../../models/connect");
 const ObjectId = require("mongodb").ObjectId;
 const sinon = require("sinon");
-const config = require("config");
 const authentication = require("../../libs/authentication");
 
 function generateWorkExperiencePayload(options) {
@@ -70,11 +69,9 @@ describe("experiences 面試和工作經驗資訊", () => {
         },
     };
 
-    before("DB: Setup", () =>
-        MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
-            db = _db;
-        })
-    );
+    before(async () => {
+        ({ db } = await connectMongo());
+    });
 
     describe("POST /work_experiences", () => {
         let sandbox;
@@ -153,8 +150,8 @@ describe("experiences 面試和工作經驗資訊", () => {
             assert.property(experience, "data_time");
             assert.deepEqual(experience.status, "published");
 
-            assert.equal(experience.is_archive, false);
-            assert.equal(experience.archive_reason, "");
+            assert.equal(experience.archive.is_archived, false);
+            assert.equal(experience.archive.reason, "");
 
             // expected response
             assert.property(res.body, "success");

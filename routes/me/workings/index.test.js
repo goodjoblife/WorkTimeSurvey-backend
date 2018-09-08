@@ -1,7 +1,7 @@
 const assert = require("chai").assert;
 const app = require("../../../app");
-const { MongoClient, ObjectId } = require("mongodb");
-const config = require("config");
+const { ObjectId } = require("mongodb");
+const { connectMongo } = require("../../../models/connect");
 const request = require("supertest");
 const sinon = require("sinon");
 const authentication = require("../../../libs/authentication");
@@ -29,11 +29,9 @@ describe("Get /me/workings ", () => {
         },
     };
 
-    before(() =>
-        MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
-            db = _db;
-        })
-    );
+    before(async () => {
+        ({ db } = await connectMongo());
+    });
 
     before("Mock User", () => {
         sandbox = sinon.sandbox.create();

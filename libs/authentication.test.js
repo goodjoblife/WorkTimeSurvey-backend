@@ -3,8 +3,7 @@ chai.use(require("chai-as-promised"));
 
 const assert = chai.assert;
 const sinon = require("sinon");
-const config = require("config");
-const MongoClient = require("mongodb").MongoClient;
+const { connectMongo } = require("../models/connect");
 
 const authentication = require("./authentication");
 const facebook = require("./facebook");
@@ -19,11 +18,9 @@ describe("Authentication Library", () => {
         let db;
         let user;
 
-        before("connect MongoDB", () =>
-            MongoClient.connect(config.get("MONGODB_URI")).then(_db => {
-                db = _db;
-            })
-        );
+        before(async () => {
+            ({ db } = await connectMongo());
+        });
 
         before("Seed users", async () => {
             const result = await db.collection("users").insertOne({
