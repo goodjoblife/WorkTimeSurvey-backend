@@ -1,7 +1,7 @@
 const assert = require("chai").assert;
 const request = require("supertest");
-const app = require("../app");
-const { connectMongo } = require("../models/connect");
+const app = require("../../app");
+const { connectMongo } = require("../../models/connect");
 
 describe("jobs", () => {
     let db;

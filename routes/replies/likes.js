@@ -1,10 +1,10 @@
 const express = require("express");
 const HttpError = require("../../libs/errors").HttpError;
 const DuplicateKeyError = require("../../libs/errors").DuplicateKeyError;
-const ObjectNotExistError = require("../../libs/errors").ObjectNotExistError;
 const ReplyLikeModel = require("../../models/reply_like_model");
 const ReplyModel = require("../../models/reply_model");
 const passport = require("passport");
+const wrap = require("../../libs/wrap");
 
 const router = express.Router();
 
@@ -13,83 +13,60 @@ const router = express.Router();
  * @apiGroup Replies Likes
  * @apiSuccess {Boolean} success 是否成功點讚
  */
-router.post(
-    "/:reply_id/likes",
-    passport.authenticate("bearer", { session: false })
-);
-router.post("/:reply_id/likes", (req, res, next) => {
-    const reply_id = req.params.reply_id;
-    if (typeof reply_id === "undefined") {
-        next(new HttpError("id error", 422));
-        return;
-    }
+router.post("/:reply_id/likes", [
+    passport.authenticate("bearer", { session: false }),
+    wrap(async (req, res) => {
+        const reply_id = req.params.reply_id;
+        if (typeof reply_id === "undefined") {
+            throw new HttpError("id error", 422);
+        }
 
-    const user = req.user;
+        const user = req.user;
+        const reply_like_model = new ReplyLikeModel(req.db);
+        const reply_model = new ReplyModel(req.db);
 
-    const reply_like_model = new ReplyLikeModel(req.db);
-    const reply_model = new ReplyModel(req.db);
-
-    reply_like_model
-        .createLike(reply_id, user)
-        .then(() => reply_model.incrementLikeCount(reply_id))
-        .then(() => {
-            res.send({ success: true });
-        })
-        .catch(err => {
+        try {
+            await reply_like_model.createLike(reply_id, user);
+            await reply_model.incrementLikeCount(reply_id);
+        } catch (err) {
             if (err instanceof DuplicateKeyError) {
-                next(new HttpError(err.message, 403));
-                return;
+                throw new HttpError(err.message, 403);
             }
+            throw err;
+        }
 
-            if (err instanceof ObjectNotExistError) {
-                next(new HttpError(err.message, 404));
-                return;
-            }
-
-            next(new HttpError("Internal Server Error", 500));
-        });
-});
+        res.send({ success: true });
+    }),
+]);
 
 /**
  * @api {delete} /replies/:id/likes 移除留言的讚 API
  * @apiGroup Replies Likes
  * @apiSuccess {Boolean} success 是否成功取消讚
  */
-router.delete(
-    "/:reply_id/likes",
-    passport.authenticate("bearer", { session: false })
-);
-router.delete("/:reply_id/likes", (req, res, next) => {
-    const reply_id = req.params.reply_id;
-    if (typeof reply_id === "undefined") {
-        next(new HttpError("Not Found", 404));
-        return;
-    }
+router.delete("/:reply_id/likes", [
+    passport.authenticate("bearer", { session: false }),
+    wrap(async (req, res) => {
+        const reply_id = req.params.reply_id;
+        if (typeof reply_id === "undefined") {
+            throw new HttpError("Not Found", 404);
+        }
 
-    const user = req.user;
+        const user = req.user;
+        const reply_like_model = new ReplyLikeModel(req.db);
+        const reply_model = new ReplyModel(req.db);
 
-    const reply_like_model = new ReplyLikeModel(req.db);
-    const reply_model = new ReplyModel(req.db);
-
-    reply_like_model
-        .deleteLike(reply_id, user)
-        .then(() => reply_model.decrementLikeCount(reply_id))
-        .then(() => {
-            res.send({ success: true });
-        })
-        .catch(err => {
+        try {
+            await reply_like_model.deleteLike(reply_id, user);
+            await reply_model.decrementLikeCount(reply_id);
+        } catch (err) {
             if (err instanceof DuplicateKeyError) {
-                next(new HttpError(err.message, 403));
-                return;
+                throw new HttpError(err.message, 403);
             }
-
-            if (err instanceof ObjectNotExistError) {
-                next(new HttpError(err.message, 404));
-                return;
-            }
-
-            next(new HttpError("Internal Server Error", 500));
-        });
-});
+            throw err;
+        }
+        res.send({ success: true });
+    }),
+]);
 
 module.exports = router;
