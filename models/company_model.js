@@ -3,9 +3,9 @@ const R = require("ramda");
 
 /*
  * Company {
- *   id      : String               統一編號
- *   name    : String | String[]    名稱, 全部大寫
- *   type    : String
+ *   id      : String!               統一編號
+ *   name    : String! | String[]    名稱, 全部大寫
+ *   type    : String!
  *   capital : Int
  * }
  */
