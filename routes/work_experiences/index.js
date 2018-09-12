@@ -13,6 +13,7 @@ const {
     shouldIn,
     stringRequireLength,
 } = require("../../libs/validation");
+const wrap = require("../../libs/wrap");
 
 function validateCommonInputFields(data) {
     if (!requiredNonEmptyString(data.company_query)) {
@@ -280,13 +281,8 @@ function pickupWorkExperience(input) {
  */
 router.post("/", [
     passport.authenticate("bearer", { session: false }),
-    (req, res, next) => {
-        try {
-            validationInputFields(req.body);
-        } catch (err) {
-            next(err);
-            return;
-        }
+    wrap(async (req, res, next) => {
+        validationInputFields(req.body);
 
         const experience = {};
         Object.assign(experience, {
@@ -309,41 +305,28 @@ router.post("/", [
 
         const experience_model = new ExperienceModel(req.db);
 
-        helper
-            .getCompanyByIdOrQuery(
-                req.db,
-                req.body.company_id,
-                req.body.company_query
-            )
-            .then(company => {
-                experience.company = company;
-            })
-            .then(() => experience_model.createExperience(experience))
-            .then(() => {
-                winston.info("work experiences insert data success", {
-                    id: experience._id,
-                    ip: req.ip,
-                    ips: req.ips,
-                });
+        const company = await helper.getCompanyByIdOrQuery(
+            req.db,
+            req.body.company_id,
+            req.body.company_query
+        );
+        experience.company = company;
 
-                res.send({
-                    success: true,
-                    experience: {
-                        _id: experience._id,
-                    },
-                });
-            })
-            .catch(err => {
-                winston.info("work experiences insert data fail", {
-                    id: experience._id,
-                    ip: req.ip,
-                    ips: req.ips,
-                    err,
-                });
+        await experience_model.createExperience(experience);
 
-                next(err);
-            });
-    },
+        winston.info("work experiences insert data success", {
+            id: experience._id,
+            ip: req.ip,
+            ips: req.ips,
+        });
+
+        res.send({
+            success: true,
+            experience: {
+                _id: experience._id,
+            },
+        });
+    }),
 ]);
 
 module.exports = router;
