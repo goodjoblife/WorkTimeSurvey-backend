@@ -320,6 +320,40 @@ describe("Experiences 面試和工作經驗資訊", () => {
                 status: "hidden",
             });
 
+            const archived_work_data_1 = Object.assign(
+                generateWorkExperienceData(),
+                {
+                    company: {
+                        name: "ARC_2",
+                        id: "123_a",
+                    },
+                    job_title: "F2E",
+                    created_at: new Date("2017-03-25T10:00:00.929Z"),
+                    like_count: 0,
+                    archive: {
+                        is_archived: true,
+                        reason: "廢文一篇",
+                    },
+                }
+            );
+
+            const archived_intr_data_1 = Object.assign(
+                generateInterviewExperienceData(),
+                {
+                    company: {
+                        name: "ARC_1",
+                        id: "321_a",
+                    },
+                    job_title: "HB ENGINEER",
+                    created_at: new Date("2017-03-22T10:00:00.929Z"),
+                    like_count: 5,
+                    archive: {
+                        is_archived: true,
+                        reason: "廢文一篇",
+                    },
+                }
+            );
+
             return db
                 .collection("experiences")
                 .insertMany([
@@ -328,6 +362,8 @@ describe("Experiences 面試和工作經驗資訊", () => {
                     inter_data_2,
                     work_data_2,
                     work_data_3,
+                    archived_work_data_1,
+                    archived_intr_data_1,
                 ]);
         });
 
