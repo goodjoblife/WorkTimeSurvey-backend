@@ -11,6 +11,7 @@ function generateGetWorkingsViewModel(workings, total) {
         salary: working.salary,
         week_work_time: working.week_work_time,
         status: working.status,
+        archive: working.archive,
     }));
 
     const result = {
