@@ -46,7 +46,10 @@ router.get(
             estimated_hourly_wage: 1,
             about_this_job: 1,
         };
-        const base_query = { status: "published" };
+        const base_query = {
+            status: "published",
+            "archive.is_archived": false,
+        };
 
         const data = {};
         const count = await collection.find(base_query).count();
@@ -118,7 +121,10 @@ router.get(
         const page = req.pagination.page;
         const limit = req.pagination.limit;
 
-        const base_query = { status: "published" };
+        const base_query = {
+            status: "published",
+            "archive.is_archived": false,
+        };
 
         const data = {
             total: await collection.find(base_query).count(),
@@ -221,7 +227,11 @@ router.get(
             }
         }
 
-        let base_query = { status: "published", campaign_name };
+        let base_query = {
+            status: "published",
+            "archive.is_archived": false,
+            campaign_name,
+        };
         if (job_titles) {
             job_titles = job_titles.map(e => e.toUpperCase());
             base_query = {
@@ -305,7 +315,12 @@ router.get(
         }
 
         const collection = req.db.collection("workings");
-        const count = await collection.find({ status: "published" }).count();
+        const count = await collection
+            .find({
+                status: "published",
+                "archive.is_archived": false,
+            })
+            .count();
         const skip = Math.floor(count * 0.01);
 
         let results = await collection
@@ -313,6 +328,7 @@ router.get(
                 {
                     $match: {
                         status: "published",
+                        "archive.is_archived": false,
                     },
                 },
                 { $sort: skip_sort },
@@ -569,7 +585,12 @@ router.get(
         }
 
         const collection = req.db.collection("workings");
-        const count = await collection.find({ status: "published" }).count();
+        const count = await collection
+            .find({
+                status: "published",
+                "archive.is_archived": false,
+            })
+            .count();
         const skip = Math.floor(count * 0.01);
 
         let results = await collection
@@ -577,6 +598,7 @@ router.get(
                 {
                     $match: {
                         status: "published",
+                        "archive.is_archived": false,
                     },
                 },
                 { $sort: skip_sort },
