@@ -29,6 +29,7 @@ const { experienceView } = require("../../view_models/get_experience");
 function _queryToDBQuery(search_query, search_by, type) {
     const query = {
         status: "published",
+        "archive.is_archived": false,
     };
 
     if (search_by === "job_title") {
@@ -193,6 +194,8 @@ router.get(
     })
 );
 
+const isExperienceArchived = R.path(["archive", "is_archived"]);
+
 /* eslint-disable */
 /**
  * @api {get} /experiences/:id 顯示單篇面試或工作經驗 API
@@ -254,7 +257,10 @@ router.get("/:id", [
         const experience_id = ensureToObjectId(id_str);
         const experience = await experience_model.findOneOrFail(experience_id);
 
-        if (experience.status === "hidden") {
+        if (
+            experience.status === "hidden" ||
+            isExperienceArchived(experience)
+        ) {
             throw new HttpError("the experience is hidden", 403);
         }
 
@@ -377,7 +383,7 @@ router.get(
             throw new HttpError("limit 格式錯誤", 422);
         }
 
-        const query = { status: "published" };
+        const query = { status: "published", "archive.is_archived": false };
         const sort = { like_count: -1 };
 
         const experience_model = new ExperienceModel(req.db);
