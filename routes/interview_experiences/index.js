@@ -160,8 +160,8 @@ function validateInterviewInputFields(data) {
     if (!requiredNonEmptyString(data.interview_result)) {
         throw new HttpError("面試結果要填喔！", 422);
     }
-    if (!stringRequireLength(data.interview_result, 1, 10)) {
-        throw new HttpError("面試結果僅限 1~10 字！", 422);
+    if (!stringRequireLength(data.interview_result, 1, 100)) {
+        throw new HttpError("面試結果僅限 1~100 字！", 422);
     }
 
     // interview_sensitive_questions
