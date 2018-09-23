@@ -223,7 +223,7 @@ const isExperienceArchived = R.path(["archive", "is_archived"]);
  * @apiSuccess (interview) {Object}  interview_time 面試時間
  * @apiSuccess (interview) {Number}  interview_time.year 面試時間的年份
  * @apiSuccess (interview) {Number="1,2,3...12"}  interview_time.month 面試時間的月份
- * @apiSuccess (interview) {String}  interview_result 面試結果 ( `錄取` `未錄取` `沒通知`或其他 0 < length <= 10 的字串 )
+ * @apiSuccess (interview) {String}  interview_result 面試結果 ( `錄取` `未錄取` `沒通知`或其他 0 < length <= 100 的字串 )
  * @apiSuccess (interview) {Number}  overall_rating 整體面試滿意度 (整數, 1~5)
  * @apiSuccess (interview) {Object}  [salary] 面談薪資
  * @apiSuccess (interview) {String="year","month","day","hour"} salary.type 面談薪資種類 (面談薪資存在的話，一定有此欄位)
