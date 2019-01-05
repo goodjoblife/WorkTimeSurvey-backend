@@ -109,7 +109,7 @@ const repliesView = R.map(replyView);
  */
 router.get("/:id/replies", [
     semiAuthentication("bearer", { session: false }),
-    wrap(async (req, res, next) => {
+    wrap(async (req, res) => {
         const experience_id_string = req.params.id;
         const limit = parseInt(req.query.limit, 10) || 20;
         const start = parseInt(req.query.start, 10) || 0;

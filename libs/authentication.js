@@ -5,7 +5,7 @@ function _facebookAuth(redis_client, access_token) {
     return facebook.accessTokenAuth(access_token).then(account =>
         _redis
             .redisSetFB(redis_client, access_token, account)
-            .catch(err => {})
+            .catch(() => {})
             .then(() => account)
     );
 }
@@ -30,7 +30,7 @@ function cachedFacebookAuthentication(mongodb, redis_client, access_token) {
                 }
                 return account;
             },
-            err => _facebookAuth(redis_client, access_token)
+            () => _facebookAuth(redis_client, access_token)
         )
         .then(account => {
             const facebook_id = account.id;

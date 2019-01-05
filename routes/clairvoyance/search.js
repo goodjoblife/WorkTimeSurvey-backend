@@ -72,7 +72,7 @@ router.get("/by-job", (req, res, next) => {
 
             res.send(data);
         })
-        .catch(err => {
+        .catch(() => {
             next(new HttpError("Internal Server Error", 500));
         });
 });
@@ -147,7 +147,7 @@ router.get("/by-company", (req, res, next) => {
 
             res.send(data);
         })
-        .catch(err => {
+        .catch(() => {
             next(new HttpError("Internal Server Error", 500));
         });
 });

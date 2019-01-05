@@ -31,7 +31,6 @@ router.get(
 
         if (search === "") {
             throw new HttpError("key is required", 422);
-            return;
         }
 
         const company_model = req.manager.CompanyModel;

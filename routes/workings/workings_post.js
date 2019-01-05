@@ -64,7 +64,7 @@ function collectData(req, res, next) {
         // issue: https://github.com/goodjoblife/WorkTimeSurvey-backend/issues/476
         "campaign_name",
         "about_this_job",
-    ].forEach((field, i) => {
+    ].forEach(field => {
         if (checkBodyField(req, field)) {
             working[field] = req.body[field];
         }

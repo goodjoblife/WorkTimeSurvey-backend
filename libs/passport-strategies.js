@@ -41,7 +41,7 @@ function legacyFacebookTokenStrategy() {
                 user => {
                     done(null, user);
                 },
-                err => {
+                () => {
                     // 這裏理論上要用 done(err)，不過考量 facebook 驗證不過也會拋出錯誤
                     // 所以假設 access_token invalid 來處理
                     done(null, false);

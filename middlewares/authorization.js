@@ -24,7 +24,7 @@ function cachedSearchPermissionAuthorizationMiddleware(req, res, next) {
                     next(new HttpError("Forbidden", 403));
                 }
             },
-            err => {
+            () => {
                 next(new HttpError("Forbidden", 403));
             }
         );

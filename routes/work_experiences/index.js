@@ -281,7 +281,7 @@ function pickupWorkExperience(input) {
  */
 router.post("/", [
     passport.authenticate("bearer", { session: false }),
-    wrap(async (req, res, next) => {
+    wrap(async (req, res) => {
         validationInputFields(req.body);
 
         const experience = {};
