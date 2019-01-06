@@ -20,9 +20,7 @@ router.get("/search", [
     // Middleware Error Handler
     // eslint-disable-next-line
     (err, req, res, next) => {
-        if (err) {
-            res.send({ hasSearchPermission: false });
-        }
+        res.send({ hasSearchPermission: false });
     },
     (req, res) => {
         res.send({ hasSearchPermission: true });
