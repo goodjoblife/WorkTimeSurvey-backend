@@ -25,6 +25,7 @@ jobs:
                   MONGODB_URI: mongodb://localhost/goodjob
                   REDIS_URL: redis://localhost
                   NODE_ENV: test
+                  JWT_SECRET: DontUseMe
             - image: mongo:3
             - image: redis
     build-node-10:
@@ -35,6 +36,7 @@ jobs:
                   MONGODB_URI: mongodb://localhost/goodjob
                   REDIS_URL: redis://localhost
                   NODE_ENV: test
+                  JWT_SECRET: DontUseMe
             - image: mongo:3
             - image: redis
     build-apidoc:

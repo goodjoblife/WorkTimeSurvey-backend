@@ -21,6 +21,7 @@ env:
         - MONGODB_URI=mongodb://localhost/goodjob
         - REDIS_URL=redis://localhost
         - NODE_ENV=test
+        - JWT_SECRET=DontUseMe
 
 install:
     - yarn install
