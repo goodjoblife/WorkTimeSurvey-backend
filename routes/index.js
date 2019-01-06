@@ -14,6 +14,7 @@ const corsOption = {
 };
 
 // please sort in alphabetical order
+router.use("/auth", require("./auth"));
 router.use(
     "/clairvoyance/search",
     cors(corsOption),
