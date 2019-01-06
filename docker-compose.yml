@@ -12,7 +12,7 @@ services:
     working_dir: /app
     command: npm run dev
     environment:
-      - MONGODB_URI=mongodb://mongo/goodjob
+      - MONGODB_URI=mongodb://mongo
       - MONGODB_DBNAME=goodjob
       - REDIS_URL=redis://redis
       - NODE_ENV=development

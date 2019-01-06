@@ -22,7 +22,8 @@ jobs:
         docker:
             - image: node:8
               environment:
-                  MONGODB_URI: mongodb://localhost/goodjob
+                  MONGODB_URI: mongodb://localhost
+                  MONGODB_DBNAME: goodjob
                   REDIS_URL: redis://localhost
                   NODE_ENV: test
             - image: mongo:3
@@ -32,7 +33,8 @@ jobs:
         docker:
             - image: node:10
               environment:
-                  MONGODB_URI: mongodb://localhost/goodjob
+                  MONGODB_URI: mongodb://localhost
+                  MONGODB_DBNAME: goodjob
                   REDIS_URL: redis://localhost
                   NODE_ENV: test
             - image: mongo:3
