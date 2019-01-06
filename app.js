@@ -8,8 +8,6 @@ const { graphqlExpress, graphiqlExpress } = require("apollo-server-express");
 const { HttpError, ObjectNotExistError } = require("./libs/errors");
 const logger = require("morgan");
 const winston = require("winston");
-// eslint-disable-next-line no-unused-expressions
-require("winston-mongodb").MongoDB;
 const passport = require("passport");
 const passportStrategies = require("./libs/passport-strategies");
 
@@ -28,11 +26,6 @@ if (app.get("env") === "production") {
 }
 
 // winston logging setup
-if (app.get("env") === "production") {
-    winston.add(winston.transports.MongoDB, {
-        db: config.get("MONGODB_URI"),
-    });
-}
 if (app.get("env") === "test" || app.get("env") === "developement") {
     winston.remove(winston.transports.Console);
 }
