@@ -30,6 +30,9 @@ const WorkingModel = require("../../../models/working_model");
  * @apiSuccess {String= "hour","day","month","year"} time_and_salary.salary.type 薪資種類
  * @apiSuccess {Number} time_and_salary.week_work_time 每周工時
  * @apiSuccess {String= "published","hidden"} time_and_salary.status 狀態
+ * @apiSuccess {Object}  time_and_salary.archive 封存
+ * @apiSuccess {String}  time_and_salary.archive.reason 封存理由
+ * @apiSuccess {Boolean}  time_and_salary.archive.is_achived 是否封存
  */
 /* eslint-enable */
 router.get("/", [

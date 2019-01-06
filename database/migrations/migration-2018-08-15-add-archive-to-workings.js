@@ -1,5 +1,5 @@
 module.exports = async db => {
-    const collection = await db.collection("experiences");
+    const collection = await db.collection("workings");
 
     await collection.updateMany(
         {},

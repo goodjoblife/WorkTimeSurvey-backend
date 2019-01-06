@@ -29,6 +29,7 @@ const { experienceView } = require("../../view_models/get_experience");
 function _queryToDBQuery(search_query, search_by, type) {
     const query = {
         status: "published",
+        "archive.is_archived": false,
     };
 
     if (search_by === "job_title") {
@@ -152,6 +153,9 @@ function validateGetExperiencesInput(req) {
  * @apiSuccess (work) {Object} [experiences.salary] 工作薪資
  * @apiSuccess (work) {String="year","month","day","hour"} experiences.salary.type 工作薪資種類 (工作薪資存在的話，一定有此欄位)
  * @apiSuccess (work) {Number} experiences.salary.amount 工作薪資金額 (工作薪資存在的話，一定有此欄位)
+ * @apiSuccess {Object}  experiences.archive 封存
+ * @apiSuccess {String}  experiences.archive.reason 封存理由
+ * @apiSuccess {Boolean}  experiences.archive.is_achived 是否封存
  */
 /* eslint-enable */
 router.get(
@@ -193,6 +197,8 @@ router.get(
     })
 );
 
+const isExperienceArchived = R.path(["archive", "is_archived"]);
+
 /* eslint-disable */
 /**
  * @api {get} /experiences/:id 顯示單篇面試或工作經驗 API
@@ -217,7 +223,7 @@ router.get(
  * @apiSuccess (interview) {Object}  interview_time 面試時間
  * @apiSuccess (interview) {Number}  interview_time.year 面試時間的年份
  * @apiSuccess (interview) {Number="1,2,3...12"}  interview_time.month 面試時間的月份
- * @apiSuccess (interview) {String}  interview_result 面試結果 ( `錄取` `未錄取` `沒通知`或其他 0 < length <= 10 的字串 )
+ * @apiSuccess (interview) {String}  interview_result 面試結果 ( `錄取` `未錄取` `沒通知`或其他 0 < length <= 100 的字串 )
  * @apiSuccess (interview) {Number}  overall_rating 整體面試滿意度 (整數, 1~5)
  * @apiSuccess (interview) {Object}  [salary] 面談薪資
  * @apiSuccess (interview) {String="year","month","day","hour"} salary.type 面談薪資種類 (面談薪資存在的話，一定有此欄位)
@@ -254,7 +260,10 @@ router.get("/:id", [
         const experience_id = ensureToObjectId(id_str);
         const experience = await experience_model.findOneOrFail(experience_id);
 
-        if (experience.status === "hidden") {
+        if (
+            experience.status === "hidden" ||
+            isExperienceArchived(experience)
+        ) {
             throw new HttpError("the experience is hidden", 403);
         }
 
@@ -365,6 +374,9 @@ function shuffle(array) {
  * @apiSuccess (work) {Object} [experiences.salary] 工作薪資
  * @apiSuccess (work) {String="year","month","day","hour"} experiences.salary.type 工作薪資種類 (工作薪資存在的話，一定有此欄位)
  * @apiSuccess (work) {Number} experiences.salary.amount 工作薪資金額 (工作薪資存在的話，一定有此欄位)
+ * @apiSuccess {Object}  experiences.archive 封存
+ * @apiSuccess {String}  experiences.archive.reason 封存理由
+ * @apiSuccess {Boolean}  experiences.archive.is_achived 是否封存
  */
 /* eslint-enable */
 router.get(
@@ -377,7 +389,7 @@ router.get(
             throw new HttpError("limit 格式錯誤", 422);
         }
 
-        const query = { status: "published" };
+        const query = { status: "published", "archive.is_archived": false };
         const sort = { like_count: -1 };
 
         const experience_model = new ExperienceModel(req.db);

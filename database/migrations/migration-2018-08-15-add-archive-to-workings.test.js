@@ -1,8 +1,8 @@
 const { assert } = require("chai");
 const { connectMongo } = require("../../models/connect");
-const migration = require("./migration-2018-08-15-add-archive-to-experiences");
+const migration = require("./migration-2018-08-15-add-archive-to-workings");
 
-describe("Migrate experiences (add adchived related field)", function() {
+describe("Migrate workings (add adchived related field)", function() {
     let db;
 
     before(async () => {
@@ -10,9 +10,9 @@ describe("Migrate experiences (add adchived related field)", function() {
     });
 
     it("should add two fields", async () => {
-        const collection = db.collection("experiences");
+        const collection = db.collection("workings");
 
-        await collection.insertOne({ title: "Good", type: "interview" });
+        await collection.insertOne({ title: "Good" });
 
         await migration(db);
 
@@ -22,6 +22,6 @@ describe("Migrate experiences (add adchived related field)", function() {
     });
 
     after(async () => {
-        await db.collection("experiences").deleteMany({});
+        await db.collection("workings").deleteMany({});
     });
 });

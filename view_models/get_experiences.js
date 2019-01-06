@@ -20,6 +20,7 @@ const commonSelector = R.pick([
     "reply_count",
     "report_count",
     "status",
+    "archive",
 ]);
 
 const previewSelector = experience => {

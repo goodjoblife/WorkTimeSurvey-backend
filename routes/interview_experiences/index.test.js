@@ -157,8 +157,8 @@ describe("experiences 面試和工作經驗資訊", () => {
             assert.deepEqual(experience.status, "published");
             assert.property(experience, "created_at");
 
-            assert.equal(experience.is_archive, false);
-            assert.equal(experience.archive_reason, "");
+            assert.equal(experience.archive.is_archived, false);
+            assert.equal(experience.archive.reason, "");
         });
 
         describe("Common Data Validation Part", () => {
@@ -475,8 +475,8 @@ describe("experiences 面試和工作經驗資訊", () => {
                     .expect(422);
             });
 
-            it("number of interview_result word  is less than 10", () => {
-                const interview_result = new Array(20).join("慘");
+            it("number of interview_result word is less than 100", () => {
+                const interview_result = new Array(110).join("慘");
                 return request(app)
                     .post("/interview_experiences")
                     .send(
@@ -666,12 +666,12 @@ describe("experiences 面試和工作經驗資訊", () => {
                     )
                     .expect(422));
 
-            it("interview_result could not be a string length > 10", () =>
+            it("interview_result could not be a string length > 100", () =>
                 request(app)
                     .post("/interview_experiences")
                     .send(
                         generateInterviewExperiencePayload({
-                            interview_result: "12345678901",
+                            interview_result: new Array(110).join("慘"),
                         })
                     )
                     .expect(422));
@@ -686,12 +686,12 @@ describe("experiences 面試和工作經驗資訊", () => {
                     )
                     .expect(422));
 
-            it("interview_result should be a string length 1~10", () =>
+            it("interview_result should be a string length 1~100", () =>
                 request(app)
                     .post("/interview_experiences")
                     .send(
                         generateInterviewExperiencePayload({
-                            interview_result: "12345",
+                            interview_result: new Array(100).join("慘"),
                         })
                     )
                     .expect(200));

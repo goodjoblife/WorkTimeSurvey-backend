@@ -13,6 +13,7 @@ const {
     shouldIn,
     stringRequireLength,
 } = require("../../libs/validation");
+const wrap = require("../../libs/wrap");
 
 function validateCommonInputFields(data) {
     if (!requiredNonEmptyString(data.company_query)) {
@@ -159,8 +160,8 @@ function validateInterviewInputFields(data) {
     if (!requiredNonEmptyString(data.interview_result)) {
         throw new HttpError("面試結果要填喔！", 422);
     }
-    if (!stringRequireLength(data.interview_result, 1, 10)) {
-        throw new HttpError("面試結果僅限 1~10 字！", 422);
+    if (!stringRequireLength(data.interview_result, 1, 100)) {
+        throw new HttpError("面試結果僅限 1~100 字！", 422);
     }
 
     // interview_sensitive_questions
@@ -293,7 +294,7 @@ function validationInputFields(data) {
  * @apiParam {Object} interview_time 面試時間
  * @apiParam {Number="整數, N >= current_year - 10"} interview_time.year 面試時間的年份
  * @apiParam {Number="1,2,3...12"} interview_time.month 面試時間的月份
- * @apiParam {String="錄取,未錄取,沒通知,或其他 0 < length <= 10 的字串"} interview_result 面試結果
+ * @apiParam {String="錄取,未錄取,沒通知,或其他 0 < length <= 100 的字串"} interview_result 面試結果
  * @apiParam {Object} [salary] 面談薪資
  * @apiParam {String="year","month","day","hour"} salary.type 面談薪資種類 (若有上傳面談薪資欄位，本欄必填)
  * @apiParam {Number="整數, >= 0"} salary.amount 面談薪資金額 (若有上傳面談薪資欄位，本欄必填)
@@ -316,13 +317,8 @@ function validationInputFields(data) {
  */
 router.post("/", [
     passport.authenticate("bearer", { session: false }),
-    (req, res, next) => {
-        try {
-            validationInputFields(req.body);
-        } catch (err) {
-            next(err);
-            return;
-        }
+    wrap(async (req, res) => {
+        validationInputFields(req.body);
 
         const experience = {};
         Object.assign(experience, {
@@ -336,48 +332,38 @@ router.post("/", [
             // TODO 瀏覽次數？
             created_at: new Date(),
             // 封存狀態
-            is_archive: false,
-            archive_reason: "",
+            archive: {
+                is_archived: false,
+                reason: "",
+            },
         });
         Object.assign(experience, pickupInterviewExperience(req.body));
 
         const experience_model = new ExperienceModel(req.db);
+        const company_model = req.manager.CompanyModel;
 
-        helper
-            .getCompanyByIdOrQuery(
-                req.db,
-                req.body.company_id,
-                req.body.company_query
-            )
-            .then(company => {
-                experience.company = company;
-            })
-            .then(() => experience_model.createExperience(experience))
-            .then(() => {
-                winston.info("interview experiences insert data success", {
-                    id: experience._id,
-                    ip: req.ip,
-                    ips: req.ips,
-                });
+        const company = await helper.getCompanyByIdOrQuery(
+            company_model,
+            req.body.company_id,
+            req.body.company_query
+        );
+        experience.company = company;
 
-                res.send({
-                    success: true,
-                    experience: {
-                        _id: experience._id,
-                    },
-                });
-            })
-            .catch(err => {
-                winston.info("interview experiences insert data fail", {
-                    id: experience._id,
-                    ip: req.ip,
-                    ips: req.ips,
-                    err,
-                });
+        await experience_model.createExperience(experience);
 
-                next(err);
-            });
-    },
+        winston.info("interview experiences insert data success", {
+            id: experience._id,
+            ip: req.ip,
+            ips: req.ips,
+        });
+
+        res.send({
+            success: true,
+            experience: {
+                _id: experience._id,
+            },
+        });
+    }),
 ]);
 
 module.exports = router;

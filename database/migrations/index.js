@@ -20,4 +20,5 @@ module.exports = [
     "migrations-2017-09-02-update-reply-status",
     "migration-2017-09-08-create-popularExperienceLogs-collection",
     "migration-2018-08-15-add-archive-to-experiences",
+    "migration-2018-08-15-add-archive-to-workings",
 ];

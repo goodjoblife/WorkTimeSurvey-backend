@@ -1,4 +1,5 @@
 const HttpError = require("../../libs/errors").HttpError;
+const { shouldIn } = require("../../libs/validation");
 
 /*
  * Check the quota, limit queries <= 5
@@ -87,7 +88,70 @@ function calculateEstimatedHourlyWage(working) {
     return estimated_hourly_wage;
 }
 
+function validSortQuery(query) {
+    if (query.sort_by) {
+        if (
+            !shouldIn(query.sort_by, [
+                "created_at",
+                "week_work_time",
+                "estimated_hourly_wage",
+            ])
+        ) {
+            throw new HttpError("query: sort_by error", 422);
+        }
+    }
+    if (query.order) {
+        if (!shouldIn(query.order, ["descending", "ascending"])) {
+            throw new HttpError("query: order error", 422);
+        }
+    }
+}
+
+function pickupSortQuery(query) {
+    const sort_by = query.sort_by || "created_at";
+    const order = (query.order || "descending") === "descending" ? -1 : 1;
+    const sort = {
+        [sort_by]: order,
+    };
+    return { sort_by, order, sort };
+}
+
+function validGroupSortQuery(query) {
+    if (query.group_sort_by) {
+        if (
+            !shouldIn(query.group_sort_by, [
+                "week_work_time",
+                "estimated_hourly_wage",
+            ])
+        ) {
+            throw new HttpError("query: group_sort_by error", 422);
+        }
+    }
+    if (query.group_sort_order) {
+        if (!shouldIn(query.group_sort_order, ["descending", "ascending"])) {
+            throw new HttpError("query: group_sort_order error", 422);
+        }
+    }
+}
+
+function pickupGroupSortQuery(query) {
+    const group_sort_by = query.group_sort_by || "week_work_time";
+    const group_sort_order =
+        (query.group_sort_order || "descending") === "descending" ? -1 : 1;
+    const group_sort = {
+        [`average.${group_sort_by}`]: group_sort_order,
+    };
+    const skip_sort = {
+        [group_sort_by]: group_sort_order,
+    };
+    return { group_sort_by, group_sort_order, group_sort, skip_sort };
+}
+
 module.exports = {
     checkAndUpdateQuota,
     calculateEstimatedHourlyWage,
+    validSortQuery,
+    pickupSortQuery,
+    validGroupSortQuery,
+    pickupGroupSortQuery,
 };
