@@ -9,6 +9,7 @@ const { ObjectId } = require("mongodb");
 const { connectMongo } = require("../../models/connect");
 const authentication = require("../../libs/authentication.js");
 const { generateWorkingData } = require("../experiences/testData");
+const { resolvers } = require("../../schema/workings");
 
 describe("Workings 工時資訊", () => {
     let db;
@@ -412,7 +413,6 @@ describe("Workings 工時資訊", () => {
                     .query({
                         sort_by: "estimated_hourly_wage",
                         order: "ascending",
-                        skip: "true",
                     })
                     .expect(200);
                 assert.property(res.body, "time_and_salary");
@@ -442,7 +442,6 @@ describe("Workings 工時資訊", () => {
                     .query({
                         sort_by: "estimated_hourly_wage",
                         order: "descending",
-                        skip: "true",
                     })
                     .expect(200);
                 assert.property(res.body, "time_and_salary");
@@ -463,6 +462,73 @@ describe("Workings 工時資訊", () => {
                     res.body.time_and_salary[2],
                     "estimated_hourly_wage"
                 );
+            });
+
+            it(`skip 1% data, ascending with graphql`, async () => {
+                const args = {
+                    input: {
+                        sort: {
+                            sort_field: "ESTIMATED_HOURLY_WAGE",
+                            order_by: "ASCENDING",
+                        },
+                    },
+                };
+
+                const workings = await resolvers.Query.extreme_workings(
+                    null,
+                    args,
+                    { db }
+                );
+
+                assert.lengthOf(workings, 3);
+                assert.deepPropertyVal(
+                    workings[0],
+                    "estimated_hourly_wage",
+                    100
+                );
+                assert.deepPropertyVal(
+                    workings[1],
+                    "estimated_hourly_wage",
+                    200,
+                    "in ascending order"
+                );
+                assert.deepProperty(workings, "2");
+                assert.notProperty(
+                    workings[2],
+                    "estimated_hourly_wage",
+                    "should not exist"
+                );
+            });
+
+            it(`skip 1% data, descending with graphql`, async () => {
+                const args = {
+                    input: {
+                        sort: {
+                            sort_field: "ESTIMATED_HOURLY_WAGE",
+                            order_by: "DESCENDING",
+                        },
+                    },
+                };
+
+                const workings = await resolvers.Query.extreme_workings(
+                    null,
+                    args,
+                    { db }
+                );
+                assert.lengthOf(workings, 3);
+                assert.deepPropertyVal(
+                    workings[0],
+                    "estimated_hourly_wage",
+                    200
+                );
+                assert.deepPropertyVal(
+                    workings[1],
+                    "estimated_hourly_wage",
+                    100,
+                    "in descending order"
+                );
+                assert.deepProperty(workings, "2");
+                assert.notProperty(workings[2], "estimated_hourly_wage");
             });
 
             after(() => db.collection("workings").deleteMany({}));

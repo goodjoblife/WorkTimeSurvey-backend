@@ -15,4 +15,5 @@ module.exports = [
     Mutation,
     ...require("./company_keywords").types,
     ...require("./job_title_keywords").types,
+    ...require("./workings").types,
 ];
