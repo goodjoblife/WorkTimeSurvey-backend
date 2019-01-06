@@ -10,6 +10,7 @@ const logger = require("morgan");
 const winston = require("winston");
 const passport = require("passport");
 const passportStrategies = require("./libs/passport-strategies");
+const { jwtStrategy } = require("./utils/passport-strategies");
 
 const ModelManager = require("./models/manager");
 const routes = require("./routes");
@@ -63,6 +64,7 @@ app.use((req, res, next) => {
 
 app.use(passport.initialize());
 passport.use(passportStrategies.legacyFacebookTokenStrategy());
+passport.use(jwtStrategy());
 app.use("/", routes);
 
 if (app.get("env") === "development") {
