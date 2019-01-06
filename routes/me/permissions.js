@@ -18,10 +18,11 @@ router.get("/search", [
     },
     authorization.cachedSearchPermissionAuthorizationMiddleware,
     // Middleware Error Handler
+    // eslint-disable-next-line
     (err, req, res, next) => {
         res.send({ hasSearchPermission: false });
     },
-    (req, res, next) => {
+    (req, res) => {
         res.send({ hasSearchPermission: true });
     },
 ]);

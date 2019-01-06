@@ -105,6 +105,7 @@ app.use((err, req, res, next) => {
 // development error handler
 // will print stacktrace
 if (app.get("env") === "development") {
+    // eslint-disable-next-line
     app.use((err, req, res, next) => {
         if (err instanceof HttpError) {
             winston.warn(req.originalUrl, {
@@ -125,6 +126,7 @@ if (app.get("env") === "development") {
 
 // production error handler
 // no stacktraces leaked to user
+// eslint-disable-next-line
 app.use((err, req, res, next) => {
     res.status(err.status || 500);
     res.send({

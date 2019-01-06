@@ -8,7 +8,7 @@ function _checkPermission(mongodb, redisdb, user) {
             if (hasSearchPermission === true) {
                 return _redis
                     .redisSetPermission(redisdb, `${user.type}_${user.id}`)
-                    .catch(err => {})
+                    .catch(() => {})
                     .then(() => true);
             }
             return false;
@@ -31,7 +31,7 @@ function cachedSearchPermissionAuthorization(mongodb, redisdb, user) {
             }
             return _checkPermission(mongodb, redisdb, user);
         },
-        err => _checkPermission(mongodb, redisdb, user)
+        () => _checkPermission(mongodb, redisdb, user)
     );
 }
 

@@ -7,7 +7,7 @@ const redis = require("redis");
 function expressRedisDb(url) {
     const redis_client = redis.createClient({ url });
 
-    redis_client.on("error", err => {});
+    redis_client.on("error", () => {});
 
     return (req, res, next) => {
         req.redis_client = redis_client;

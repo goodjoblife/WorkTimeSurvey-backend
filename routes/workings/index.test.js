@@ -389,7 +389,7 @@ describe("Workings 工時資訊", () => {
                     },
                 ]);
 
-                const workings = Array.from({ length: 298 }).map((v, i) => ({
+                const workings = Array.from({ length: 298 }).map(() => ({
                     company: { name: "companyA" },
                     created_at: new Date("2016-11-13T06:10:04.023Z"),
                     job_title: "engineer1",
@@ -720,7 +720,7 @@ describe("Workings 工時資訊", () => {
             request(app)
                 .get("/workings/search_by/company/group_by/company")
                 .expect(422)
-                .then(res => {}));
+                .then(() => {}));
 
         it("依照 company 來分群資料，結構正確 (workings.length = 5)", () =>
             request(app)
@@ -1442,7 +1442,7 @@ describe("Workings 工時資訊", () => {
             request(app)
                 .get("/workings/search_by/job_title/group_by/company")
                 .expect(422)
-                .expect(res => {}));
+                .expect(() => {}));
 
         it("依照 company 來分群資料，結構正確", () =>
             request(app)

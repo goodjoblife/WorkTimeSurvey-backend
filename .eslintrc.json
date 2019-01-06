@@ -4,19 +4,15 @@
         "node": true,
         "mocha": true
     },
-    "extends": ["prettier"],
+    "extends": ["prettier", "eslint:recommended"],
     "plugins": ["prettier"],
     "parserOptions": {
         "ecmaVersion": 2018,
         "sourceType": "module"
     },
     "rules": {
-        "no-unused-vars": [
-            "error", {
-                "args": "none"
-            }
-        ],
         "no-underscore-dangle": "off",
+        "no-console": "warn",
         "camelcase": "off",
         "arrow-parens": "off",
         "prefer-arrow-callback": "off",

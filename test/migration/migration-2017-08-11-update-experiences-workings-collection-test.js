@@ -36,7 +36,7 @@ describe("Migration 2017-08-11 create-status-test", () => {
 
     it("should have the status field and value", () =>
         migration(db)
-            .then(result =>
+            .then(() =>
                 db
                     .collection("experiences")
                     .find()
