@@ -8,7 +8,7 @@ module.exports = function() {
             _p = connectMongo();
         }
 
-        _p.then(({ client, db }) => {
+        _p.then(({ db }) => {
             req.db = db;
             next();
         }).catch(err => {
