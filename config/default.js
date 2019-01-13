@@ -4,4 +4,5 @@ module.exports = {
     REDIS_URL: process.env.REDIS_URL || "redis://localhost",
     CORS_ANY: process.env.CORS_ANY || "FALSE",
     JWT_SECRET: process.env.JWT_SECRET,
+    AWS_SES_SERVER_REGION: process.env.AWS_SES_SERVER_REGION || "us-west-2",
 };
