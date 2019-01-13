@@ -1,26 +1,22 @@
 language: node_js
 
+dist: trusty
+
 node_js:
-    - "8"
+    - "10"
 
 services:
-    - mongodb
-    - redis-server
-
-addons:
-    apt:
-        sources:
-            - mongodb-upstart
-            - mongodb-3.2-precise
-        packages:
-            - mongodb-org-server
-            - mongodb-org-shell
+    - docker
 
 env:
     global:
         - MONGODB_URI=mongodb://localhost/goodjob
         - REDIS_URL=redis://localhost
         - NODE_ENV=test
+
+before_install:
+    - docker run -d -p 27017:27017 mongo:3.6
+    - docker run -d -p 6379:6379 redis
 
 install:
     - yarn install
