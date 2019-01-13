@@ -65,6 +65,14 @@ app.use((req, res, next) => {
 app.use(passport.initialize());
 passport.use(passportStrategies.legacyFacebookTokenStrategy());
 passport.use(jwtStrategy());
+app.use((req, res, next) => {
+    passport.authenticate("jwt", { session: false }, (err, user) => {
+        if (user) {
+            req.user = user;
+        }
+        next();
+    })(req, res, next);
+});
 app.use("/", routes);
 
 if (app.get("env") === "development") {

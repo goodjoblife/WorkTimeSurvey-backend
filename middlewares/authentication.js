@@ -1,4 +1,5 @@
 const passport = require("passport");
+const { HttpError } = require("../libs/errors");
 
 function semiAuthentication(name, options = {}) {
     return (req, res, next) => {
@@ -11,6 +12,15 @@ function semiAuthentication(name, options = {}) {
     };
 }
 
+function requireUserAuthetication(req, res, next) {
+    if (!req.user) {
+        next(new HttpError("Unauthorized", 401));
+        return;
+    }
+    next();
+}
+
 module.exports = {
     semiAuthentication,
+    requireUserAuthetication,
 };
