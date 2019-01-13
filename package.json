@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "apollo-server-express": "^2.4.0",
+    "aws-sdk": "^2.387.0",
     "body-parser": "^1.15.1",
     "compression": "^1.6.2",
     "config": "^1.25.1",
