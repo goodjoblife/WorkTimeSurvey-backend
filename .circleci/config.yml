@@ -17,20 +17,20 @@ defaults: &defaults
 
 version: 2
 jobs:
-    build-node-8:
+    build-node-10:
         <<: *defaults
         docker:
-            - image: node:8
+            - image: node:10
               environment:
                   MONGODB_URI: mongodb://localhost/goodjob
                   REDIS_URL: redis://localhost
                   NODE_ENV: test
             - image: mongo:3
             - image: redis
-    build-node-10:
+    build-node-11:
         <<: *defaults
         docker:
-            - image: node:10
+            - image: node:11
               environment:
                   MONGODB_URI: mongodb://localhost/goodjob
                   REDIS_URL: redis://localhost
@@ -107,16 +107,16 @@ workflows:
     version: 2
     build_and_test:
         jobs:
-            - build-node-8
             - build-node-10
+            - build-node-11
             - build-apidoc:
                 filters:
                     branches:
                         only:
                             - master
                 requires:
-                    - build-node-8
                     - build-node-10
+                    - build-node-11
             - build-docker:
                 filters:
                     branches:
@@ -124,8 +124,8 @@ workflows:
                             - master
                             - dev
                 requires:
-                    - build-node-8
                     - build-node-10
+                    - build-node-11
             - deploy-dev:
                 requires:
                     - build-docker
