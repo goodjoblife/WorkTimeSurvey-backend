@@ -1,13 +1,9 @@
-const chai = require("chai");
-chai.use(require("chai-as-promised"));
-
-const assert = chai.assert;
-
-const middlewares = require("./");
+const { assert } = require("chai");
+const expressRedisDb = require("./express_redis_db");
 
 describe("Redis middleware", () => {
     it("request should have property redis_client", done => {
-        const middleware = middlewares.expressRedisDb("");
+        const middleware = expressRedisDb("");
 
         const req = {};
         middleware(req, {}, () => {

@@ -6,6 +6,7 @@ const express = require("express");
 const { graphqlExpress, graphiqlExpress } = require("apollo-server-express");
 const { HttpError, ObjectNotExistError } = require("./libs/errors");
 const expressMongoDb = require("./middlewares/express_mongo_db");
+const expressRedisDb = require("./middlewares/express_redis_db");
 const logger = require("morgan");
 const winston = require("winston");
 const passport = require("passport");
@@ -37,7 +38,7 @@ if (app.get("env") !== "test") {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(expressMongoDb());
-app.use(require("./middlewares").expressRedisDb(config.get("REDIS_URL")));
+app.use(expressRedisDb(config.get("REDIS_URL")));
 app.use((req, res, next) => {
     req.manager = new ModelManager(req.db);
     next();
