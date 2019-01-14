@@ -4,8 +4,9 @@ const jwt = require("../utils/jwt");
 
 class FakeUserFactory {
     async setUp() {
-        const { db } = await connectMongo();
+        const { client, db } = await connectMongo();
         const manager = new ModelManager(db);
+        this.client = client;
         this.user_model = manager.UserModel;
     }
 
@@ -17,6 +18,7 @@ class FakeUserFactory {
 
     async tearDown() {
         await this.user_model.collection.deleteMany({});
+        await this.client.close();
     }
 }
 

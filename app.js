@@ -80,7 +80,10 @@ if (app.get("env") === "development") {
 }
 app.use(
     "/graphql",
-    graphqlExpress(({ db, manager }) => ({ schema, context: { db, manager } }))
+    graphqlExpress(({ db, manager, user }) => ({
+        schema,
+        context: { db, manager, user },
+    }))
 );
 
 // catch 404 and forward to error handler
