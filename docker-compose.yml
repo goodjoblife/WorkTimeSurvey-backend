@@ -16,6 +16,7 @@ services:
       - MONGODB_DBNAME=goodjob
       - REDIS_URL=redis://redis
       - NODE_ENV=development
+      - JWT_SECRET=DontUseMe
   mongo:
     image: mongo
   redis:

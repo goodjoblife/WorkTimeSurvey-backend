@@ -1,7 +1,4 @@
-const chai = require("chai");
-chai.use(require("chai-as-promised"));
-
-const assert = chai.assert;
+const { assert } = require("chai");
 const sinon = require("sinon");
 const request = require("supertest");
 
@@ -16,7 +13,7 @@ describe("POST /me/recommendations 取得使用者推薦字串", () => {
         sandbox = sinon.sandbox.create();
     });
 
-    it("get recommendation string success", () => {
+    it("get recommendation string success", async () => {
         const cachedFacebookAuthentication = sandbox
             .stub(authentication, "cachedFacebookAuthentication")
             .withArgs(sinon.match.object, sinon.match.object, "fakeaccesstoken")
@@ -27,39 +24,38 @@ describe("POST /me/recommendations 取得使用者推薦字串", () => {
             .withArgs(sinon.match.object, { id: "-1", type: "facebook" })
             .resolves("00000000ccd8958909a983e9");
 
-        return request(app)
+        const res = await request(app)
             .post("/me/recommendations")
             .send({
                 access_token: "fakeaccesstoken",
             })
-            .expect(200)
-            .expect(res => {
-                sinon.assert.calledOnce(cachedFacebookAuthentication);
-                sinon.assert.calledOnce(getRecommendationString);
+            .expect(200);
 
-                assert.propertyVal(
-                    res.body,
-                    "recommendation_string",
-                    "00000000ccd8958909a983e9"
-                );
-            });
+        sinon.assert.calledOnce(cachedFacebookAuthentication);
+        sinon.assert.calledOnce(getRecommendationString);
+
+        assert.propertyVal(
+            res.body,
+            "recommendation_string",
+            "00000000ccd8958909a983e9"
+        );
     });
 
-    it("fail if facebook auth fail", () => {
+    it("fail if facebook auth fail", async () => {
         sandbox.stub(authentication, "cachedFacebookAuthentication").rejects();
 
-        return request(app)
+        await request(app)
             .post("/me/recommendations")
             .expect(401);
     });
 
-    it("fail if getRecommendationString fail", () => {
+    it("fail if getRecommendationString fail", async () => {
         sandbox
             .stub(authentication, "cachedFacebookAuthentication")
             .resolves({ _id: { id: "-1", type: "facebook" } });
         sandbox.stub(recommendation, "getRecommendationString").rejects();
 
-        return request(app)
+        await request(app)
             .post("/me/recommendations")
             .send({
                 access_token: "fakeaccesstoken",

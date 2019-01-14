@@ -1,7 +1,4 @@
-const chai = require("chai");
-chai.use(require("chai-as-promised"));
-
-const assert = chai.assert;
+const { assert } = require("chai");
 const sinon = require("sinon");
 const request = require("supertest");
 
@@ -16,7 +13,7 @@ describe("GET /me/permission/search 確認使用者查詢資訊權限", () => {
         sandbox = sinon.sandbox.create();
     });
 
-    it("hasSearchPermission is true", () => {
+    it("hasSearchPermission is true", async () => {
         const cachedFacebookAuthentication = sandbox
             .stub(authentication, "cachedFacebookAuthentication")
             .withArgs(sinon.match.object, sinon.match.object, "fakeaccesstoken")
@@ -30,35 +27,32 @@ describe("GET /me/permission/search 確認使用者查詢資訊權限", () => {
             })
             .resolves(true);
 
-        return request(app)
+        const res = await request(app)
             .get("/me/permissions/search")
             .query({
                 access_token: "fakeaccesstoken",
             })
-            .expect(200)
-            .expect(res => {
-                sinon.assert.calledOnce(cachedFacebookAuthentication);
-                sinon.assert.calledOnce(cachedSearchPermissionAuthorization);
+            .expect(200);
 
-                assert.propertyVal(res.body, "hasSearchPermission", true);
-            });
+        sinon.assert.calledOnce(cachedFacebookAuthentication);
+        sinon.assert.calledOnce(cachedSearchPermissionAuthorization);
+        assert.propertyVal(res.body, "hasSearchPermission", true);
     });
 
-    it("hasSearchPermission is false if facebook auth fail", () => {
+    it("hasSearchPermission is false if facebook auth fail", async () => {
         sandbox.stub(authentication, "cachedFacebookAuthentication").rejects();
 
-        return request(app)
+        const res = await request(app)
             .get("/me/permissions/search")
             .query({
                 access_token: "fakeaccesstoken",
             })
-            .expect(200)
-            .expect(res => {
-                assert.propertyVal(res.body, "hasSearchPermission", false);
-            });
+            .expect(200);
+
+        assert.propertyVal(res.body, "hasSearchPermission", false);
     });
 
-    it("hasSearchPermission is false if authorization fail", () => {
+    it("hasSearchPermission is false if authorization fail", async () => {
         const cachedFacebookAuthentication = sandbox
             .stub(authentication, "cachedFacebookAuthentication")
             .withArgs(sinon.match.object, sinon.match.object, "fakeaccesstoken")
@@ -67,17 +61,15 @@ describe("GET /me/permission/search 確認使用者查詢資訊權限", () => {
             .stub(authorization, "cachedSearchPermissionAuthorization")
             .rejects();
 
-        return request(app)
+        const res = await request(app)
             .get("/me/permissions/search")
             .query({
                 access_token: "fakeaccesstoken",
             })
-            .expect(200)
-            .expect(res => {
-                sinon.assert.calledOnce(cachedFacebookAuthentication);
+            .expect(200);
 
-                assert.propertyVal(res.body, "hasSearchPermission", false);
-            });
+        sinon.assert.calledOnce(cachedFacebookAuthentication);
+        assert.propertyVal(res.body, "hasSearchPermission", false);
     });
 
     afterEach(() => {
