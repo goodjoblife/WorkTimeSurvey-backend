@@ -1,5 +1,4 @@
 const express = require("express");
-const passport = require("passport");
 const R = require("ramda");
 const { HttpError } = require("../../libs/errors");
 
@@ -14,6 +13,9 @@ const {
     stringRequireLength,
     shouldIn,
 } = require("../../libs/validation");
+const {
+    requireUserAuthetication,
+} = require("../../middlewares/authentication");
 
 function validatePostFields(body) {
     if (
@@ -53,7 +55,7 @@ const reportsView = R.map(reportView);
  */
 /* eslint-enable */
 router.post("/:id/reports", [
-    passport.authenticate("bearer", { session: false }),
+    requireUserAuthetication,
     wrap(async (req, res) => {
         validatePostFields(req.body);
 

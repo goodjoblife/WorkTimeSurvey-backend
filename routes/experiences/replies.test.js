@@ -2,15 +2,15 @@ const { assert } = require("chai");
 const request = require("supertest");
 const { ObjectId } = require("mongodb");
 const { connectMongo } = require("../../models/connect");
-const sinon = require("sinon");
 
 const app = require("../../app");
-const authentication = require("../../libs/authentication");
+const { FakeUserFactory } = require("../../utils/test_helper");
 const { generateReplyData } = require("../experiences/testData");
 const create_capped_collection = require("../../database/migrations/migration-2017-09-08-create-popularExperienceLogs-collection");
 
 describe("Replies Test", () => {
     let db;
+    const fake_user_factory = new FakeUserFactory();
     const fake_user = {
         _id: new ObjectId(),
         facebook_id: "-1",
@@ -34,28 +34,17 @@ describe("Replies Test", () => {
 
     describe("POST /experiences/:id/replies", () => {
         let experience_id;
-        let sandbox;
+        let fake_user_token;
 
         const path = experience_id_string =>
             `/experiences/${experience_id_string}/replies`;
 
-        beforeEach("Stub", () => {
-            sandbox = sinon.sandbox.create();
-            const cachedFacebookAuthentication = sandbox.stub(
-                authentication,
-                "cachedFacebookAuthentication"
-            );
+        beforeEach(async () => {
+            await fake_user_factory.setUp();
+        });
 
-            cachedFacebookAuthentication
-                .withArgs(
-                    sinon.match.object,
-                    sinon.match.object,
-                    "fakeaccesstoken"
-                )
-                .resolves(fake_user);
-            cachedFacebookAuthentication
-                .withArgs(sinon.match.object, sinon.match.object, "wrongToken")
-                .rejects();
+        beforeEach("Create some users", async () => {
+            fake_user_token = await fake_user_factory.create(fake_user);
         });
 
         beforeEach("Seed experiences collection", async () => {
@@ -76,9 +65,9 @@ describe("Replies Test", () => {
             await request(app)
                 .post(`/experiences/${experience_id}/replies`)
                 .send({
-                    access_token: "fakeaccesstoken",
                     content: "你好我是大留言",
-                });
+                })
+                .set("Authorization", `Bearer ${fake_user_token}`);
 
             const result = await db
                 .collection("popular_experience_logs")
@@ -93,9 +82,9 @@ describe("Replies Test", () => {
             const res = await request(app)
                 .post(path(experience_id))
                 .send({
-                    access_token: "fakeaccesstoken",
                     content: "你好我是大留言",
                 })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
 
             assert.property(res.body, "reply");
@@ -141,7 +130,6 @@ describe("Replies Test", () => {
             request(app)
                 .post(path(experience_id))
                 .send({
-                    access_token: "wrongToken",
                     content: "你好我是大留言",
                 })
                 .expect(401));
@@ -150,17 +138,15 @@ describe("Replies Test", () => {
             request(app)
                 .post(path("1111"))
                 .send({
-                    access_token: "fakeaccesstoken",
                     content: "你好我是大留言",
                 })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(404));
 
         it("should fail, content is required", () =>
             request(app)
                 .post(path(experience_id))
-                .send({
-                    access_token: "fakeaccesstoken",
-                })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         afterEach(async () => {
@@ -170,39 +156,29 @@ describe("Replies Test", () => {
             await create_capped_collection(db);
         });
 
-        afterEach(() => {
-            sandbox.restore();
+        afterEach(async () => {
+            await fake_user_factory.tearDown();
         });
     });
 
     describe("GET /experiences/:id/replies", () => {
         let experience_id;
-        let sandbox = null;
+        let fake_user_token;
+        let fake_other_user_token;
         const TEST_REPLIES_COUNT = 200;
 
         const path = experience_id_string =>
             `/experiences/${experience_id_string}/replies`;
 
-        before("create user", () => {
-            sandbox = sinon.sandbox.create();
-            const cachedFacebookAuthentication = sandbox.stub(
-                authentication,
-                "cachedFacebookAuthentication"
+        beforeEach(async () => {
+            await fake_user_factory.setUp();
+        });
+
+        beforeEach("Create some users", async () => {
+            fake_user_token = await fake_user_factory.create(fake_user);
+            fake_other_user_token = await fake_user_factory.create(
+                fake_other_user
             );
-            cachedFacebookAuthentication
-                .withArgs(
-                    sinon.match.object,
-                    sinon.match.object,
-                    "fakeaccesstoken"
-                )
-                .resolves(fake_user);
-            cachedFacebookAuthentication
-                .withArgs(
-                    sinon.match.object,
-                    sinon.match.object,
-                    "otherFakeAccessToken"
-                )
-                .resolves(fake_other_user);
         });
 
         before("create test data", async () => {
@@ -316,9 +292,7 @@ describe("Replies Test", () => {
         it("should see liked (true/false) if autheticated", async () => {
             const res1 = await request(app)
                 .get(path(experience_id))
-                .query({
-                    access_token: "fakeaccesstoken",
-                })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
 
             assert.property(res1.body, "replies");
@@ -338,9 +312,7 @@ describe("Replies Test", () => {
 
             const res2 = await request(app)
                 .get(path(experience_id))
-                .query({
-                    access_token: "otherFakeAccessToken",
-                })
+                .set("Authorization", `Bearer ${fake_other_user_token}`)
                 .expect(200);
 
             assert.property(res2.body, "replies");
@@ -365,8 +337,8 @@ describe("Replies Test", () => {
                 .query({
                     limit: 100,
                     start: 0,
-                    access_token: "fakeaccesstoken",
                 })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.property(res.body, "replies");
@@ -378,18 +350,16 @@ describe("Replies Test", () => {
         it("set error replies and expect error code 404", () =>
             request(app)
                 .get(path("1111"))
-                .query({
-                    access_token: "fakeaccesstoken",
-                })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(404));
 
         it("limit = 2000  and expect error code 402", () =>
             request(app)
                 .get(path(experience_id))
                 .query({
-                    access_token: "fakeaccesstoken",
                     limit: 2000,
                 })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("get one experiences replies , and validate return field", async () => {
@@ -398,8 +368,8 @@ describe("Replies Test", () => {
                 .query({
                     limit: 1,
                     start: 0,
-                    access_token: "fakeaccesstoken",
                 })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
             assert.property(res.body, "replies");
             assert.notDeepProperty(res.body.replies[0], "author_id");
@@ -419,8 +389,8 @@ describe("Replies Test", () => {
             await db.collection("reply_likes").deleteMany({});
         });
 
-        after(() => {
-            sandbox.restore();
+        afterEach(async () => {
+            await fake_user_factory.tearDown();
         });
     });
 });

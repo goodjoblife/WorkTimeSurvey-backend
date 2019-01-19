@@ -6,8 +6,7 @@ const request = require("supertest");
 const app = require("../../app");
 const { ObjectId } = require("mongodb");
 const { connectMongo } = require("../../models/connect");
-const sinon = require("sinon");
-const authentication = require("../../libs/authentication");
+const { FakeUserFactory } = require("../../utils/test_helper");
 const {
     generateInterviewExperienceData,
     generateWorkExperienceData,
@@ -18,6 +17,7 @@ const create_title_keyword_collection = require("../../database/migrations/creat
 
 describe("Experiences 面試和工作經驗資訊", () => {
     let db;
+    const fake_user_factory = new FakeUserFactory();
 
     before(async () => {
         ({ db } = await connectMongo());
@@ -27,15 +27,6 @@ describe("Experiences 面試和工作經驗資訊", () => {
         let interview_experience_id_str = null;
         let work_experience_id_str = null;
         let interview_hidden_experience_id_str = null;
-        let sandbox = null;
-        const fake_user = {
-            _id: new ObjectId(),
-            facebook_id: "-1",
-            facebook: {
-                id: "-1",
-                name: "markLin",
-            },
-        };
         const fake_other_user = {
             _id: new ObjectId(),
             facebook_id: "-2",
@@ -44,27 +35,26 @@ describe("Experiences 面試和工作經驗資訊", () => {
                 name: "markChen",
             },
         };
+        let fake_user_token;
+        let fake_other_user_token;
 
-        before("Mock", () => {
-            sandbox = sinon.sandbox.create();
-            const cachedFacebookAuthentication = sandbox.stub(
-                authentication,
-                "cachedFacebookAuthentication"
+        before(async () => {
+            await fake_user_factory.setUp();
+        });
+
+        before("Create some users", async () => {
+            const fake_user = {
+                _id: new ObjectId(),
+                facebook_id: "-1",
+                facebook: {
+                    id: "-1",
+                    name: "markLin",
+                },
+            };
+            fake_user_token = await fake_user_factory.create(fake_user);
+            fake_other_user_token = await fake_user_factory.create(
+                fake_other_user
             );
-            cachedFacebookAuthentication
-                .withArgs(
-                    sinon.match.object,
-                    sinon.match.object,
-                    "fakeaccesstoken"
-                )
-                .resolves(fake_user);
-            cachedFacebookAuthentication
-                .withArgs(
-                    sinon.match.object,
-                    sinon.match.object,
-                    "fakeOtheraccesstoken"
-                )
-                .resolves(fake_other_user);
         });
 
         before("Seed experiences collection", async () => {
@@ -102,9 +92,7 @@ describe("Experiences 面試和工作經驗資訊", () => {
         it("should see liked = true if authenticated user liked", async () => {
             const res = await request(app)
                 .get(`/experiences/${interview_experience_id_str}`)
-                .send({
-                    access_token: "fakeOtheraccesstoken",
-                })
+                .set("Authorization", `Bearer ${fake_other_user_token}`)
                 .expect(200);
 
             assert.equal(res.body._id, interview_experience_id_str);
@@ -115,9 +103,7 @@ describe("Experiences 面試和工作經驗資訊", () => {
         it("should see liked = false if authenticated user not liked", async () => {
             const res = await request(app)
                 .get(`/experiences/${interview_experience_id_str}`)
-                .send({
-                    access_token: "fakeaccesstoken",
-                })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
 
             assert.equal(res.body._id, interview_experience_id_str);
@@ -133,9 +119,7 @@ describe("Experiences 面試和工作經驗資訊", () => {
         it("should get one interview experience, and it returns correct fields", async () => {
             const res = await request(app)
                 .get(`/experiences/${interview_experience_id_str}`)
-                .send({
-                    access_token: "fakeaccesstoken",
-                })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
 
             const experience = res.body;
@@ -172,9 +156,7 @@ describe("Experiences 面試和工作經驗資訊", () => {
         it("should get one work experience, and it returns correct fields ", async () => {
             const res = await request(app)
                 .get(`/experiences/${work_experience_id_str}`)
-                .send({
-                    access_token: "fakeaccesstoken",
-                })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
 
             const experience = res.body;
@@ -207,9 +189,7 @@ describe("Experiences 面試和工作經驗資訊", () => {
         it("should be forbidden, when the status of experience is hidden", async () => {
             const res = await request(app)
                 .get(`/experiences/${interview_hidden_experience_id_str}`)
-                .send({
-                    access_token: "fakeaccesstoken",
-                });
+                .set("Authorization", `Bearer ${fake_user_token}`);
 
             assert.equal(res.status, 403);
         });
@@ -218,8 +198,8 @@ describe("Experiences 面試和工作經驗資訊", () => {
 
         after(() => db.collection("experience_likes").deleteMany({}));
 
-        after(() => {
-            sandbox.restore();
+        after(async () => {
+            await fake_user_factory.tearDown();
         });
     });
 
@@ -735,7 +715,6 @@ describe("Experiences 面試和工作經驗資訊", () => {
     });
 
     describe("PATCH /experiences/:id", () => {
-        let sandbox;
         let user_experience_id_string;
         let other_user_experience_id_string;
         const fake_user = {
@@ -755,20 +734,14 @@ describe("Experiences 面試和工作經驗資訊", () => {
                 name: "lin",
             },
         };
+        let fake_user_token;
 
-        before("mock user", () => {
-            sandbox = sinon.sandbox.create();
-            const cachedFacebookAuthentication = sandbox.stub(
-                authentication,
-                "cachedFacebookAuthentication"
-            );
-            cachedFacebookAuthentication
-                .withArgs(
-                    sinon.match.object,
-                    sinon.match.object,
-                    "fakeaccesstoken"
-                )
-                .resolves(fake_user);
+        before(async () => {
+            await fake_user_factory.setUp();
+        });
+
+        before("Create some users", async () => {
+            fake_user_token = await fake_user_factory.create(fake_user);
         });
 
         before("seeding the data", async () => {
@@ -798,9 +771,9 @@ describe("Experiences 面試和工作經驗資訊", () => {
             const res = await request(app)
                 .patch(`/experiences/${user_experience_id_string}`)
                 .send({
-                    access_token: "fakeaccesstoken",
                     status: "hidden",
-                });
+                })
+                .set("Authorization", `Bearer ${fake_user_token}`);
 
             assert.equal(res.status, 200);
             assert.isTrue(res.body.success);
@@ -826,9 +799,9 @@ describe("Experiences 面試和工作經驗資訊", () => {
             const res = await request(app)
                 .patch(`/experiences/${user_experience_id_string}`)
                 .send({
-                    access_token: "fakeaccesstoken",
                     status: "xxxxxx",
-                });
+                })
+                .set("Authorization", `Bearer ${fake_user_token}`);
 
             assert.equal(res.status, 422);
         });
@@ -837,18 +810,16 @@ describe("Experiences 面試和工作經驗資訊", () => {
             const res = await request(app)
                 .patch(`/experiences/${other_user_experience_id_string}`)
                 .send({
-                    access_token: "fakeaccesstoken",
                     status: "hidden",
-                });
+                })
+                .set("Authorization", `Bearer ${fake_user_token}`);
             assert.equal(res.status, 403);
         });
 
         it("should return 422, while user did not set the status field", async () => {
             const res = await request(app)
                 .patch(`/experiences/${other_user_experience_id_string}`)
-                .send({
-                    access_token: "fakeaccesstoken",
-                });
+                .set("Authorization", `Bearer ${fake_user_token}`);
             assert.equal(res.status, 422);
         });
 
@@ -856,9 +827,9 @@ describe("Experiences 面試和工作經驗資訊", () => {
             const res = await request(app)
                 .patch(`/experiences/xxxxxxxx`)
                 .send({
-                    access_token: "fakeaccesstoken",
                     status: "published",
-                });
+                })
+                .set("Authorization", `Bearer ${fake_user_token}`);
             assert.equal(res.status, 404);
         });
 
@@ -866,16 +837,16 @@ describe("Experiences 面試和工作經驗資訊", () => {
             const res = await request(app)
                 .patch(`/experiences/${new ObjectId().toString()}`)
                 .send({
-                    access_token: "fakeaccesstoken",
                     status: "published",
-                });
+                })
+                .set("Authorization", `Bearer ${fake_user_token}`);
             assert.equal(res.status, 404);
         });
 
         after(() => db.collection("experiences").deleteMany({}));
 
-        after(() => {
-            sandbox.restore();
+        after(async () => {
+            await fake_user_factory.tearDown();
         });
     });
 
