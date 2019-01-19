@@ -3,16 +3,15 @@ const app = require("../../../app");
 const { ObjectId } = require("mongodb");
 const { connectMongo } = require("../../../models/connect");
 const request = require("supertest");
-const sinon = require("sinon");
-const authentication = require("../../../libs/authentication");
 const {
     generateInterviewExperienceData,
     generateWorkExperienceData,
 } = require("../../experiences/testData");
+const { FakeUserFactory } = require("../../../utils/test_helper");
 
 describe("Experiences of Author Test", () => {
     let db;
-    let sandbox;
+    const fake_user_factory = new FakeUserFactory();
     let user_interview_experience_id;
     let user_work_experience_id;
     const fake_user = {
@@ -32,17 +31,22 @@ describe("Experiences of Author Test", () => {
             name: "markLin002",
         },
     };
+    let fake_user_token;
 
     before(async () => {
         ({ db } = await connectMongo());
     });
 
-    before("Mock User", () => {
-        sandbox = sinon.sandbox.create();
-        sandbox
-            .stub(authentication, "cachedFacebookAuthentication")
-            .withArgs(sinon.match.object, sinon.match.object, "fakeaccesstoken")
-            .resolves(fake_user);
+    before(async () => {
+        await fake_user_factory.setUp();
+    });
+
+    before("Create some users", async () => {
+        fake_user_token = await fake_user_factory.create(fake_user);
+    });
+
+    after(async () => {
+        await fake_user_factory.tearDown();
     });
 
     before("Create Data", () => {
@@ -86,9 +90,7 @@ describe("Experiences of Author Test", () => {
     it("should be success, when the author get him experiences", async () => {
         const res = await request(app)
             .get(`/me/experiences`)
-            .query({
-                access_token: "fakeaccesstoken",
-            });
+            .set("Authorization", `Bearer ${fake_user_token}`);
 
         assert.equal(res.status, 200);
         const experiences = res.body.experiences;
@@ -106,9 +108,9 @@ describe("Experiences of Author Test", () => {
         const res = await request(app)
             .get(`/me/experiences`)
             .query({
-                access_token: "fakeaccesstoken",
                 type: "work",
-            });
+            })
+            .set("Authorization", `Bearer ${fake_user_token}`);
 
         assert.equal(res.status, 200);
         const experiences = res.body.experiences;
@@ -120,9 +122,9 @@ describe("Experiences of Author Test", () => {
         const res = await request(app)
             .get(`/me/experiences`)
             .query({
-                access_token: "fakeaccesstoken",
                 type: "work,interview",
-            });
+            })
+            .set("Authorization", `Bearer ${fake_user_token}`);
 
         assert.equal(res.status, 200);
         assert.lengthOf(res.body.experiences, 2);
@@ -132,9 +134,9 @@ describe("Experiences of Author Test", () => {
         const res = await request(app)
             .get(`/me/experiences`)
             .query({
-                access_token: "fakeaccesstoken",
                 limit: 150,
-            });
+            })
+            .set("Authorization", `Bearer ${fake_user_token}`);
 
         assert.equal(res.status, 422);
     });
@@ -143,9 +145,9 @@ describe("Experiences of Author Test", () => {
         const res = await request(app)
             .get(`/me/experiences`)
             .query({
-                access_token: "fakeaccesstoken",
                 start: -5,
-            });
+            })
+            .set("Authorization", `Bearer ${fake_user_token}`);
 
         assert.equal(res.status, 422);
     });
@@ -154,10 +156,6 @@ describe("Experiences of Author Test", () => {
         const res = await request(app).get(`/me/experiences`);
 
         assert.equal(res.status, 401);
-    });
-
-    after(() => {
-        sandbox.restore();
     });
 
     after(() => db.collection("experiences").deleteMany({}));

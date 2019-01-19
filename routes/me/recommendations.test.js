@@ -3,21 +3,23 @@ const sinon = require("sinon");
 const request = require("supertest");
 
 const app = require("../../app");
-const authentication = require("../../libs/authentication");
+const { FakeUserFactory } = require("../../utils/test_helper");
 const recommendation = require("../../libs/recommendation");
 
 describe("POST /me/recommendations 取得使用者推薦字串", () => {
     let sandbox;
+    const fake_user_factory = new FakeUserFactory();
+
+    before(async () => {
+        await fake_user_factory.setUp();
+    });
 
     beforeEach(() => {
         sandbox = sinon.sandbox.create();
     });
 
     it("get recommendation string success", async () => {
-        const cachedFacebookAuthentication = sandbox
-            .stub(authentication, "cachedFacebookAuthentication")
-            .withArgs(sinon.match.object, sinon.match.object, "fakeaccesstoken")
-            .resolves({ facebook_id: "-1" });
+        const token = await fake_user_factory.create({ facebook_id: "-1" });
 
         const getRecommendationString = sandbox
             .stub(recommendation, "getRecommendationString")
@@ -26,12 +28,9 @@ describe("POST /me/recommendations 取得使用者推薦字串", () => {
 
         const res = await request(app)
             .post("/me/recommendations")
-            .send({
-                access_token: "fakeaccesstoken",
-            })
+            .set("Authorization", `Bearer ${token}`)
             .expect(200);
 
-        sinon.assert.calledOnce(cachedFacebookAuthentication);
         sinon.assert.calledOnce(getRecommendationString);
 
         assert.propertyVal(
@@ -42,28 +41,26 @@ describe("POST /me/recommendations 取得使用者推薦字串", () => {
     });
 
     it("fail if facebook auth fail", async () => {
-        sandbox.stub(authentication, "cachedFacebookAuthentication").rejects();
-
         await request(app)
             .post("/me/recommendations")
             .expect(401);
     });
 
     it("fail if getRecommendationString fail", async () => {
-        sandbox
-            .stub(authentication, "cachedFacebookAuthentication")
-            .resolves({ _id: { id: "-1", type: "facebook" } });
+        const token = await fake_user_factory.create({ facebook_id: "-2" });
         sandbox.stub(recommendation, "getRecommendationString").rejects();
 
         await request(app)
             .post("/me/recommendations")
-            .send({
-                access_token: "fakeaccesstoken",
-            })
+            .set("Authorization", `Bearer ${token}`)
             .expect(500);
     });
 
     afterEach(() => {
         sandbox.restore();
+    });
+
+    after(async () => {
+        await fake_user_factory.tearDown();
     });
 });

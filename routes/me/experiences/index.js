@@ -9,7 +9,9 @@ const {
 } = require("../../../libs/validation");
 const wrap = require("../../../libs/wrap");
 const { experiencesView } = require("../../../view_models/get_experiences");
-const passport = require("passport");
+const {
+    requireUserAuthetication,
+} = require("../../../middlewares/authentication");
 
 function _generateDBQuery(author_id, type) {
     const query = {};
@@ -65,7 +67,7 @@ function _generateDBQuery(author_id, type) {
  */
 /* eslint-enable */
 router.get("/", [
-    passport.authenticate("bearer", { session: false }),
+    requireUserAuthetication,
     wrap(async (req, res) => {
         const user = req.user;
         const start = parseInt(req.query.start, 10) || 0;

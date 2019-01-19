@@ -3,13 +3,12 @@ const app = require("../../../app");
 const { ObjectId } = require("mongodb");
 const { connectMongo } = require("../../../models/connect");
 const request = require("supertest");
-const sinon = require("sinon");
-const authentication = require("../../../libs/authentication");
 const { generateWorkingData } = require("../../experiences/testData");
+const { FakeUserFactory } = require("../../../utils/test_helper");
 
 describe("Get /me/workings ", () => {
     let db;
-    let sandbox;
+    const fake_user_factory = new FakeUserFactory();
     let user_working_id_str;
     const fake_user = {
         _id: new ObjectId(),
@@ -28,17 +27,22 @@ describe("Get /me/workings ", () => {
             name: "markLin002",
         },
     };
+    let fake_user_token;
 
     before(async () => {
         ({ db } = await connectMongo());
     });
 
-    before("Mock User", () => {
-        sandbox = sinon.sandbox.create();
-        sandbox
-            .stub(authentication, "cachedFacebookAuthentication")
-            .withArgs(sinon.match.object, sinon.match.object, "fakeaccesstoken")
-            .resolves(fake_user);
+    before(async () => {
+        await fake_user_factory.setUp();
+    });
+
+    before("Create some users", async () => {
+        fake_user_token = await fake_user_factory.create(fake_user);
+    });
+
+    after(async () => {
+        await fake_user_factory.tearDown();
     });
 
     before("Create Data", async () => {
@@ -65,9 +69,7 @@ describe("Get /me/workings ", () => {
     it("should be currect fields ", async () => {
         const res = await request(app)
             .get(`/me/workings`)
-            .query({
-                access_token: "fakeaccesstoken",
-            });
+            .set("Authorization", `Bearer ${fake_user_token}`);
 
         assert.equal(res.status, 200);
         assert.property(res.body, "total");
@@ -88,9 +90,7 @@ describe("Get /me/workings ", () => {
     it("should get workings of user and total equal 1 ", async () => {
         const res = await request(app)
             .get(`/me/workings`)
-            .query({
-                access_token: "fakeaccesstoken",
-            });
+            .set("Authorization", `Bearer ${fake_user_token}`);
 
         assert.equal(res.status, 200);
         const workings = res.body.time_and_salary;
@@ -102,10 +102,6 @@ describe("Get /me/workings ", () => {
         const res = await request(app).get(`/me/workings`);
 
         assert.equal(res.status, 401);
-    });
-
-    after(() => {
-        sandbox.restore();
     });
 
     after(() => db.collection("workings").deleteMany({}));

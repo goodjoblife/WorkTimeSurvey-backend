@@ -3,7 +3,9 @@ const express = require("express");
 const router = express.Router();
 const wrap = require("../../../libs/wrap");
 const generateGetWorkingsViewModel = require("../../../view_models/get_workings");
-const passport = require("passport");
+const {
+    requireUserAuthetication,
+} = require("../../../middlewares/authentication");
 const WorkingModel = require("../../../models/working_model");
 
 /* eslint-disable */
@@ -36,7 +38,7 @@ const WorkingModel = require("../../../models/working_model");
  */
 /* eslint-enable */
 router.get("/", [
-    passport.authenticate("bearer", { session: false }),
+    requireUserAuthetication,
     wrap(async (req, res) => {
         const user = req.user;
         const query = {

@@ -3,14 +3,13 @@ const app = require("../../../app");
 const { ObjectId } = require("mongodb");
 const { connectMongo } = require("../../../models/connect");
 const request = require("supertest");
-const sinon = require("sinon");
-const authentication = require("../../../libs/authentication");
+const { FakeUserFactory } = require("../../../utils/test_helper");
 
 describe("GET /me/replies", () => {
     let db;
     let experience_1_id;
     let experience_2_id;
-    let sandbox;
+    const fake_user_factory = new FakeUserFactory();
     const fake_user = {
         _id: new ObjectId(),
         facebook_id: "-1",
@@ -27,27 +26,24 @@ describe("GET /me/replies", () => {
             name: "markLin002",
         },
     };
+    let fake_user_token;
+    let fake_other_user_token;
 
     before(async () => {
         ({ db } = await connectMongo());
     });
 
-    before("Mock User", () => {
-        sandbox = sinon.sandbox.create();
-        const cachedFacebookAuthentication = sandbox.stub(
-            authentication,
-            "cachedFacebookAuthentication"
-        );
-        cachedFacebookAuthentication
-            .withArgs(sinon.match.object, sinon.match.object, "fakeaccesstoken")
-            .resolves(fake_user);
-        cachedFacebookAuthentication
-            .withArgs(
-                sinon.match.object,
-                sinon.match.object,
-                "fakeOtherAccessToken"
-            )
-            .resolves(fake_other_user);
+    before(async () => {
+        await fake_user_factory.setUp();
+    });
+
+    before("Create some users", async () => {
+        fake_user_token = await fake_user_factory.create(fake_user);
+        fake_other_user_token = await fake_user_factory.create(fake_other_user);
+    });
+
+    after(async () => {
+        await fake_user_factory.tearDown();
     });
 
     before("Seed experiences", async () => {
@@ -105,9 +101,7 @@ describe("GET /me/replies", () => {
     it("should get his/her replies", async () => {
         const res = await request(app)
             .get(`/me/replies`)
-            .query({
-                access_token: "fakeaccesstoken",
-            })
+            .set("Authorization", `Bearer ${fake_user_token}`)
             .expect(200);
 
         // ensure the format is correct
@@ -145,9 +139,7 @@ describe("GET /me/replies", () => {
     it("should get no replies when user does not have replies", async () => {
         const res = await request(app)
             .get(`/me/replies`)
-            .query({
-                access_token: "fakeOtherAccessToken",
-            })
+            .set("Authorization", `Bearer ${fake_other_user_token}`)
             .expect(200);
 
         assert.propertyVal(res.body, "total", 0);
@@ -159,28 +151,24 @@ describe("GET /me/replies", () => {
         request(app)
             .get(`/me/replies`)
             .query({
-                access_token: "fakeaccesstoken",
                 limit: "101",
             })
+            .set("Authorization", `Bearer ${fake_user_token}`)
             .expect(422));
 
     it("should retun 422, when start < 0", () =>
         request(app)
             .get(`/me/replies`)
             .query({
-                access_token: "fakeaccesstoken",
                 start: "-5",
             })
+            .set("Authorization", `Bearer ${fake_user_token}`)
             .expect(422));
 
     it("should return 401, if not authenticated", () =>
         request(app)
             .get(`/me/replies`)
             .expect(401));
-
-    after(() => {
-        sandbox.restore();
-    });
 
     after(() => db.collection("experiences").deleteMany({}));
 
