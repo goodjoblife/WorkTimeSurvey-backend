@@ -7,8 +7,7 @@ const request = require("supertest");
 const app = require("../../app");
 const { connectMongo } = require("../../models/connect");
 const ObjectId = require("mongodb").ObjectId;
-const sinon = require("sinon");
-const authentication = require("../../libs/authentication");
+const { FakeUserFactory } = require("../../utils/test_helper");
 
 function generateInterviewExperiencePayload(options) {
     const opt = options || {};
@@ -59,12 +58,12 @@ function generateInterviewExperiencePayload(options) {
             payload[key] = opt[key];
         }
     }
-    payload.access_token = "fakeaccesstoken";
     return payload;
 }
 
 describe("experiences 面試和工作經驗資訊", () => {
     let db;
+    const fake_user_factory = new FakeUserFactory();
     const fake_user = {
         _id: new ObjectId(),
         facebook_id: "-1",
@@ -79,7 +78,8 @@ describe("experiences 面試和工作經驗資訊", () => {
     });
 
     describe("POST /interview_experiences", () => {
-        let sandbox;
+        let fake_user_token;
+
         before("Seed companies", () =>
             db.collection("companies").insertMany([
                 {
@@ -97,22 +97,23 @@ describe("experiences 面試和工作經驗資訊", () => {
             ])
         );
 
-        beforeEach("Stub cachedFacebookAuthentication", () => {
-            sandbox = sinon.sandbox.create();
-            sandbox
-                .stub(authentication, "cachedFacebookAuthentication")
-                .withArgs(
-                    sinon.match.object,
-                    sinon.match.object,
-                    "fakeaccesstoken"
-                )
-                .resolves(fake_user);
+        beforeEach(async () => {
+            await fake_user_factory.setUp();
+        });
+
+        beforeEach("Create some users", async () => {
+            fake_user_token = await fake_user_factory.create(fake_user);
+        });
+
+        afterEach(async () => {
+            await fake_user_factory.tearDown();
         });
 
         it("should success", async () => {
             const res = await request(app)
                 .post("/interview_experiences")
                 .send(generateInterviewExperiencePayload())
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
 
             const experience = await db
@@ -171,6 +172,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             company_id: -1,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("region is required", () =>
@@ -181,6 +183,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             region: -1,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("job_title is required", () =>
@@ -191,6 +194,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             job_title: -1,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("title is required", () =>
@@ -201,6 +205,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             title: -1,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("region is illegal Field, expected return 422", () =>
@@ -211,6 +216,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             region: "你好市",
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("title of word is more than 25 char , expected return 422", () =>
@@ -221,6 +227,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             title: new Array(30).join("今"),
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("sections is empty, expected return 422", () =>
@@ -231,6 +238,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             sections: null,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("sections is not array, expected return 422", () =>
@@ -241,6 +249,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             sections: "abcdef",
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("subsection of title and content is empty, expected return 422", () =>
@@ -256,6 +265,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             ],
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("subsection of title is undefined, expected return 422", () =>
@@ -271,6 +281,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             ],
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("subsection of title is null, expected return 200", () =>
@@ -286,6 +297,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             ],
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200));
 
             it("subtitle of word is more than 25 char, expected return 422", () => {
@@ -299,6 +311,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             ],
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422);
             });
 
@@ -309,6 +322,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                 return request(app)
                     .post("/interview_experiences")
                     .send(sendData)
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422);
             });
 
@@ -320,6 +334,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             education: "無業遊名",
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
         });
 
@@ -332,6 +347,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             interview_time: -1,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("interview_time_year is required", () =>
@@ -344,6 +360,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             },
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("interview_time_month is required", () =>
@@ -356,6 +373,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             },
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("interview_qas is array", () =>
@@ -366,6 +384,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             interview_qas: {},
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("interview_qas of question and answer  is required", () =>
@@ -381,6 +400,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             ],
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("number of question word  is less than 250 char", () => {
@@ -397,6 +417,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             ],
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422);
             });
 
@@ -414,6 +435,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             ],
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422);
             });
 
@@ -438,6 +460,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             ],
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200)
                     .then(res => {
                         const id = res.body.experience._id.toString();
@@ -472,6 +495,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             interview_qas,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422);
             });
 
@@ -484,6 +508,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             interview_result,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422);
             });
 
@@ -495,6 +520,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             interview_sensitive_questions: {},
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("interview_sensitive_questions is required non empty string", () =>
@@ -505,6 +531,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             interview_sensitive_questions: ["", ""],
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("number of interview_sensitive_questions count is less than 20", () => {
@@ -516,6 +543,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             interview_sensitive_questions: [qs, qs],
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422);
             });
 
@@ -528,6 +556,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             interview_sensitive_questions: [qs, qs],
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422);
             });
 
@@ -542,6 +571,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             },
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("salary amount is number required", () =>
@@ -555,6 +585,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             },
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("salary amount should be positive number", () =>
@@ -568,6 +599,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             },
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             describe("interview_time should be reasonable", () => {
@@ -582,6 +614,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                                 },
                             })
                         )
+                        .set("Authorization", `Bearer ${fake_user_token}`)
                         .expect(422));
 
                 it("interview_time_month sould be number", () =>
@@ -595,6 +628,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                                 },
                             })
                         )
+                        .set("Authorization", `Bearer ${fake_user_token}`)
                         .expect(422));
 
                 it("interview_time_year <= this year", () => {
@@ -610,6 +644,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                                 },
                             })
                         )
+                        .set("Authorization", `Bearer ${fake_user_token}`)
                         .expect(422);
                 });
 
@@ -624,6 +659,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                                 },
                             })
                         )
+                        .set("Authorization", `Bearer ${fake_user_token}`)
                         .expect(422));
 
                 it("interview_time_month should be 1~12", () =>
@@ -637,6 +673,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                                 },
                             })
                         )
+                        .set("Authorization", `Bearer ${fake_user_token}`)
                         .expect(422));
 
                 it("interview_time <= now", () => {
@@ -652,6 +689,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                                 },
                             })
                         )
+                        .set("Authorization", `Bearer ${fake_user_token}`)
                         .expect(422);
                 });
             });
@@ -664,6 +702,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             interview_result: -1,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("interview_result could not be a string length > 100", () =>
@@ -674,6 +713,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             interview_result: new Array(110).join("慘"),
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("interview_result could not be a string length < 1", () =>
@@ -684,6 +724,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             interview_result: "",
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("interview_result should be a string length 1~100", () =>
@@ -694,6 +735,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             interview_result: new Array(100).join("慘"),
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200));
 
             it("overall_rating is required", () =>
@@ -704,6 +746,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             overall_rating: -1,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("overall_rating should be 1~5", () =>
@@ -714,6 +757,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             overall_rating: 6,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("experience_in_year should not be a valid number", () =>
@@ -724,6 +768,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             experience_in_year: "test",
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("experience_in_year should be 0~50", () =>
@@ -734,6 +779,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                             experience_in_year: 51,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             for (const input of ["大學", "高中", "國中"]) {
@@ -745,6 +791,7 @@ describe("experiences 面試和工作經驗資訊", () => {
                                 education: input,
                             })
                         )
+                        .set("Authorization", `Bearer ${fake_user_token}`)
                         .expect(200);
 
                     const experience = await db
@@ -759,11 +806,9 @@ describe("experiences 面試和工作經驗資訊", () => {
 
         describe("No Login status", () => {
             it("no login status create interview experience , and expected return erro code 401", () => {
-                const sendData = generateInterviewExperiencePayload();
-                sendData.access_token = undefined;
                 return request(app)
                     .post("/interview_experiences")
-                    .send(sendData)
+                    .send(generateInterviewExperiencePayload())
                     .expect(401);
             });
         });
@@ -771,10 +816,6 @@ describe("experiences 面試和工作經驗資訊", () => {
         after(async () => {
             await db.collection("experiences").deleteMany({});
             await db.collection("companies").deleteMany({});
-        });
-
-        afterEach(() => {
-            sandbox.restore();
         });
     });
 });
