@@ -1,9 +1,11 @@
 const express = require("express");
-const passport = require("passport");
 const wrap = require("../../libs/wrap");
 const { shouldIn } = require("../../libs/validation");
 const { HttpError, ObjectNotExistError } = require("../../libs/errors");
 const ReplyModel = require("../../models/reply_model");
+const {
+    requireUserAuthetication,
+} = require("../../middlewares/authentication");
 
 const router = express.Router();
 
@@ -17,7 +19,7 @@ const router = express.Router();
  * @apiError 403 如果 user 嘗試修改它人的留言
  */
 router.patch("/:reply_id", [
-    passport.authenticate("bearer", { session: false }),
+    requireUserAuthetication,
     wrap(async (req, res) => {
         const reply_id_str = req.params.reply_id;
         const status = req.body.status;

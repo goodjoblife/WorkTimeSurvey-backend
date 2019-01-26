@@ -4,21 +4,22 @@ const request = require("supertest");
 const app = require("../../app");
 const { ObjectId } = require("mongodb");
 const { connectMongo } = require("../../models/connect");
-const sinon = require("sinon");
-const authentication = require("../../libs/authentication");
+const { FakeUserFactory } = require("../../utils/test_helper");
 
 const { assert } = chai;
 
 describe("Replies 留言", () => {
     let db;
+    const fake_user_factory = new FakeUserFactory();
 
     before(async () => {
         ({ db } = await connectMongo());
     });
 
     describe("PATCH /replies/:id", () => {
-        let sandbox;
         let reply_id_string;
+        let fake_user_token;
+        let fake_other_user_token;
 
         const fake_user = {
             _id: new ObjectId(),
@@ -38,26 +39,19 @@ describe("Replies 留言", () => {
             },
         };
 
-        beforeEach("mock user authentication", () => {
-            sandbox = sinon.sandbox.create();
-            const cachedFacebookAuthentication = sandbox.stub(
-                authentication,
-                "cachedFacebookAuthentication"
+        beforeEach(async () => {
+            await fake_user_factory.setUp();
+        });
+
+        beforeEach("Create some users", async () => {
+            fake_user_token = await fake_user_factory.create(fake_user);
+            fake_other_user_token = await fake_user_factory.create(
+                fake_other_user
             );
-            cachedFacebookAuthentication
-                .withArgs(
-                    sinon.match.object,
-                    sinon.match.object,
-                    "fakeaccesstoken"
-                )
-                .resolves(fake_user);
-            cachedFacebookAuthentication
-                .withArgs(
-                    sinon.match.object,
-                    sinon.match.object,
-                    "fakeOtherAccessToken"
-                )
-                .resolves(fake_other_user);
+        });
+
+        afterEach(async () => {
+            await fake_user_factory.tearDown();
         });
 
         beforeEach("Seed reply", async () => {
@@ -78,9 +72,9 @@ describe("Replies 留言", () => {
             const res = await request(app)
                 .patch(`/replies/${reply_id_string}`)
                 .send({
-                    access_token: "fakeaccesstoken",
                     status: "hidden",
                 })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
 
             assert.isTrue(res.body.success);
@@ -96,9 +90,9 @@ describe("Replies 留言", () => {
             request(app)
                 .patch(`/replies/a_fake_reply_id`)
                 .send({
-                    access_token: "fakeaccesstoken",
                     status: "hidden",
                 })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(404));
 
         it("should return 401, when user is not authenticated", () =>
@@ -113,32 +107,26 @@ describe("Replies 留言", () => {
             request(app)
                 .patch(`/replies/${reply_id_string}`)
                 .send({
-                    access_token: "fakeOtherAccessToken",
                     status: "hidden",
                 })
+                .set("Authorization", `Bearer ${fake_other_user_token}`)
                 .expect(403));
 
         it("should return 422, when `status` is not valid", () =>
             request(app)
                 .patch(`/replies/${reply_id_string}`)
                 .send({
-                    access_token: "fakeaccesstoken",
                     status: "xxxxxx",
                 })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("should return 422, when `status` is not given", () =>
             request(app)
                 .patch(`/replies/${reply_id_string}`)
-                .send({
-                    access_token: "fakeaccesstoken",
-                })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         afterEach(() => db.collection("replies").deleteMany({}));
-
-        afterEach(() => {
-            sandbox.restore();
-        });
     });
 });

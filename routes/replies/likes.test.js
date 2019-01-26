@@ -2,13 +2,13 @@ const assert = require("chai").assert;
 const request = require("supertest");
 const { ObjectId } = require("mongodb");
 const { connectMongo } = require("../../models/connect");
-const sinon = require("sinon");
 const app = require("../../app");
-const authentication = require("../../libs/authentication");
 const { generateReplyData } = require("../experiences/testData");
+const { FakeUserFactory } = require("../../utils/test_helper");
 
 describe("POST /replies/:id/likes", () => {
     let db;
+    const fake_user_factory = new FakeUserFactory();
     const fake_user = {
         _id: new ObjectId(),
         facebook_id: "1",
@@ -22,7 +22,8 @@ describe("POST /replies/:id/likes", () => {
     let reply_id_string;
     let hidden_reply_id_string;
     const experience_id = new ObjectId();
-    let sandbox;
+    let fake_user_token;
+    let fake_other_user_token;
 
     before(async () => {
         ({ db } = await connectMongo());
@@ -49,38 +50,29 @@ describe("POST /replies/:id/likes", () => {
         hidden_reply_id_string = insert_result.insertedIds[1].toString();
     });
 
-    beforeEach("Mock", () => {
-        sandbox = sinon.sandbox.create();
-        const cachedFacebookAuthentication = sandbox.stub(
-            authentication,
-            "cachedFacebookAuthentication"
-        );
-        cachedFacebookAuthentication
-            .withArgs(sinon.match.object, sinon.match.object, "fakeAccessToken")
-            .resolves(fake_user);
-        cachedFacebookAuthentication
-            .withArgs(
-                sinon.match.object,
-                sinon.match.object,
-                "otherFakeAccessToken"
-            )
-            .resolves(fake_other_user);
+    beforeEach(async () => {
+        await fake_user_factory.setUp();
+    });
+
+    beforeEach("Create some users", async () => {
+        fake_user_token = await fake_user_factory.create(fake_user);
+        fake_other_user_token = await fake_user_factory.create(fake_other_user);
+    });
+
+    afterEach(async () => {
+        await fake_user_factory.tearDown();
     });
 
     it("it should 404 Not Found if reply not exists", () =>
         request(app)
             .post(`/replies/1234567890aa/likes`)
-            .send({
-                access_token: "fakeAccessToken",
-            })
+            .set("Authorization", `Bearer ${fake_user_token}`)
             .expect(404));
 
     it("it should 200 success if succeed", async () => {
         const res = await request(app)
             .post(`/replies/${reply_id_string}/likes`)
-            .send({
-                access_token: "fakeAccessToken",
-            })
+            .set("Authorization", `Bearer ${fake_user_token}`)
             .expect(200);
         assert.deepEqual(res.body, { success: true });
 
@@ -102,15 +94,11 @@ describe("POST /replies/:id/likes", () => {
     it("it should 200 success if other user like the same reply", async () => {
         await request(app)
             .post(`/replies/${reply_id_string}/likes`)
-            .send({
-                access_token: "fakeAccessToken",
-            })
+            .set("Authorization", `Bearer ${fake_user_token}`)
             .expect(200);
         await request(app)
             .post(`/replies/${reply_id_string}/likes`)
-            .send({
-                access_token: "otherFakeAccessToken",
-            })
+            .set("Authorization", `Bearer ${fake_other_user_token}`)
             .expect(200);
 
         const reply = await db.collection("replies").findOne({
@@ -124,16 +112,12 @@ describe("POST /replies/:id/likes", () => {
     it("it should 403 Forbidden if like again", async () => {
         const res = await request(app)
             .post(`/replies/${reply_id_string}/likes`)
-            .send({
-                access_token: "fakeAccessToken",
-            })
+            .set("Authorization", `Bearer ${fake_user_token}`)
             .expect(200);
         assert.deepEqual(res.body, { success: true });
         await request(app)
             .post(`/replies/${reply_id_string}/likes`)
-            .send({
-                access_token: "fakeAccessToken",
-            })
+            .set("Authorization", `Bearer ${fake_user_token}`)
             .expect(403);
 
         const reply = await db.collection("replies").findOne({
@@ -147,14 +131,8 @@ describe("POST /replies/:id/likes", () => {
     it("it should 404 if like the hidden reply", () =>
         request(app)
             .post(`/replies/${hidden_reply_id_string}/likes`)
-            .send({
-                access_token: "fakeAccessToken",
-            })
+            .set("Authorization", `Bearer ${fake_user_token}`)
             .expect(404));
-
-    afterEach(() => {
-        sandbox.restore();
-    });
 
     afterEach(async () => {
         await db.collection("replies").deleteMany({});
@@ -164,6 +142,7 @@ describe("POST /replies/:id/likes", () => {
 
 describe("DELETE /replies/:id/likes", () => {
     let db;
+    const fake_user_factory = new FakeUserFactory();
     const fake_user = {
         _id: new ObjectId(),
         facebook_id: "1",
@@ -182,7 +161,9 @@ describe("DELETE /replies/:id/likes", () => {
     let reply_id_string;
     let hidden_reply_id_string;
     const experience_id = new ObjectId();
-    let sandbox;
+    let fake_user_token;
+    let fake_other_user_token;
+    let fake_third_user_token;
 
     before(async () => {
         ({ db } = await connectMongo());
@@ -226,45 +207,30 @@ describe("DELETE /replies/:id/likes", () => {
         return db.collection("reply_likes").insertMany(reply_likes);
     });
 
-    beforeEach("Mock", () => {
-        sandbox = sinon.sandbox.create();
-        const cachedFacebookAuthentication = sandbox.stub(
-            authentication,
-            "cachedFacebookAuthentication"
-        );
-        cachedFacebookAuthentication
-            .withArgs(sinon.match.object, sinon.match.object, "fakeAccessToken")
-            .resolves(fake_user);
-        cachedFacebookAuthentication
-            .withArgs(
-                sinon.match.object,
-                sinon.match.object,
-                "otherFakeAccessToken"
-            )
-            .resolves(fake_other_user);
-        cachedFacebookAuthentication
-            .withArgs(
-                sinon.match.object,
-                sinon.match.object,
-                "thirdFakeAccessToken"
-            )
-            .resolves(fake_third_user);
+    beforeEach(async () => {
+        await fake_user_factory.setUp();
+    });
+
+    beforeEach("Create some users", async () => {
+        fake_user_token = await fake_user_factory.create(fake_user);
+        fake_other_user_token = await fake_user_factory.create(fake_other_user);
+        fake_third_user_token = await fake_user_factory.create(fake_third_user);
+    });
+
+    afterEach(async () => {
+        await fake_user_factory.tearDown();
     });
 
     it("it should 404 Not Found if reply not exists", () =>
         request(app)
             .delete(`/replies/1234567890aa/likes`)
-            .send({
-                access_token: "fakeAccessToken",
-            })
+            .set("Authorization", `Bearer ${fake_user_token}`)
             .expect(404));
 
     it("it should 200 success if succeed", async () => {
         const res = await request(app)
             .delete(`/replies/${reply_id_string}/likes`)
-            .send({
-                access_token: "fakeAccessToken",
-            })
+            .set("Authorization", `Bearer ${fake_user_token}`)
             .expect(200);
         assert.deepEqual(res.body, { success: true });
 
@@ -284,15 +250,11 @@ describe("DELETE /replies/:id/likes", () => {
     it("it should 200 success if other user dislike the same reply", async () => {
         await request(app)
             .delete(`/replies/${reply_id_string}/likes`)
-            .send({
-                access_token: "fakeAccessToken",
-            })
+            .set("Authorization", `Bearer ${fake_user_token}`)
             .expect(200);
         await request(app)
             .delete(`/replies/${reply_id_string}/likes`)
-            .send({
-                access_token: "otherFakeAccessToken",
-            })
+            .set("Authorization", `Bearer ${fake_other_user_token}`)
             .expect(200);
 
         const reply = await db.collection("replies").findOne({
@@ -311,22 +273,14 @@ describe("DELETE /replies/:id/likes", () => {
     it("it should 404 NotFound if dislike a no like reply", () =>
         request(app)
             .delete(`/replies/${reply_id_string}/likes`)
-            .send({
-                access_token: "thirdFakeAccessToken",
-            })
+            .set("Authorization", `Bearer ${fake_third_user_token}`)
             .expect(404));
 
     it("it should 404 if dislike the hidden reply", () =>
         request(app)
             .delete(`/replies/${hidden_reply_id_string}/likes`)
-            .send({
-                access_token: "fakeAccessToken",
-            })
+            .set("Authorization", `Bearer ${fake_user_token}`)
             .expect(404));
-
-    afterEach(() => {
-        sandbox.restore();
-    });
 
     afterEach(async () => {
         await db.collection("replies").deleteMany({});
