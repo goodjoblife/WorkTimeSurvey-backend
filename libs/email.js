@@ -21,22 +21,21 @@ const base64FromName = Buffer.from(fromName).toString("base64");
 const fromEmail = "noreply@email.goodjob.life";
 
 /**
+ * 寄送一封信件到不同的電子郵件地址（內容相同）
+ * @param {String[]} toAddresses 目標對象的電子郵件列表
+ * @param {String} bodyHTML 內容的 html 字串 （UTF-8）
+ * @param {String} subject 標題字串 （UTF-8）
  *
- * @param {*} toAddresses 目標對象的電子郵件列表
- * @param {*} bodyHTML 內容的 html 字串 （UTF-8）
- * @param {*} subject 標題字串 （UTF-8）
+ * @fulfilled data success response
+ * @rejected error
  */
-const sendEmail = async (toAddresses, bodyHTML, subject) => {
+const sendEmails = async (toAddresses, bodyHTML, subject) => {
     const params = {
         Destination: {
-            /* required */
-            // CcAddresses: [],
             ToAddresses: toAddresses,
         },
         Message: {
-            /* required */
             Body: {
-                /* required */
                 Html: {
                     Charset: "UTF-8",
                     Data: bodyHTML,
@@ -47,22 +46,21 @@ const sendEmail = async (toAddresses, bodyHTML, subject) => {
                 Data: subject,
             },
         },
-        Source: `=?UTF-8?B?${base64FromName}?= <${fromEmail}>` /* required */,
-        // ReplyToAddresses: [],
+        Source: `=?UTF-8?B?${base64FromName}?= <${fromEmail}>`,
     };
     return SES.sendEmail(params).promise();
 };
 
-/* example to handle promise's fulfilled/rejected states
-    sendPromise.then(
-        function(data) {
-        console.log(data.MessageId);
-    }).catch(
-        function(err) {
-        console.error(err, err.stack);
-    });
+/** sample code to send same emails to different destination
+(async () => {
+    await sendEmails(
+        ["barry800414@gmail.com"],
+        "<p>this is an test email</p>",
+        "這是一封測試郵件"
+    );
+})();
 */
 
 module.exports = {
-    sendEmail,
+    sendEmails,
 };
