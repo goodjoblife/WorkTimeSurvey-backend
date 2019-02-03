@@ -27,7 +27,21 @@ class ObjectNotExistError extends Error {
      */
 }
 
+class EmailTemplateNotFoundError extends Error {
+    /*
+     * @param  message  any
+     */
+}
+
+class EmailTemplateVariablesError extends Error {
+    /*
+     * @param  message  any
+     */
+}
+
 module.exports.HttpError = HttpError;
 module.exports.ObjectIdError = ObjectIdError;
 module.exports.DuplicateKeyError = DuplicateKeyError;
 module.exports.ObjectNotExistError = ObjectNotExistError;
+module.exports.EmailTemplateNotFoundError = EmailTemplateNotFoundError;
+module.exports.EmailTemplateVariablesError = EmailTemplateVariablesError;
