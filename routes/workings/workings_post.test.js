@@ -187,15 +187,14 @@ describe("POST /workings", () => {
             assert.deepPropertyVal(res.body, "working.author.type", "facebook");
         });
 
-        it("generateSalaryRelatedPayload", () =>
-            request(app)
+        it("generateSalaryRelatedPayload", async () => {
+            const res = await request(app)
                 .post(path)
                 .send(generateSalaryRelatedPayload())
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.equal(res.body.working.status, "published");
-                }));
+                .expect(200);
+            assert.equal(res.body.working.status, "published");
+        });
     });
 
     describe("Common Data Validation Part", () => {
@@ -374,8 +373,8 @@ describe("POST /workings", () => {
                     .expect(422));
         });
 
-        it("sector can be inserted", () =>
-            request(app)
+        it("sector can be inserted", async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateWorkingTimeRelatedPayload({
@@ -383,14 +382,9 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.propertyVal(
-                        res.body.working,
-                        "sector",
-                        "Hello world"
-                    );
-                }));
+                .expect(200);
+            assert.propertyVal(res.body.working, "sector", "Hello world");
+        });
 
         for (const input of ["male", "female", "other"]) {
             it(`gender can be ${input}`, () =>
@@ -443,8 +437,8 @@ describe("POST /workings", () => {
             "contract",
             "dispatched-labor",
         ]) {
-            it(`employment_type can be ${input}`, () =>
-                request(app)
+            it(`employment_type can be ${input}`, async () => {
+                const res = await request(app)
                     .post("/workings")
                     .send(
                         generateWorkingTimeRelatedPayload({
@@ -452,14 +446,9 @@ describe("POST /workings", () => {
                         })
                     )
                     .set("Authorization", `Bearer ${fake_user_token}`)
-                    .expect(200)
-                    .expect(res => {
-                        assert.propertyVal(
-                            res.body.working,
-                            "employment_type",
-                            input
-                        );
-                    }));
+                    .expect(200);
+                assert.propertyVal(res.body.working, "employment_type", input);
+            });
         }
 
         for (const input of [-1, "invalid"]) {
@@ -497,8 +486,8 @@ describe("POST /workings", () => {
                 .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
-        it("extra_info should be fine", () =>
-            request(app)
+        it("extra_info should be fine", async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateWorkingTimeRelatedPayload({
@@ -508,15 +497,14 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.deepEqual(res.body.working.extra_info, [
-                        { key: "mail", value: "nice@goodjob.com" },
-                    ]);
-                }));
+                .expect(200);
+            assert.deepEqual(res.body.working.extra_info, [
+                { key: "mail", value: "nice@goodjob.com" },
+            ]);
+        });
 
-        it("will get campaign_name", () =>
-            request(app)
+        it("will get campaign_name", async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateWorkingTimeRelatedPayload({
@@ -524,17 +512,12 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.propertyVal(
-                        res.body.working,
-                        "campaign_name",
-                        "engineer"
-                    );
-                }));
+                .expect(200);
+            assert.propertyVal(res.body.working, "campaign_name", "engineer");
+        });
 
-        it("will get about_this_job", () =>
-            request(app)
+        it("will get about_this_job", async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateWorkingTimeRelatedPayload({
@@ -542,14 +525,13 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.propertyVal(
-                        res.body.working,
-                        "about_this_job",
-                        "I like my job"
-                    );
-                }));
+                .expect(200);
+            assert.propertyVal(
+                res.body.working,
+                "about_this_job",
+                "I like my job"
+            );
+        });
     });
 
     describe("WorkingTime Validation Part", () => {
@@ -586,8 +568,8 @@ describe("POST /workings", () => {
                 .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
-        it("week_work_time can be a floating number", () =>
-            request(app)
+        it("week_work_time can be a floating number", async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateWorkingTimeRelatedPayload({
@@ -595,14 +577,9 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.deepPropertyVal(
-                        res.body,
-                        "working.week_work_time",
-                        30.5
-                    );
-                }));
+                .expect(200);
+            assert.deepPropertyVal(res.body, "working.week_work_time", 30.5);
+        });
 
         it("overtime_frequency is required", () =>
             request(app)
@@ -659,8 +636,8 @@ describe("POST /workings", () => {
                 .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
-        it("day_promised_work_time can be a floating number", () =>
-            request(app)
+        it("day_promised_work_time can be a floating number", async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateWorkingTimeRelatedPayload({
@@ -668,14 +645,13 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.deepPropertyVal(
-                        res.body,
-                        "working.day_promised_work_time",
-                        3.5
-                    );
-                }));
+                .expect(200);
+            assert.deepPropertyVal(
+                res.body,
+                "working.day_promised_work_time",
+                3.5
+            );
+        });
 
         it("day_real_work_time is required", () =>
             request(app)
@@ -710,8 +686,8 @@ describe("POST /workings", () => {
                 .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
-        it("day_real_work_time can be a floating number", () =>
-            request(app)
+        it("day_real_work_time can be a floating number", async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateWorkingTimeRelatedPayload({
@@ -719,18 +695,13 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.deepPropertyVal(
-                        res.body,
-                        "working.day_real_work_time",
-                        3.5
-                    );
-                }));
+                .expect(200);
+            assert.deepPropertyVal(res.body, "working.day_real_work_time", 3.5);
+        });
 
         for (const input of ["yes", "no", "don't know"]) {
-            it(`has_overtime_salary should be ${input}`, () =>
-                request(app)
+            it(`has_overtime_salary should be ${input}`, async () => {
+                const res = await request(app)
                     .post("/workings")
                     .send(
                         generateWorkingTimeRelatedPayload({
@@ -738,18 +709,17 @@ describe("POST /workings", () => {
                         })
                     )
                     .set("Authorization", `Bearer ${fake_user_token}`)
-                    .expect(200)
-                    .expect(res => {
-                        assert.propertyVal(
-                            res.body.working,
-                            "has_overtime_salary",
-                            input
-                        );
-                    }));
+                    .expect(200);
+                assert.propertyVal(
+                    res.body.working,
+                    "has_overtime_salary",
+                    input
+                );
+            });
         }
         for (const input of ["", undefined]) {
-            it(`has_overtime_salary wouldn't be returned if it is "${input}"`, () =>
-                request(app)
+            it(`has_overtime_salary wouldn't be returned if it is "${input}"`, async () => {
+                const res = await request(app)
                     .post("/workings")
                     .send(
                         generateWorkingTimeRelatedPayload({
@@ -757,24 +727,19 @@ describe("POST /workings", () => {
                         })
                     )
                     .set("Authorization", `Bearer ${fake_user_token}`)
-                    .expect(200)
-                    .expect(res => {
-                        assert.notProperty(
-                            res.body.working,
-                            "has_overtime_salary"
-                        );
-                    }));
+                    .expect(200);
+                assert.notProperty(res.body.working, "has_overtime_salary");
+            });
         }
 
-        it("has_overtime_salary wouldn't be returned if there is no such field in payload", () =>
-            request(app)
+        it("has_overtime_salary wouldn't be returned if there is no such field in payload", async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(generateWorkingTimeRelatedPayload({}))
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.notProperty(res.body.working, "has_overtime_salary");
-                }));
+                .expect(200);
+            assert.notProperty(res.body.working, "has_overtime_salary");
+        });
 
         it("has_overtime_salary should be error if request others", () =>
             request(app)
@@ -788,8 +753,8 @@ describe("POST /workings", () => {
                 .expect(422));
 
         for (const input of ["yes", "no", "don't know"]) {
-            it(`is_overtime_salary_legal should be ${input}`, () =>
-                request(app)
+            it(`is_overtime_salary_legal should be ${input}`, async () => {
+                const res = await request(app)
                     .post("/workings")
                     .send(
                         generateWorkingTimeRelatedPayload({
@@ -798,14 +763,13 @@ describe("POST /workings", () => {
                         })
                     )
                     .set("Authorization", `Bearer ${fake_user_token}`)
-                    .expect(200)
-                    .expect(res => {
-                        assert.propertyVal(
-                            res.body.working,
-                            "is_overtime_salary_legal",
-                            input
-                        );
-                    }));
+                    .expect(200);
+                assert.propertyVal(
+                    res.body.working,
+                    "is_overtime_salary_legal",
+                    input
+                );
+            });
         }
         for (const preInput of ["no", "don't know", "-1", "", undefined]) {
             it("is_overtime_salary_legal should be error if has_overtime_salary is not yes", () =>
@@ -822,8 +786,8 @@ describe("POST /workings", () => {
         }
 
         for (const input of ["", undefined]) {
-            it(`is_overtime_salary_legal wouldn't be returned if it is "${input}"`, () =>
-                request(app)
+            it(`is_overtime_salary_legal wouldn't be returned if it is "${input}"`, async () => {
+                const res = await request(app)
                     .post("/workings")
                     .send(
                         generateWorkingTimeRelatedPayload({
@@ -832,27 +796,22 @@ describe("POST /workings", () => {
                         })
                     )
                     .set("Authorization", `Bearer ${fake_user_token}`)
-                    .expect(200)
-                    .expect(res => {
-                        assert.notProperty(
-                            res.body.working,
-                            "is_overtime_salary_legal"
-                        );
-                    }));
+                    .expect(200);
+                assert.notProperty(
+                    res.body.working,
+                    "is_overtime_salary_legal"
+                );
+            });
         }
 
-        it("is_overtime_salary_legal wouldn't be returned if there is no such field in payload", () =>
-            request(app)
+        it("is_overtime_salary_legal wouldn't be returned if there is no such field in payload", async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(generateWorkingTimeRelatedPayload({}))
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.notProperty(
-                        res.body.working,
-                        "is_overtime_salary_legal"
-                    );
-                }));
+                .expect(200);
+            assert.notProperty(res.body.working, "is_overtime_salary_legal");
+        });
 
         it("is_overtime_salary_legal should be error if request others", () =>
             request(app)
@@ -867,8 +826,8 @@ describe("POST /workings", () => {
                 .expect(422));
 
         for (const input of ["yes", "no", "don't know"]) {
-            it(`has_compensatory_dayoff should be ${input}`, () =>
-                request(app)
+            it(`has_compensatory_dayoff should be ${input}`, async () => {
+                const res = await request(app)
                     .post("/workings")
                     .send(
                         generateWorkingTimeRelatedPayload({
@@ -876,18 +835,17 @@ describe("POST /workings", () => {
                         })
                     )
                     .set("Authorization", `Bearer ${fake_user_token}`)
-                    .expect(200)
-                    .expect(res => {
-                        assert.propertyVal(
-                            res.body.working,
-                            "has_compensatory_dayoff",
-                            input
-                        );
-                    }));
+                    .expect(200);
+                assert.propertyVal(
+                    res.body.working,
+                    "has_compensatory_dayoff",
+                    input
+                );
+            });
         }
         for (const input of ["", undefined]) {
-            it(`has_compensatory_dayoff wouldn't be returned if it is "${input}"`, () =>
-                request(app)
+            it(`has_compensatory_dayoff wouldn't be returned if it is "${input}"`, async () => {
+                const res = await request(app)
                     .post("/workings")
                     .send(
                         generateWorkingTimeRelatedPayload({
@@ -895,27 +853,19 @@ describe("POST /workings", () => {
                         })
                     )
                     .set("Authorization", `Bearer ${fake_user_token}`)
-                    .expect(200)
-                    .expect(res => {
-                        assert.notProperty(
-                            res.body.working,
-                            "has_compensatory_dayoff"
-                        );
-                    }));
+                    .expect(200);
+                assert.notProperty(res.body.working, "has_compensatory_dayoff");
+            });
         }
 
-        it("has_compensatory_dayoff wouldn't be returned if there is no such field in payload", () =>
-            request(app)
+        it("has_compensatory_dayoff wouldn't be returned if there is no such field in payload", async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(generateWorkingTimeRelatedPayload({}))
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.notProperty(
-                        res.body.working,
-                        "has_compensatory_dayoff"
-                    );
-                }));
+                .expect(200);
+            assert.notProperty(res.body.working, "has_compensatory_dayoff");
+        });
 
         it("has_compensatory_dayoff should be error if request others", () =>
             request(app)
@@ -942,8 +892,8 @@ describe("POST /workings", () => {
                 .expect(422));
 
         for (const input of ["year", "month", "day", "hour"]) {
-            it(`salary_type should be ${input}`, () =>
-                request(app)
+            it(`salary_type should be ${input}`, async () => {
+                const res = await request(app)
                     .post("/workings")
                     .send(
                         generateSalaryRelatedPayload({
@@ -951,14 +901,9 @@ describe("POST /workings", () => {
                         })
                     )
                     .set("Authorization", `Bearer ${fake_user_token}`)
-                    .expect(200)
-                    .expect(res => {
-                        assert.deepPropertyVal(
-                            res.body.working,
-                            "salary.type",
-                            input
-                        );
-                    }));
+                    .expect(200);
+                assert.deepPropertyVal(res.body.working, "salary.type", input);
+            });
         }
 
         it("salary_amount is required", () =>
@@ -985,8 +930,8 @@ describe("POST /workings", () => {
     });
 
     describe("estimated_hourly_wage Part", () => {
-        it(`should have 'estimated_hourly_wage' field, if salary_type is 'hour'`, () =>
-            request(app)
+        it(`should have 'estimated_hourly_wage' field, if salary_type is 'hour'`, async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateSalaryRelatedPayload({
@@ -995,19 +940,14 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.property(res.body.working, "estimated_hourly_wage");
-                    assert.propertyVal(
-                        res.body.working,
-                        "estimated_hourly_wage",
-                        100
-                    );
-                }));
+                .expect(200);
+            assert.property(res.body.working, "estimated_hourly_wage");
+            assert.propertyVal(res.body.working, "estimated_hourly_wage", 100);
+        });
 
         it(`should have 'estimated_hourly_wage' field, if salary_type is
-                 'day' and has WorkingTime information`, () =>
-            request(app)
+                 'day' and has WorkingTime information`, async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateAllPayload({
@@ -1017,19 +957,14 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.property(res.body.working, "estimated_hourly_wage");
-                    assert.propertyVal(
-                        res.body.working,
-                        "estimated_hourly_wage",
-                        1000
-                    );
-                }));
+                .expect(200);
+            assert.property(res.body.working, "estimated_hourly_wage");
+            assert.propertyVal(res.body.working, "estimated_hourly_wage", 1000);
+        });
 
         it(`should have 'estimated_hourly_wage' field, if salary_type is
-                'month' and has WorkingTime information`, () =>
-            request(app)
+                'month' and has WorkingTime information`, async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateAllPayload({
@@ -1040,19 +975,14 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.property(res.body.working, "estimated_hourly_wage");
-                    assert.closeTo(
-                        res.body.working.estimated_hourly_wage,
-                        63,
-                        1
-                    );
-                }));
+                .expect(200);
+            assert.property(res.body.working, "estimated_hourly_wage");
+            assert.closeTo(res.body.working.estimated_hourly_wage, 63, 1);
+        });
 
         it(`should have 'estimated_hourly_wage' field, if salary_type is
-                'year' and has WorkingTime information`, () =>
-            request(app)
+                'year' and has WorkingTime information`, async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateAllPayload({
@@ -1063,21 +993,16 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.property(res.body.working, "estimated_hourly_wage");
-                    assert.closeTo(
-                        res.body.working.estimated_hourly_wage,
-                        52,
-                        1
-                    );
-                }));
+                .expect(200);
+            assert.property(res.body.working, "estimated_hourly_wage");
+            assert.closeTo(res.body.working.estimated_hourly_wage, 52, 1);
+        });
 
         for (const salary_type of ["month", "year", "day"]) {
             it(`doc shouldn't have 'estimated_hourly_wage' field, if the calculated
                     'estimated_hourly_wage' is undefined. (salary_type is '${salary_type}'
-                    but no WorkTime information)`, () => {
-                const send_request = request(app)
+                    but no WorkTime information)`, async () => {
+                const res = await request(app)
                     .post("/workings")
                     .send(
                         generateAllPayload({
@@ -1091,28 +1016,18 @@ describe("POST /workings", () => {
                     )
                     .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200);
-
-                const test_db = send_request
-                    .then(res => res.body.working._id)
-                    .then(data_id =>
-                        db
-                            .collection("workings")
-                            .findOne({ _id: ObjectId(data_id) })
-                            .then(result => {
-                                assert.notProperty(
-                                    result,
-                                    "estimated_hourly_wage"
-                                );
-                            })
-                    );
-                return Promise.all([send_request, test_db]);
+                const data_id = res.body.working._id;
+                const result = await db
+                    .collection("workings")
+                    .findOne({ _id: ObjectId(data_id) });
+                assert.notProperty(result, "estimated_hourly_wage");
             });
         }
 
         it(`doc shouldn't have 'estimated_hourly_wage' field, if the calculated
                 'estimated_hourly_wage' is undefined. (has WorkTime information, but
-                but no Salary information)`, () => {
-            const send_request = request(app)
+                but no Salary information)`, async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateAllPayload({
@@ -1123,24 +1038,17 @@ describe("POST /workings", () => {
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
-
-            const test_db = send_request
-                .then(res => res.body.working._id)
-                .then(data_id =>
-                    db
-                        .collection("workings")
-                        .findOne({ _id: ObjectId(data_id) })
-                        .then(result => {
-                            assert.notProperty(result, "estimated_hourly_wage");
-                        })
-                );
-            return Promise.all([send_request, test_db]);
+            const data_id = res.body.working._id;
+            const result = await db
+                .collection("workings")
+                .findOne({ _id: ObjectId(data_id) });
+            assert.notProperty(result, "estimated_hourly_wage");
         });
     });
 
     describe("Normalize Data Part", () => {
-        it("job_title will be converted to UPPERCASE", () =>
-            request(app)
+        it("job_title will be converted to UPPERCASE", async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateWorkingTimeRelatedPayload({
@@ -1148,17 +1056,12 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.propertyVal(
-                        res.body.working,
-                        "job_title",
-                        "GOODJOB"
-                    );
-                }));
+                .expect(200);
+            assert.propertyVal(res.body.working, "job_title", "GOODJOB");
+        });
 
-        it("company 只給 company_id 成功新增", () =>
-            request(app)
+        it("company 只給 company_id 成功新增", async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateWorkingTimeRelatedPayload({
@@ -1167,12 +1070,11 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.equal(res.body.queries_count, 1);
-                    assert.equal(res.body.working.company.id, "00000001");
-                    assert.equal(res.body.working.company.name, "GOODJOB");
-                }));
+                .expect(200);
+            assert.equal(res.body.queries_count, 1);
+            assert.equal(res.body.working.company.id, "00000001");
+            assert.equal(res.body.working.company.name, "GOODJOB");
+        });
 
         it("company 禁止錯誤的 company_id", () =>
             request(app)
@@ -1186,8 +1088,8 @@ describe("POST /workings", () => {
                 .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
-        it("company 只給 company 成功新增", () =>
-            request(app)
+        it("company 只給 company 成功新增", async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateWorkingTimeRelatedPayload({
@@ -1196,15 +1098,14 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.equal(res.body.queries_count, 1);
-                    assert.equal(res.body.working.company.id, "00000001");
-                    assert.equal(res.body.working.company.name, "GOODJOB");
-                }));
+                .expect(200);
+            assert.equal(res.body.queries_count, 1);
+            assert.equal(res.body.working.company.id, "00000001");
+            assert.equal(res.body.working.company.name, "GOODJOB");
+        });
 
-        it("company 是小寫時，轉換成大寫", () =>
-            request(app)
+        it("company 是小寫時，轉換成大寫", async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateWorkingTimeRelatedPayload({
@@ -1213,15 +1114,14 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.equal(res.body.queries_count, 1);
-                    assert.equal(res.body.working.company.id, "00000001");
-                    assert.equal(res.body.working.company.name, "GOODJOB");
-                }));
+                .expect(200);
+            assert.equal(res.body.queries_count, 1);
+            assert.equal(res.body.working.company.id, "00000001");
+            assert.equal(res.body.working.company.name, "GOODJOB");
+        });
 
-        it("只給 company，但名稱無法決定唯一公司，成功新增", () =>
-            request(app)
+        it("只給 company，但名稱無法決定唯一公司，成功新增", async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateWorkingTimeRelatedPayload({
@@ -1230,15 +1130,14 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.equal(res.body.queries_count, 1);
-                    assert.isUndefined(res.body.working.company.id);
-                    assert.equal(res.body.working.company.name, "GOODJOBGREAT");
-                }));
+                .expect(200);
+            assert.equal(res.body.queries_count, 1);
+            assert.isUndefined(res.body.working.company.id);
+            assert.equal(res.body.working.company.name, "GOODJOBGREAT");
+        });
 
-        it('data_time 是 job_ending_time_* 的組合, if is_currently_employed == "no"', () =>
-            request(app)
+        it('data_time 是 job_ending_time_* 的組合, if is_currently_employed == "no"', async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateWorkingTimeRelatedPayload({
@@ -1248,22 +1147,13 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.deepPropertyVal(
-                        res.body,
-                        "working.data_time.year",
-                        2015
-                    );
-                    assert.deepPropertyVal(
-                        res.body,
-                        "working.data_time.month",
-                        1
-                    );
-                }));
+                .expect(200);
+            assert.deepPropertyVal(res.body, "working.data_time.year", 2015);
+            assert.deepPropertyVal(res.body, "working.data_time.month", 1);
+        });
 
-        it('data_time 是 created_at 的組合, if is_currently_employed == "yes"', () =>
-            request(app)
+        it('data_time 是 created_at 的組合, if is_currently_employed == "yes"', async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateWorkingTimeRelatedPayload({
@@ -1271,23 +1161,22 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.deepProperty(res.body, "working.created_at");
+                .expect(200);
+            assert.deepProperty(res.body, "working.created_at");
 
-                    const created_at = new Date(res.body.working.created_at);
+            const created_at = new Date(res.body.working.created_at);
 
-                    assert.deepPropertyVal(
-                        res.body,
-                        "working.data_time.year",
-                        created_at.getFullYear()
-                    );
-                    assert.deepPropertyVal(
-                        res.body,
-                        "working.data_time.month",
-                        created_at.getMonth() + 1
-                    );
-                }));
+            assert.deepPropertyVal(
+                res.body,
+                "working.data_time.year",
+                created_at.getFullYear()
+            );
+            assert.deepPropertyVal(
+                res.body,
+                "working.data_time.month",
+                created_at.getMonth() + 1
+            );
+        });
     });
 
     describe("Recommendation String Part", () => {
@@ -1311,8 +1200,8 @@ describe("POST /workings", () => {
             ])
         );
 
-        it("should generate recommendation count=1 while recommendation_string is correct", () => {
-            const send_request = request(app)
+        it("should generate recommendation count=1 while recommendation_string is correct", async () => {
+            await request(app)
                 .post("/workings")
                 .send(
                     generateWorkingTimeRelatedPayload({
@@ -1322,17 +1211,11 @@ describe("POST /workings", () => {
                 .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
 
-            const test_db = send_request.then(() =>
-                db
-                    .collection("recommendations")
-                    .findOne({ _id: ObjectId("00000000ccd8958909a983e8") })
-                    .then(result => {
-                        assert.deepProperty(result, "count");
-                        assert.deepPropertyVal(result, "count", 1);
-                    })
-            );
-
-            return Promise.all([send_request, test_db]);
+            const result = await db
+                .collection("recommendations")
+                .findOne({ _id: ObjectId("00000000ccd8958909a983e8") });
+            assert.deepProperty(result, "count");
+            assert.deepPropertyVal(result, "count", 1);
         });
 
         it("should increase recommendation count while recommendation_string is correct", async () => {
@@ -1353,8 +1236,8 @@ describe("POST /workings", () => {
             assert.deepPropertyVal(result, "count", 4);
         });
 
-        it("should upload recommended_by info but not return recommended_by while recommendation_string is correct", () => {
-            const send_request = request(app)
+        it("should upload recommended_by info but not return recommended_by while recommendation_string is correct", async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateWorkingTimeRelatedPayload({
@@ -1362,38 +1245,21 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.notDeepProperty(res.body.working, "recommended_by");
-                })
-                .then(res => res.body.working._id);
-
-            const test_db = send_request.then(data_id =>
-                db
-                    .collection("workings")
-                    .findOne({ _id: ObjectId(data_id) })
-                    .then(result => {
-                        assert.deepProperty(result, "recommended_by");
-                        assert.deepProperty(result, "recommended_by.id");
-                        assert.deepProperty(result, "recommended_by.type");
-                        assert.deepPropertyVal(
-                            result,
-                            "recommended_by.id",
-                            "AAA"
-                        );
-                        assert.deepPropertyVal(
-                            result,
-                            "recommended_by.type",
-                            "facebook"
-                        );
-                    })
-            );
-
-            return Promise.all([send_request, test_db]);
+                .expect(200);
+            assert.notDeepProperty(res.body.working, "recommended_by");
+            const data_id = res.body.working._id;
+            const result = await db
+                .collection("workings")
+                .findOne({ _id: ObjectId(data_id) });
+            assert.deepProperty(result, "recommended_by");
+            assert.deepProperty(result, "recommended_by.id");
+            assert.deepProperty(result, "recommended_by.type");
+            assert.deepPropertyVal(result, "recommended_by.id", "AAA");
+            assert.deepPropertyVal(result, "recommended_by.type", "facebook");
         });
 
-        it("should neither upload recommendation_string nor return recommendation_string while recommendation_string is correct", () => {
-            const send_request = request(app)
+        it("should neither upload recommendation_string nor return recommendation_string while recommendation_string is correct", async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateWorkingTimeRelatedPayload({
@@ -1401,25 +1267,13 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.notDeepProperty(
-                        res.body.working,
-                        "recommendation_string"
-                    );
-                })
-                .then(res => res.body.working._id);
-
-            const test_db = send_request.then(data_id =>
-                db
-                    .collection("workings")
-                    .findOne({ _id: ObjectId(data_id) })
-                    .then(result => {
-                        assert.notDeepProperty(result, "recommendation_string");
-                    })
-            );
-
-            return Promise.all([send_request, test_db]);
+                .expect(200);
+            assert.notDeepProperty(res.body.working, "recommendation_string");
+            const data_id = res.body.working._id;
+            const result = await db
+                .collection("workings")
+                .findOne({ _id: ObjectId(data_id) });
+            assert.notDeepProperty(result, "recommendation_string");
         });
 
         for (const test_string of [
@@ -1526,9 +1380,9 @@ describe("POST /workings", () => {
     });
 
     describe("Checking email field", () => {
-        it("should upload emails fields while uploading worktime related data and email is given", () => {
+        it("should upload emails fields while uploading worktime related data and email is given", async () => {
             const test_email = "test12345@gmail.com";
-            return request(app)
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateWorkingTimeRelatedPayload({
@@ -1536,18 +1390,12 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.propertyVal(
-                        res.body.working.author,
-                        "email",
-                        test_email
-                    );
-                });
+                .expect(200);
+            assert.propertyVal(res.body.working.author, "email", test_email);
         });
-        it("should upload emails fields while uploading salary related data and email is given", () => {
+        it("should upload emails fields while uploading salary related data and email is given", async () => {
             const test_email = "test12345@gmail.com";
-            return request(app)
+            const res = await request(app)
                 .post("/workings")
                 .send(
                     generateSalaryRelatedPayload({
@@ -1555,14 +1403,8 @@ describe("POST /workings", () => {
                     })
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.propertyVal(
-                        res.body.working.author,
-                        "email",
-                        test_email
-                    );
-                });
+                .expect(200);
+            assert.propertyVal(res.body.working.author, "email", test_email);
         });
         it("should upload emails fields while uploading all data and email is given", async () => {
             const test_email = "test12345@gmail.com";
@@ -1580,18 +1422,15 @@ describe("POST /workings", () => {
     });
 
     describe("status part", () => {
-        it("status can be `hidden`", () =>
-            request(app)
+        it("status can be `hidden`", async () => {
+            const res = await request(app)
                 .post("/workings")
                 .send(generateWorkingTimeRelatedPayload({ status: "hidden" }))
                 .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200)
-                .expect(res => {
-                    assert.equal(res.body.working.status, "hidden");
-                }));
+                .expect(200);
+            assert.equal(res.body.working.status, "hidden");
+        });
     });
-
-    afterEach(() => db.collection("users").deleteMany({}));
 
     after(async () => {
         await db.collection("workings").deleteMany({});
