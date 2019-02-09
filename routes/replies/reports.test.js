@@ -3,13 +3,10 @@ const request = require("supertest");
 const app = require("../../app");
 const { ObjectId, DBRef } = require("mongodb");
 const { connectMongo } = require("../../models/connect");
-const sinon = require("sinon");
+const { FakeUserFactory } = require("../../utils/test_helper");
 
-const authentication = require("../../libs/authentication");
-
-function generatePayload(access_token) {
+function generatePayload() {
     return {
-        access_token,
         reason_category: "我認為這篇文章內容不實",
         reason: "This is not true",
     };
@@ -17,6 +14,7 @@ function generatePayload(access_token) {
 
 describe("Reports Test", () => {
     let db;
+    const fake_user_factory = new FakeUserFactory();
     const fake_user = {
         _id: new ObjectId(),
         facebook_id: "-1",
@@ -40,28 +38,22 @@ describe("Reports Test", () => {
 
     describe("POST /replies/:id/reports", () => {
         let reply_id_str;
-        let sandbox;
+        let fake_user_token;
+        let fake_other_user_token;
 
-        beforeEach("Mock user", () => {
-            sandbox = sinon.sandbox.create();
-            const cachedFacebookAuthentication = sandbox.stub(
-                authentication,
-                "cachedFacebookAuthentication"
+        beforeEach(async () => {
+            await fake_user_factory.setUp();
+        });
+
+        beforeEach("Create some users", async () => {
+            fake_user_token = await fake_user_factory.create(fake_user);
+            fake_other_user_token = await fake_user_factory.create(
+                fake_other_user
             );
-            cachedFacebookAuthentication
-                .withArgs(
-                    sinon.match.object,
-                    sinon.match.object,
-                    "fakeaccesstoken"
-                )
-                .resolves(fake_user);
-            cachedFacebookAuthentication
-                .withArgs(
-                    sinon.match.object,
-                    sinon.match.object,
-                    "other_fakeaccesstoken"
-                )
-                .resolves(fake_other_user);
+        });
+
+        afterEach(async () => {
+            await fake_user_factory.tearDown();
         });
 
         beforeEach("Create test data", () =>
@@ -82,7 +74,8 @@ describe("Reports Test", () => {
         it("should return 200 and correct fields if succeed", async () => {
             const res = await request(app)
                 .post(`/replies/${reply_id_str}/reports`)
-                .send(generatePayload("fakeaccesstoken"))
+                .send(generatePayload())
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
             assert.property(res.body, "report");
             assert.deepProperty(res.body, "report._id");
@@ -117,18 +110,16 @@ describe("Reports Test", () => {
         it("should return 422, because reason_category is required", () =>
             request(app)
                 .post(`/replies/${reply_id_str}/reports`)
-                .send({
-                    access_token: "fakeaccesstoken",
-                })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it('should return 200 and correct fields, while reason_category is "這是廣告或垃圾訊息" and reason is not given', () =>
             request(app)
                 .post(`/replies/${reply_id_str}/reports`)
                 .send({
-                    access_token: "fakeaccesstoken",
                     reason_category: "這是廣告或垃圾訊息",
                 })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.property(res.body, "report");
@@ -147,25 +138,28 @@ describe("Reports Test", () => {
             request(app)
                 .post(`/replies/${reply_id_str}/reports`)
                 .send({
-                    access_token: "fakeaccesstoken",
                     reason_category: "我認為這篇文章內容不實",
                 })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("should return 404, if reply does not exist", () =>
             request(app)
                 .post("/replies/1111/reports")
-                .send(generatePayload("fakeaccesstoken"))
+                .send(generatePayload())
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(404));
 
         it("(! Need Index) should return 403, if post report 2 times", async () => {
             await request(app)
                 .post(`/replies/${reply_id_str}/reports`)
-                .send(generatePayload("fakeaccesstoken"));
+                .send(generatePayload())
+                .set("Authorization", `Bearer ${fake_user_token}`);
 
             await request(app)
                 .post(`/replies/${reply_id_str}/reports`)
-                .send(generatePayload("fakeaccesstoken"))
+                .send(generatePayload())
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(403);
         });
 
@@ -177,7 +171,8 @@ describe("Reports Test", () => {
         it("report_count should 1, if post report and get reply", async () => {
             await request(app)
                 .post(`/replies/${reply_id_str}/reports`)
-                .send(generatePayload("fakeaccesstoken"));
+                .send(generatePayload())
+                .set("Authorization", `Bearer ${fake_user_token}`);
             const result = await db
                 .collection("replies")
                 .find({
@@ -192,10 +187,12 @@ describe("Reports Test", () => {
             const uri = `/replies/${reply_id_str}/reports`;
             await request(app)
                 .post(uri)
-                .send(generatePayload("fakeaccesstoken"));
+                .send(generatePayload())
+                .set("Authorization", `Bearer ${fake_user_token}`);
             await request(app)
                 .post(uri)
-                .send(generatePayload("fakeaccesstoken"));
+                .send(generatePayload())
+                .set("Authorization", `Bearer ${fake_user_token}`);
             const result = await db
                 .collection("replies")
                 .find({
@@ -210,10 +207,12 @@ describe("Reports Test", () => {
             const uri = `/replies/${reply_id_str}/reports`;
             await request(app)
                 .post(uri)
-                .send(generatePayload("fakeaccesstoken"));
+                .send(generatePayload())
+                .set("Authorization", `Bearer ${fake_user_token}`);
             await request(app)
                 .post(uri)
-                .send(generatePayload("other_fakeaccesstoken"));
+                .send(generatePayload())
+                .set("Authorization", `Bearer ${fake_other_user_token}`);
 
             const result = await db
                 .collection("replies")
@@ -225,7 +224,6 @@ describe("Reports Test", () => {
         });
 
         afterEach(async () => {
-            sandbox.restore();
             await db.collection("reports").deleteMany({});
             await db.collection("replies").deleteMany({});
         });
@@ -234,28 +232,19 @@ describe("Reports Test", () => {
     describe("GET /replies/:id/reports", () => {
         let reply_id_str;
         let reply2_id_str;
-        let sandbox = null;
+        let fake_user_token;
 
-        before("create user", () => {
-            sandbox = sinon.sandbox.create();
-            const cachedFacebookAuthentication = sandbox.stub(
-                authentication,
-                "cachedFacebookAuthentication"
-            );
-            cachedFacebookAuthentication
-                .withArgs(
-                    sinon.match.object,
-                    sinon.match.object,
-                    "fakeaccesstoken"
-                )
-                .resolves(fake_user);
-            cachedFacebookAuthentication
-                .withArgs(
-                    sinon.match.object,
-                    sinon.match.object,
-                    "otherFakeAccessToken"
-                )
-                .resolves(fake_other_user);
+        before(async () => {
+            await fake_user_factory.setUp();
+        });
+
+        before("Create some users", async () => {
+            fake_user_token = await fake_user_factory.create(fake_user);
+            await fake_user_factory.create(fake_other_user);
+        });
+
+        after(async () => {
+            await fake_user_factory.tearDown();
         });
 
         before("create test data", async () => {
@@ -332,27 +321,21 @@ describe("Reports Test", () => {
         it("set error reports and expect error code 404", () =>
             request(app)
                 .get("/replies/1111/reports")
-                .query({
-                    access_token: "fakeaccesstoken",
-                })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(404));
 
         it("limit = 2000  and expect error code 402", () =>
             request(app)
                 .get(`/replies/${reply_id_str}/reports`)
                 .query({
-                    access_token: "fakeaccesstoken",
                     limit: 2000,
                 })
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         after(async () => {
             await db.collection("reports").deleteMany({});
             await db.collection("replies").deleteMany({});
-        });
-
-        after(() => {
-            sandbox.restore();
         });
     });
 });
