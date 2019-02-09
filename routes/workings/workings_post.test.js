@@ -4,14 +4,12 @@ const assert = chai.assert;
 const request = require("supertest");
 const app = require("../../app");
 const { connectMongo } = require("../../models/connect");
-const sinon = require("sinon");
-const authentication = require("../../libs/authentication");
 const ObjectId = require("mongodb").ObjectId;
+const { FakeUserFactory } = require("../../utils/test_helper");
 
 function generateWorkingTimeRelatedPayload(options) {
     const opt = options || {};
     const valid = {
-        access_token: "random",
         job_title: "test",
         company_id: "00000001",
         is_currently_employed: "yes",
@@ -45,7 +43,6 @@ function generateWorkingTimeRelatedPayload(options) {
 function generateSalaryRelatedPayload(options) {
     const opt = options || {};
     const valid = {
-        access_token: "random",
         job_title: "test",
         company_id: "00000001",
         is_currently_employed: "yes",
@@ -78,7 +75,6 @@ function generateSalaryRelatedPayload(options) {
 function generateAllPayload(options) {
     const opt = options || {};
     const valid = {
-        access_token: "random",
         job_title: "test",
         company_id: "00000001",
         is_currently_employed: "yes",
@@ -116,8 +112,7 @@ function generateAllPayload(options) {
 
 describe("POST /workings", () => {
     let db;
-    let sandbox;
-    let cachedFacebookAuthentication;
+    const fake_user_factory = new FakeUserFactory();
     const fake_user = {
         _id: new ObjectId(),
         facebook_id: "-1",
@@ -126,23 +121,22 @@ describe("POST /workings", () => {
             name: "mark",
         },
     };
+    let fake_user_token;
 
     before(async () => {
         ({ db } = await connectMongo());
     });
 
-    beforeEach(() => {
-        sandbox = sinon.sandbox.create();
-        cachedFacebookAuthentication = sandbox.stub(
-            authentication,
-            "cachedFacebookAuthentication"
-        );
-        cachedFacebookAuthentication
-            .withArgs(sinon.match.object, sinon.match.object, "random")
-            .resolves(fake_user);
-        cachedFacebookAuthentication
-            .withArgs(sinon.match.object, sinon.match.object, "invalid")
-            .rejects();
+    beforeEach(async () => {
+        await fake_user_factory.setUp();
+    });
+
+    beforeEach("Create some users", async () => {
+        fake_user_token = await fake_user_factory.create(fake_user);
+    });
+
+    afterEach(async () => {
+        await fake_user_factory.tearDown();
     });
 
     const path = "/workings";
@@ -166,7 +160,6 @@ describe("POST /workings", () => {
 
     describe("Authentication & Authorization Part", () => {
         it("需要回傳 401 如果沒有 access_token", () => {
-            sandbox.restore();
             return request(app)
                 .post(path)
                 .expect(401);
@@ -175,11 +168,8 @@ describe("POST /workings", () => {
         it("需要回傳 401 如果不能 FB 登入", async () => {
             await request(app)
                 .post(path)
-                .send({
-                    access_token: "invalid",
-                })
+                .set("Authorization", `Bearer invalid`)
                 .expect(401);
-            sinon.assert.calledOnce(cachedFacebookAuthentication);
         });
     });
 
@@ -188,6 +178,7 @@ describe("POST /workings", () => {
             const res = await request(app)
                 .post(path)
                 .send(generateWorkingTimeRelatedPayload())
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
 
             assert.equal(res.body.working.status, "published");
@@ -200,6 +191,7 @@ describe("POST /workings", () => {
             request(app)
                 .post(path)
                 .send(generateSalaryRelatedPayload())
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.equal(res.body.working.status, "published");
@@ -215,6 +207,7 @@ describe("POST /workings", () => {
                         job_title: -1,
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("company or company_id is required", () =>
@@ -226,6 +219,7 @@ describe("POST /workings", () => {
                         company_id: -1,
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("is_currently_employed is required", () =>
@@ -236,6 +230,7 @@ describe("POST /workings", () => {
                         is_currently_employed: -1,
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         describe('when is_currently_employed == "no"', () => {
@@ -249,6 +244,7 @@ describe("POST /workings", () => {
                             job_ending_time_month: "12",
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200));
 
             it("job_ending_time_year are required", () =>
@@ -260,6 +256,7 @@ describe("POST /workings", () => {
                             job_ending_time_month: "12",
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("job_ending_time_month are required", () =>
@@ -271,6 +268,7 @@ describe("POST /workings", () => {
                             job_ending_time_year: "2015",
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             describe("job_ending_time_* should be reasonable", () => {
@@ -288,6 +286,7 @@ describe("POST /workings", () => {
                                 job_ending_time_month: "1",
                             })
                         )
+                        .set("Authorization", `Bearer ${fake_user_token}`)
                         .expect(422);
                 });
 
@@ -303,6 +302,7 @@ describe("POST /workings", () => {
                                 job_ending_time_month: "1",
                             })
                         )
+                        .set("Authorization", `Bearer ${fake_user_token}`)
                         .expect(422));
 
                 it("job_ending_time_* <= now", () => {
@@ -321,6 +321,7 @@ describe("POST /workings", () => {
                                 ).toString(),
                             })
                         )
+                        .set("Authorization", `Bearer ${fake_user_token}`)
                         .expect(200);
                 });
 
@@ -341,6 +342,7 @@ describe("POST /workings", () => {
                                 ).toString(),
                             })
                         )
+                        .set("Authorization", `Bearer ${fake_user_token}`)
                         .expect(422);
                 });
             });
@@ -356,6 +358,7 @@ describe("POST /workings", () => {
                             job_ending_time_year: "2015",
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
             it("job_ending_time_month 不應該有", () =>
@@ -367,6 +370,7 @@ describe("POST /workings", () => {
                             job_ending_time_month: "12",
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
         });
 
@@ -378,6 +382,7 @@ describe("POST /workings", () => {
                         sector: "Hello world",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.propertyVal(
@@ -396,6 +401,7 @@ describe("POST /workings", () => {
                             gender: input,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200)
                     .expect(res => {
                         assert.propertyVal(res.body.working, "gender", input);
@@ -411,6 +417,7 @@ describe("POST /workings", () => {
                             gender: input,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200)
                     .expect(res => {
                         assert.notProperty(res.body.working, "gender");
@@ -425,6 +432,7 @@ describe("POST /workings", () => {
                         gender: "invalid",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         for (const input of [
@@ -443,6 +451,7 @@ describe("POST /workings", () => {
                             employment_type: input,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200)
                     .expect(res => {
                         assert.propertyVal(
@@ -462,6 +471,7 @@ describe("POST /workings", () => {
                             employment_type: input,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
         }
 
@@ -473,6 +483,7 @@ describe("POST /workings", () => {
                         extra_info: "ABC",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("extra_info should have correct data structure", () =>
@@ -483,6 +494,7 @@ describe("POST /workings", () => {
                         extra_info: ["A", "B"],
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("extra_info should be fine", () =>
@@ -495,6 +507,7 @@ describe("POST /workings", () => {
                         ],
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.deepEqual(res.body.working.extra_info, [
@@ -510,6 +523,7 @@ describe("POST /workings", () => {
                         campaign_name: "engineer",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.propertyVal(
@@ -527,6 +541,7 @@ describe("POST /workings", () => {
                         about_this_job: "I like my job",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.propertyVal(
@@ -546,6 +561,7 @@ describe("POST /workings", () => {
                         week_work_time: -1,
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("week_work_time should be a number", () =>
@@ -556,6 +572,7 @@ describe("POST /workings", () => {
                         week_work_time: "test",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("week_work_time should be a valid number", () =>
@@ -566,6 +583,7 @@ describe("POST /workings", () => {
                         week_work_time: "186",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("week_work_time can be a floating number", () =>
@@ -576,6 +594,7 @@ describe("POST /workings", () => {
                         week_work_time: "30.5",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.deepPropertyVal(
@@ -593,6 +612,7 @@ describe("POST /workings", () => {
                         overtime_frequency: -1,
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("overtime_frequency should in [0, 1, 2, 3]", () =>
@@ -603,6 +623,7 @@ describe("POST /workings", () => {
                         overtime_frequency: "5",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("day_promised_work_time is required", () =>
@@ -613,6 +634,7 @@ describe("POST /workings", () => {
                         day_promised_work_time: -1,
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("day_promised_work_time should be a number", () =>
@@ -623,6 +645,7 @@ describe("POST /workings", () => {
                         day_promised_work_time: "test",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("day_promised_work_time should be a valid number", () =>
@@ -633,6 +656,7 @@ describe("POST /workings", () => {
                         day_promised_work_time: "25",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("day_promised_work_time can be a floating number", () =>
@@ -643,6 +667,7 @@ describe("POST /workings", () => {
                         day_promised_work_time: "3.5",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.deepPropertyVal(
@@ -660,6 +685,7 @@ describe("POST /workings", () => {
                         day_real_work_time: -1,
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("day_real_work_time should be a number", () =>
@@ -670,6 +696,7 @@ describe("POST /workings", () => {
                         day_real_work_time: "test",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("day_real_work_time should be a valid number", () =>
@@ -680,6 +707,7 @@ describe("POST /workings", () => {
                         day_real_work_time: "25",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("day_real_work_time can be a floating number", () =>
@@ -690,6 +718,7 @@ describe("POST /workings", () => {
                         day_real_work_time: "3.5",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.deepPropertyVal(
@@ -708,6 +737,7 @@ describe("POST /workings", () => {
                             has_overtime_salary: input,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200)
                     .expect(res => {
                         assert.propertyVal(
@@ -726,6 +756,7 @@ describe("POST /workings", () => {
                             has_overtime_salary: input,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200)
                     .expect(res => {
                         assert.notProperty(
@@ -739,6 +770,7 @@ describe("POST /workings", () => {
             request(app)
                 .post("/workings")
                 .send(generateWorkingTimeRelatedPayload({}))
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.notProperty(res.body.working, "has_overtime_salary");
@@ -752,6 +784,7 @@ describe("POST /workings", () => {
                         has_overtime_salary: "-1",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         for (const input of ["yes", "no", "don't know"]) {
@@ -764,6 +797,7 @@ describe("POST /workings", () => {
                             is_overtime_salary_legal: input,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200)
                     .expect(res => {
                         assert.propertyVal(
@@ -783,6 +817,7 @@ describe("POST /workings", () => {
                             is_overtime_salary_legal: "yes",
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
         }
 
@@ -796,6 +831,7 @@ describe("POST /workings", () => {
                             is_overtime_salary_legal: input,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200)
                     .expect(res => {
                         assert.notProperty(
@@ -809,6 +845,7 @@ describe("POST /workings", () => {
             request(app)
                 .post("/workings")
                 .send(generateWorkingTimeRelatedPayload({}))
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.notProperty(
@@ -826,6 +863,7 @@ describe("POST /workings", () => {
                         is_overtime_salary_legal: "-1",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         for (const input of ["yes", "no", "don't know"]) {
@@ -837,6 +875,7 @@ describe("POST /workings", () => {
                             has_compensatory_dayoff: input,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200)
                     .expect(res => {
                         assert.propertyVal(
@@ -855,6 +894,7 @@ describe("POST /workings", () => {
                             has_compensatory_dayoff: input,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200)
                     .expect(res => {
                         assert.notProperty(
@@ -868,6 +908,7 @@ describe("POST /workings", () => {
             request(app)
                 .post("/workings")
                 .send(generateWorkingTimeRelatedPayload({}))
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.notProperty(
@@ -884,6 +925,7 @@ describe("POST /workings", () => {
                         has_compensatory_dayoff: "-1",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
     });
 
@@ -896,6 +938,7 @@ describe("POST /workings", () => {
                         salary_type: -1,
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         for (const input of ["year", "month", "day", "hour"]) {
@@ -907,6 +950,7 @@ describe("POST /workings", () => {
                             salary_type: input,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200)
                     .expect(res => {
                         assert.deepPropertyVal(
@@ -925,6 +969,7 @@ describe("POST /workings", () => {
                         salary_amount: -1,
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("experience_in_year is required", () =>
@@ -935,6 +980,7 @@ describe("POST /workings", () => {
                         experience_in_year: -1,
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
     });
 
@@ -948,6 +994,7 @@ describe("POST /workings", () => {
                         salary_amount: "100",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.property(res.body.working, "estimated_hourly_wage");
@@ -969,6 +1016,7 @@ describe("POST /workings", () => {
                         day_real_work_time: "10",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.property(res.body.working, "estimated_hourly_wage");
@@ -991,6 +1039,7 @@ describe("POST /workings", () => {
                         week_work_time: "40",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.property(res.body.working, "estimated_hourly_wage");
@@ -1013,6 +1062,7 @@ describe("POST /workings", () => {
                         week_work_time: "40",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.property(res.body.working, "estimated_hourly_wage");
@@ -1039,6 +1089,7 @@ describe("POST /workings", () => {
                             overtime_frequency: -1,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200);
 
                 const test_db = send_request
@@ -1070,6 +1121,7 @@ describe("POST /workings", () => {
                         experience_in_year: -1,
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
 
             const test_db = send_request
@@ -1095,6 +1147,7 @@ describe("POST /workings", () => {
                         job_title: "GoodJob",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.propertyVal(
@@ -1113,6 +1166,7 @@ describe("POST /workings", () => {
                         company: -1,
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.equal(res.body.queries_count, 1);
@@ -1129,6 +1183,7 @@ describe("POST /workings", () => {
                         company: -1,
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(422));
 
         it("company 只給 company 成功新增", () =>
@@ -1140,6 +1195,7 @@ describe("POST /workings", () => {
                         company: "GOODJOB",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.equal(res.body.queries_count, 1);
@@ -1156,6 +1212,7 @@ describe("POST /workings", () => {
                         company: "GoodJob",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.equal(res.body.queries_count, 1);
@@ -1172,6 +1229,7 @@ describe("POST /workings", () => {
                         company: "GoodJobGreat",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.equal(res.body.queries_count, 1);
@@ -1189,6 +1247,7 @@ describe("POST /workings", () => {
                         job_ending_time_month: "1",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.deepPropertyVal(
@@ -1211,6 +1270,7 @@ describe("POST /workings", () => {
                         is_currently_employed: "yes",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.deepProperty(res.body, "working.created_at");
@@ -1259,6 +1319,7 @@ describe("POST /workings", () => {
                         recommendation_string: "00000000ccd8958909a983e8",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
 
             const test_db = send_request.then(() =>
@@ -1282,6 +1343,7 @@ describe("POST /workings", () => {
                         recommendation_string: "00000000ccd8958909a983e9",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
 
             const result = await db
@@ -1299,6 +1361,7 @@ describe("POST /workings", () => {
                         recommendation_string: "00000000ccd8958909a983e8",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.notDeepProperty(res.body.working, "recommended_by");
@@ -1337,6 +1400,7 @@ describe("POST /workings", () => {
                         recommendation_string: "00000000ccd8958909a983e8",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.notDeepProperty(
@@ -1372,6 +1436,7 @@ describe("POST /workings", () => {
                             recommendation_string: test_string,
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200);
                 assert.notDeepProperty(
                     res.body.working,
@@ -1391,6 +1456,7 @@ describe("POST /workings", () => {
             const res = await request(app)
                 .post("/workings")
                 .send(generateWorkingTimeRelatedPayload({}))
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
             assert.notDeepProperty(res.body.working, "recommended_by");
 
@@ -1413,6 +1479,7 @@ describe("POST /workings", () => {
                             company_id: "00000001",
                         })
                     )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200);
                 assert.equal(res.body.working.company.id, "00000001");
                 assert.equal(res.body.working.company.name, "GOODJOB");
@@ -1425,9 +1492,8 @@ describe("POST /workings", () => {
                         company_id: "00000001",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(429);
-
-            sinon.assert.callCount(cachedFacebookAuthentication, 6);
         });
 
         it("新增 2 筆資料，quries_count 會顯示 2", async () => {
@@ -1438,6 +1504,7 @@ describe("POST /workings", () => {
                         company_id: "00000001",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
             assert.equal(res.body.queries_count, 1);
             assert.equal(res.body.working.company.id, "00000001");
@@ -1450,12 +1517,11 @@ describe("POST /workings", () => {
                         company_id: "00000001",
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
             assert.equal(res2.body.queries_count, 2);
             assert.equal(res2.body.working.company.id, "00000001");
             assert.equal(res2.body.working.company.name, "GOODJOB");
-
-            sinon.assert.callCount(cachedFacebookAuthentication, 2);
         });
     });
 
@@ -1469,6 +1535,7 @@ describe("POST /workings", () => {
                         email: test_email,
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.propertyVal(
@@ -1487,6 +1554,7 @@ describe("POST /workings", () => {
                         email: test_email,
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.propertyVal(
@@ -1505,6 +1573,7 @@ describe("POST /workings", () => {
                         email: test_email,
                     })
                 )
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
             assert.propertyVal(res.body.working.author, "email", test_email);
         });
@@ -1515,14 +1584,11 @@ describe("POST /workings", () => {
             request(app)
                 .post("/workings")
                 .send(generateWorkingTimeRelatedPayload({ status: "hidden" }))
+                .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200)
                 .expect(res => {
                     assert.equal(res.body.working.status, "hidden");
                 }));
-    });
-
-    afterEach(() => {
-        sandbox.restore();
     });
 
     afterEach(() => db.collection("users").deleteMany({}));

@@ -4,11 +4,10 @@ chai.use(require("chai-datetime"));
 const assert = chai.assert;
 const request = require("supertest");
 const app = require("../../app");
-const sinon = require("sinon");
 const { ObjectId } = require("mongodb");
 const { connectMongo } = require("../../models/connect");
-const authentication = require("../../libs/authentication.js");
 const { generateWorkingData } = require("../experiences/testData");
+const { FakeUserFactory } = require("../../utils/test_helper");
 
 describe("Workings 工時資訊", () => {
     let db;
@@ -18,8 +17,6 @@ describe("Workings 工時資訊", () => {
     });
 
     describe("GET /workings", () => {
-        let sandbox;
-
         before("Seeding some workings", () =>
             db.collection("workings").insertMany([
                 {
@@ -117,10 +114,6 @@ describe("Workings 工時資訊", () => {
                 },
             ])
         );
-
-        beforeEach(() => {
-            sandbox = sinon.sandbox.create();
-        });
 
         for (let sort_field of [
             undefined,
@@ -241,10 +234,6 @@ describe("Workings 工時資訊", () => {
                 }));
 
         after(() => db.collection("workings").deleteMany({}));
-
-        afterEach(() => {
-            sandbox.restore();
-        });
     });
 
     describe("GET /workings (左右極端值的測試)", () => {
@@ -470,8 +459,6 @@ describe("Workings 工時資訊", () => {
     });
 
     describe("GET /search_by/company/group_by/company", () => {
-        let sandbox;
-
         before("Seeding some workings", () =>
             db.collection("workings").insertMany([
                 {
@@ -711,10 +698,6 @@ describe("Workings 工時資訊", () => {
                 },
             ])
         );
-
-        beforeEach(() => {
-            sandbox = sinon.sandbox.create();
-        });
 
         it("error 422 if no company provided", () =>
             request(app)
@@ -1181,10 +1164,6 @@ describe("Workings 工時資訊", () => {
         });
 
         after(() => db.collection("workings").deleteMany({}));
-
-        afterEach(() => {
-            sandbox.restore();
-        });
     });
 
     describe("GET /workings/search_by/company/group_by/company (極端值的測試)", () => {
@@ -1236,8 +1215,6 @@ describe("Workings 工時資訊", () => {
     });
 
     describe("GET /search_by/job_title/group_by/company", () => {
-        let sandbox;
-
         before("Seeding some workings", () =>
             db.collection("workings").insertMany([
                 {
@@ -1433,10 +1410,6 @@ describe("Workings 工時資訊", () => {
                 },
             ])
         );
-
-        beforeEach(() => {
-            sandbox = sinon.sandbox.create();
-        });
 
         it("error 422 if no job_title provided", () =>
             request(app)
@@ -1646,10 +1619,6 @@ describe("Workings 工時資訊", () => {
         });
 
         after(() => db.collection("workings").deleteMany({}));
-
-        afterEach(() => {
-            sandbox.restore();
-        });
     });
 
     describe("GET /workings/search_by/job_title/group_by/company (極端值的測試)", () => {
@@ -1920,7 +1889,7 @@ describe("Workings 工時資訊", () => {
         after(() => db.collection("workings").deleteMany({}));
     });
     describe("PATCH /workings/:id", () => {
-        let sandbox;
+        const fake_user_factory = new FakeUserFactory();
         let user_working_id;
         let other_user_working_id;
         const fake_user = {
@@ -1931,7 +1900,6 @@ describe("Workings 工時資訊", () => {
                 name: "markLin",
             },
         };
-
         const fake_other_user = {
             _id: new ObjectId(),
             facebook_id: "-2",
@@ -1940,20 +1908,19 @@ describe("Workings 工時資訊", () => {
                 name: "lin",
             },
         };
+        let fake_user_token;
 
-        before("mock user", () => {
-            sandbox = sinon.sandbox.create();
-            const cachedFacebookAuthentication = sandbox.stub(
-                authentication,
-                "cachedFacebookAuthentication"
-            );
-            cachedFacebookAuthentication
-                .withArgs(
-                    sinon.match.object,
-                    sinon.match.object,
-                    "fakeaccesstoken"
-                )
-                .resolves(fake_user);
+        before(async () => {
+            await fake_user_factory.setUp();
+        });
+
+        before("Create some users", async () => {
+            fake_user_token = await fake_user_factory.create(fake_user);
+            await fake_user_factory.create(fake_other_user);
+        });
+
+        after(async () => {
+            await fake_user_factory.tearDown();
         });
 
         before("Seeding some workings", async () => {
@@ -1982,9 +1949,9 @@ describe("Workings 工時資訊", () => {
             const res = await request(app)
                 .patch(`/workings/${user_working_id.toString()}`)
                 .send({
-                    access_token: "fakeaccesstoken",
                     status: "hidden",
-                });
+                })
+                .set("Authorization", `Bearer ${fake_user_token}`);
 
             assert.equal(res.status, 200);
             assert.isTrue(res.body.success);
@@ -2010,9 +1977,9 @@ describe("Workings 工時資訊", () => {
             const res = await request(app)
                 .patch(`/workings/${user_working_id.toString()}`)
                 .send({
-                    access_token: "fakeaccesstoken",
                     status: "xxxxxx",
-                });
+                })
+                .set("Authorization", `Bearer ${fake_user_token}`);
 
             assert.equal(res.status, 422);
         });
@@ -2021,18 +1988,17 @@ describe("Workings 工時資訊", () => {
             const res = await request(app)
                 .patch(`/workings/${other_user_working_id.toString()}`)
                 .send({
-                    access_token: "fakeaccesstoken",
                     status: "hidden",
-                });
+                })
+                .set("Authorization", `Bearer ${fake_user_token}`);
             assert.equal(res.status, 403);
         });
 
         it("should return 422, when user did not set the status field", async () => {
             const res = await request(app)
                 .patch(`/workings/${user_working_id}`)
-                .send({
-                    access_token: "fakeaccesstoken",
-                });
+                .send({})
+                .set("Authorization", `Bearer ${fake_user_token}`);
             assert.equal(res.status, 422);
         });
 
@@ -2040,9 +2006,9 @@ describe("Workings 工時資訊", () => {
             const res = await request(app)
                 .patch(`/workings/xxxxxxxx`)
                 .send({
-                    access_token: "fakeaccesstoken",
                     status: "published",
-                });
+                })
+                .set("Authorization", `Bearer ${fake_user_token}`);
             assert.equal(res.status, 404);
         });
 
@@ -2050,17 +2016,13 @@ describe("Workings 工時資訊", () => {
             const res = await request(app)
                 .patch(`/working/${new ObjectId().toString()}`)
                 .send({
-                    access_token: "fakeaccesstoken",
                     status: "published",
-                });
+                })
+                .set("Authorization", `Bearer ${fake_user_token}`);
             assert.equal(res.status, 404);
         });
 
         after(() => db.collection("workings").deleteMany({}));
-
-        after(() => {
-            sandbox.restore();
-        });
     });
 
     describe("GET /workings/campaigns/:campaign_name", () => {

@@ -1,5 +1,4 @@
 const express = require("express");
-const passport = require("passport");
 const escapeRegExp = require("lodash/escapeRegExp");
 
 const post_helper = require("./workings_post");
@@ -15,6 +14,9 @@ const {
     validGroupSortQuery,
     pickupGroupSortQuery,
 } = require("./helper");
+const {
+    requireUserAuthetication,
+} = require("../../middlewares/authentication");
 
 const router = express.Router();
 
@@ -290,7 +292,7 @@ router.post("/", (req, res, next) => {
     next();
 });
 
-router.post("/", passport.authenticate("bearer", { session: false }));
+router.post("/", requireUserAuthetication);
 // req.user.facebook --> {id, name}
 
 router.post(
@@ -723,7 +725,7 @@ function _isValidStatus(value) {
  * @apiSuccess {String} status 更新後狀態
  */
 router.patch("/:id", [
-    passport.authenticate("bearer", { session: false }),
+    requireUserAuthetication,
     wrap(async (req, res) => {
         const id = req.params.id;
         const status = req.body.status;
