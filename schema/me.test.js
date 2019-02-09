@@ -9,6 +9,7 @@ describe("Query me", () => {
         query: `{
             me {
                 _id
+                name
             }
         }`,
         variables: null,
@@ -23,7 +24,10 @@ describe("Query me", () => {
     });
 
     it("get my information", async () => {
-        const token = await fake_user_factory.create({ facebook_id: "-1" });
+        const token = await fake_user_factory.create({
+            name: "mark",
+            facebook_id: "-1",
+        });
 
         const res = await request(app)
             .post("/graphql")

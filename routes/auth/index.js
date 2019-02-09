@@ -37,9 +37,21 @@ router.post(
 
         // Retrieve User from DB
         const facebook_id = account.id;
+        const name = account.name;
         let user = await user_model.findOneByFacebookId(facebook_id);
         if (!user) {
-            user = await user_model.create({ facebook_id, facebook: account });
+            user = await user_model.create({
+                name,
+                facebook_id,
+                facebook: account,
+            });
+        }
+
+        if (!user.name) {
+            await user_model.collection.updateOne(
+                { _id: user._id },
+                { $set: { name: account.name } }
+            );
         }
 
         // Sign token

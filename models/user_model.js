@@ -22,8 +22,9 @@ class UserModel {
         return user;
     }
 
-    async create({ facebook_id, facebook }) {
+    async create({ name, facebook_id, facebook }) {
         const new_user = {
+            name,
             facebook_id,
             facebook,
         };

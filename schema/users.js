@@ -1,6 +1,7 @@
 const Type = `
     type User {
         _id: ID!
+        name: String!
         facebook_id: String
     }
 `;

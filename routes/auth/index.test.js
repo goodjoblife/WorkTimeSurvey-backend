@@ -63,6 +63,14 @@ describe("Auth", () => {
             const decoded = await jwt.verify(token);
 
             assert.propertyVal(decoded, "user_id", fake_user._id.toString());
+
+            const user = await user_model.findOneById(fake_user._id);
+            assert.propertyVal(
+                user,
+                "name",
+                "markLin",
+                "登入時會將缺失的 name 補上"
+            );
         });
 
         it("should 401 if access_token is wrong", async () => {
