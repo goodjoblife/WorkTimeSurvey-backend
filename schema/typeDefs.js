@@ -1,13 +1,15 @@
-const Query = `
-  type Query {
-    placeholder: Boolean # For Schema Composition
-  }
+const { gql } = require("apollo-server-express");
+
+const Query = gql`
+    type Query {
+        placeholder: Boolean # For Schema Composition
+    }
 `;
 
-const Mutation = `
-  type Mutation {
-    placeholder: Boolean # For Schema Composition
-  }
+const Mutation = gql`
+    type Mutation {
+        placeholder: Boolean # For Schema Composition
+    }
 `;
 
 module.exports = [

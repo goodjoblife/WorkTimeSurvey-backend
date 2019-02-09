@@ -1,10 +1,11 @@
+const { gql } = require("apollo-server-express");
 const { combineResolvers } = require("graphql-resolvers");
 const { isAuthenticated } = require("../utils/resolvers");
 
 const Type = `
 `;
 
-const Query = `
+const Query = gql`
     extend type Query {
         me: User!
     }

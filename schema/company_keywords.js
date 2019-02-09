@@ -1,14 +1,15 @@
 const R = require("ramda");
+const { gql } = require("apollo-server-express");
 const { HttpError } = require("../libs/errors");
 const { requiredNumberInRange } = require("../libs/validation");
 
 const Type = `
 `;
 
-const Query = `
-  extend type Query {
-    company_keywords(limit: Int = 5): [String!]!
-  }
+const Query = gql`
+    extend type Query {
+        company_keywords(limit: Int = 5): [String!]!
+    }
 `;
 
 const Mutation = `
