@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const EmailTemplate = require("./template");
 const { EmailTemplateVariablesError } = require("../errors");
 
 const schema = Joi.object().keys({
@@ -11,29 +12,27 @@ const schema = Joi.object().keys({
         .required(),
 });
 
-const validateVariables = variables => {
-    const result = Joi.validate(variables, schema);
-    if (result.error === null) {
-        return true;
-    } else {
-        throw new EmailTemplateVariablesError(result.error);
+class VerifySuccessTemplate extends EmailTemplate {
+    constructor() {
+        super();
     }
-};
 
-const genBodyHTML = variables => {
-    return `<div>${
-        variables.username
-    } 感謝您註冊職場透明化運動，點擊以下按鈕，馬上驗證您的信箱<a href="${
-        variables.verifyUrl
-    }">驗證</a></div>`;
-};
+    validateVariables(variables) {
+        const result = Joi.validate(variables, schema);
+        if (result.error === null) {
+            return true;
+        } else {
+            throw new EmailTemplateVariablesError(result.error);
+        }
+    }
 
-const genSubject = () => {
-    return "職場透明化運動電子信箱驗證信";
-};
+    genBodyHTML({ username, verifyUrl }) {
+        return `<div>${username} 感謝您註冊職場透明化運動，點擊以下按鈕，馬上驗證您的信箱<a href="${verifyUrl}">驗證</a></div>`;
+    }
 
-module.exports = {
-    validateVariables,
-    genBodyHTML,
-    genSubject,
-};
+    genSubject() {
+        return "職場透明化運動電子信箱驗證信";
+    }
+}
+
+module.exports = VerifySuccessTemplate;

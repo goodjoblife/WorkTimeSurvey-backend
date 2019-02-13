@@ -77,7 +77,7 @@ const sendEmailsFromTemplate = async (toAddresses, templateName, variables) => {
             `Email template ${templateName} not found`
         );
     }
-    const template = EMAIL_TEMPLATES[templateName];
+    const template = new EMAIL_TEMPLATES[templateName]();
 
     // validate variables
     template.validateVariables(variables);
@@ -114,8 +114,7 @@ const sendEmailsFromTemplate = async (toAddresses, templateName, variables) => {
             verifyUrl: "http://localhost:3000/verify?token=ooxx",
         }
     );
-})();
-*/
+})();*/
 
 module.exports = {
     sendEmails,
