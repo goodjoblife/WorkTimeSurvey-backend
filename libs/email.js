@@ -82,25 +82,11 @@ const sendEmailsFromTemplate = async (toAddresses, templateName, variables) => {
     // validate variables
     template.validateVariables(variables);
 
-    const params = {
-        Destination: {
-            ToAddresses: toAddresses,
-        },
-        Message: {
-            Body: {
-                Html: {
-                    Charset: "UTF-8",
-                    Data: template.genBodyHTML(variables),
-                },
-            },
-            Subject: {
-                Charset: "UTF-8",
-                Data: template.genSubject(variables),
-            },
-        },
-        Source: `=?UTF-8?B?${base64FromName}?= <${fromEmail}>`,
-    };
-    return SES.sendEmail(params).promise();
+    return sendEmails(
+        toAddresses,
+        template.genBodyHTML(variables),
+        template.genSubject(variables)
+    );
 };
 
 /** sample code use sendEmailsFromTemplate
