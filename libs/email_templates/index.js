@@ -1,5 +1,5 @@
-const VerifySuccessTemplate = require("./verify_success");
+const AccountVerifyTemplate = require("./account_verify");
 
 module.exports = {
-    VerifySuccessTemplate,
+    AccountVerifyTemplate,
 };

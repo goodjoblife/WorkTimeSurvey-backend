@@ -12,7 +12,7 @@ const schema = Joi.object().keys({
         .required(),
 });
 
-class VerifySuccessTemplate extends EmailTemplate {
+class AccountVerifyTemplate extends EmailTemplate {
     validateVariables(variables) {
         const result = Joi.validate(variables, schema);
         if (result.error === null) {
@@ -31,4 +31,4 @@ class VerifySuccessTemplate extends EmailTemplate {
     }
 }
 
-module.exports = VerifySuccessTemplate;
+module.exports = AccountVerifyTemplate;
