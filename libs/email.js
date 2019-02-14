@@ -6,7 +6,8 @@
 
 const AWS = require("aws-sdk");
 const config = require("config");
-const { EmailTemplateNotFoundError } = require("./errors");
+const { EmailTemplateTypeError } = require("./errors");
+const EmailTemplate = require("./email_templates/template");
 
 // Set the region and API version
 AWS.config.update({ region: config.get("AWS_SES_SERVER_REGION") });
@@ -20,9 +21,6 @@ const fromName = "職場透明化運動 GoodJob";
 const base64FromName = Buffer.from(fromName).toString("base64");
 // this email domain must be verified by AWS
 const fromEmail = "noreply@email.goodjob.life";
-
-// load email templates
-const { EMAIL_TEMPLATES } = require("./email_templates");
 
 /**
  * 寄送一封信件到不同的電子郵件地址（內容相同）
@@ -58,16 +56,15 @@ const sendEmails = async (toAddresses, bodyHTML, subject) => {
 /**
  * 寄送一封樣板信件到不同的電子郵件地址（內容相同）
  * @param {String[]} toAddresses 目標對象的電子郵件列表
- * @param {String} templateName 樣板名稱
+ * @param {Object} template Email 樣板物件（EmailTemplate Class 的實體）
  * @param {Object} variables 變數物件
  */
-const sendEmailsFromTemplate = async (toAddresses, templateName, variables) => {
-    if (!EMAIL_TEMPLATES[templateName]) {
-        throw new EmailTemplateNotFoundError(
-            `Email template ${templateName} not found`
+const sendEmailsFromTemplate = async (toAddresses, template, variables) => {
+    if (!(template instanceof EmailTemplate)) {
+        throw new EmailTemplateTypeError(
+            "template is not an instanceof EmailTemplate"
         );
     }
-    const template = new EMAIL_TEMPLATES[templateName]();
 
     // validate variables
     template.validateVariables(variables);
