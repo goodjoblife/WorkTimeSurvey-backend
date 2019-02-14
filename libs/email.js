@@ -55,16 +55,6 @@ const sendEmails = async (toAddresses, bodyHTML, subject) => {
     return SES.sendEmail(params).promise();
 };
 
-/** sample code to send same emails to different destination
-(async () => {
-    await sendEmails(
-        ["barry800414@gmail.com"],
-        "<p>this is an test email</p>",
-        "這是一封測試郵件"
-    );
-})();
-*/
-
 /**
  * 寄送一封樣板信件到不同的電子郵件地址（內容相同）
  * @param {String[]} toAddresses 目標對象的電子郵件列表
@@ -88,19 +78,6 @@ const sendEmailsFromTemplate = async (toAddresses, templateName, variables) => {
         template.genSubject(variables)
     );
 };
-
-/** sample code use sendEmailsFromTemplate
-(async () => {
-    const { EMAIL_TEMPLATE_NAMES } = require("./email_templates");
-    await sendEmailsFromTemplate(
-        ["barry800414@gmail.com"],
-        EMAIL_TEMPLATE_NAMES.ACCOUNT_VERIFY_SUCCESS,
-        {
-            username: "Wei-Ming",
-            verifyUrl: "http://localhost:3000/verify?token=ooxx",
-        }
-    );
-})();*/
 
 module.exports = {
     sendEmails,

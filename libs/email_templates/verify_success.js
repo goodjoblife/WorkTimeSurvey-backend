@@ -13,10 +13,6 @@ const schema = Joi.object().keys({
 });
 
 class VerifySuccessTemplate extends EmailTemplate {
-    constructor() {
-        super();
-    }
-
     validateVariables(variables) {
         const result = Joi.validate(variables, schema);
         if (result.error === null) {
