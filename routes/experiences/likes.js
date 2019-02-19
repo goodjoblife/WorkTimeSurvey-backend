@@ -1,7 +1,9 @@
 const express = require("express");
 const winston = require("winston");
-const passport = require("passport");
 
+const {
+    requireUserAuthetication,
+} = require("../../middlewares/authentication");
 const ExperienceLikeModel = require("../../models/experience_like_model");
 const ExperienceModel = require("../../models/experience_model");
 const PopularExperienceLogsModel = require("../../models/popular_experience_logs_model");
@@ -21,7 +23,7 @@ const router = express.Router();
  * @apiSuccess {Boolean} success 是否成功點讚
  */
 router.post("/:id/likes", [
-    passport.authenticate("bearer", { session: false }),
+    requireUserAuthetication,
     wrap(async (req, res, next) => {
         const user = req.user;
         const experience_id = ensureToObjectId(req.params.id);
@@ -68,7 +70,7 @@ router.post("/:id/likes", [
  * @apiSuccess {Boolean} success 是否成功取消讚
  */
 router.delete("/:id/likes", [
-    passport.authenticate("bearer", { session: false }),
+    requireUserAuthetication,
     wrap(async (req, res, next) => {
         const user = req.user;
         const experience_id = ensureToObjectId(req.params.id);

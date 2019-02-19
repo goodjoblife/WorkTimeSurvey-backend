@@ -3,8 +3,10 @@ const HttpError = require("../../libs/errors").HttpError;
 const DuplicateKeyError = require("../../libs/errors").DuplicateKeyError;
 const ReplyLikeModel = require("../../models/reply_like_model");
 const ReplyModel = require("../../models/reply_model");
-const passport = require("passport");
 const wrap = require("../../libs/wrap");
+const {
+    requireUserAuthetication,
+} = require("../../middlewares/authentication");
 
 const router = express.Router();
 
@@ -14,7 +16,7 @@ const router = express.Router();
  * @apiSuccess {Boolean} success 是否成功點讚
  */
 router.post("/:reply_id/likes", [
-    passport.authenticate("bearer", { session: false }),
+    requireUserAuthetication,
     wrap(async (req, res) => {
         const reply_id = req.params.reply_id;
         if (typeof reply_id === "undefined") {
@@ -45,7 +47,7 @@ router.post("/:reply_id/likes", [
  * @apiSuccess {Boolean} success 是否成功取消讚
  */
 router.delete("/:reply_id/likes", [
-    passport.authenticate("bearer", { session: false }),
+    requireUserAuthetication,
     wrap(async (req, res) => {
         const reply_id = req.params.reply_id;
         if (typeof reply_id === "undefined") {

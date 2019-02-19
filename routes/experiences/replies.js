@@ -1,5 +1,4 @@
 const express = require("express");
-const passport = require("passport");
 const R = require("ramda");
 
 const { ensureToObjectId } = require("../../models");
@@ -7,7 +6,9 @@ const ExperienceModel = require("../../models/experience_model");
 const ReplyModel = require("../../models/reply_model");
 const ReplyLikeModel = require("../../models/reply_like_model");
 const PopularExperienceLogsModel = require("../../models/popular_experience_logs_model");
-const { semiAuthentication } = require("../../middlewares/authentication");
+const {
+    requireUserAuthetication,
+} = require("../../middlewares/authentication");
 const { HttpError } = require("../../libs/errors");
 const {
     requiredNumberInRange,
@@ -43,7 +44,7 @@ function validationPostFields(body) {
  * @apiSuccess {String} reply.created_at 該留言的時間
  */
 router.post("/:id/replies", [
-    passport.authenticate("bearer", { session: false }),
+    requireUserAuthetication,
     wrap(async (req, res) => {
         validationPostFields(req.body);
 
@@ -108,7 +109,6 @@ const repliesView = R.map(replyView);
  * @apiSuccess {Number} replies.floor 樓層
  */
 router.get("/:id/replies", [
-    semiAuthentication("bearer", { session: false }),
     wrap(async (req, res) => {
         const experience_id_string = req.params.id;
         const limit = parseInt(req.query.limit, 10) || 20;

@@ -63,6 +63,14 @@ app.use((req, res, next) => {
 
 app.use(passport.initialize());
 passport.use(passportStrategies.legacyFacebookTokenStrategy());
+app.use((req, res, next) => {
+    passport.authenticate("bearer", { session: false }, (err, user) => {
+        if (user) {
+            req.user = user;
+        }
+        next();
+    })(req, res, next);
+});
 app.use("/", routes);
 
 if (app.get("env") === "development") {

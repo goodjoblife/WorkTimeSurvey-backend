@@ -8,12 +8,13 @@ const { ensureToObjectId } = require("../../models");
 const ExperienceModel = require("../../models/experience_model");
 const ExperienceLikeModel = require("../../models/experience_like_model");
 const {
+    requireUserAuthetication,
+} = require("../../middlewares/authentication");
+const {
     requiredNumberInRange,
     requiredNumberGreaterThanOrEqualTo,
     shouldIn,
 } = require("../../libs/validation");
-const passport = require("passport");
-const { semiAuthentication } = require("../../middlewares/authentication");
 const wrap = require("../../libs/wrap");
 const { experiencesView } = require("../../view_models/get_experiences");
 const { experienceView } = require("../../view_models/get_experience");
@@ -245,7 +246,6 @@ const isExperienceArchived = R.path(["archive", "is_archived"]);
  */
 /* eslint-enable */
 router.get("/:id", [
-    semiAuthentication("bearer", { session: false }),
     wrap(async (req, res) => {
         const id_str = req.params.id;
         let user = null;
@@ -294,7 +294,7 @@ function _isLegalStatus(value) {
  * @apiSuccess {String} status 更新後狀態
  */
 router.patch("/:id", [
-    passport.authenticate("bearer", { session: false }),
+    requireUserAuthetication,
     wrap(async (req, res) => {
         const id = req.params.id;
         const status = req.body.status;

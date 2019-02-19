@@ -5,7 +5,6 @@ const HttpError = require("../../libs/errors").HttpError;
 const winston = require("winston");
 const ExperienceModel = require("../../models/experience_model");
 const helper = require("../company_helper");
-const passport = require("passport");
 const {
     requiredNonEmptyString,
     requiredNumber,
@@ -14,6 +13,9 @@ const {
     stringRequireLength,
 } = require("../../libs/validation");
 const wrap = require("../../libs/wrap");
+const {
+    requireUserAuthetication,
+} = require("../../middlewares/authentication");
 
 function validateCommonInputFields(data) {
     if (!requiredNonEmptyString(data.company_query)) {
@@ -280,7 +282,7 @@ function pickupWorkExperience(input) {
  * @apiSuccess {String} experience._id  經驗分享id
  */
 router.post("/", [
-    passport.authenticate("bearer", { session: false }),
+    requireUserAuthetication,
     wrap(async (req, res) => {
         validationInputFields(req.body);
 

@@ -10,7 +10,9 @@ const {
     requiredNumberGreaterThanOrEqualTo,
 } = require("../../../libs/validation");
 const wrap = require("../../../libs/wrap");
-const passport = require("passport");
+const {
+    requireUserAuthetication,
+} = require("../../../middlewares/authentication");
 
 const replyView = R.pick([
     "_id",
@@ -55,7 +57,7 @@ const repliesWithExperienceView = R.zipWith((reply, experience) =>
  */
 /* eslint-enable */
 router.get("/", [
-    passport.authenticate("bearer", { session: false }),
+    requireUserAuthetication,
     wrap(async (req, res) => {
         const start = parseInt(req.query.start, 10) || 0;
         const limit = Number(req.query.limit || 20);

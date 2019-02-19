@@ -1,14 +1,16 @@
 const express = require("express");
-const passport = require("passport");
 
 const router = express.Router();
 
 const HttpError = require("../../libs/errors").HttpError;
+const {
+    requireUserAuthetication,
+} = require("../../middlewares/authentication");
 const recommendation = require("../../libs/recommendation");
 const wrap = require("../../libs/wrap");
 
 router.post("/", [
-    passport.authenticate("bearer", { session: false }),
+    requireUserAuthetication,
     wrap(async (req, res, next) => {
         try {
             const old_user = {
