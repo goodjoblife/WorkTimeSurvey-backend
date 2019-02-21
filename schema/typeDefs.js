@@ -19,4 +19,7 @@ module.exports = [
     ...require("./job_title_keywords").types,
     ...require("./me").types,
     ...require("./users").types,
+    ...require("./company").types,
+    ...require("./job_title").types,
+    ...require("./salary_work_time").types,
 ];
