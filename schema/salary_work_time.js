@@ -1,14 +1,16 @@
-const Type = `
+const { gql } = require("apollo-server-express");
+
+const Type = gql`
     scalar Date
 
     type SalaryWorkTime {
         id: ID
         company: Company!
         job_title: JobTitle!
-        day_promised_work_time: Int
-        day_real_work_time: Int
+        day_promised_work_time: Float
+        day_real_work_time: Float
         email: String
-        employment_type: EmploymentType!
+        employment_type: EmploymentType
         experience_in_year: Int
         gender: Gender
         has_compensatory_dayoff: YesNoOrUnknown
@@ -70,46 +72,6 @@ const Type = `
         ASCENDING
     }
 
-    enum Education {
-        abc
-        # 大學
-        # 碩士
-        # 博士
-        # 高職
-        # 五專
-        # 二專
-        # 二技
-        # 高中
-        # 國中
-        # 國小
-    }
-
-    enum Region {
-        abc
-        # 彰化縣
-        # 嘉義市
-        # 嘉義縣
-        # 新竹市
-        # 新竹縣
-        # 花蓮縣
-        # 高雄市
-        # 基隆市
-        # 金門縣
-        # 連江縣
-        # 苗栗縣
-        # 南投縣
-        # 新北市
-        # 澎湖縣
-        # 屏東縣
-        # 臺中市
-        # 臺南市
-        # 臺北市
-        # 臺東縣
-        # 桃園市
-        # 宜蘭縣
-        # 雲林縣
-    }
-
     enum SalaryType {
         year
         month
@@ -120,7 +82,7 @@ const Type = `
     enum YesNoOrUnknown {
         yes
         no
-        # dont know
+        unknown
     }
 
     enum EmploymentType {
@@ -133,13 +95,18 @@ const Type = `
     }
 `;
 
-const Query = `
-`;
+const Query = ``;
 
-const Mutation = `
-`;
+const Mutation = ``;
 
-const resolvers = {};
+const resolvers = {
+    YesNoOrUnknown: {
+        unknown: "don't know",
+    },
+    EmploymentType: {
+        full_time: "full-time",
+    },
+};
 
 const types = [Type, Query, Mutation];
 
