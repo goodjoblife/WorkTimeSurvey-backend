@@ -73,15 +73,24 @@ const resolvers = {
                 });
             }
 
-            const workTimes = await collection
-                .find({
-                    status: "published",
-                    "archive.is_archived": false,
-                    $or: orExpr,
-                })
+            const salaryWorkTimes = await collection
+                .aggregate([
+                    {
+                        $match: {
+                            status: "published",
+                            "archive.is_archived": false,
+                            $or: orExpr,
+                        },
+                    },
+                    {
+                        $addFields: {
+                            id: "$_id",
+                        },
+                    },
+                ])
                 .toArray();
 
-            return workTimes;
+            return salaryWorkTimes;
         },
         salary_work_time_statistics: async (company, _, ctx) => {
             const collection = ctx.db.collection("workings");
