@@ -29,18 +29,9 @@ const resolvers = {
                         $match: {
                             status: "published",
                             "archive.is_archived": false,
-                        },
-                    },
-                    {
-                        $match: {
-                            $or: [
-                                {
-                                    "company.name": new RegExp(
-                                        escapeRegExp(company.toUpperCase())
-                                    ),
-                                },
-                                { "company.id": company },
-                            ],
+                            "company.name": new RegExp(
+                                escapeRegExp(company.toUpperCase())
+                            ),
                         },
                     },
                     {
@@ -65,21 +56,13 @@ const resolvers = {
         salary_work_times: async (company, _, ctx) => {
             const collection = ctx.db.collection("workings");
 
-            const orExpr = [{ "company.name": company.name }];
-
-            if (company.id) {
-                orExpr.push({
-                    "company.id": company.id,
-                });
-            }
-
             const salaryWorkTimes = await collection
                 .aggregate([
                     {
                         $match: {
                             status: "published",
                             "archive.is_archived": false,
-                            $or: orExpr,
+                            "company.name": company.name,
                         },
                     },
                     {
@@ -95,21 +78,13 @@ const resolvers = {
         salary_work_time_statistics: async (company, _, ctx) => {
             const collection = ctx.db.collection("workings");
 
-            const orExpr = [{ "company.name": company.name }];
-
-            if (company.id) {
-                orExpr.push({
-                    "company.id": company.id,
-                });
-            }
-
             const statistics = await collection
                 .aggregate([
                     {
                         $match: {
                             status: "published",
                             "archive.is_archived": false,
-                            $or: orExpr,
+                            "company.name": company.name,
                         },
                     },
                     {
