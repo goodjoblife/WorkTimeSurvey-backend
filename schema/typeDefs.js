@@ -15,8 +15,8 @@ const Mutation = gql`
 module.exports = [
     Query,
     Mutation,
-    ...require("./company_keywords").types,
-    ...require("./job_title_keywords").types,
+    ...require("./company_keyword").types,
+    ...require("./job_title_keyword").types,
     ...require("./me").types,
-    ...require("./users").types,
+    ...require("./user").types,
 ];

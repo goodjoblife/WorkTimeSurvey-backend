@@ -1,8 +1,9 @@
-const merge = require("lodash/merge");
+const R = require("ramda");
+const merge = R.reduce(R.mergeDeepLeft, {});
 
-module.exports = merge(
-    require("./company_keywords").resolvers,
-    require("./job_title_keywords").resolvers,
+module.exports = merge([
+    require("./company_keyword").resolvers,
+    require("./job_title_keyword").resolvers,
     require("./me").resolvers,
-    require("./users").resolvers
-);
+    require("./user").resolvers,
+]);
