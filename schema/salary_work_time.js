@@ -95,9 +95,11 @@ const Type = gql`
     }
 `;
 
-const Query = ``;
+const Query = `
+`;
 
-const Mutation = ``;
+const Mutation = `
+`;
 
 const resolvers = {
     YesNoOrUnknown: {

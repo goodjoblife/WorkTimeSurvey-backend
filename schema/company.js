@@ -17,6 +17,9 @@ const Query = gql`
     }
 `;
 
+const Mutation = `
+`;
+
 const resolvers = {
     Query: {
         async search_companies(_, { query: company }, ctx) {
@@ -271,7 +274,7 @@ const resolvers = {
     },
 };
 
-const types = [Type, Query];
+const types = [Type, Query, Mutation];
 
 module.exports = {
     resolvers,
