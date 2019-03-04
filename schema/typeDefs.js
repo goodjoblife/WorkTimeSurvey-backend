@@ -1,5 +1,9 @@
 const { gql } = require("apollo-server-express");
 
+const Type = gql`
+    scalar Date
+`;
+
 const Query = gql`
     type Query {
         placeholder: Boolean # For Schema Composition
@@ -13,13 +17,15 @@ const Mutation = gql`
 `;
 
 module.exports = [
+    Type,
     Query,
     Mutation,
-    ...require("./company").types,
+    // 盡量按造字典排序
     ...require("./company_keyword").types,
+    ...require("./company").types,
     ...require("./experience").types,
-    ...require("./job_title").types,
     ...require("./job_title_keyword").types,
+    ...require("./job_title").types,
     ...require("./me").types,
     ...require("./reply").types,
     ...require("./salary_work_time").types,
