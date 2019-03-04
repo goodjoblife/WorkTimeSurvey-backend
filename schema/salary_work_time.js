@@ -1,8 +1,6 @@
 const { gql } = require("apollo-server-express");
 
 const Type = gql`
-    scalar Date
-
     type SalaryWorkTime {
         id: ID
         company: Company!
