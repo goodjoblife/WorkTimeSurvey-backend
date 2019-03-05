@@ -106,6 +106,16 @@ const resolvers = {
     EmploymentType: {
         full_time: "full-time",
     },
+    SalaryWorkTime: {
+        id: salaryWorkTime => {
+            return salaryWorkTime._id;
+        },
+        job_title: salaryWorkTime => {
+            return {
+                name: salaryWorkTime.job_title,
+            };
+        },
+    },
 };
 
 const types = [Type, Query, Mutation];
