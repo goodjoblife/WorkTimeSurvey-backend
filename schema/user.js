@@ -1,6 +1,7 @@
 const { gql, UserInputError } = require("apollo-server-express");
 const ExperienceModel = require("../models/experience_model");
 const ReplyModel = require("../models/reply_model");
+const WorkingModel = require("../models/working_model");
 const {
     requiredNumberInRange,
     requiredNumberGreaterThanOrEqualTo,
@@ -19,6 +20,10 @@ const Type = gql`
         "The user's replies"
         replies(start: Int = 0, limit: Int = 20): [Reply!]!
         replies_count: Int!
+
+        "The user's salary_work_time"
+        salary_work_times: [SalaryWorkTime!]!
+        salary_work_times_count: Int!
     }
 `;
 
@@ -99,6 +104,32 @@ const resolvers = {
 
             const reply_model = new ReplyModel(db);
             const count = await reply_model.getCount(query);
+
+            return count;
+        },
+        async salary_work_times(user, args, { db }) {
+            const query = {
+                "author.id": user.facebook_id,
+            };
+
+            const working_model = new WorkingModel(db);
+            const workings = await working_model.getWorkings(query);
+
+            return workings.map(w => ({
+                ...w,
+                id: w._id,
+                job_title: {
+                    name: w.job_title,
+                },
+            }));
+        },
+        async salary_work_times_count(user, args, { db }) {
+            const query = {
+                "author.id": user.facebook_id,
+            };
+
+            const working_model = new WorkingModel(db);
+            const count = await working_model.getWorkingsCountByQuery(query);
 
             return count;
         },
