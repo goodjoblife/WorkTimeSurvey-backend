@@ -115,13 +115,7 @@ const resolvers = {
             const working_model = new WorkingModel(db);
             const workings = await working_model.getWorkings(query);
 
-            return workings.map(w => ({
-                ...w,
-                id: w._id,
-                job_title: {
-                    name: w.job_title,
-                },
-            }));
+            return workings;
         },
         async salary_work_times_count(user, args, { db }) {
             const query = {
