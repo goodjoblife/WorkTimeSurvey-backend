@@ -68,14 +68,16 @@ router.get(
         const skip = Math.floor(count * 0.01);
 
         const defined_results = await collection
-            .find(defined_query, opt)
+            .find(defined_query)
+            .project(opt)
             .sort(sort)
             .limit(skip)
             .toArray();
 
         if (defined_results.length < skip) {
             const undefined_results = await collection
-                .find(undefined_query, opt)
+                .find(undefined_query)
+                .project(opt)
                 .limit(skip - defined_results.length)
                 .toArray();
             data.time_and_salary = defined_results.concat(undefined_results);
@@ -145,7 +147,8 @@ router.get(
             req.query.skip === "true" ? Math.floor(data.total * 0.01) : 0;
 
         const defined_results = await collection
-            .find(defined_query, opt)
+            .find(defined_query)
+            .project(opt)
             .sort(sort)
             .skip(skip + limit * page)
             .limit(limit)
@@ -157,7 +160,8 @@ router.get(
                 .count();
 
             const undefined_results = await collection
-                .find(undefined_query, opt)
+                .find(undefined_query)
+                .project(opt)
                 .skip(
                     skip +
                         limit * page +
@@ -257,7 +261,8 @@ router.get(
             req.query.skip === "true" ? Math.floor(data.total * 0.01) : 0;
 
         const defined_results = await collection
-            .find(defined_query, opt)
+            .find(defined_query)
+            .project(opt)
             .sort(sort)
             .skip(skip + limit * page)
             .limit(limit)
@@ -269,7 +274,8 @@ router.get(
                 .count();
 
             const undefined_results = await collection
-                .find(undefined_query, opt)
+                .find(undefined_query)
+                .project(opt)
                 .skip(
                     skip +
                         limit * page +
