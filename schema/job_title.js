@@ -57,11 +57,13 @@ const resolvers = {
         salary_work_times: async (jobTitle, _, ctx) => {
             const collection = ctx.db.collection("workings");
 
-            const salaryWorkTimes = await collection.findOne({
-                status: "published",
-                "archive.is_archived": false,
-                job_title: jobTitle.name,
-            });
+            const salaryWorkTimes = await collection
+                .find({
+                    status: "published",
+                    "archive.is_archived": false,
+                    job_title: jobTitle.name,
+                })
+                .toArray();
 
             return salaryWorkTimes;
         },
