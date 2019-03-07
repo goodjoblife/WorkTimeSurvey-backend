@@ -45,7 +45,7 @@ const resolvers = {
             }
 
             const reply_like_model = new ReplyLikeModel(db);
-            const result = reply_like_model.collection.findOne({
+            const result = await reply_like_model.collection.findOne({
                 reply_id: reply._id,
                 user_id: user._id,
             });
