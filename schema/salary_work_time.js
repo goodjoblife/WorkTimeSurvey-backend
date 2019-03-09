@@ -100,6 +100,8 @@ const resolvers = {
     },
     EmploymentType: {
         full_time: "full-time",
+        part_time: "part-time",
+        dispatched_labor: "dispatched-labor",
     },
     SalaryWorkTime: {
         id: salaryWorkTime => {
