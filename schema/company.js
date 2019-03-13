@@ -1,6 +1,5 @@
 const { gql } = require("apollo-server-express");
 const escapeRegExp = require("lodash/escapeRegExp");
-const get = require("lodash/get");
 
 const Type = gql`
     type Company {
@@ -67,8 +66,12 @@ const resolvers = {
                 "company.name": name,
             });
 
+            if (!result) {
+                return null;
+            }
+
             return {
-                name: get(result, "company.name"),
+                name: result.company.name,
             };
         },
     },

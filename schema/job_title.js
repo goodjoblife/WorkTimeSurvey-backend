@@ -1,6 +1,5 @@
 const { gql } = require("apollo-server-express");
 const escapeRegExp = require("lodash/escapeRegExp");
-const get = require("lodash/get");
 
 const Type = gql`
     type JobTitle {
@@ -49,8 +48,12 @@ const resolvers = {
                 job_title: name,
             });
 
+            if (!result) {
+                return null;
+            }
+
             return {
-                name: get(result, "job_title"),
+                name: result.job_title,
             };
         },
     },
