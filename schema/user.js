@@ -5,6 +5,15 @@ const Type = gql`
         _id: ID!
         name: String!
         facebook_id: String
+        email: String
+        emailStatus: EmailStatus
+        createdAt: Date!
+    }
+
+    enum EmailStatus {
+        UNVERIFIED
+        SENT_VERIFICATION_LINK
+        VERIFIED
     }
 `;
 

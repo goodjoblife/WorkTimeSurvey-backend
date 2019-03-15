@@ -4,10 +4,12 @@ const escapeRegExp = require("lodash/escapeRegExp");
 const Type = gql`
     type JobTitle {
         name: String!
-
         salary_work_times: [SalaryWorkTime!]!
-
         salary_work_time_statistics: SalaryWorkTimeStatistics!
+        work_experiences(start: Int, end: Int): [WorkExperience]!
+        work_experiences_statistics: WorkExperienceStatistics!
+        interview_experiences(start: Int, end: Int): [InterviewExperience]
+        interview_experiences_statistics: InterviewExperienceStatistics!
     }
 `;
 
