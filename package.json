@@ -8,7 +8,8 @@
     "test": "mocha --recursive libs routes test middlewares models database schema",
     "lint": "eslint \"./**/*.js\"",
     "lint:fix": "npm run lint -- --fix",
-    "migrate": "node ./bin/migrate"
+    "migrate": "node ./bin/migrate",
+    "update-schema": "node ./scripts/updateSchema.js"
   },
   "repository": {
     "type": "git",
