@@ -10,7 +10,6 @@ const Query = gql`
         salary_work_time_count: Int!
         work_experience_count: Int!
         interview_experience_count: Int!
-        labor_rights_count: Int!
     }
 `;
 
