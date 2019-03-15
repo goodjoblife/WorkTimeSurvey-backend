@@ -1,0 +1,120 @@
+type Company {
+  name: String!
+  salary_work_times: [SalaryWorkTime!]!
+  salary_work_time_statistics: SalaryWorkTimeStatistics!
+}
+
+scalar Date
+
+enum EmploymentType {
+  full_time
+  part_time
+  intern
+  temporary
+  contract
+  dispatched_labor
+}
+
+enum Gender {
+  female
+  male
+  other
+}
+
+type JobTitle {
+  name: String!
+  salary_work_times: [SalaryWorkTime!]!
+  salary_work_time_statistics: SalaryWorkTimeStatistics!
+}
+
+type Mutation {
+  placeholder: Boolean
+}
+
+enum Order {
+  DESCENDING
+  ASCENDING
+}
+
+type Query {
+  placeholder: Boolean
+  company_keywords(limit: Int = 5): [String!]!
+  search_companies(query: String!): [Company!]!
+  company(name: String!): Company
+  job_title_keywords(limit: Int = 5): [String!]!
+  search_job_titles(query: String!): [JobTitle!]!
+  job_title(name: String!): JobTitle
+  me: User!
+}
+
+type Salary {
+  type: SalaryType
+  amount: Int
+}
+
+enum SalaryType {
+  year
+  month
+  day
+  hour
+}
+
+type SalaryWorkTime {
+  id: ID
+  company: Company!
+  job_title: JobTitle!
+  day_promised_work_time: Float
+  day_real_work_time: Float
+  employment_type: EmploymentType
+  experience_in_year: Int
+  overtime_frequency: Int
+  salary: Salary
+  sector: String
+  week_work_time: Float
+  created_at: Date!
+  data_time: YearMonth!
+  estimated_hourly_wage: Float
+}
+
+type SalaryWorkTimeStatistics {
+  count: Int!
+  average_week_work_time: Float!
+  average_estimated_hourly_wage: Float!
+  has_compensatory_dayoff_count: YesNoOrUnknownCount
+  has_overtime_salary_count: YesNoOrUnknownCount
+  is_overtime_salary_legal_count: YesNoOrUnknownCount
+}
+
+enum SearchBy {
+  COMPANY
+  JOB_TITLE
+}
+
+enum SortBy {
+  CREATED_AT
+  WEEK_WORK_TIME
+  ESTIMATED_HOURLY_WAGE
+}
+
+type User {
+  _id: ID!
+  name: String!
+  facebook_id: String
+}
+
+type YearMonth {
+  year: Int!
+  month: Int!
+}
+
+enum YesNoOrUnknown {
+  yes
+  no
+  unknown
+}
+
+type YesNoOrUnknownCount {
+  yes: Int!
+  no: Int!
+  unknown: Int!
+}
