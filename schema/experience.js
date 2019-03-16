@@ -1,9 +1,7 @@
 const { gql } = require("apollo-server-express");
 
 const Type = gql`
-    union Experience = WorkExperience | InterviewExperience
-
-    type WorkExperience {
+    interface Experience {
         id: ID!
         type: ExperienceType!
         company: Company!
@@ -15,12 +13,30 @@ const Type = gql`
         title: String
         sections: [Section]!
         created_at: Date!
-        data_time: YearMonth
-        week_work_time: Int
-        recommend_to_others: Boolean
         reply_count: Int!
         report_count: Int!
         like_count: Int!
+    }
+
+    type WorkExperience implements Experience {
+        id: ID!
+        type: ExperienceType!
+        company: Company!
+        job_title: JobTitle!
+        region: String!
+        experience_in_year: Int
+        education: Education
+        salary: Salary
+        title: String
+        sections: [Section]!
+        created_at: Date!
+        reply_count: Int!
+        report_count: Int!
+        like_count: Int!
+        "work experience specific fields"
+        data_time: YearMonth
+        week_work_time: Int
+        recommend_to_others: Boolean
     }
 
     type WorkExperienceStatistics {
@@ -28,26 +44,27 @@ const Type = gql`
         recommend_to_others: YesNoOrUnknownCount!
     }
 
-    type InterviewExperience {
+    type InterviewExperience implements Experience {
         id: ID!
         type: ExperienceType!
         company: Company!
         job_title: JobTitle!
-        region: String
+        region: String!
         experience_in_year: Int
         education: Education
-        interview_time: YearMonth!
-        interview_result: String!
         salary: Salary
-        overall_rating: Int!
-        title: String!
+        title: String
         sections: [Section]!
-        interview_qas: [InterviewQuestion]
-        interview_sensitive_questions: [String]
         created_at: Date!
         reply_count: Int!
         report_count: Int!
         like_count: Int!
+        "interview experience specific fields"
+        interview_time: YearMonth!
+        interview_result: String!
+        overall_rating: Int!
+        interview_qas: [InterviewQuestion]
+        interview_sensitive_questions: [String]
     }
 
     type InterviewExperienceStatistics {
