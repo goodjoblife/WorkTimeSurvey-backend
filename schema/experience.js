@@ -75,6 +75,7 @@ const Type = gql`
     enum ExperienceType {
         WORK
         INTERVIEW
+        INTERN
     }
 
     enum Education {
