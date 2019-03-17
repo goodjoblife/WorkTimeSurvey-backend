@@ -35,3 +35,6 @@ class UserModel {
 }
 
 module.exports = UserModel;
+module.exports.UNVERIFIED = "UNVERIFIED";
+module.exports.SENT_VERIFICATION_LINK = "SENT_VERIFICATION_LINK";
+module.exports.VERIFIED = "VERIFIED";

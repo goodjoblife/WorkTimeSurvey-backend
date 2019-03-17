@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const config = require("config");
 const { _sign, _verify } = require("../libs/jwt");
 const secret = config.get("VERIFY_EMAIL_JWT_SECRET");
@@ -21,7 +22,28 @@ async function verify(payload) {
     return decoded;
 }
 
+async function issueToken({ user_id, email, redirect_url }) {
+    const payload = {
+        // to remember whom the token for
+        u: user_id.toString(),
+        e: email,
+        r: redirect_url,
+    };
+    return await sign(payload);
+}
+
+async function verifyToken({ token }) {
+    const payload = await verify(token);
+    return {
+        user_id: ObjectId(payload.u),
+        email: payload.e,
+        redirect_url: payload.r,
+    };
+}
+
 module.exports = {
     sign,
     verify,
+    issueToken,
+    verifyToken,
 };
