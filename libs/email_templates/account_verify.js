@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const escapeHtml = require("escape-html");
 const EmailTemplate = require("./template");
 const { EmailTemplateVariablesError } = require("../errors");
 
@@ -23,7 +24,11 @@ class AccountVerifyTemplate extends EmailTemplate {
     }
 
     genBodyHTML({ username, verifyUrl }) {
-        return `<div>${username} 感謝您註冊職場透明化運動，點擊以下按鈕，馬上驗證您的信箱<a href="${verifyUrl}">驗證</a></div>`;
+        return `<div>${escapeHtml(
+            username
+        )} 感謝您註冊職場透明化運動，點擊以下按鈕，馬上驗證您的信箱<a href="${escapeHtml(
+            verifyUrl
+        )}">驗證</a></div>`;
     }
 
     genSubject() {
