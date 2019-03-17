@@ -1,10 +1,34 @@
 type Company {
   name: String!
+
+  """取得資料本身"""
   salary_work_times: [SalaryWorkTime!]!
+  work_experiences(start: Int, limit: Int): [WorkExperience]!
+  interview_experiences(start: Int, limit: Int): [InterviewExperience]
+
+  """取得統計資訊"""
   salary_work_time_statistics: SalaryWorkTimeStatistics!
+  work_experience_statistics: WorkExperienceStatistics!
+  interview_experience_statistics: InterviewExperienceStatistics!
 }
 
 scalar Date
+
+enum Education {
+  """TOFIX"""
+  bachelor
+  master
+  doctor
+  senior_high
+  junior_high
+  primary
+}
+
+enum EmailStatus {
+  UNVERIFIED
+  SENT_VERIFICATION_LINK
+  VERIFIED
+}
 
 enum EmploymentType {
   full_time
@@ -15,16 +39,81 @@ enum EmploymentType {
   dispatched_labor
 }
 
+interface Experience {
+  id: ID!
+  type: ExperienceType!
+  company: Company!
+  job_title: JobTitle!
+  region: String!
+  experience_in_year: Int
+  education: Education
+  salary: Salary
+  title: String
+  sections: [Section]!
+  created_at: Date!
+  reply_count: Int!
+  report_count: Int!
+  like_count: Int!
+}
+
+enum ExperienceType {
+  WORK
+  INTERVIEW
+  INTERN
+}
+
 enum Gender {
   female
   male
   other
 }
 
+type InterviewExperience implements Experience {
+  id: ID!
+  type: ExperienceType!
+  company: Company!
+  job_title: JobTitle!
+  region: String!
+  experience_in_year: Int
+  education: Education
+  salary: Salary
+  title: String
+  sections: [Section]!
+  created_at: Date!
+  reply_count: Int!
+  report_count: Int!
+  like_count: Int!
+
+  """interview experience specific fields"""
+  interview_time: YearMonth!
+  interview_result: String!
+  overall_rating: Int!
+  interview_qas: [InterviewQuestion]
+  interview_sensitive_questions: [String]
+}
+
+type InterviewExperienceStatistics {
+  count: Int!
+  overall_rating: Float!
+}
+
+type InterviewQuestion {
+  question: String
+  answer: String
+}
+
 type JobTitle {
   name: String!
+
+  """取得資料本身"""
   salary_work_times: [SalaryWorkTime!]!
+  work_experiences(start: Int, limit: Int): [WorkExperience]!
+  interview_experiences(start: Int, limit: Int): [InterviewExperience]
+
+  """取得統計資訊"""
   salary_work_time_statistics: SalaryWorkTimeStatistics!
+  work_experience_statistics: WorkExperienceStatistics!
+  interview_experience_statistics: InterviewExperienceStatistics!
 }
 
 type Mutation {
@@ -38,13 +127,22 @@ enum Order {
 
 type Query {
   placeholder: Boolean
+  salary_work_time_count: Int!
+  work_experience_count: Int!
+  interview_experience_count: Int!
   company_keywords(limit: Int = 5): [String!]!
   search_companies(query: String!): [Company!]!
   company(name: String!): Company
+
+  """取得單篇經驗分享"""
+  experience(id: ID!): Experience
   job_title_keywords(limit: Int = 5): [String!]!
   search_job_titles(query: String!): [JobTitle!]!
   job_title(name: String!): JobTitle
   me: User!
+
+  """取得薪資工時列表 （未下關鍵字搜尋的情況），只有從最新排到最舊"""
+  salary_work_times: [SalaryWorkTime]!
 }
 
 type Salary {
@@ -90,6 +188,11 @@ enum SearchBy {
   JOB_TITLE
 }
 
+type Section {
+  subtitle: String
+  content: String
+}
+
 enum SortBy {
   CREATED_AT
   WEEK_WORK_TIME
@@ -100,6 +203,36 @@ type User {
   _id: ID!
   name: String!
   facebook_id: String
+  email: String
+  email_status: EmailStatus
+  created_at: Date!
+}
+
+type WorkExperience implements Experience {
+  id: ID!
+  type: ExperienceType!
+  company: Company!
+  job_title: JobTitle!
+  region: String!
+  experience_in_year: Int
+  education: Education
+  salary: Salary
+  title: String
+  sections: [Section]!
+  created_at: Date!
+  reply_count: Int!
+  report_count: Int!
+  like_count: Int!
+
+  """work experience specific fields"""
+  data_time: YearMonth
+  week_work_time: Int
+  recommend_to_others: Boolean
+}
+
+type WorkExperienceStatistics {
+  count: Int!
+  recommend_to_others: YesNoOrUnknownCount!
 }
 
 type YearMonth {
