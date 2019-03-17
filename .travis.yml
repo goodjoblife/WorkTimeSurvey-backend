@@ -14,6 +14,7 @@ env:
         - REDIS_URL=redis://localhost
         - NODE_ENV=test
         - JWT_SECRET=DontUseMe
+        - VERIFY_EMAIL_JWT_SECRET=DontUseMe
 
 before_install:
     - docker run -d -p 27017:27017 mongo:3.6
