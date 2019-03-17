@@ -12,18 +12,27 @@ const Type = gql`
         _id: ID!
         name: String!
         facebook_id: String
+        email: String
+        email_status: EmailStatus
+        created_at: Date!
 
         "The user's experiences"
         experiences(start: Int = 0, limit: Int = 20): [Experience!]!
-        experiences_count: Int!
+        experience_count: Int!
 
         "The user's replies"
         replies(start: Int = 0, limit: Int = 20): [Reply!]!
-        replies_count: Int!
+        reply_count: Int!
 
         "The user's salary_work_time"
         salary_work_times: [SalaryWorkTime!]!
-        salary_work_times_count: Int!
+        salary_work_time_count: Int!
+    }
+
+    enum EmailStatus {
+        UNVERIFIED
+        SENT_VERIFICATION_LINK
+        VERIFIED
     }
 `;
 
@@ -60,7 +69,7 @@ const resolvers = {
 
             return experiences;
         },
-        async experiences_count(user, args, { db }) {
+        async experience_count(user, args, { db }) {
             const query = {
                 author_id: user._id,
             };
@@ -97,7 +106,7 @@ const resolvers = {
 
             return replies;
         },
-        async replies_count(user, args, { db }) {
+        async reply_count(user, args, { db }) {
             const query = {
                 author_id: user._id,
             };
@@ -117,7 +126,7 @@ const resolvers = {
 
             return workings;
         },
-        async salary_work_times_count(user, args, { db }) {
+        async salary_work_time_count(user, args, { db }) {
             const query = {
                 "author.id": user.facebook_id,
             };

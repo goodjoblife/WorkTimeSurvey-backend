@@ -4,7 +4,7 @@ const ReplyLikeModel = require("../models/reply_like_model");
 
 const Type = gql`
     type Reply {
-        _id: ID!
+        id: ID!
         content: String!
         like_count: Int!
         report_count: Int!
@@ -28,6 +28,7 @@ const Mutation = `
 
 const resolvers = {
     Reply: {
+        id: reply => reply._id,
         async experience(reply, args, { db }) {
             const experience_model = new ExperienceModel(db);
             const experience_id = reply.experience_id;

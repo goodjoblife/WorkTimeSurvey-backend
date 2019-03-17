@@ -88,7 +88,11 @@ const Type = gql`
     }
 `;
 
-const Query = `
+const Query = gql`
+    extend type Query {
+        "取得薪資工時列表 （未下關鍵字搜尋的情況），只有從最新排到最舊"
+        salary_work_times: [SalaryWorkTime]!
+    }
 `;
 
 const Mutation = `
@@ -100,6 +104,8 @@ const resolvers = {
     },
     EmploymentType: {
         full_time: "full-time",
+        part_time: "part-time",
+        dispatched_labor: "dispatched-labor",
     },
     SalaryWorkTime: {
         id: salaryWorkTime => {
