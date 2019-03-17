@@ -4,12 +4,16 @@ const escapeRegExp = require("lodash/escapeRegExp");
 const Type = gql`
     type JobTitle {
         name: String!
+
+        "取得資料本身"
         salary_work_times: [SalaryWorkTime!]!
-        salary_work_time_statistics: SalaryWorkTimeStatistics!
         work_experiences(start: Int, limit: Int): [WorkExperience]!
-        work_experiences_statistics: WorkExperienceStatistics!
         interview_experiences(start: Int, limit: Int): [InterviewExperience]
-        interview_experiences_statistics: InterviewExperienceStatistics!
+
+        "取得統計資訊"
+        salary_work_time_statistics: SalaryWorkTimeStatistics!
+        work_experience_statistics: WorkExperienceStatistics!
+        interview_experience_statistics: InterviewExperienceStatistics!
     }
 `;
 

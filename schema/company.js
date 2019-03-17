@@ -12,8 +12,8 @@ const Type = gql`
 
         "取得統計資訊"
         salary_work_time_statistics: SalaryWorkTimeStatistics!
-        work_experiences_statistics: WorkExperienceStatistics!
-        interview_experiences_statistics: InterviewExperienceStatistics!
+        work_experience_statistics: WorkExperienceStatistics!
+        interview_experience_statistics: InterviewExperienceStatistics!
     }
 `;
 

@@ -6,8 +6,8 @@ const Type = gql`
         name: String!
         facebook_id: String
         email: String
-        emailStatus: EmailStatus
-        createdAt: Date!
+        email_status: EmailStatus
+        created_at: Date!
     }
 
     enum EmailStatus {
