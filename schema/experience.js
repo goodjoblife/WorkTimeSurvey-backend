@@ -45,7 +45,7 @@ const Type = gql`
         "work experience specific fields"
         data_time: YearMonth
         week_work_time: Int
-        recommend_to_others: Boolean
+        recommend_to_others: String
     }
 
     type WorkExperienceStatistics {
