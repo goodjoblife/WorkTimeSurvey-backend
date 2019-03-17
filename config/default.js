@@ -5,4 +5,5 @@ module.exports = {
     CORS_ANY: process.env.CORS_ANY || "FALSE",
     JWT_SECRET: process.env.JWT_SECRET,
     AWS_SES_SERVER_REGION: process.env.AWS_SES_SERVER_REGION || "us-west-2",
+    VERIFY_EMAIL_JWT_SECRET: process.env.VERIFY_EMAIL_JWT_SECRET,
 };

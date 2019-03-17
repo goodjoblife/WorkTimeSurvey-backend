@@ -27,6 +27,7 @@ jobs:
                   REDIS_URL: redis://localhost
                   NODE_ENV: test
                   JWT_SECRET: DontUseMe
+                  VERIFY_EMAIL_JWT_SECRET: DontUseMe
             - image: mongo:3
             - image: redis
     build-node-11:
@@ -39,6 +40,7 @@ jobs:
                   REDIS_URL: redis://localhost
                   NODE_ENV: test
                   JWT_SECRET: DontUseMe
+                  VERIFY_EMAIL_JWT_SECRET: DontUseMe
             - image: mongo:3
             - image: redis
     build-docker:
