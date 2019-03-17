@@ -11,7 +11,7 @@ const { FakeUserFactory } = require("../utils/test_helper");
 const resolvers = require("../schema/resolvers");
 
 const userExperiencesResolver = resolvers.User.experiences;
-const userExperiencesCountResolver = resolvers.User.experiences_count;
+const userExperiencesCountResolver = resolvers.User.experience_count;
 
 describe("User 經驗相關", () => {
     let db;
