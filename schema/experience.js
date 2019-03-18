@@ -1,4 +1,5 @@
 const { gql } = require("apollo-server-express");
+const ObjectId = require("mongodb").ObjectId;
 
 const WorkExperienceType = "work";
 const InterviewExperienceType = "interview";
@@ -132,6 +133,20 @@ const resolvers = {
     },
     InterviewExperience: {
         id: experience => experience._id,
+    },
+
+    Query: {
+        async experience(_, { id }, ctx) {
+            const collection = ctx.db.collection("experiences");
+
+            const result = await collection.findOne({ _id: ObjectId(id) });
+
+            if (!result) {
+                return null;
+            } else {
+                return result;
+            }
+        },
     },
 };
 
