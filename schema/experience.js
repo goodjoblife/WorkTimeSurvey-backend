@@ -134,7 +134,6 @@ const resolvers = {
     InterviewExperience: {
         id: experience => experience._id,
     },
-
     Query: {
         async experience(_, { id }, ctx) {
             const collection = ctx.db.collection("experiences");
