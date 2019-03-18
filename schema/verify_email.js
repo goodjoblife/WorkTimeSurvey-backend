@@ -96,7 +96,7 @@ const resolvers = {
 
                 // 修改 user 的 email_status
                 const UserModel = manager.UserModel;
-                UserModel.collection.updateOne(
+                await UserModel.collection.updateOne(
                     { _id: user._id },
                     {
                         $set: {
@@ -120,7 +120,7 @@ const resolvers = {
 
             // 修改 user 的 email_status & email
             const UserModel = manager.UserModel;
-            UserModel.collection.updateOne(
+            await UserModel.collection.updateOne(
                 { _id: user_id },
                 {
                     $set: {
