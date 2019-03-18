@@ -138,7 +138,11 @@ const resolvers = {
         async experience(_, { id }, ctx) {
             const collection = ctx.db.collection("experiences");
 
-            const result = await collection.findOne({ _id: ObjectId(id) });
+            const result = await collection.findOne({
+                _id: ObjectId(id),
+                status: "published",
+                "archive.is_archived": false,
+            });
 
             if (!result) {
                 return null;
