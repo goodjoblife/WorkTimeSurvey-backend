@@ -1,5 +1,10 @@
-const { gql } = require("apollo-server-express");
+const { gql, UserInputError } = require("apollo-server-express");
 const R = require("ramda");
+const WorkingModel = require("../models/working_model");
+const {
+    requiredNumberInRange,
+    requiredNumberGreaterThanOrEqualTo,
+} = require("../libs/validation");
 
 const Type = gql`
     type SalaryWorkTime {
@@ -92,7 +97,7 @@ const Type = gql`
 const Query = gql`
     extend type Query {
         "取得薪資工時列表 （未下關鍵字搜尋的情況），只有從最新排到最舊"
-        salary_work_times: [SalaryWorkTime]!
+        salary_work_times(start: Int!, limit: Int!): [SalaryWorkTime]!
     }
 `;
 
@@ -188,6 +193,34 @@ const resolvers = {
                 no: counts["no"] || 0,
                 unknown: counts["don't know"] || 0,
             };
+        },
+    },
+    Query: {
+        async salary_work_times(_, { start, limit }, { db }) {
+            if (!requiredNumberGreaterThanOrEqualTo(start, 0)) {
+                throw new UserInputError("start 格式錯誤");
+            }
+            if (!requiredNumberInRange(limit, 1, 100)) {
+                throw new UserInputError("limit 格式錯誤");
+            }
+
+            const sort = {
+                created_at: -1,
+            };
+
+            const query = {
+                status: "published",
+                "archive.is_archived": false,
+            };
+
+            const salary_work_time_model = new WorkingModel(db);
+            const salary_work_times = await salary_work_time_model.getWorkings(
+                query,
+                sort,
+                start,
+                limit
+            );
+            return salary_work_times;
         },
     },
 };

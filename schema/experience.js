@@ -1,4 +1,5 @@
 const { gql } = require("apollo-server-express");
+const ObjectId = require("mongodb").ObjectId;
 
 const WorkExperienceType = "work";
 const InterviewExperienceType = "interview";
@@ -12,7 +13,7 @@ const Type = gql`
         job_title: JobTitle!
         region: String!
         experience_in_year: Int
-        education: Education
+        education: String
         salary: Salary
         title: String
         sections: [Section]!
@@ -31,7 +32,7 @@ const Type = gql`
         job_title: JobTitle!
         region: String!
         experience_in_year: Int
-        education: Education
+        education: String
         salary: Salary
         title: String
         sections: [Section]!
@@ -60,7 +61,7 @@ const Type = gql`
         job_title: JobTitle!
         region: String!
         experience_in_year: Int
-        education: Education
+        education: String
         salary: Salary
         title: String
         sections: [Section]!
@@ -85,19 +86,9 @@ const Type = gql`
     }
 
     enum ExperienceType {
-        WORK
-        INTERVIEW
-        INTERN
-    }
-
-    enum Education {
-        "TOFIX"
-        bachelor
-        master
-        doctor
-        senior_high
-        junior_high
-        primary
+        work
+        interview
+        intern
     }
 
     type Section {
@@ -137,15 +128,28 @@ const resolvers = {
             return null;
         },
     },
-    ExperienceType: {
-        WORK: WorkExperienceType,
-        INTERVIEW: InterviewExperienceType,
-    },
     WorkExperience: {
         id: experience => experience._id,
     },
     InterviewExperience: {
         id: experience => experience._id,
+    },
+    Query: {
+        async experience(_, { id }, ctx) {
+            const collection = ctx.db.collection("experiences");
+
+            const result = await collection.findOne({
+                _id: ObjectId(id),
+                status: "published",
+                "archive.is_archived": false,
+            });
+
+            if (!result) {
+                return null;
+            } else {
+                return result;
+            }
+        },
     },
 };
 
