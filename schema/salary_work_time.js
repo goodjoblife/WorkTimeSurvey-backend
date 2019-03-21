@@ -124,38 +124,36 @@ const resolvers = {
         },
     },
     SalaryWorkTimeStatistics: {
-        count: salaryWorkTimes => {
-            return salaryWorkTimes.length;
-        },
-        average_week_work_time: salaryWorkTimes => {
+        count: salary_work_times => salary_work_times.length,
+        average_week_work_time: salary_work_times => {
             const target = R.pipe(
                 R.map(R.prop("week_work_time")),
                 R.filter(x => typeof x === "number")
-            )(salaryWorkTimes);
+            )(salary_work_times);
 
             if (target.length > 0) {
                 return R.sum(target) / target.length;
             }
             return null;
         },
-        average_estimated_hourly_wage: salaryWorkTimes => {
+        average_estimated_hourly_wage: salary_work_times => {
             const target = R.pipe(
                 R.map(R.prop("estimated_hourly_wage")),
                 R.filter(x => typeof x === "number")
-            )(salaryWorkTimes);
+            )(salary_work_times);
 
             if (target.length > 0) {
                 return R.sum(target) / target.length;
             }
             return null;
         },
-        has_compensatory_dayoff_count: salaryWorkTimes => {
-            if (salaryWorkTimes.length < 5) {
+        has_compensatory_dayoff_count: salary_work_times => {
+            if (salary_work_times.length < 5) {
                 return null;
             }
 
             const counts = R.countBy(R.prop("has_compensatory_dayoff"))(
-                salaryWorkTimes
+                salary_work_times
             );
 
             return {
@@ -164,13 +162,13 @@ const resolvers = {
                 unknown: counts["don't know"] || 0,
             };
         },
-        has_overtime_salary_count: salaryWorkTimes => {
-            if (salaryWorkTimes.length < 5) {
+        has_overtime_salary_count: salary_work_times => {
+            if (salary_work_times.length < 5) {
                 return null;
             }
 
             const counts = R.countBy(R.prop("has_overtime_salary"))(
-                salaryWorkTimes
+                salary_work_times
             );
 
             return {
@@ -179,13 +177,13 @@ const resolvers = {
                 unknown: counts["don't know"] || 0,
             };
         },
-        is_overtime_salary_legal_count: salaryWorkTimes => {
-            if (salaryWorkTimes.length < 5) {
+        is_overtime_salary_legal_count: salary_work_times => {
+            if (salary_work_times.length < 5) {
                 return null;
             }
 
             const counts = R.countBy(R.prop("is_overtime_salary_legal"))(
-                salaryWorkTimes
+                salary_work_times
             );
 
             return {

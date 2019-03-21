@@ -83,12 +83,12 @@ const resolvers = {
     },
     Company: {
         salary_work_times: async (company, _, { manager }) => {
-            return await manager.salaryAndTimeByCompanyLoader.load(
+            return await manager.SalaryWorkTimeModel.byCompanyLoader.load(
                 company.name
             );
         },
         salary_work_time_statistics: async (company, _, { manager }) => {
-            return await manager.salaryAndTimeByCompanyLoader.load(
+            return await manager.SalaryWorkTimeModel.byCompanyLoader.load(
                 company.name
             );
         },
