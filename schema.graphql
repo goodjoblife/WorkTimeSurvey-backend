@@ -1,3 +1,8 @@
+type Archive {
+  is_archived: Boolean!
+  reason: String!
+}
+
 type Company {
   name: String!
 
@@ -13,16 +18,6 @@ type Company {
 }
 
 scalar Date
-
-enum Education {
-  """TOFIX"""
-  bachelor
-  master
-  doctor
-  senior_high
-  junior_high
-  primary
-}
 
 enum EmailStatus {
   UNVERIFIED
@@ -46,7 +41,7 @@ interface Experience {
   job_title: JobTitle!
   region: String!
   experience_in_year: Int
-  education: Education
+  education: String
   salary: Salary
   title: String
   sections: [Section]!
@@ -54,12 +49,14 @@ interface Experience {
   reply_count: Int!
   report_count: Int!
   like_count: Int!
+  status: PublishStatus!
+  archive: Archive!
 }
 
 enum ExperienceType {
-  WORK
-  INTERVIEW
-  INTERN
+  work
+  interview
+  intern
 }
 
 enum Gender {
@@ -75,7 +72,7 @@ type InterviewExperience implements Experience {
   job_title: JobTitle!
   region: String!
   experience_in_year: Int
-  education: Education
+  education: String
   salary: Salary
   title: String
   sections: [Section]!
@@ -83,6 +80,8 @@ type InterviewExperience implements Experience {
   reply_count: Int!
   report_count: Int!
   like_count: Int!
+  status: PublishStatus!
+  archive: Archive!
 
   """interview experience specific fields"""
   interview_time: YearMonth!
@@ -125,6 +124,12 @@ enum Order {
   ASCENDING
 }
 
+"""發布狀態"""
+enum PublishStatus {
+  published
+  hidden
+}
+
 type Query {
   placeholder: Boolean
   salary_work_time_count: Int!
@@ -143,6 +148,22 @@ type Query {
 
   """取得薪資工時列表 （未下關鍵字搜尋的情況），只有從最新排到最舊"""
   salary_work_times: [SalaryWorkTime]!
+}
+
+type Reply {
+  id: ID!
+  content: String!
+  like_count: Int!
+  report_count: Int!
+  floor: Int!
+  created_at: Date!
+  status: PublishStatus!
+
+  """相對應的 experience (resolve if published)"""
+  experience: Experience
+
+  """使用者是否按贊 (null 代表未傳入驗證資訊)"""
+  liked: Boolean
 }
 
 type Salary {
@@ -206,6 +227,18 @@ type User {
   email: String
   email_status: EmailStatus
   created_at: Date!
+
+  """The user's experiences"""
+  experiences(start: Int = 0, limit: Int = 20): [Experience!]!
+  experience_count: Int!
+
+  """The user's replies"""
+  replies(start: Int = 0, limit: Int = 20): [Reply!]!
+  reply_count: Int!
+
+  """The user's salary_work_time"""
+  salary_work_times: [SalaryWorkTime!]!
+  salary_work_time_count: Int!
 }
 
 type WorkExperience implements Experience {
@@ -215,7 +248,7 @@ type WorkExperience implements Experience {
   job_title: JobTitle!
   region: String!
   experience_in_year: Int
-  education: Education
+  education: String
   salary: Salary
   title: String
   sections: [Section]!
@@ -223,11 +256,13 @@ type WorkExperience implements Experience {
   reply_count: Int!
   report_count: Int!
   like_count: Int!
+  status: PublishStatus!
+  archive: Archive!
 
   """work experience specific fields"""
   data_time: YearMonth
   week_work_time: Int
-  recommend_to_others: Boolean
+  recommend_to_others: String
 }
 
 type WorkExperienceStatistics {

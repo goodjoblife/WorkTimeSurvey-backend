@@ -1,4 +1,9 @@
 const { gql } = require("apollo-server-express");
+const ObjectId = require("mongodb").ObjectId;
+
+const WorkExperienceType = "work";
+const InterviewExperienceType = "interview";
+const InternExperienceType = "intern";
 
 const Type = gql`
     interface Experience {
@@ -8,7 +13,7 @@ const Type = gql`
         job_title: JobTitle!
         region: String!
         experience_in_year: Int
-        education: Education
+        education: String
         salary: Salary
         title: String
         sections: [Section]!
@@ -16,6 +21,8 @@ const Type = gql`
         reply_count: Int!
         report_count: Int!
         like_count: Int!
+        status: PublishStatus!
+        archive: Archive!
     }
 
     type WorkExperience implements Experience {
@@ -25,7 +32,7 @@ const Type = gql`
         job_title: JobTitle!
         region: String!
         experience_in_year: Int
-        education: Education
+        education: String
         salary: Salary
         title: String
         sections: [Section]!
@@ -33,10 +40,13 @@ const Type = gql`
         reply_count: Int!
         report_count: Int!
         like_count: Int!
+        status: PublishStatus!
+        archive: Archive!
+
         "work experience specific fields"
         data_time: YearMonth
         week_work_time: Int
-        recommend_to_others: Boolean
+        recommend_to_others: String
     }
 
     type WorkExperienceStatistics {
@@ -51,7 +61,7 @@ const Type = gql`
         job_title: JobTitle!
         region: String!
         experience_in_year: Int
-        education: Education
+        education: String
         salary: Salary
         title: String
         sections: [Section]!
@@ -59,6 +69,9 @@ const Type = gql`
         reply_count: Int!
         report_count: Int!
         like_count: Int!
+        status: PublishStatus!
+        archive: Archive!
+
         "interview experience specific fields"
         interview_time: YearMonth!
         interview_result: String!
@@ -73,19 +86,9 @@ const Type = gql`
     }
 
     enum ExperienceType {
-        WORK
-        INTERVIEW
-        INTERN
-    }
-
-    enum Education {
-        "TOFIX"
-        bachelor
-        master
-        doctor
-        senior_high
-        junior_high
-        primary
+        work
+        interview
+        intern
     }
 
     type Section {
@@ -109,7 +112,46 @@ const Query = gql`
 const Mutation = `
 `;
 
-const resolvers = {};
+const resolvers = {
+    Experience: {
+        __resolveType(experience) {
+            if (experience.type === WorkExperienceType) {
+                return "WorkExperience";
+            }
+            if (experience.type === InterviewExperienceType) {
+                return "InterviewExperience";
+            }
+            if (experience.type === InternExperienceType) {
+                // TODO: Intern
+                return null;
+            }
+            return null;
+        },
+    },
+    WorkExperience: {
+        id: experience => experience._id,
+    },
+    InterviewExperience: {
+        id: experience => experience._id,
+    },
+    Query: {
+        async experience(_, { id }, ctx) {
+            const collection = ctx.db.collection("experiences");
+
+            const result = await collection.findOne({
+                _id: ObjectId(id),
+                status: "published",
+                "archive.is_archived": false,
+            });
+
+            if (!result) {
+                return null;
+            } else {
+                return result;
+            }
+        },
+    },
+};
 
 const types = [Type, Query, Mutation];
 

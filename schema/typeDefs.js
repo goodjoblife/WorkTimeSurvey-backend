@@ -2,6 +2,17 @@ const { gql } = require("apollo-server-express");
 
 const Type = gql`
     scalar Date
+
+    "發布狀態"
+    enum PublishStatus {
+        published
+        hidden
+    }
+
+    type Archive {
+        is_archived: Boolean!
+        reason: String!
+    }
 `;
 
 const Query = gql`
