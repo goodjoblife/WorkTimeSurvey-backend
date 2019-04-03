@@ -17,7 +17,7 @@ class WorkingModel {
      */
     getWorkings(
         query,
-        sort = { create_id: -1 },
+        sort = { created_at: -1 },
         skip = 0,
         limit = 25,
         opt = {}

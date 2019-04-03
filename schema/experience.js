@@ -1,5 +1,5 @@
 const { gql } = require("apollo-server-express");
-const ObjectId = require("mongodb").ObjectId;
+const { ObjectId } = require("mongodb");
 
 const WorkExperienceType = "work";
 const InterviewExperienceType = "interview";
@@ -142,6 +142,13 @@ const resolvers = {
                 _id: ObjectId(id),
                 status: "published",
                 "archive.is_archived": false,
+            });
+
+            ctx.db.collection("view_logs").insertOne({
+                user_id: ObjectId(ctx.user._id),
+                content_id: ObjectId(id),
+                content_type: "experience",
+                created_at: new Date(),
             });
 
             if (!result) {

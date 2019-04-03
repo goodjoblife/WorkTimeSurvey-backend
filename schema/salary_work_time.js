@@ -1,5 +1,7 @@
 const { gql, UserInputError } = require("apollo-server-express");
 const R = require("ramda");
+const { ObjectId } = require("mongodb");
+
 const WorkingModel = require("../models/working_model");
 const {
     requiredNumberInRange,
@@ -97,7 +99,7 @@ const Type = gql`
 const Query = gql`
     extend type Query {
         "取得薪資工時列表 （未下關鍵字搜尋的情況），只有從最新排到最舊"
-        salary_work_times(start: Int!, limit: Int!): [SalaryWorkTime]!
+        salary_work_times(start: Int!, limit: Int!): [SalaryWorkTime!]!
     }
 `;
 
@@ -194,7 +196,7 @@ const resolvers = {
         },
     },
     Query: {
-        async salary_work_times(_, { start, limit }, { db }) {
+        async salary_work_times(_, { start, limit }, { db, user }) {
             if (!requiredNumberGreaterThanOrEqualTo(start, 0)) {
                 throw new UserInputError("start 格式錯誤");
             }
@@ -218,6 +220,19 @@ const resolvers = {
                 start,
                 limit
             );
+
+            if (salary_work_times.length > 0) {
+                const current = new Date();
+                const logs = salary_work_times.map(salaryWorkTime => ({
+                    user_id: ObjectId(user._id),
+                    content_id: ObjectId(salaryWorkTime._id),
+                    content_type: "salary_work_time",
+                    created_at: current,
+                }));
+
+                db.collection("view_logs").insertMany(logs);
+            }
+
             return salary_work_times;
         },
     },
