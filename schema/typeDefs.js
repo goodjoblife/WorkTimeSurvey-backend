@@ -2,11 +2,25 @@ const { gql } = require("apollo-server-express");
 
 const Type = gql`
     scalar Date
+
+    "發布狀態"
+    enum PublishStatus {
+        published
+        hidden
+    }
+
+    type Archive {
+        is_archived: Boolean!
+        reason: String!
+    }
 `;
 
 const Query = gql`
     type Query {
         placeholder: Boolean # For Schema Composition
+        salary_work_time_count: Int!
+        work_experience_count: Int!
+        interview_experience_count: Int!
     }
 `;
 

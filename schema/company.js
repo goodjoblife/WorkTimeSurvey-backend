@@ -5,15 +5,22 @@ const Type = gql`
     type Company {
         name: String!
 
+        "取得資料本身"
         salary_work_times: [SalaryWorkTime!]!
+        work_experiences(start: Int, limit: Int): [WorkExperience]!
+        interview_experiences(start: Int, limit: Int): [InterviewExperience]
 
+        "取得統計資訊"
         salary_work_time_statistics: SalaryWorkTimeStatistics!
+        work_experience_statistics: WorkExperienceStatistics!
+        interview_experience_statistics: InterviewExperienceStatistics!
     }
 `;
 
 const Query = gql`
     extend type Query {
         search_companies(query: String!): [Company!]!
+        company(name: String!): Company
     }
 `;
 
@@ -54,222 +61,36 @@ const resolvers = {
 
             return results;
         },
+
+        company: async (_, { name }, ctx) => {
+            const collection = ctx.db.collection("workings");
+
+            // FIXME: should query from collection `companies`
+            const result = await collection.findOne({
+                status: "published",
+                "archive.is_archived": false,
+                "company.name": name,
+            });
+
+            if (!result) {
+                return null;
+            }
+
+            return {
+                name: result.company.name,
+            };
+        },
     },
     Company: {
-        salary_work_times: async (company, _, ctx) => {
-            const collection = ctx.db.collection("workings");
-
-            const salaryWorkTimes = await collection
-                .aggregate([
-                    {
-                        $match: {
-                            status: "published",
-                            "archive.is_archived": false,
-                            "company.name": company.name,
-                        },
-                    },
-                    {
-                        $addFields: {
-                            id: "$_id",
-                        },
-                    },
-                ])
-                .toArray();
-
-            return salaryWorkTimes;
+        salary_work_times: async (company, _, { manager }) => {
+            return await manager.SalaryWorkTimeModel.byCompanyLoader.load(
+                company.name
+            );
         },
-        salary_work_time_statistics: async (company, _, ctx) => {
-            const collection = ctx.db.collection("workings");
-
-            const statistics = await collection
-                .aggregate([
-                    {
-                        $match: {
-                            status: "published",
-                            "archive.is_archived": false,
-                            "company.name": company.name,
-                        },
-                    },
-                    {
-                        $group: {
-                            _id: null,
-                            has_overtime_salary_yes: {
-                                $sum: {
-                                    $cond: [
-                                        {
-                                            $eq: [
-                                                "$has_overtime_salary",
-                                                "yes",
-                                            ],
-                                        },
-                                        1,
-                                        0,
-                                    ],
-                                },
-                            },
-                            has_overtime_salary_no: {
-                                $sum: {
-                                    $cond: [
-                                        { $eq: ["$has_overtime_salary", "no"] },
-                                        1,
-                                        0,
-                                    ],
-                                },
-                            },
-                            has_overtime_salary_dont: {
-                                $sum: {
-                                    $cond: [
-                                        {
-                                            $eq: [
-                                                "$has_overtime_salary",
-                                                "don't know",
-                                            ],
-                                        },
-                                        1,
-                                        0,
-                                    ],
-                                },
-                            },
-                            is_overtime_salary_legal_yes: {
-                                $sum: {
-                                    $cond: [
-                                        {
-                                            $eq: [
-                                                "$is_overtime_salary_legal",
-                                                "yes",
-                                            ],
-                                        },
-                                        1,
-                                        0,
-                                    ],
-                                },
-                            },
-                            is_overtime_salary_legal_no: {
-                                $sum: {
-                                    $cond: [
-                                        {
-                                            $eq: [
-                                                "$is_overtime_salary_legal",
-                                                "no",
-                                            ],
-                                        },
-                                        1,
-                                        0,
-                                    ],
-                                },
-                            },
-                            is_overtime_salary_legal_dont: {
-                                $sum: {
-                                    $cond: [
-                                        {
-                                            $eq: [
-                                                "$is_overtime_salary_legal",
-                                                "don't know",
-                                            ],
-                                        },
-                                        1,
-                                        0,
-                                    ],
-                                },
-                            },
-                            has_compensatory_dayoff_yes: {
-                                $sum: {
-                                    $cond: [
-                                        {
-                                            $eq: [
-                                                "$has_compensatory_dayoff",
-                                                "yes",
-                                            ],
-                                        },
-                                        1,
-                                        0,
-                                    ],
-                                },
-                            },
-                            has_compensatory_dayoff_no: {
-                                $sum: {
-                                    $cond: [
-                                        {
-                                            $eq: [
-                                                "$has_compensatory_dayoff",
-                                                "no",
-                                            ],
-                                        },
-                                        1,
-                                        0,
-                                    ],
-                                },
-                            },
-                            has_compensatory_dayoff_dont: {
-                                $sum: {
-                                    $cond: [
-                                        {
-                                            $eq: [
-                                                "$has_compensatory_dayoff",
-                                                "don't know",
-                                            ],
-                                        },
-                                        1,
-                                        0,
-                                    ],
-                                },
-                            },
-                            avg_week_work_time: {
-                                $avg: "$week_work_time",
-                            },
-                            avg_estimated_hourly_wage: {
-                                $avg: "$estimated_hourly_wage",
-                            },
-                            count: { $sum: 1 },
-                        },
-                    },
-                    {
-                        $project: {
-                            count: 1,
-                            average_week_work_time: "$avg_week_work_time",
-                            average_estimated_hourly_wage:
-                                "$avg_estimated_hourly_wage",
-                            has_overtime_salary_count: {
-                                $cond: [
-                                    { $gte: ["$count", 5] },
-                                    {
-                                        yes: "$has_overtime_salary_yes",
-                                        no: "$has_overtime_salary_no",
-                                        unknown: "$has_overtime_salary_dont",
-                                    },
-                                    "$skip",
-                                ],
-                            },
-                            is_overtime_salary_legal_count: {
-                                $cond: [
-                                    { $gte: ["$count", 5] },
-                                    {
-                                        yes: "$is_overtime_salary_legal_yes",
-                                        no: "$is_overtime_salary_legal_no",
-                                        unknown:
-                                            "$is_overtime_salary_legal_dont",
-                                    },
-                                    "$skip",
-                                ],
-                            },
-                            has_compensatory_dayoff_count: {
-                                $cond: [
-                                    { $gte: ["$count", 5] },
-                                    {
-                                        yes: "$has_compensatory_dayoff_yes",
-                                        no: "$has_compensatory_dayoff_no",
-                                        unknown:
-                                            "$has_compensatory_dayoff_dont",
-                                    },
-                                    "$skip",
-                                ],
-                            },
-                        },
-                    },
-                ])
-                .toArray();
-
-            return statistics[0];
+        salary_work_time_statistics: async (company, _, { manager }) => {
+            return await manager.SalaryWorkTimeModel.byCompanyLoader.load(
+                company.name
+            );
         },
     },
 };

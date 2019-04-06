@@ -8,7 +8,8 @@
     "test": "mocha --recursive libs routes test middlewares models database schema",
     "lint": "eslint \"./**/*.js\"",
     "lint:fix": "npm run lint -- --fix",
-    "migrate": "node ./bin/migrate"
+    "migrate": "node ./bin/migrate",
+    "update-schema": "node ./scripts/updateSchema.js"
   },
   "repository": {
     "type": "git",
@@ -27,6 +28,7 @@
     "config": "^1.25.1",
     "contentful": "^7.5.0",
     "cors": "^2.7.1",
+    "dataloader": "^1.4.0",
     "express": "^4.13.4",
     "graphql": "^14.1.1",
     "graphql-resolvers": "^0.3.2",

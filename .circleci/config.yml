@@ -51,7 +51,7 @@ jobs:
                 name: Install Docker client & Docker Compose
                 command: |
                     apk add --update docker py-pip
-                    pip install docker-compose
+                    pip install docker-compose==1.23.2
             - setup_remote_docker
             - run:
                 name: Build Docker Image
