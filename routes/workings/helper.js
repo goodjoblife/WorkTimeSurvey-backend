@@ -116,42 +116,9 @@ function pickupSortQuery(query) {
     return { sort_by, order, sort };
 }
 
-function validGroupSortQuery(query) {
-    if (query.group_sort_by) {
-        if (
-            !shouldIn(query.group_sort_by, [
-                "week_work_time",
-                "estimated_hourly_wage",
-            ])
-        ) {
-            throw new HttpError("query: group_sort_by error", 422);
-        }
-    }
-    if (query.group_sort_order) {
-        if (!shouldIn(query.group_sort_order, ["descending", "ascending"])) {
-            throw new HttpError("query: group_sort_order error", 422);
-        }
-    }
-}
-
-function pickupGroupSortQuery(query) {
-    const group_sort_by = query.group_sort_by || "week_work_time";
-    const group_sort_order =
-        (query.group_sort_order || "descending") === "descending" ? -1 : 1;
-    const group_sort = {
-        [`average.${group_sort_by}`]: group_sort_order,
-    };
-    const skip_sort = {
-        [group_sort_by]: group_sort_order,
-    };
-    return { group_sort_by, group_sort_order, group_sort, skip_sort };
-}
-
 module.exports = {
     checkAndUpdateQuota,
     calculateEstimatedHourlyWage,
     validSortQuery,
     pickupSortQuery,
-    validGroupSortQuery,
-    pickupGroupSortQuery,
 };
