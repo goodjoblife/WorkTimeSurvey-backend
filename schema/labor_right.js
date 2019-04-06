@@ -2,11 +2,14 @@ const { gql } = require("apollo-server-express");
 const contentful = require("contentful");
 const R = require("ramda");
 const lru = require("lru-cache");
-const config = require("config");
 
-const SPACE = config.get("CONTENTFUL_SPACE");
-const ACCESS_TOKEN = config.get("CONTENTFUL_ACCESS_TOKEN");
-const IS_PREVIEW = config.get("CONTENTFUL_PREVIEW") === "on";
+const {
+    CONTENTFUL_SPACE: SPACE,
+    CONTENTFUL_ACCESS_TOKEN: ACCESS_TOKEN,
+    CONTENTFUL_PREVIEW,
+} = process.env;
+
+const IS_PREVIEW = CONTENTFUL_PREVIEW === "on";
 
 const client = contentful.createClient({
     space: SPACE,

@@ -1,6 +1,6 @@
-const config = require("config");
 const { _sign, _verify } = require("../libs/jwt");
-const secret = config.get("JWT_SECRET");
+
+const { JWT_SECRET: secret } = process.env;
 
 async function sign(payload) {
     const opt = {

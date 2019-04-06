@@ -1,6 +1,5 @@
 const bodyParser = require("body-parser");
 const compression = require("compression");
-const config = require("config");
 const cors = require("cors");
 const express = require("express");
 const { HttpError, ObjectNotExistError } = require("./libs/errors");
@@ -15,6 +14,8 @@ const ModelManager = require("./models/manager");
 const routes = require("./routes");
 const schema = require("./schema");
 const setupGraphql = require("./utils/setup_graphql");
+
+const { REDIS_URL, CORS_ANY } = process.env;
 
 const app = express();
 
@@ -37,13 +38,13 @@ if (app.get("env") !== "test") {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(expressMongoDb());
-app.use(require("./middlewares").expressRedisDb(config.get("REDIS_URL")));
+app.use(require("./middlewares").expressRedisDb(REDIS_URL));
 app.use((req, res, next) => {
     req.manager = new ModelManager(req.db);
     next();
 });
 
-if (config.get("CORS_ANY") === "TRUE") {
+if (CORS_ANY === "TRUE") {
     app.use(cors());
 } else {
     app.use(
