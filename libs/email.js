@@ -5,12 +5,13 @@
 */
 
 const AWS = require("aws-sdk");
-const config = require("config");
 const { EmailTemplateTypeError } = require("./errors");
 const EmailTemplate = require("./email_templates/template");
 
+const { AWS_SES_SERVER_REGION } = process.env;
+
 // Set the region and API version
-AWS.config.update({ region: config.get("AWS_SES_SERVER_REGION") });
+AWS.config.update({ region: AWS_SES_SERVER_REGION });
 const SES = new AWS.SES({ apiVersion: "2010-12-01" });
 
 /* prepare constants */

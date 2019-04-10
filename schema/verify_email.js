@@ -2,7 +2,6 @@ const { gql } = require("apollo-server-express");
 const { combineResolvers } = require("graphql-resolvers");
 const qs = require("querystring");
 const winston = require("winston");
-const config = require("config");
 const { isAuthenticated } = require("../utils/resolvers");
 const { issueToken, verifyToken } = require("../utils/verify_email_token");
 const { signUser } = require("../utils/jwt");
@@ -10,7 +9,7 @@ const emailLib = require("../libs/email");
 const { AccountVerifyTemplate } = require("../libs/email_templates");
 const { VERIFIED, SENT_VERIFICATION_LINK } = require("../models/user_model");
 
-const FRONTEND_URL = config.get("FRONTEND_URL");
+const FRONTEND_URL = process.env.FRONTEND_URL;
 
 const Type = `
 `;

@@ -41,6 +41,7 @@ class SalaryWorkTimeModel {
                 "archive.is_archived": false,
                 "company.name": { $in: names },
             })
+            .sort({ created_at: -1 })
             .toArray();
     }
 
@@ -52,6 +53,7 @@ class SalaryWorkTimeModel {
                 "archive.is_archived": false,
                 job_title: { $in: job_titles },
             })
+            .sort({ created_at: -1 })
             .toArray();
     }
 }

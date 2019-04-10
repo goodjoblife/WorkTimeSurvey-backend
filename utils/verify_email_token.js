@@ -1,7 +1,6 @@
 const { ObjectId } = require("mongodb");
-const config = require("config");
 const { _sign, _verify } = require("../libs/jwt");
-const secret = config.get("VERIFY_EMAIL_JWT_SECRET");
+const secret = process.env.VERIFY_EMAIL_JWT_SECRET;
 
 const EXPIRES_IN = "7d";
 

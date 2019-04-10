@@ -4,12 +4,13 @@ chai.use(require("chai-as-promised"));
 const assert = chai.assert;
 
 const redis = require("redis");
-const config = require("config");
 const _redis = require("./redis");
+
+const { REDIS_URL } = process.env;
 
 describe("Redis Library", () => {
     describe("redisGetFB", () => {
-        const redis_client = redis.createClient(config.get("REDIS_URL"));
+        const redis_client = redis.createClient(REDIS_URL);
 
         before("Seed some data", done => {
             redis_client.set(
@@ -34,7 +35,7 @@ describe("Redis Library", () => {
     });
 
     describe("redisSetFB", () => {
-        const redis_client = redis.createClient(config.get("REDIS_URL"));
+        const redis_client = redis.createClient(REDIS_URL);
 
         it("set success", () => {
             const set = _redis.redisSetFB(redis_client, "faketoken", { id: 1 });
@@ -55,7 +56,7 @@ describe("Redis Library", () => {
     });
 
     describe("redisGetPermission", () => {
-        const redis_client = redis.createClient(config.get("REDIS_URL"));
+        const redis_client = redis.createClient(REDIS_URL);
 
         before("Seed some data", done => {
             redis_client.set("permission_facebook_mark", "1", done);
@@ -79,7 +80,7 @@ describe("Redis Library", () => {
     });
 
     describe("redisSetPermission", () => {
-        const redis_client = redis.createClient(config.get("REDIS_URL"));
+        const redis_client = redis.createClient(REDIS_URL);
 
         it("set success", () => {
             const set = _redis.redisSetPermission(
