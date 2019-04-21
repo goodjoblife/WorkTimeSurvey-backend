@@ -222,9 +222,10 @@ const resolvers = {
             );
 
             if (salary_work_times.length > 0) {
+                const userId = R.path(["_id"], user);
                 const current = new Date();
                 const logs = salary_work_times.map(salaryWorkTime => ({
-                    user_id: ObjectId(user._id),
+                    user_id: userId ? ObjectId(userId) : undefined,
                     content_id: ObjectId(salaryWorkTime._id),
                     content_type: "salary_work_time",
                     created_at: current,

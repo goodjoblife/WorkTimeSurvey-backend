@@ -1,5 +1,6 @@
 const { gql } = require("apollo-server-express");
 const { ObjectId } = require("mongodb");
+const R = require("ramda");
 
 const WorkExperienceType = "work";
 const InterviewExperienceType = "interview";
@@ -144,8 +145,10 @@ const resolvers = {
                 "archive.is_archived": false,
             });
 
+            const userId = R.path(["user", "_id"], ctx);
+
             ctx.db.collection("view_logs").insertOne({
-                user_id: ObjectId(ctx.user._id),
+                user_id: userId ? ObjectId(userId) : undefined,
                 content_id: ObjectId(id),
                 content_type: "experience",
                 created_at: new Date(),
