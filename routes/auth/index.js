@@ -44,6 +44,7 @@ router.post(
                 name,
                 facebook_id,
                 facebook: account,
+                email: account.email,
             });
         }
 
@@ -51,6 +52,13 @@ router.post(
             await user_model.collection.updateOne(
                 { _id: user._id },
                 { $set: { name: account.name } }
+            );
+        }
+
+        if (!user.email && account.email) {
+            await user_model.collection.updateOne(
+                { _id: user._id },
+                { $set: { email: account.email } }
             );
         }
 
@@ -62,6 +70,7 @@ router.post(
             user: {
                 _id: user._id,
                 facebook_id: user.facebook_id,
+                email: user.email,
             },
             token,
         });

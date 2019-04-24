@@ -23,7 +23,7 @@ function accessTokenAuth(access_token) {
                 url: "https://graph.facebook.com/v3.0/me",
                 qs: {
                     access_token,
-                    fields: "id,name",
+                    fields: "id,name,email",
                     format: "json",
                 },
             },
@@ -40,7 +40,11 @@ function accessTokenAuth(access_token) {
                     return;
                 }
 
-                resolve({ id: content.id, name: content.name });
+                resolve({
+                    id: content.id,
+                    name: content.name,
+                    email: content.email,
+                });
             }
         );
     });
