@@ -24,6 +24,7 @@ describe("Auth", () => {
 
     describe("POST /auth/facebook", () => {
         const path = "/auth/facebook";
+        const userEmail = "goodjob@gmail.com";
         let fake_user = null;
 
         before(async () => {
@@ -36,13 +37,14 @@ describe("Auth", () => {
             });
         });
 
-        it("should autheticated via correct access_token", async () => {
+        it("should authenticated via correct access_token", async () => {
             const accessTokenAuth = sandbox
                 .stub(facebook, "accessTokenAuth")
                 .withArgs("good_accesstoken")
                 .resolves({
                     id: "-1",
                     name: "markLin",
+                    email: userEmail,
                 });
 
             const res = await request(app)
@@ -56,6 +58,7 @@ describe("Auth", () => {
                 fake_user._id.toString()
             );
             assert.deepPropertyVal(res.body, "user.facebook_id", "-1");
+            assert.deepPropertyVal(res.body, "user.email", userEmail);
             assert.property(res.body, "token");
             sinon.assert.calledOnce(accessTokenAuth);
 
@@ -70,6 +73,12 @@ describe("Auth", () => {
                 "name",
                 "markLin",
                 "登入時會將缺失的 name 補上"
+            );
+            assert.propertyVal(
+                user,
+                "email",
+                userEmail,
+                "登入時會將缺失的 email 補上"
             );
         });
 

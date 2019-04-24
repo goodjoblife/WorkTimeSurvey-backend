@@ -19,7 +19,7 @@ describe("libs/facebook.js", () => {
                 .get("/v3.0/me")
                 .query({
                     access_token,
-                    fields: "id,name",
+                    fields: "id,name,email",
                     format: "json",
                 })
                 .reply(200, response);
@@ -28,13 +28,17 @@ describe("libs/facebook.js", () => {
 
         it("fullfilled if response is correct", () => {
             const access_token = "fack_access_token";
-            const response = { id: "-1", name: "test" };
+            const response = {
+                id: "-1",
+                name: "test",
+                email: "goodjob@gmail.com",
+            };
 
             nock("https://graph.facebook.com:443")
                 .get("/v3.0/me")
                 .query({
                     access_token,
-                    fields: "id,name",
+                    fields: "id,name,email",
                     format: "json",
                 })
                 .reply(200, response);
