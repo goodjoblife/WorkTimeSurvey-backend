@@ -70,7 +70,7 @@ router.post(
             user: {
                 _id: user._id,
                 facebook_id: user.facebook_id,
-                email: user.email,
+                email: user.email || account.email,
             },
             token,
         });
