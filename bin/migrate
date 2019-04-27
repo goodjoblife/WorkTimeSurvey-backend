@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 
-const migration = require('../database');
+const migration = require('../src/database');
 
 migration.main();
