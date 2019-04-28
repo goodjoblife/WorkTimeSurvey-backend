@@ -21,4 +21,5 @@ module.exports = [
     "migration-2017-09-08-create-popularExperienceLogs-collection",
     "migration-2018-08-15-add-archive-to-experiences",
     "migration-2018-08-15-add-archive-to-workings",
+    "migration-2019-04-28-move-workings-email-to-user",
 ];
