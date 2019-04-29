@@ -15,25 +15,25 @@ module.exports = async db => {
         .toArray();
 
     // validate email and get the newest email for each user
-    const userEmails = {};
+    const user_emails = {};
     for (let salary_work_time of salary_work_times) {
         const userFacebookId = salary_work_time.author.id;
-        // console.log(userId);
+
         const email = salary_work_time.author.email.trim().toLowerCase();
         if (!validateEmail(email)) {
             console.log(`invalid email: |${email}| will be skipped`);
             continue;
         }
-        if (!userEmails[userFacebookId]) {
-            userEmails[userFacebookId] = email;
+        if (!user_emails[userFacebookId]) {
+            user_emails[userFacebookId] = email;
         }
     }
 
     // update each user email
     const bulkOps = db.collection("users").initializeOrderedBulkOp();
-    for (let facebookId of Object.keys(userEmails)) {
+    for (let facebookId of Object.keys(user_emails)) {
         bulkOps.find({ facebook_id: facebookId }).update({
-            $set: { email: userEmails[facebookId] },
+            $set: { email: user_emails[facebookId] },
         });
     }
     const bulkWriteResult = await bulkOps.execute();
