@@ -22,11 +22,12 @@ class UserModel {
         return user;
     }
 
-    async create({ name, facebook_id, facebook }) {
+    async create({ name, facebook_id, facebook, email }) {
         const new_user = {
             name,
             facebook_id,
             facebook,
+            email,
         };
 
         await this.collection.insertOne(new_user);
