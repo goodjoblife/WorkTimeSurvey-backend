@@ -17,26 +17,26 @@ module.exports = async db => {
     // validate email and get the newest email for each user
     const user_emails = {};
     for (let salary_work_time of salary_work_times) {
-        const userFacebookId = salary_work_time.author.id;
+        const user_facebook_id = salary_work_time.author.id;
 
         const email = salary_work_time.author.email.trim().toLowerCase();
         if (!validateEmail(email)) {
             console.log(`invalid email: |${email}| will be skipped`);
             continue;
         }
-        if (!user_emails[userFacebookId]) {
-            user_emails[userFacebookId] = email;
+        if (!user_emails[user_facebook_id]) {
+            user_emails[user_facebook_id] = email;
         }
     }
 
     // update each user email
-    const bulkOps = db.collection("users").initializeOrderedBulkOp();
-    for (let facebookId of Object.keys(user_emails)) {
-        bulkOps.find({ facebook_id: facebookId }).update({
-            $set: { email: user_emails[facebookId] },
+    const bulk_ops = db.collection("users").initializeOrderedBulkOp();
+    for (let facebook_id of Object.keys(user_emails)) {
+        bulk_ops.find({ facebook_id: facebook_id }).update({
+            $set: { email: user_emails[facebook_id] },
         });
     }
-    const bulkWriteResult = await bulkOps.execute();
-    console.log("ok:", bulkWriteResult.ok);
-    console.log("nModified:", bulkWriteResult.nModified);
+    const bulk_write_result = await bulk_ops.execute();
+    console.log("ok:", bulk_write_result.ok);
+    console.log("nModified:", bulk_write_result.nModified);
 };
