@@ -27,6 +27,7 @@ class UserModel {
             name,
             facebook_id,
             facebook,
+            email_status: "UNVERIFIED",
         };
 
         await this.collection.insertOne(new_user);
