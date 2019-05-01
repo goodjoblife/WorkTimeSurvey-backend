@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node ./bin/www",
     "dev": "nodemon ./bin/www",
-    "test": "mocha --recursive libs routes test middlewares models database schema",
+    "test": "mocha --recursive src",
     "lint": "eslint \"./**/*.js\"",
     "lint:fix": "npm run lint -- --fix",
     "migrate": "node ./bin/migrate",
