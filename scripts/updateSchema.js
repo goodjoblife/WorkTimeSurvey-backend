@@ -4,7 +4,7 @@ const path = require("path");
 const { graphql } = require("graphql");
 const { introspectionQuery, printSchema } = require("graphql/utilities");
 
-const schema = require("../schema");
+const schema = require("../src/schema");
 
 // Save JSON of full schema introspection for Babel Relay Plugin to use
 (async () => {
