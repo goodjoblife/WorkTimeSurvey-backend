@@ -7,8 +7,8 @@ const Type = gql`
 
         "取得資料本身"
         salary_work_times: [SalaryWorkTime!]!
-        work_experiences(start: Int, limit: Int): [WorkExperience]!
-        interview_experiences(start: Int, limit: Int): [InterviewExperience]
+        work_experiences(start: Int, limit: Int): [WorkExperience!]!
+        interview_experiences(start: Int, limit: Int): [InterviewExperience!]!
 
         "取得統計資訊"
         salary_work_time_statistics: SalaryWorkTimeStatistics!
@@ -92,6 +92,11 @@ const resolvers = {
                 company.name
             );
         },
+        // TODO
+        work_experiences: () => {},
+        interview_experiences: () => {},
+        work_experience_statistics: () => {},
+        interview_experience_statistics: () => {},
     },
 };
 

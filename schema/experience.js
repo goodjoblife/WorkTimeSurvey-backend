@@ -16,7 +16,7 @@ const Type = gql`
         education: String
         salary: Salary
         title: String
-        sections: [Section]!
+        sections: [Section!]!
         created_at: Date!
         reply_count: Int!
         report_count: Int!
@@ -35,7 +35,7 @@ const Type = gql`
         education: String
         salary: Salary
         title: String
-        sections: [Section]!
+        sections: [Section!]!
         created_at: Date!
         reply_count: Int!
         report_count: Int!
@@ -64,7 +64,7 @@ const Type = gql`
         education: String
         salary: Salary
         title: String
-        sections: [Section]!
+        sections: [Section!]!
         created_at: Date!
         reply_count: Int!
         report_count: Int!
@@ -76,8 +76,8 @@ const Type = gql`
         interview_time: YearMonth!
         interview_result: String!
         overall_rating: Int!
-        interview_qas: [InterviewQuestion]
-        interview_sensitive_questions: [String]
+        interview_qas: [InterviewQuestion!]
+        interview_sensitive_questions: [String!]
     }
 
     type InterviewExperienceStatistics {

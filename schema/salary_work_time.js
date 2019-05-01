@@ -97,7 +97,7 @@ const Type = gql`
 const Query = gql`
     extend type Query {
         "取得薪資工時列表 （未下關鍵字搜尋的情況），只有從最新排到最舊"
-        salary_work_times(start: Int!, limit: Int!): [SalaryWorkTime]!
+        salary_work_times(start: Int!, limit: Int!): [SalaryWorkTime!]!
     }
 `;
 
