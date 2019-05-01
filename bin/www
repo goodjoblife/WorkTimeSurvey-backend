@@ -6,7 +6,7 @@
 
 require('dotenv').config();
 
-var app = require("../app");
+var app = require("../src/app");
 var debug = require("debug")("goodjob:server");
 var http = require("http");
 
