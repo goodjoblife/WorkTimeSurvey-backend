@@ -3,7 +3,7 @@ const { connectMongo } = require("../../models/connect");
 const { UNVERIFIED } = require("../../models/user_model");
 const migration = require("./migration-2019-05-01-add-email-status-to-users");
 
-describe("Migrate workings.author.email to users.email", function() {
+describe("Migrate add email_status to users", function() {
     let db;
 
     before(async () => {
