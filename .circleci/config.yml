@@ -41,25 +41,6 @@ jobs:
                   JWT_SECRET: DontUseMe
             - image: mongo:3
             - image: redis
-    build-apidoc:
-        docker:
-            - image: node
-        working_directory: ~/app
-        steps:
-            - checkout
-            - run:
-                name: Install Dependencies
-                command: yarn global add apidoc
-            - run:
-                name: Build
-                command: apidoc -i routes/ -o apidoc/
-            - add_ssh_keys
-            - deploy:
-                name: Deploy to github page
-                command: |
-                    if [ "${CIRCLE_PROJECT_USERNAME}" == "goodjoblife" ]; then
-                        ./.circleci/deploy-apidoc.sh
-                    fi
     build-docker:
         working_directory: ~/app
         docker:
@@ -70,11 +51,14 @@ jobs:
                 name: Install Docker client & Docker Compose
                 command: |
                     apk add --update docker py-pip
-                    pip install docker-compose
+                    pip install docker-compose==1.23.2
             - setup_remote_docker
             - run:
                 name: Build Docker Image
                 command: docker-compose -f .circleci/docker-compose.yml build
+            - run:
+                name: Login docker registry
+                command: docker login reg.goodjob.life -u ${DOCKER_REGISTRY_USER} -p ${DOCKER_REGISTRY_PASSWORD}
             - deploy:
                 name: Deploy docker image
                 command: |
@@ -113,14 +97,6 @@ workflows:
         jobs:
             - build-node-10
             - build-node-11
-            - build-apidoc:
-                filters:
-                    branches:
-                        only:
-                            - master
-                requires:
-                    - build-node-10
-                    - build-node-11
             - build-docker:
                 filters:
                     branches:
