@@ -18,7 +18,6 @@ const Type = gql`
 const Query = gql`
     type Query {
         placeholder: Boolean # For Schema Composition
-        salary_work_time_count: Int!
         work_experience_count: Int!
         interview_experience_count: Int!
     }

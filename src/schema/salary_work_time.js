@@ -98,6 +98,9 @@ const Query = gql`
     extend type Query {
         "取得薪資工時列表 （未下關鍵字搜尋的情況），只有從最新排到最舊"
         salary_work_times(start: Int!, limit: Int!): [SalaryWorkTime!]!
+
+        "薪資工時總數"
+        salary_work_time_count: Int!
     }
 `;
 
@@ -219,6 +222,19 @@ const resolvers = {
                 limit
             );
             return salary_work_times;
+        },
+        async salary_work_time_count(_, args, { manager }) {
+            const query = {
+                status: "published",
+                "archive.is_archived": false,
+            };
+
+            const SalaryWorkTimeModel = manager.SalaryWorkTimeModel;
+
+            const count = await SalaryWorkTimeModel.collection.countDocuments(
+                query
+            );
+            return count;
         },
     },
 };
