@@ -130,9 +130,15 @@ const resolvers = {
     },
     WorkExperience: {
         id: experience => experience._id,
+        job_title: experience => ({
+            name: experience.job_title,
+        }),
     },
     InterviewExperience: {
         id: experience => experience._id,
+        job_title: experience => ({
+            name: experience.job_title,
+        }),
     },
     Query: {
         async experience(_, { id }, ctx) {
