@@ -1,5 +1,6 @@
 const CompanyKeywordModel = require("./company_keyword_model");
 const CompanyModel = require("./company_model");
+const ExperienceLikeModel = require("./experience_like_model_v2");
 const JobTitleKeywordModel = require("./job_title_keyword_model");
 const SalaryWorkTimeModel = require("./salary_work_time_model");
 const UserModel = require("./user_model");
@@ -15,6 +16,10 @@ class ModelManager {
 
     get CompanyModel() {
         return new CompanyModel(this);
+    }
+
+    get ExperienceLikeModel() {
+        return new ExperienceLikeModel(this);
     }
 
     get JobTitleKeywordModel() {
