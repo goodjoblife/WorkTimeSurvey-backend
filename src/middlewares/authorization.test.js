@@ -7,7 +7,8 @@ const { connectMongo } = require("../models/connect");
 const redis = require("redis");
 const HttpError = require("../libs/errors").HttpError;
 const authorization = require("../middlewares/authorization");
-const config = require("config");
+
+const { REDIS_URL } = process.env;
 
 describe("Authorization middleware", () => {
     let db;
@@ -18,7 +19,7 @@ describe("Authorization middleware", () => {
     });
 
     before("Setup Redis", () => {
-        redis_client = redis.createClient({ url: config.get("REDIS_URL") });
+        redis_client = redis.createClient({ url: REDIS_URL });
     });
 
     // generate test data for count combinations

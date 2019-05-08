@@ -1,7 +1,7 @@
 const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
 const { ObjectId } = require("mongodb");
-const config = require("config");
-const secret = config.get("JWT_SECRET");
+
+const { JWT_SECRET: secret } = process.env;
 
 function jwtStrategy() {
     const opts = {
