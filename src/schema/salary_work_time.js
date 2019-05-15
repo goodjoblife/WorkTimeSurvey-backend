@@ -22,6 +22,7 @@ const Type = gql`
         created_at: Date!
         data_time: YearMonth!
         estimated_hourly_wage: Float
+        about_this_job: String
     }
 
     type SalaryWorkTimeStatistics {
