@@ -5,7 +5,7 @@ const { JWT_SECRET: secret } = process.env;
 async function sign(payload) {
     const opt = {
         algorithm: "HS256",
-        expiresIn: "7d",
+        expiresIn: "30d",
     };
     const token = await _sign(payload, secret, opt);
     return token;
