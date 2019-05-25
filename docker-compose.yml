@@ -14,6 +14,8 @@ services:
       - REDIS_URL=redis://redis
       - NODE_ENV=development
     # other variables, use .env
+      - JWT_SECRET=DontUseMe
+      - VERIFY_EMAIL_JWT_SECRET=DontUseMe
   mongo:
     image: mongo:3.6
   redis:
