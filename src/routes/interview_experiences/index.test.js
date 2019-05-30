@@ -439,8 +439,8 @@ describe("experiences 面試和工作經驗資訊", () => {
                     .expect(422);
             });
 
-            it("should return status 200", () =>
-                request(app)
+            it("should return status 200", async () => {
+                const res = await request(app)
                     .post("/interview_experiences")
                     .send(
                         generateInterviewExperiencePayload({
@@ -461,26 +461,25 @@ describe("experiences 面試和工作經驗資訊", () => {
                         })
                     )
                     .set("Authorization", `Bearer ${fake_user_token}`)
-                    .expect(200)
-                    .then(res => {
-                        const id = res.body.experience._id.toString();
-                        return request(app).get(`/experiences/${id}`);
-                    })
-                    .then(res => {
-                        const experience = res.body;
-                        assert.lengthOf(experience.interview_qas, 3);
-                        assert.property(experience.interview_qas[0], "answer");
-                        assert.notProperty(
-                            experience.interview_qas[1],
-                            "answer",
-                            "Because the input of answer is null"
-                        );
-                        assert.notProperty(
-                            experience.interview_qas[2],
-                            "answer",
-                            "Because the input of answer is undefined"
-                        );
-                    }));
+                    .expect(200);
+
+                const experience = await db
+                    .collection("experiences")
+                    .findOne({ _id: ObjectId(res.body.experience._id) });
+
+                assert.lengthOf(experience.interview_qas, 3);
+                assert.property(experience.interview_qas[0], "answer");
+                assert.notProperty(
+                    experience.interview_qas[1],
+                    "answer",
+                    "Because the input of answer is null"
+                );
+                assert.notProperty(
+                    experience.interview_qas[2],
+                    "answer",
+                    "Because the input of answer is undefined"
+                );
+            });
 
             it("number of question count  is less than 30", () => {
                 const qas = { question: "慘啊", answer: "給我寫個慘" };

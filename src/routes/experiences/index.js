@@ -6,7 +6,6 @@ const HttpError = require("../../libs/errors").HttpError;
 const escapeRegExp = require("lodash/escapeRegExp");
 const { ensureToObjectId } = require("../../models");
 const ExperienceModel = require("../../models/experience_model");
-const ExperienceLikeModel = require("../../models/experience_like_model");
 const {
     requireUserAuthetication,
 } = require("../../middlewares/authentication");
@@ -17,7 +16,6 @@ const {
 } = require("../../libs/validation");
 const wrap = require("../../libs/wrap");
 const { experiencesView } = require("../../view_models/get_experiences");
-const { experienceView } = require("../../view_models/get_experience");
 
 /**
  * paramter to DB query object
@@ -197,89 +195,6 @@ router.get(
         });
     })
 );
-
-const isExperienceArchived = R.path(["archive", "is_archived"]);
-
-/* eslint-disable */
-/**
- * @api {get} /experiences/:id 顯示單篇面試或工作經驗 API
- * @apiGroup Experiences
- * @apiSuccess {String="interview","work"}  type 經驗類別
- * @apiSuccess {String}  created_at 資料填寫時間
- * @apiSuccess {Object}  company 公司
- * @apiSuccess {String}  [company.id] 公司統編
- * @apiSuccess {String}  company.name 公司名稱
- * @apiSuccess {String}  job_title 職稱
- * @apiSuccess {String="整數, 0 <= N <= 50"}  [experience_in_year] 相關職務工作經驗
- * @apiSuccess {String="大學","碩士","博士","高職","五專","二專","二技","高中","國中","國小"}  [education] 最高學歷
- * @apiSuccess {String="彰化縣","嘉義市","嘉義縣","新竹市","新竹縣","花蓮縣","高雄市","基隆市","金門縣","連江縣","苗栗縣","南投縣","新北市","澎湖縣","屏東縣","臺中市","臺南市","臺北市","臺東縣","桃園市","宜蘭縣","雲林縣"}  region 面試地區/工作地區
- * @apiSuccess {String}  title 標題
- * @apiSuccess {Object[]}  sections 整篇內容
- * @apiSuccess {String}  sections.subtitle 段落標題
- * @apiSuccess {String}  sections.content 段落內容
- * @apiSuccess {Number}  like_count 讚數
- * @apiSuccess {Number}  reply_count 留言數
- * @apiSuccess {Number}  report_count 檢舉數
- * @apiSuccess {Boolean}  liked 該名使用者是否已經讚過該篇經驗分享 (若使用者未登入，則不會回傳本欄位)
- * @apiSuccess (interview) {Object}  interview_time 面試時間
- * @apiSuccess (interview) {Number}  interview_time.year 面試時間的年份
- * @apiSuccess (interview) {Number="1,2,3...12"}  interview_time.month 面試時間的月份
- * @apiSuccess (interview) {String}  interview_result 面試結果 ( `錄取` `未錄取` `沒通知`或其他 0 < length <= 100 的字串 )
- * @apiSuccess (interview) {Number}  overall_rating 整體面試滿意度 (整數, 1~5)
- * @apiSuccess (interview) {Object}  [salary] 面談薪資
- * @apiSuccess (interview) {String="year","month","day","hour"} salary.type 面談薪資種類 (面談薪資存在的話，一定有此欄位)
- * @apiSuccess (interview) {Number="整數, >= 0"} salary.amount 面談薪資金額 (面談薪資存在的話，一定有此欄位)
- * @apiSuccess (interview) {String[]}  interview_sensitive_questions 面試中提及的特別問題(較敏感/可能違法)陣列。 (可能為空陣列)
- * @apiSuccess (interview) {Object[]}  interview_qas 面試題目列表 (可能為空陣列)
- * @apiSuccess (interview) {String}  [interview_qas.question] 面試題目
- * @apiSuccess (interview) {String}  [interview_qas.answer] 面試題目的回答
- * @apiSuccess (work) {Object}  [salary] 工作薪資
- * @apiSuccess (work) {String="year","month","day","hour"} salary.type 工作薪資種類 (工作薪資存在的話，一定有此欄位)
- * @apiSuccess (work) {Number}  salary.amount 工作薪資金額 (工作薪資存在的話，一定有此欄位)
- * @apiSuccess (work) {Number}  [week_work_time] 一週工時
- * @apiSuccess (work) {Object}  data_time 離職時間或留資料的時間。若 `is_currently_employed` = `yes`則為 `created_at`  的年月，若為`no` ，則為 `job_ending_time`
- * @apiSuccess (work) {Number}  data_time.year 留資料的時間或離職的年份
- * @apiSuccess (work) {Number="1,2,3...12"}  data_time.month 留資料的時間或離職的月份
- * @apiSuccess (work) {String}  [recommend_to_others="yes","no"] 是否推薦此工作
- * @apiError (Error) 403 該篇文章已被隱藏
- * @apiError (Error) 404 該篇文章不存在
- */
-/* eslint-enable */
-router.get("/:id", [
-    wrap(async (req, res) => {
-        const id_str = req.params.id;
-        let user = null;
-
-        if (req.user) {
-            user = req.user;
-        }
-
-        const experience_model = new ExperienceModel(req.db);
-        const experience_like_model = new ExperienceLikeModel(req.db);
-
-        const experience_id = ensureToObjectId(id_str);
-        const experience = await experience_model.findOneOrFail(experience_id);
-
-        if (
-            experience.status === "hidden" ||
-            isExperienceArchived(experience)
-        ) {
-            throw new HttpError("the experience is hidden", 403);
-        }
-
-        if (user) {
-            const like = await experience_like_model.getLikeByExperienceIdAndUser(
-                id_str,
-                user
-            );
-            const result = experienceView(experience);
-            result.liked = !!like;
-            res.send(result);
-        } else {
-            res.send(experienceView(experience));
-        }
-    }),
-]);
 
 function _isLegalStatus(value) {
     const legal_status = ["published", "hidden"];
