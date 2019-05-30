@@ -84,6 +84,13 @@ setupGraphql(app, {
         manager: req.manager,
         user: req.user,
     }),
+    formatError: err => {
+        winston.warn("", {
+            message: err.message,
+            error: err,
+        });
+        return err;
+    },
 });
 
 // catch 404 and forward to error handler
