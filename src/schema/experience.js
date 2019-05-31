@@ -115,7 +115,10 @@ const Query = gql`
     extend type Query {
         "取得單篇經驗分享"
         experience(id: ID!): Experience
-        popular_experiences: [Experience!]!
+        popular_experiences(
+            returnNumber: Int = 3
+            sampleNumber: Int = 20
+        ): [Experience!]!
     }
 `;
 
@@ -185,8 +188,9 @@ const resolvers = {
             }
         },
 
-        async popular_experiences(_, __, ctx) {
+        async popular_experiences(_, args, ctx) {
             const collection = ctx.db.collection("experiences");
+            const { returnNumber, sampleNumber } = args;
 
             const thirtyDays = 30 * 24 * 60 * 60 * 1000;
 
@@ -223,11 +227,11 @@ const resolvers = {
                         },
                     },
                     {
-                        $limit: 20,
+                        $limit: sampleNumber,
                     },
                     {
                         $sample: {
-                            size: 3,
+                            size: returnNumber,
                         },
                     },
                 ])
