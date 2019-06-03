@@ -61,8 +61,8 @@ function validateCommonInputFields(data) {
     if (!requiredNonEmptyString(data.title)) {
         throw new HttpError("標題要寫喔！", 422);
     }
-    if (!stringRequireLength(data.title, 1, 25)) {
-        throw new HttpError("標題僅限 1~25 字！", 422);
+    if (!stringRequireLength(data.title, 1, 50)) {
+        throw new HttpError("標題僅限 1~50 字！", 422);
     }
 
     if (!data.sections || !(data.sections instanceof Array)) {
@@ -272,7 +272,7 @@ function pickupWorkExperience(input) {
  * @apiParam {Number="整數, >= 0"} salary.amount 薪資金額 (若有上傳薪資欄位，本欄必填)
  * @apiParam {Number="整數或浮點數。 168>=N>=0。"} [week_work_time] 一週工時
  * @apiParam {String="yes","no"} [recommend_to_others] 是否推薦此工作
- * @apiParam {String="0 < length <= 25 "} title 整篇經驗分享的標題
+ * @apiParam {String="0 < length <= 50 "} title 整篇經驗分享的標題
  * @apiParam {Object[]} sections 整篇內容
  * @apiParam {String="0 < length <= 25" || NULL} sections.subtitle 段落標題
  * @apiParam {String="0 < length <= 5000"} sections.content 段落內容

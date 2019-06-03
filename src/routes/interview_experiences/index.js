@@ -61,8 +61,8 @@ function validateCommonInputFields(data) {
     if (!requiredNonEmptyString(data.title)) {
         throw new HttpError("標題要寫喔！", 422);
     }
-    if (!stringRequireLength(data.title, 1, 25)) {
-        throw new HttpError("標題僅限 1~25 字！", 422);
+    if (!stringRequireLength(data.title, 1, 50)) {
+        throw new HttpError("標題僅限 1~50 字！", 422);
     }
 
     if (!data.sections || !(data.sections instanceof Array)) {
@@ -301,7 +301,7 @@ function validationInputFields(data) {
  * @apiParam {String="year","month","day","hour"} salary.type 面談薪資種類 (若有上傳面談薪資欄位，本欄必填)
  * @apiParam {Number="整數, >= 0"} salary.amount 面談薪資金額 (若有上傳面談薪資欄位，本欄必填)
  * @apiParam {Number="整數, 1~5"} overall_rating 整體面試滿意度
- * @apiParam {String="0 < length <= 25 "} title 整篇經驗分享的標題
+ * @apiParam {String="0 < length <= 50 "} title 整篇經驗分享的標題
  * @apiParam {Object[]} sections 整篇內容
  * @apiParam {String="0 < length <= 25" || NULL} sections.subtitle 段落標題
  * @apiParam {String="0 < length <= 5000"} sections.content 段落內容

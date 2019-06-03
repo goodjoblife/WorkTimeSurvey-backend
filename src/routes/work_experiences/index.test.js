@@ -239,12 +239,12 @@ describe("experiences 面試和工作經驗資訊", () => {
                     .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
-            it("title of word is more than 25 char , expected return 422", () =>
+            it("title of word is more than 50 char , expected return 422", () =>
                 request(app)
                     .post("/work_experiences")
                     .send(
                         generateWorkExperiencePayload({
-                            title: new Array(30).join("今"),
+                            title: new Array(60).join("今"),
                         })
                     )
                     .set("Authorization", `Bearer ${fake_user_token}`)
