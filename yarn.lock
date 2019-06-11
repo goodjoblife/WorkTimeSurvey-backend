@@ -1457,9 +1457,9 @@ elegant-spinner@^1.0.1:
   resolved "https://registry.yarnpkg.com/elegant-spinner/-/elegant-spinner-1.0.1.tgz#db043521c95d7e303fd8f345bedc3349cfb0729e"
   integrity sha1-2wQ1IcldfjA/2PNFvtwzSc+wcp4=
 
-"email-template@https://github.com/goodjoblife/email-template.git#v1.0.1":
+"email-template@https://github.com/goodjoblife/email-template.git#v1.1.1":
   version "1.0.0"
-  resolved "https://github.com/goodjoblife/email-template.git#c55b132d53bfe331a32e0a4561508e0c58718d16"
+  resolved "https://github.com/goodjoblife/email-template.git#3db961ac167142fb6b8e0ce4062ee46cc8bae2c3"
   dependencies:
     escape-html "^1.0.3"
 
