@@ -94,6 +94,32 @@ const Type = gql`
         overall_rating: Float!
     }
 
+    type InternExperience implements Experience {
+        id: ID!
+        type: ExperienceType!
+        company: Company!
+        job_title: JobTitle!
+        region: String!
+        experience_in_year: Int
+        education: String
+        salary: Salary
+        title: String
+        sections: [Section!]!
+        created_at: Date!
+        reply_count: Int!
+        report_count: Int!
+        like_count: Int!
+        status: PublishStatus!
+        archive: Archive!
+
+        "使用者是否按贊 (null 代表未傳入驗證資訊)"
+        liked: Boolean
+
+        "intern experience specific fields"
+        starting_year: Int
+        overall_rating: Float
+    }
+
     enum ExperienceType {
         work
         interview
@@ -147,8 +173,7 @@ const resolvers = {
                 return "InterviewExperience";
             }
             if (experience.type === InternExperienceType) {
-                // TODO: Intern
-                return null;
+                return "InternExperience";
             }
             return null;
         },
@@ -166,6 +191,14 @@ const resolvers = {
             name: experience.job_title,
         }),
         liked: ExperienceLikedResolver,
+    },
+    InternExperience: {
+        id: experience => experience._id,
+        job_title: experience => ({
+            name: experience.job_title,
+        }),
+        liked: ExperienceLikedResolver,
+        region: experience => experience.region || "",
     },
     Query: {
         async experience(_, { id }, ctx) {
