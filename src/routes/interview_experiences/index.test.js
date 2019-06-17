@@ -219,12 +219,12 @@ describe("experiences 面試和工作經驗資訊", () => {
                     .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(422));
 
-            it("title of word is more than 25 char , expected return 422", () =>
+            it("title of word is more than 50 char , expected return 422", () =>
                 request(app)
                     .post("/interview_experiences")
                     .send(
                         generateInterviewExperiencePayload({
-                            title: new Array(30).join("今"),
+                            title: new Array(60).join("今"),
                         })
                     )
                     .set("Authorization", `Bearer ${fake_user_token}`)
@@ -300,8 +300,8 @@ describe("experiences 面試和工作經驗資訊", () => {
                     .set("Authorization", `Bearer ${fake_user_token}`)
                     .expect(200));
 
-            it("subtitle of word is more than 25 char, expected return 422", () => {
-                const words = new Array(40).join("慘");
+            it("subtitle of word is more than 50 char, expected return 422", () => {
+                const words = new Array(60).join("慘");
                 return request(app)
                     .post("/interview_experiences")
                     .send(

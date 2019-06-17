@@ -29,7 +29,7 @@
     "cors": "^2.7.1",
     "dataloader": "^1.4.0",
     "dotenv": "^7.0.0",
-    "email-template": "https://github.com/goodjoblife/email-template.git#v1.0.1",
+    "email-template": "https://github.com/goodjoblife/email-template.git#v1.1.1",
     "express": "^4.13.4",
     "graphql": "^14.1.1",
     "graphql-resolvers": "^0.3.2",
