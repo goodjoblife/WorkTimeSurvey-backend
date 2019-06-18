@@ -25,6 +25,10 @@ describe("Query popular_experiences", () => {
                         content: "我很醜",
                     },
                 ],
+                status: "published",
+                archive: {
+                    is_archived: false,
+                },
             },
             {
                 created_at: new Date(),
@@ -35,6 +39,10 @@ describe("Query popular_experiences", () => {
                         content: "可是我很溫柔",
                     },
                 ],
+                status: "published",
+                archive: {
+                    is_archived: false,
+                },
             },
             {
                 created_at: new Date(),
@@ -45,6 +53,10 @@ describe("Query popular_experiences", () => {
                         content: "外表冷漠",
                     },
                 ],
+                status: "published",
+                archive: {
+                    is_archived: false,
+                },
             },
             {
                 created_at: new Date(new Date() - 100 * 24 * 60 * 60 * 1000),
@@ -55,6 +67,10 @@ describe("Query popular_experiences", () => {
                         content: "內心狂熱",
                     },
                 ],
+                status: "published",
+                archive: {
+                    is_archived: false,
+                },
             },
         ])
     );
