@@ -51,7 +51,7 @@ const Type = gql`
 
         "work experience specific fields"
         data_time: YearMonth
-        week_work_time: Int
+        week_work_time: Float
         recommend_to_others: String
     }
 
@@ -203,6 +203,10 @@ const resolvers = {
     Query: {
         async experience(_, { id }, ctx) {
             const collection = ctx.db.collection("experiences");
+
+            if (!ObjectId.isValid(id)) {
+                return null;
+            }
 
             const result = await collection.findOne({
                 _id: ObjectId(id),
