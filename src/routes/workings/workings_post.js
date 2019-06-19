@@ -334,6 +334,9 @@ function validateSalaryData(req) {
     if (custom.salary_amount < 0) {
         throw new HttpError("薪資不小於0", 422);
     }
+    if (custom.salary_amount > 100000000) {
+        throw new HttpError("薪資不大於一億", 422);
+    }
 
     if (!data.experience_in_year) {
         throw new HttpError("相關職務工作經驗必填", 422);
