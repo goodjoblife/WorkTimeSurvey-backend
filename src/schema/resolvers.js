@@ -14,4 +14,5 @@ module.exports = merge([
     require("./salary_work_time").resolvers,
     require("./user").resolvers,
     require("./verify_email").resolvers,
+    require("./view_log").resolvers,
 ]);

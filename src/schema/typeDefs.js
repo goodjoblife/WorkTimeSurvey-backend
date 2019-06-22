@@ -45,4 +45,5 @@ module.exports = [
     ...require("./salary_work_time").types,
     ...require("./user").types,
     ...require("./verify_email").types,
+    ...require("./view_log").types,
 ];

@@ -4,6 +4,7 @@ const ExperienceLikeModel = require("./experience_like_model_v2");
 const JobTitleKeywordModel = require("./job_title_keyword_model");
 const SalaryWorkTimeModel = require("./salary_work_time_model");
 const UserModel = require("./user_model");
+const ViewLogModel = require("./view_log_model");
 
 class ModelManager {
     constructor(db) {
@@ -35,6 +36,10 @@ class ModelManager {
 
     get UserModel() {
         return new UserModel(this);
+    }
+
+    get ViewLogModel() {
+        return new ViewLogModel(this);
     }
 }
 
