@@ -74,9 +74,17 @@ const resolvers = {
                 jobTitle.name
             );
         },
+        work_experiences: async (jobTitle, _, { manager }) => {
+            return await manager.WorkExperienceModel.byJobTitleLoader.load(
+                jobTitle.name
+            );
+        },
+        interview_experiences: async (jobTitle, _, { manager }) => {
+            return await manager.InterviewExperienceModel.byJobTitleLoader.load(
+                jobTitle.name
+            );
+        },
         // TODO
-        work_experiences: () => {},
-        interview_experiences: () => {},
         work_experience_statistics: () => {},
         interview_experience_statistics: () => {},
     },
