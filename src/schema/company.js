@@ -63,22 +63,35 @@ const resolvers = {
         },
 
         company: async (_, { name }, ctx) => {
-            const collection = ctx.db.collection("workings");
+            const salaryWorkTimeCollection = ctx.db.collection("workings");
+            const experienceCollection = ctx.db.collection("experiences");
 
-            // FIXME: should query from collection `companies`
-            const result = await collection.findOne({
+            // 只要 salaryWorkTime / experiences 任一邊有出現，就不會回傳 null
+            const companyFromSalaryWorkTime = await salaryWorkTimeCollection.findOne(
+                {
+                    status: "published",
+                    "archive.is_archived": false,
+                    "company.name": name,
+                }
+            );
+
+            const companyFromExperience = await experienceCollection.findOne({
                 status: "published",
                 "archive.is_archived": false,
                 "company.name": name,
             });
 
-            if (!result) {
+            if (companyFromSalaryWorkTime) {
+                return {
+                    name: companyFromSalaryWorkTime.company.name,
+                };
+            } else if (companyFromExperience) {
+                return {
+                    name: companyFromExperience.company.name,
+                };
+            } else {
                 return null;
             }
-
-            return {
-                name: result.company.name,
-            };
         },
     },
     Company: {
@@ -92,9 +105,16 @@ const resolvers = {
                 company.name
             );
         },
-        // TODO
-        work_experiences: () => {},
-        interview_experiences: () => {},
+        work_experiences: async (company, _, { manager }) => {
+            return await manager.WorkExperienceModel.byCompanyLoader.load(
+                company.name
+            );
+        },
+        interview_experiences: async (company, _, { manager }) => {
+            return await manager.InterviewExperienceModel.byCompanyLoader.load(
+                company.name
+            );
+        },
         work_experience_statistics: () => {},
         interview_experience_statistics: () => {},
     },
