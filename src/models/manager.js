@@ -44,11 +44,27 @@ class ModelManager {
     }
 
     get WorkExperienceModel() {
-        return new ExperienceModel(this, ExperienceModel.TYPE.WORK);
+        // Note: if you use dataLoader in Model, you can only create
+        // one instance of model.
+        if (!this._work_experience_model) {
+            this._work_experience_model = new ExperienceModel(
+                this,
+                ExperienceModel.TYPE.WORK
+            );
+        }
+        return this._work_experience_model;
     }
 
     get InterviewExperienceModel() {
-        return new ExperienceModel(this, ExperienceModel.TYPE.INTERVIEW);
+        // Note: if you use dataLoader in Model, you can only create
+        // one instance of model.
+        if (!this._interview_experience_model) {
+            this._interview_experience_model = new ExperienceModel(
+                this,
+                ExperienceModel.TYPE.INTERVIEW
+            );
+        }
+        return this._interview_experience_model;
     }
 }
 
