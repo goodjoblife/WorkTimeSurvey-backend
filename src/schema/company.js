@@ -81,14 +81,8 @@ const resolvers = {
                 "company.name": name,
             });
 
-            if (companyFromSalaryWorkTime) {
-                return {
-                    name: companyFromSalaryWorkTime.company.name,
-                };
-            } else if (companyFromExperience) {
-                return {
-                    name: companyFromExperience.company.name,
-                };
+            if (companyFromSalaryWorkTime || companyFromExperience) {
+                return { name };
             } else {
                 return null;
             }
