@@ -41,10 +41,17 @@ docker-compose up
 > 注意：請不要拿正式的資料庫做網址，測試將會清除一切資料
 > Notice: The test will clean all the data in db, please DON'T use db in production
 
+測試所有程式碼
 ```sh
 docker-compose run --rm node npm test
 ```
 
+單獨測試一個 testing file
+```sh
+docker-compose run --rm node npm run test:one FILE_PATH
+```
+
+測試所有 coding style
 ```sh
 docker-compose run --rm node npm run lint
 docker-compose run --rm node npm run lint:fix
