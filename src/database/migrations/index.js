@@ -23,4 +23,5 @@ module.exports = [
     "migration-2018-08-15-add-archive-to-workings",
     "migration-2019-04-28-move-workings-email-to-user",
     "migration-2019-05-01-add-email-status-to-users",
+    "migration-2019-07-02-add-missing-report-count",
 ];
