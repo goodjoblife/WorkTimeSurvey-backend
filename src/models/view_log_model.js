@@ -24,3 +24,4 @@ class ViewLogModel {
 module.exports = ViewLogModel;
 module.exports.VIEW_ACTION = "VIEW";
 module.exports.SALARY_WORK_TIME_TYPE = "SALARY_WORK_TIME";
+module.exports.EXPERIENCE_TYPE = "EXPERIENCE";
