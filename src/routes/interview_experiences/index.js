@@ -4,6 +4,7 @@ const router = express.Router();
 const HttpError = require("../../libs/errors").HttpError;
 const winston = require("winston");
 const ExperienceModel = require("../../models/experience_model");
+const UserModel = require("../../models/user_model");
 const helper = require("../company_helper");
 const {
     requiredNonEmptyString,
@@ -11,6 +12,7 @@ const {
     optionalNumber,
     shouldIn,
     stringRequireLength,
+    validateEmail,
 } = require("../../libs/validation");
 const wrap = require("../../libs/wrap");
 const {
@@ -108,6 +110,12 @@ function validateCommonInputFields(data) {
             ])
         ) {
             throw new HttpError("最高學歷範圍錯誤", 422);
+        }
+    }
+
+    if (data.email) {
+        if (!validateEmail(data.email)) {
+            throw new HttpError("E-mail 格式錯誤", 422);
         }
     }
 }
@@ -213,6 +221,7 @@ function pickupInterviewExperience(input) {
         experience_in_year,
         education,
         status,
+        email,
         // interview part
         interview_time,
         interview_qas,
@@ -229,6 +238,7 @@ function pickupInterviewExperience(input) {
         sections,
         // experience_in_year optional
         // education optional
+        // email optional
         interview_time,
         // interview_qas optional
         interview_result,
@@ -271,6 +281,11 @@ function pickupInterviewExperience(input) {
     } else {
         partial.status = "published";
     }
+
+    if (email) {
+        partial.email = email;
+    }
+
     return partial;
 }
 
@@ -312,6 +327,7 @@ function validationInputFields(data) {
     "曾詢問家庭狀況","曾詢問婚姻狀況","生育計畫",
     "曾要求繳交身分證","曾要求繳交保證金","曾詢問宗教信仰",
     "或其他 0 < length <= 20 的字串"} [interview_sensitive_questions] 面試中提及的特別問題陣列(較敏感/可能違法)
+ * @apiParam {String} [email] 使用者訂閱資訊的 email
  * @apiParam {String="published","hidden"} [status="published"] 該篇文章的狀態
  * @apiSuccess {Boolean} success 是否上傳成功
  * @apiSuccess {Object} experience 經驗分享物件
@@ -351,7 +367,17 @@ router.post("/", [
         );
         experience.company = company;
 
+        // insert data into experiences collection
         await experience_model.createExperience(experience);
+
+        // update user email & subscribeEmail, if email field exists
+        if (experience.email) {
+            const user_model = new UserModel(req.manager);
+            await user_model.updateSubscribeEmail(
+                req.user._id,
+                experience.email
+            );
+        }
 
         winston.info("interview experiences insert data success", {
             id: experience._id,
