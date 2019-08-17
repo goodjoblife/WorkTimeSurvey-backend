@@ -162,6 +162,25 @@ describe("experiences 面試和工作經驗資訊", () => {
             assert.equal(experience.archive.reason, "");
         });
 
+        it("should success, and update user.subscribeEmail and user.email if email is given", async () => {
+            const email = "goodjob@goodjob.life";
+            await request(app)
+                .post("/interview_experiences")
+                .send({
+                    ...generateInterviewExperiencePayload(),
+                    email,
+                })
+                .set("Authorization", `Bearer ${fake_user_token}`)
+                .expect(200);
+
+            const user = await db
+                .collection("users")
+                .findOne({ _id: fake_user._id });
+
+            assert.equal(user.subscribeEmail, true);
+            assert.equal(user.email, email);
+        });
+
         describe("Common Data Validation Part", () => {
             it("company_query or company_id is required", () =>
                 request(app)
@@ -332,6 +351,17 @@ describe("experiences 面試和工作經驗資訊", () => {
                     .send(
                         generateInterviewExperiencePayload({
                             education: "無業遊名",
+                        })
+                    )
+                    .set("Authorization", `Bearer ${fake_user_token}`)
+                    .expect(422));
+
+            it("email format is invalid , expected return 422", () =>
+                request(app)
+                    .post("/interview_experiences")
+                    .send(
+                        generateInterviewExperiencePayload({
+                            email: "goodjob@ gmail.",
                         })
                     )
                     .set("Authorization", `Bearer ${fake_user_token}`)
