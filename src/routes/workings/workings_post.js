@@ -1,8 +1,10 @@
 const winston = require("winston");
+const UserModel = require("../../models/user_model");
 const helper = require("./helper");
 const companyHelper = require("../company_helper");
 const recommendation = require("../../libs/recommendation");
 const { HttpError, ObjectIdError } = require("../../libs/errors");
+const { validateEmail } = require("../../libs/validation");
 
 function checkBodyField(req, field) {
     if (
@@ -64,6 +66,7 @@ function collectData(req, res, next) {
         // issue: https://github.com/goodjoblife/WorkTimeSurvey-backend/issues/476
         "campaign_name",
         "about_this_job",
+        "email",
     ].forEach(field => {
         if (checkBodyField(req, field)) {
             working[field] = req.body[field];
@@ -213,6 +216,12 @@ function validateCommonData(req) {
             )
         ) {
             throw new HttpError("extra_info data structure is wrong", 422);
+        }
+    }
+
+    if (data.email) {
+        if (!validateEmail(data.email)) {
+            throw new HttpError("E-mail 格式錯誤", 422);
         }
     }
 }
@@ -508,6 +517,12 @@ async function main(req, res) {
         response_data.queries_count = queries_count;
 
         await collection.insert(working);
+
+        // update user email & subscribeEmail, if email field exists
+        if (working.email) {
+            const user_model = new UserModel(req.manager);
+            await user_model.updateSubscribeEmail(req.user._id, working.email);
+        }
 
         winston.info("workings insert data success", {
             id: working._id,

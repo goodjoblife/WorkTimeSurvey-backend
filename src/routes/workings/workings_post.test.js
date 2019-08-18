@@ -195,6 +195,24 @@ describe("POST /workings", () => {
                 .expect(200);
             assert.equal(res.body.working.status, "published");
         });
+
+        it("should update user.email & user.subscribeEmail field if email is given", async () => {
+            const email = "goodjob@goodjob.life";
+            await request(app)
+                .post(path)
+                .send({
+                    ...generateSalaryRelatedPayload(),
+                    email,
+                })
+                .set("Authorization", `Bearer ${fake_user_token}`)
+                .expect(200);
+            const user = await db
+                .collection("users")
+                .findOne({ _id: fake_user._id });
+
+            assert.equal(user.subscribeEmail, true);
+            assert.equal(user.email, email);
+        });
     });
 
     describe("Common Data Validation Part", () => {
@@ -531,6 +549,17 @@ describe("POST /workings", () => {
                 "about_this_job",
                 "I like my job"
             );
+        });
+
+        it("should be 422 if email is invalid", async () => {
+            await request(app)
+                .post("/workings")
+                .send({
+                    ...generateWorkingTimeRelatedPayload(),
+                    email: "goodjob@ goodjob.",
+                })
+                .set("Authorization", `Bearer ${fake_user_token}`)
+                .expect(422);
         });
     });
 
