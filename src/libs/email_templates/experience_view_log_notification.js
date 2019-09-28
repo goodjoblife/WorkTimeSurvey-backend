@@ -8,8 +8,8 @@ const schema = Joi.object().keys({
         .min(1)
         .max(30)
         .required(),
-    nViews: Joi.number().required(),
     experience: Joi.object({
+        viewCount: Joi.number().required(),
         title: Joi.string().required(),
         content: Joi.string().required(),
         type: Joi.string().valid("interview", "work", "intern"),
@@ -17,8 +17,8 @@ const schema = Joi.object().keys({
             .uri()
             .required(),
     }),
-    ctaBtnText: Joi.string().required(),
-    ctaBtnUrl: Joi.string()
+    callToActionButtonText: Joi.string().required(),
+    callToActionButtonUrl: Joi.string()
         .uri()
         .required(),
     relatedFieldKeyword: Joi.string().required(),
