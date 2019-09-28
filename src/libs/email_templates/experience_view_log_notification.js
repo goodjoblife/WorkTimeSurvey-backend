@@ -42,12 +42,47 @@ class ExperienceViewLogNotificationTemplate extends EmailTemplate {
         }
     }
 
-    genBodyHTML(variables) {
-        return experience_view_log_notification.genBodyHTML(variables);
+    /**
+     * @param {string} variables.username 使用者名稱
+     * @param {string} variables.experience.viewCount 職場經驗瀏覽次數
+     * @param {string} variables.experience.title 職場經驗標題
+     * @param {string} variables.experience.type 職場經驗種類
+     * @param {string} variables.experience.content 職場經驗內容
+     * @param {string} variables.experience.url 職場經驗網址
+     * @param {string} variables.callToActionButtonText call to action 按鈕的文字
+     * @param {string} variables.callToActionButtonUrl call to action 按鈕的網址
+     * @param {string} variables.relatedFieldKeyword 相關領域的關鍵字
+     * @param {string} variables.relatedExperiences 相關領域文章列表
+     * @param {string} variables.relatedExperiences[i].title 相關領域文章標題
+     * @param {string} variables.relatedExperiences[i].url 相關領域文章連結
+     */
+    genBodyHTML({
+        username,
+        experience,
+        callToActionButtonText,
+        callToActionButtonUrl,
+        relatedFieldKeyword,
+        relatedExperiences,
+    }) {
+        return experience_view_log_notification.genBodyHTML({
+            username,
+            experience,
+            callToActionButtonText,
+            callToActionButtonUrl,
+            relatedFieldKeyword,
+            relatedExperiences,
+        });
     }
 
-    genSubject(variables) {
-        return experience_view_log_notification.genSubject(variables);
+    /**
+     * @param {string} variables.username 使用者名稱
+     * @param {string} variables.experience.viewCount 職場經驗瀏覽次數
+     */
+    genSubject({ username, experience }) {
+        return experience_view_log_notification.genSubject({
+            username,
+            experience,
+        });
     }
 }
 
