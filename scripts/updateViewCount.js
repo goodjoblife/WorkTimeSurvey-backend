@@ -26,6 +26,11 @@ const ModelManager = require("../src/models/manager");
                         $group: {
                             _id: "$content_id",
                             content_id: { $first: "$content_id" },
+                            logs: {
+                                $push: {
+                                    _id: "$_id",
+                                },
+                            },
                             view_count: { $sum: 1 },
                         },
                     },
@@ -34,10 +39,25 @@ const ModelManager = require("../src/models/manager");
 
             await pMap(
                 salaryWorkTimeViewLogs,
-                viewLog => {
-                    return SalaryWorkTimeModel.collection.updateOne(
+                async viewLog => {
+                    await SalaryWorkTimeModel.collection.updateOne(
                         { _id: ObjectId(viewLog.content_id) },
                         { $inc: { view_count: viewLog.view_count } }
+                    );
+
+                    const logIds = viewLog.logs.map(log => ObjectId(log._id));
+
+                    await ViewLogModel.collection.updateMany(
+                        {
+                            _id: {
+                                $in: logIds,
+                            },
+                        },
+                        {
+                            $set: {
+                                has_calculated_view_count: true,
+                            },
+                        }
                     );
                 },
                 { concurrency: 10 }
@@ -56,6 +76,11 @@ const ModelManager = require("../src/models/manager");
                         $group: {
                             _id: "$content_id",
                             content_id: { $first: "$content_id" },
+                            logs: {
+                                $push: {
+                                    _id: "$_id",
+                                },
+                            },
                             view_count: { $sum: 1 },
                         },
                     },
@@ -64,24 +89,30 @@ const ModelManager = require("../src/models/manager");
 
             await pMap(
                 experienceViewLogs,
-                viewLog => {
-                    return db
+                async viewLog => {
+                    await db
                         .collection("experiences")
                         .updateOne(
                             { _id: ObjectId(viewLog.content_id) },
                             { $inc: { view_count: viewLog.view_count } }
                         );
+
+                    const logIds = viewLog.logs.map(log => ObjectId(log._id));
+
+                    await ViewLogModel.collection.updateMany(
+                        {
+                            _id: {
+                                $in: logIds,
+                            },
+                        },
+                        {
+                            $set: {
+                                has_calculated_view_count: true,
+                            },
+                        }
+                    );
                 },
                 { concurrency: 10 }
-            );
-
-            await ViewLogModel.collection.updateMany(
-                { content_type: { $in: ["SALARY_WORK_TIME", "EXPERIENCE"] } },
-                {
-                    $set: {
-                        has_calculated_view_count: true,
-                    },
-                }
             );
 
             if (
