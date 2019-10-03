@@ -12,24 +12,22 @@ const schema = Joi.object().keys({
         viewCount: Joi.number().required(),
         title: Joi.string().required(),
         content: Joi.string().required(),
-        type: Joi.string().valid("interview", "work", "intern"),
+        typeName: Joi.string().valid("面試經驗", "工作心得", "實習心得"),
         url: Joi.string()
             .uri()
             .required(),
     }),
-    callToActionButtonText: Joi.string().required(),
-    callToActionButtonUrl: Joi.string()
-        .uri()
-        .required(),
-    relatedFieldKeyword: Joi.string().required(),
-    relatedExperiences: Joi.array().items(
-        Joi.object({
-            title: Joi.string().required(),
-            url: Joi.string()
-                .uri()
-                .required(),
-        })
-    ),
+    relatedContent: Joi.object({
+        keyword: Joi.string().required(),
+        experiences: Joi.array().items(
+            Joi.object({
+                title: Joi.string().required(),
+                url: Joi.string()
+                    .uri()
+                    .required(),
+            })
+        ),
+    }),
 });
 
 class ExperienceViewLogNotificationTemplate extends EmailTemplate {
@@ -44,39 +42,28 @@ class ExperienceViewLogNotificationTemplate extends EmailTemplate {
 
     /**
      * @param {string} variables.username 使用者名稱
-     * @param {string} variables.experience.viewCount 職場經驗瀏覽次數
+     * @param {string} variables.experience.viewCount 瀏覽次數
      * @param {string} variables.experience.title 職場經驗標題
-     * @param {string} variables.experience.type 職場經驗種類
+     * @param {string=["面試經驗", "工作心得", "實習心得"]} variables.experience.typeName 職場經驗種類
      * @param {string} variables.experience.content 職場經驗內容
      * @param {string} variables.experience.url 職場經驗網址
-     * @param {string} variables.callToActionButtonText call to action 按鈕的文字
-     * @param {string} variables.callToActionButtonUrl call to action 按鈕的網址
-     * @param {string} variables.relatedFieldKeyword 相關領域的關鍵字
-     * @param {string} variables.relatedExperiences 相關領域文章列表
-     * @param {string} variables.relatedExperiences[i].title 相關領域文章標題
-     * @param {string} variables.relatedExperiences[i].url 相關領域文章連結
+     * @param {string} variables.relatedContent.keyword 相關領域的關鍵字
+     * @param {string} variables.relatedContent.experiences 相關領域文章列表
+     * @param {string} variables.relatedContent.experiences[i].title 相關領域文章標題
+     * @param {string} variables.relatedContent.experiences[i].url 相關領域文章連結
      */
-    genBodyHTML({
-        username,
-        experience,
-        callToActionButtonText,
-        callToActionButtonUrl,
-        relatedFieldKeyword,
-        relatedExperiences,
-    }) {
+    genBodyHTML({ username, experience, relatedContent }) {
         return experience_view_log_notification.genBodyHTML({
             username,
             experience,
-            callToActionButtonText,
-            callToActionButtonUrl,
-            relatedFieldKeyword,
-            relatedExperiences,
+            relatedContent,
         });
     }
 
     /**
      * @param {string} variables.username 使用者名稱
-     * @param {string} variables.experience.viewCount 職場經驗瀏覽次數
+     * @param {string} variables.experience.viewCount 瀏覽次數
+     * @param {string=["面試經驗", "工作心得", "實習心得"]} variables.experience.typeName 職場經驗種類
      */
     genSubject({ username, experience }) {
         return experience_view_log_notification.genSubject({
