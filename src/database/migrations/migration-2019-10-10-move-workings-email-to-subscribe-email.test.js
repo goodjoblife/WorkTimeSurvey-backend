@@ -1,6 +1,6 @@
 const { assert } = require("chai");
 const { connectMongo } = require("../../models/connect");
-const migration = require("./migration-2019-10-10-move-workings-email-to-subscrib-email");
+const migration = require("./migration-2019-10-10-move-workings-email-to-subscribe-email");
 
 describe("Migrate workings.author.email to users.email", function() {
     const user1Email = "goodjob@gmail.com";
