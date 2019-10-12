@@ -4,7 +4,7 @@ module.exports = async db => {
     // get all emails from salary work times
     const salary_work_times = await db
         .collection("workings")
-        .find({ "author.email": { $ne: null } })
+        .find({ "author.email": { $exists: true } })
         .sort({ created_at: -1 })
         .project({ _id: 1, author: 1 })
         .toArray();
