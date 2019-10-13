@@ -34,6 +34,38 @@ const Type = gql`
         is_overtime_salary_legal_count: YesNoOrUnknownCount
     }
 
+    "單一公司內不同職稱的平均薪資資料"
+    type companyAverageSalary {
+        company: Company!
+        average_salaries: [AverageSalary!]
+    }
+
+    "單一公司單一職稱的平均薪資"
+    type AverageSalary {
+        job_title: JobTitle!
+        company: Company!
+        data_num: Int!
+        average_salary: Salary!
+    }
+
+    "單一職稱的薪資分布"
+    type JobTitleSalaryDistribution {
+        job_title: JobTitle!
+        bins: [SalaryDistributionBin!]
+    }
+
+    "薪資分布的一個 bin（範圍＋數量）"
+    type SalaryDistributionBin {
+        data_num: Int!
+        range: SalaryRange!
+    }
+
+    type SalaryRange {
+        type: SalaryType!
+        from: Int!
+        to: Int!
+    }
+
     type YearMonth {
         year: Int!
         month: Int!
@@ -102,6 +134,12 @@ const Query = gql`
 
         "薪資工時總數"
         salary_work_time_count: Int!
+
+        "取得資料數較多的公司，不同職業的平均薪資"
+        popular_company_average_salary: [companyAverageSalary]
+
+        "取得資料數較多的職稱的薪資分佈"
+        popular_job_title_salary_distribution: [JobTitleSalaryDistribution]
     }
 `;
 
@@ -236,6 +274,178 @@ const resolvers = {
                 query
             );
             return count;
+        },
+        // TODO
+        popular_company_average_salary() {
+            return [
+                {
+                    company: {
+                        name: "聯發科",
+                    },
+                    average_salaries: [
+                        {
+                            job_title: {
+                                name: "軟體工程師",
+                            },
+                            company: {
+                                name: "聯發科",
+                            },
+                            data_num: 5,
+                            average_salary: {
+                                amount: 76000,
+                                type: "month",
+                            },
+                        },
+                        {
+                            job_title: {
+                                name: "數位IC設計工程師",
+                            },
+                            company: {
+                                name: "聯發科",
+                            },
+                            data_num: 10,
+                            average_salary: {
+                                amount: 100000,
+                                type: "month",
+                            },
+                        },
+                        {
+                            job_title: {
+                                name: "硬體工程師",
+                            },
+                            company: {
+                                name: "聯發科",
+                            },
+                            data_num: 10,
+                            average_salary: {
+                                amount: 80000,
+                                type: "month",
+                            },
+                        },
+                    ],
+                },
+                {
+                    company: {
+                        name: "大立光",
+                    },
+                    average_salaries: [
+                        {
+                            job_title: {
+                                name: "製程工程師",
+                            },
+                            company: {
+                                name: "大立光",
+                            },
+                            data_num: 5,
+                            average_salary: {
+                                amount: 76000,
+                                type: "month",
+                            },
+                        },
+                        {
+                            job_title: {
+                                name: "數位IC設計工程師",
+                            },
+                            company: {
+                                name: "大立光",
+                            },
+                            data_num: 10,
+                            average_salary: {
+                                amount: 100000,
+                                type: "month",
+                            },
+                        },
+                        {
+                            job_title: {
+                                name: "硬體工程師",
+                            },
+                            company: {
+                                name: "大立光",
+                            },
+                            data_num: 10,
+                            average_salary: {
+                                amount: 80000,
+                                type: "month",
+                            },
+                        },
+                    ],
+                },
+            ];
+        },
+        // TODO
+        popular_job_title_salary_distribution() {
+            return [
+                {
+                    job_title: {
+                        name: "軟體工程師",
+                    },
+                    bins: [
+                        {
+                            data_num: 5,
+                            range: {
+                                type: "month",
+                                from: 30000,
+                                to: 40000,
+                            },
+                        },
+                        {
+                            data_num: 10,
+                            range: {
+                                type: "month",
+                                from: 40000,
+                                to: 50000,
+                            },
+                        },
+                        {
+                            data_num: 20,
+                            range: {
+                                type: "month",
+                                from: 50000,
+                                to: 60000,
+                            },
+                        },
+                        {
+                            data_num: 10,
+                            range: {
+                                type: "month",
+                                from: 60000,
+                                to: 70000,
+                            },
+                        },
+                    ],
+                },
+                {
+                    job_title: {
+                        name: "設計師",
+                    },
+                    bins: [
+                        {
+                            data_num: 10,
+                            range: {
+                                type: "month",
+                                from: 30000,
+                                to: 40000,
+                            },
+                        },
+                        {
+                            data_num: 20,
+                            range: {
+                                type: "month",
+                                from: 40000,
+                                to: 50000,
+                            },
+                        },
+                        {
+                            data_num: 5,
+                            range: {
+                                type: "month",
+                                from: 50000,
+                                to: 60000,
+                            },
+                        },
+                    ],
+                },
+            ];
         },
     },
 };
