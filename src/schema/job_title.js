@@ -14,6 +14,9 @@ const Type = gql`
         salary_work_time_statistics: SalaryWorkTimeStatistics!
         work_experience_statistics: WorkExperienceStatistics!
         interview_experience_statistics: InterviewExperienceStatistics!
+
+        "該職業的薪資分布"
+        salary_distribution: JobTitleSalaryDistribution!
     }
 `;
 
@@ -87,6 +90,48 @@ const resolvers = {
         // TODO
         work_experience_statistics: () => {},
         interview_experience_statistics: () => {},
+
+        salary_distribution: () => {
+            return {
+                job_title: {
+                    name: "軟體工程師",
+                },
+                bins: [
+                    {
+                        data_num: 5,
+                        range: {
+                            type: "month",
+                            from: 30000,
+                            to: 40000,
+                        },
+                    },
+                    {
+                        data_num: 10,
+                        range: {
+                            type: "month",
+                            from: 40000,
+                            to: 50000,
+                        },
+                    },
+                    {
+                        data_num: 20,
+                        range: {
+                            type: "month",
+                            from: 50000,
+                            to: 60000,
+                        },
+                    },
+                    {
+                        data_num: 10,
+                        range: {
+                            type: "month",
+                            from: 60000,
+                            to: 70000,
+                        },
+                    },
+                ],
+            };
+        },
     },
 };
 
