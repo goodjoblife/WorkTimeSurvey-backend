@@ -23,6 +23,9 @@ type Company {
   salary_work_time_statistics: SalaryWorkTimeStatistics!
   work_experience_statistics: WorkExperienceStatistics!
   interview_experience_statistics: InterviewExperienceStatistics!
+
+  """該公司內不同職業的平均薪資"""
+  job_title_average_salaries: [AverageSalary!]
 }
 
 """單一公司內不同職稱的平均薪資資料"""
@@ -168,6 +171,9 @@ type JobTitle {
   salary_work_time_statistics: SalaryWorkTimeStatistics!
   work_experience_statistics: WorkExperienceStatistics!
   interview_experience_statistics: InterviewExperienceStatistics!
+
+  """該職業的薪資分布"""
+  salary_distribution: JobTitleSalaryDistribution!
 }
 
 """單一職稱的薪資分布"""
