@@ -1,6 +1,6 @@
 /*
  * ViewLog {
- *   _id            : ObjectId!
+ *   _id         : ObjectId!
  *   user_id     : ObjectId
  *   action      : String!
  *   content_id  : ObjectId!
