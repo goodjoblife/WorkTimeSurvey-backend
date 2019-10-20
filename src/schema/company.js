@@ -16,7 +16,7 @@ const Type = gql`
         interview_experience_statistics: InterviewExperienceStatistics!
 
         "該公司內不同職業的平均薪資"
-        job_title_average_salaries: [AverageSalary!]
+        average_salaries: [AverageSalary!]
     }
 `;
 
@@ -24,6 +24,7 @@ const Query = gql`
     extend type Query {
         search_companies(query: String!): [Company!]!
         company(name: String!): Company
+        popular_companies: [Company!]!
     }
 `;
 
@@ -90,6 +91,11 @@ const resolvers = {
                 return null;
             }
         },
+        popular_companies: async () => [
+            {
+                name: "聯發科",
+            },
+        ],
     },
     Company: {
         salary_work_times: async (company, _, { manager }) => {
@@ -115,43 +121,43 @@ const resolvers = {
         work_experience_statistics: () => {},
         interview_experience_statistics: () => {},
 
-        job_title_average_salaries: () => {
+        average_salaries: () => {
             return [
                 {
-                    job_title: {
-                        name: "軟體工程師",
-                    },
                     company: {
                         name: "聯發科",
                     },
-                    data_num: 5,
-                    average_salary: {
+                    job_title: {
+                        name: "軟體工程師",
+                    },
+                    data_count: 5,
+                    salary: {
                         amount: 76000,
                         type: "month",
                     },
                 },
                 {
-                    job_title: {
-                        name: "數位IC設計工程師",
-                    },
                     company: {
                         name: "聯發科",
                     },
-                    data_num: 10,
-                    average_salary: {
+                    job_title: {
+                        name: "數位IC設計工程師",
+                    },
+                    data_count: 10,
+                    salary: {
                         amount: 100000,
                         type: "month",
                     },
                 },
                 {
-                    job_title: {
-                        name: "硬體工程師",
-                    },
                     company: {
                         name: "聯發科",
                     },
-                    data_num: 10,
-                    average_salary: {
+                    job_title: {
+                        name: "硬體工程師",
+                    },
+                    data_count: 10,
+                    salary: {
                         amount: 80000,
                         type: "month",
                     },

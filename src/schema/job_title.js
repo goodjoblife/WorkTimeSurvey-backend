@@ -16,7 +16,7 @@ const Type = gql`
         interview_experience_statistics: InterviewExperienceStatistics!
 
         "該職業的薪資分布"
-        salary_distribution: JobTitleSalaryDistribution!
+        salary_distribution: SalaryDistribution!
     }
 `;
 
@@ -24,6 +24,7 @@ const Query = gql`
     extend type Query {
         search_job_titles(query: String!): [JobTitle!]!
         job_title(name: String!): JobTitle
+        popular_job_titles: [JobTitle!]!
     }
 `;
 
@@ -65,6 +66,11 @@ const resolvers = {
                 name: result.job_title,
             };
         },
+        popular_job_titles: async () => [
+            {
+                name: "軟體工程師",
+            },
+        ],
     },
     JobTitle: {
         salary_work_times: async (jobTitle, _, { manager }) => {
@@ -93,12 +99,9 @@ const resolvers = {
 
         salary_distribution: () => {
             return {
-                job_title: {
-                    name: "軟體工程師",
-                },
                 bins: [
                     {
-                        data_num: 5,
+                        data_count: 5,
                         range: {
                             type: "month",
                             from: 30000,
@@ -106,7 +109,7 @@ const resolvers = {
                         },
                     },
                     {
-                        data_num: 10,
+                        data_count: 10,
                         range: {
                             type: "month",
                             from: 40000,
@@ -114,7 +117,7 @@ const resolvers = {
                         },
                     },
                     {
-                        data_num: 20,
+                        data_count: 20,
                         range: {
                             type: "month",
                             from: 50000,
@@ -122,7 +125,7 @@ const resolvers = {
                         },
                     },
                     {
-                        data_num: 10,
+                        data_count: 10,
                         range: {
                             type: "month",
                             from: 60000,
