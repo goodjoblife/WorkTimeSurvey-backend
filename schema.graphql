@@ -5,10 +5,10 @@ type Archive {
 
 """單一公司單一職稱的平均薪資"""
 type AverageSalary {
-  job_title: JobTitle!
   company: Company!
-  data_num: Int!
-  average_salary: Salary!
+  job_title: JobTitle!
+  data_count: Int!
+  salary: Salary!
 }
 
 type Company {
@@ -25,12 +25,6 @@ type Company {
   interview_experience_statistics: InterviewExperienceStatistics!
 
   """該公司內不同職業的平均薪資"""
-  job_title_average_salaries: [AverageSalary!]
-}
-
-"""單一公司內不同職稱的平均薪資資料"""
-type companyAverageSalary {
-  company: Company!
   average_salaries: [AverageSalary!]
 }
 
@@ -173,13 +167,7 @@ type JobTitle {
   interview_experience_statistics: InterviewExperienceStatistics!
 
   """該職業的薪資分布"""
-  salary_distribution: JobTitleSalaryDistribution!
-}
-
-"""單一職稱的薪資分布"""
-type JobTitleSalaryDistribution {
-  job_title: JobTitle!
-  bins: [SalaryDistributionBin!]
+  salary_distribution: SalaryDistribution!
 }
 
 type LaborRight {
@@ -213,6 +201,12 @@ enum Order {
   ASCENDING
 }
 
+"""加班頻率的次數"""
+type OvertimeFrequencyCount {
+  overtime_frequency: Int!
+  count: Int!
+}
+
 """發布狀態"""
 enum PublishStatus {
   published
@@ -227,6 +221,9 @@ type Query {
   search_companies(query: String!): [Company!]!
   company(name: String!): Company
 
+  """目前用途：取得薪資資料前 topN 多的公司，且至少有三種職稱各至少有三筆資料"""
+  popular_companies(limit: Int = 5): [Company!]!
+
   """取得單篇經驗分享"""
   experience(id: ID!): Experience
   popular_experiences(
@@ -237,6 +234,9 @@ type Query {
   job_title_keywords(limit: Int = 5): [String!]!
   search_job_titles(query: String!): [JobTitle!]!
   job_title(name: String!): JobTitle
+
+  """目前用途：取得薪資資料前 topN 多的職稱"""
+  popular_job_titles(limit: Int = 5): [JobTitle!]!
   labor_rights: [LaborRight!]!
   labor_right(id: ID!): LaborRight
   me: User!
@@ -246,12 +246,6 @@ type Query {
 
   """薪資工時總數"""
   salary_work_time_count: Int!
-
-  """取得資料數較多的公司，不同職業的平均薪資"""
-  popular_company_average_salary: [companyAverageSalary]
-
-  """取得資料數較多的職稱的薪資分佈"""
-  popular_job_title_salary_distribution: [JobTitleSalaryDistribution]
 }
 
 type Reply {
@@ -275,9 +269,14 @@ type Salary {
   amount: Int
 }
 
+"""薪資分布"""
+type SalaryDistribution {
+  bins: [SalaryDistributionBin!]
+}
+
 """薪資分布的一個 bin（範圍＋數量）"""
 type SalaryDistributionBin {
-  data_num: Int!
+  data_count: Int!
   range: SalaryRange!
 }
 
@@ -319,6 +318,7 @@ type SalaryWorkTimeStatistics {
   has_compensatory_dayoff_count: YesNoOrUnknownCount
   has_overtime_salary_count: YesNoOrUnknownCount
   is_overtime_salary_legal_count: YesNoOrUnknownCount
+  overtime_frequency_count: [OvertimeFrequencyCount!]!
 }
 
 enum SearchBy {
