@@ -24,7 +24,9 @@ const Query = gql`
     extend type Query {
         search_companies(query: String!): [Company!]!
         company(name: String!): Company
-        popular_companies: [Company!]!
+
+        "目前用途：取得薪資資料前 topN 多的公司，且至少有三種職稱各至少有三筆資料"
+        popular_companies(limit: Int = 5): [Company!]!
     }
 `;
 

@@ -24,7 +24,9 @@ const Query = gql`
     extend type Query {
         search_job_titles(query: String!): [JobTitle!]!
         job_title(name: String!): JobTitle
-        popular_job_titles: [JobTitle!]!
+
+        "目前用途：取得薪資資料前 topN 多的職稱"
+        popular_job_titles(limit: Int = 5): [JobTitle!]!
     }
 `;
 
