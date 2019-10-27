@@ -9,11 +9,11 @@ const ExperienceModel = require("../src/models/experience_model");
 const {
     ExperienceViewLogNotificationTemplate,
 } = require("../src/libs/email_templates");
-const { sendEmailsFromTemplate } = require("../src/libs/email");
+const emailLib = require("../src/libs/email");
 
 const GOODJOB_DOMAIN = "https://www.goodjob.life";
 
-(async () => {
+const sendPerformanceEmail = async () => {
     const { db, client } = await connectMongo();
     const experienceModel = new ExperienceModel(db);
 
@@ -114,7 +114,7 @@ const GOODJOB_DOMAIN = "https://www.goodjob.life";
                                     (old.experience_id.toString() ===
                                         experience._id.toString() &&
                                         old.threshold < experience.viewCount &&
-                                        old.threshold !== threshold)
+                                        old.threshold < threshold)
                             )
                         )
                         .map(experience => ({
@@ -177,7 +177,11 @@ const GOODJOB_DOMAIN = "https://www.goodjob.life";
                     const { emailLogs, email, subject } = emailInfo;
                     const current = new Date();
 
-                    await sendEmailsFromTemplate([email], template, subject);
+                    await emailLib.sendEmailsFromTemplate(
+                        [email],
+                        template,
+                        subject
+                    );
 
                     await db.collection("email_logs").insertOne({
                         user_id: ObjectId(emailLogs.userId),
@@ -196,4 +200,6 @@ const GOODJOB_DOMAIN = "https://www.goodjob.life";
     } finally {
         await client.close();
     }
-})();
+};
+
+module.exports = sendPerformanceEmail;
