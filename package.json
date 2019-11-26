@@ -75,7 +75,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+      "pre-commit": "npm run update-schema && git add schema.graphql && lint-staged"
     }
   },
   "lint-staged": {

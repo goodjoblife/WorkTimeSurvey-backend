@@ -8,8 +8,8 @@ type Company {
 
   """取得資料本身"""
   salary_work_times: [SalaryWorkTime!]!
-  work_experiences(start: Int, limit: Int): [WorkExperience]!
-  interview_experiences(start: Int, limit: Int): [InterviewExperience]
+  work_experiences(start: Int, limit: Int): [WorkExperience!]!
+  interview_experiences(start: Int, limit: Int): [InterviewExperience!]!
 
   """取得統計資訊"""
   salary_work_time_statistics: SalaryWorkTimeStatistics!
@@ -44,13 +44,19 @@ interface Experience {
   education: String
   salary: Salary
   title: String
-  sections: [Section]!
+  sections: [Section!]!
   created_at: Date!
   reply_count: Int!
   report_count: Int!
   like_count: Int!
   status: PublishStatus!
   archive: Archive!
+
+  """使用者是否按贊 (null 代表未傳入驗證資訊)"""
+  liked: Boolean
+
+  """preview，通常是列表時可以用來簡單預覽內容"""
+  preview: String
 }
 
 enum ExperienceType {
@@ -65,6 +71,35 @@ enum Gender {
   other
 }
 
+type InternExperience implements Experience {
+  id: ID!
+  type: ExperienceType!
+  company: Company!
+  job_title: JobTitle!
+  region: String!
+  experience_in_year: Int
+  education: String
+  salary: Salary
+  title: String
+  sections: [Section!]!
+  created_at: Date!
+  reply_count: Int!
+  report_count: Int!
+  like_count: Int!
+  status: PublishStatus!
+  archive: Archive!
+
+  """使用者是否按贊 (null 代表未傳入驗證資訊)"""
+  liked: Boolean
+
+  """preview，通常是列表時可以用來簡單預覽內容"""
+  preview: String
+
+  """intern experience specific fields"""
+  starting_year: Int
+  overall_rating: Float
+}
+
 type InterviewExperience implements Experience {
   id: ID!
   type: ExperienceType!
@@ -75,7 +110,7 @@ type InterviewExperience implements Experience {
   education: String
   salary: Salary
   title: String
-  sections: [Section]!
+  sections: [Section!]!
   created_at: Date!
   reply_count: Int!
   report_count: Int!
@@ -83,12 +118,18 @@ type InterviewExperience implements Experience {
   status: PublishStatus!
   archive: Archive!
 
+  """使用者是否按贊 (null 代表未傳入驗證資訊)"""
+  liked: Boolean
+
+  """preview，通常是列表時可以用來簡單預覽內容"""
+  preview: String
+
   """interview experience specific fields"""
   interview_time: YearMonth!
   interview_result: String!
   overall_rating: Int!
-  interview_qas: [InterviewQuestion]
-  interview_sensitive_questions: [String]
+  interview_qas: [InterviewQuestion!]
+  interview_sensitive_questions: [String!]
 }
 
 type InterviewExperienceStatistics {
@@ -106,8 +147,8 @@ type JobTitle {
 
   """取得資料本身"""
   salary_work_times: [SalaryWorkTime!]!
-  work_experiences(start: Int, limit: Int): [WorkExperience]!
-  interview_experiences(start: Int, limit: Int): [InterviewExperience]
+  work_experiences(start: Int, limit: Int): [WorkExperience!]!
+  interview_experiences(start: Int, limit: Int): [InterviewExperience!]!
 
   """取得統計資訊"""
   salary_work_time_statistics: SalaryWorkTimeStatistics!
@@ -115,8 +156,30 @@ type JobTitle {
   interview_experience_statistics: InterviewExperienceStatistics!
 }
 
+type LaborRight {
+  id: ID!
+  title: String!
+  coverUrl: String
+  order: Int
+  description: String!
+  content: String!
+  seoTitle: String
+  seoDescription: String
+  seoText: String
+  nPublicPages: Int
+  descriptionInPermissionBlock: String
+}
+
 type Mutation {
   placeholder: Boolean
+
+  """發送驗證信"""
+  sendVerifyEmail(input: SendVerifyEmailInput!): SendVerifyEmailPayload!
+
+  """驗證信箱"""
+  verifyEmail(input: VerifyEmailInput!): VerifyEmailPayload!
+  viewSalaryWorkTimes(input: ViewSalaryWorkTimesInput!): ViewSalaryWorkTimesPayload!
+  viewExperiences(input: ViewExperiencesInput!): ViewExperiencesPayload!
 }
 
 enum Order {
@@ -132,7 +195,6 @@ enum PublishStatus {
 
 type Query {
   placeholder: Boolean
-  salary_work_time_count: Int!
   work_experience_count: Int!
   interview_experience_count: Int!
   company_keywords(limit: Int = 5): [String!]!
@@ -141,13 +203,23 @@ type Query {
 
   """取得單篇經驗分享"""
   experience(id: ID!): Experience
+  popular_experiences(
+    """返回的資料筆數，須 <= 20"""
+    returnNumber: Int = 3
+    sampleNumber: Int = 20
+  ): [Experience!]!
   job_title_keywords(limit: Int = 5): [String!]!
   search_job_titles(query: String!): [JobTitle!]!
   job_title(name: String!): JobTitle
+  labor_rights: [LaborRight!]!
+  labor_right(id: ID!): LaborRight
   me: User!
 
   """取得薪資工時列表 （未下關鍵字搜尋的情況），只有從最新排到最舊"""
-  salary_work_times: [SalaryWorkTime]!
+  salary_work_times(start: Int!, limit: Int!): [SalaryWorkTime!]!
+
+  """薪資工時總數"""
+  salary_work_time_count: Int!
 }
 
 type Reply {
@@ -193,12 +265,13 @@ type SalaryWorkTime {
   created_at: Date!
   data_time: YearMonth!
   estimated_hourly_wage: Float
+  about_this_job: String
 }
 
 type SalaryWorkTimeStatistics {
   count: Int!
-  average_week_work_time: Float!
-  average_estimated_hourly_wage: Float!
+  average_week_work_time: Float
+  average_estimated_hourly_wage: Float
   has_compensatory_dayoff_count: YesNoOrUnknownCount
   has_overtime_salary_count: YesNoOrUnknownCount
   is_overtime_salary_legal_count: YesNoOrUnknownCount
@@ -212,6 +285,18 @@ enum SearchBy {
 type Section {
   subtitle: String
   content: String
+}
+
+input SendVerifyEmailInput {
+  """要驗證的使用者的信箱"""
+  email: String!
+
+  """驗證成功後，按鈕會導向的 URL"""
+  redirect_url: String!
+}
+
+type SendVerifyEmailPayload {
+  status: String!
 }
 
 enum SortBy {
@@ -241,6 +326,36 @@ type User {
   salary_work_time_count: Int!
 }
 
+input VerifyEmailInput {
+  token: String!
+}
+
+type VerifyEmailPayload {
+  """登入用 token"""
+  token: String!
+
+  """驗證成功後，按鈕會導向的 URL，與 SendVerifyEmailInput 一致"""
+  redirect_url: String!
+}
+
+input ViewExperiencesInput {
+  content_ids: [String!]!
+  referrer: String
+}
+
+type ViewExperiencesPayload {
+  status: String!
+}
+
+input ViewSalaryWorkTimesInput {
+  content_ids: [String!]!
+  referrer: String
+}
+
+type ViewSalaryWorkTimesPayload {
+  status: String!
+}
+
 type WorkExperience implements Experience {
   id: ID!
   type: ExperienceType!
@@ -251,7 +366,7 @@ type WorkExperience implements Experience {
   education: String
   salary: Salary
   title: String
-  sections: [Section]!
+  sections: [Section!]!
   created_at: Date!
   reply_count: Int!
   report_count: Int!
@@ -259,9 +374,15 @@ type WorkExperience implements Experience {
   status: PublishStatus!
   archive: Archive!
 
+  """使用者是否按贊 (null 代表未傳入驗證資訊)"""
+  liked: Boolean
+
+  """preview，通常是列表時可以用來簡單預覽內容"""
+  preview: String
+
   """work experience specific fields"""
   data_time: YearMonth
-  week_work_time: Int
+  week_work_time: Float
   recommend_to_others: String
 }
 
