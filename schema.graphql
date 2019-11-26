@@ -3,14 +3,6 @@ type Archive {
   reason: String!
 }
 
-"""單一公司單一職稱的平均薪資"""
-type AverageSalary {
-  company: Company!
-  job_title: JobTitle!
-  data_count: Int!
-  salary: Salary!
-}
-
 type Company {
   name: String!
 
@@ -23,9 +15,6 @@ type Company {
   salary_work_time_statistics: SalaryWorkTimeStatistics!
   work_experience_statistics: WorkExperienceStatistics!
   interview_experience_statistics: InterviewExperienceStatistics!
-
-  """該公司內不同職業的平均薪資"""
-  average_salaries: [AverageSalary!]
 }
 
 scalar Date
@@ -151,6 +140,12 @@ type InterviewExperienceStatistics {
 type InterviewQuestion {
   question: String
   answer: String
+}
+
+type JobAverageSalary {
+  job_title: JobTitle!
+  average_salary: Salary!
+  data_count: Int!
 }
 
 type JobTitle {
@@ -319,6 +314,9 @@ type SalaryWorkTimeStatistics {
   has_overtime_salary_count: YesNoOrUnknownCount
   is_overtime_salary_legal_count: YesNoOrUnknownCount
   overtime_frequency_count: [OvertimeFrequencyCount!]!
+
+  """不同職業的平均薪資"""
+  job_average_salaries: [JobAverageSalary!]!
 }
 
 enum SearchBy {

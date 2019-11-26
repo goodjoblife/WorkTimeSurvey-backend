@@ -33,20 +33,21 @@ const Type = gql`
         has_overtime_salary_count: YesNoOrUnknownCount
         is_overtime_salary_legal_count: YesNoOrUnknownCount
         overtime_frequency_count: [OvertimeFrequencyCount!]!
+
+        "不同職業的平均薪資"
+        job_average_salaries: [JobAverageSalary!]!
+    }
+
+    type JobAverageSalary {
+        job_title: JobTitle!
+        average_salary: Salary!
+        data_count: Int!
     }
 
     "加班頻率的次數"
     type OvertimeFrequencyCount {
         overtime_frequency: Int!
         count: Int!
-    }
-
-    "單一公司單一職稱的平均薪資"
-    type AverageSalary {
-        company: Company!
-        job_title: JobTitle!
-        data_count: Int!
-        salary: Salary!
     }
 
     "薪資分布"
@@ -246,6 +247,41 @@ const resolvers = {
                 {
                     overtime_frequency: 0,
                     count: 30,
+                },
+            ];
+        },
+        // TODO
+        job_average_salaries: () => {
+            return [
+                {
+                    job_title: {
+                        name: "軟體工程師",
+                    },
+                    data_count: 5,
+                    average_salary: {
+                        amount: 76000,
+                        type: "month",
+                    },
+                },
+                {
+                    job_title: {
+                        name: "數位IC設計工程師",
+                    },
+                    data_count: 10,
+                    average_salary: {
+                        amount: 100000,
+                        type: "month",
+                    },
+                },
+                {
+                    job_title: {
+                        name: "硬體工程師",
+                    },
+                    data_count: 10,
+                    average_salary: {
+                        amount: 80000,
+                        type: "month",
+                    },
                 },
             ];
         },

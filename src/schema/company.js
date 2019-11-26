@@ -14,9 +14,6 @@ const Type = gql`
         salary_work_time_statistics: SalaryWorkTimeStatistics!
         work_experience_statistics: WorkExperienceStatistics!
         interview_experience_statistics: InterviewExperienceStatistics!
-
-        "該公司內不同職業的平均薪資"
-        average_salaries: [AverageSalary!]
     }
 `;
 
@@ -122,50 +119,6 @@ const resolvers = {
         },
         work_experience_statistics: () => {},
         interview_experience_statistics: () => {},
-
-        average_salaries: () => {
-            return [
-                {
-                    company: {
-                        name: "聯發科",
-                    },
-                    job_title: {
-                        name: "軟體工程師",
-                    },
-                    data_count: 5,
-                    salary: {
-                        amount: 76000,
-                        type: "month",
-                    },
-                },
-                {
-                    company: {
-                        name: "聯發科",
-                    },
-                    job_title: {
-                        name: "數位IC設計工程師",
-                    },
-                    data_count: 10,
-                    salary: {
-                        amount: 100000,
-                        type: "month",
-                    },
-                },
-                {
-                    company: {
-                        name: "聯發科",
-                    },
-                    job_title: {
-                        name: "硬體工程師",
-                    },
-                    data_count: 10,
-                    salary: {
-                        amount: 80000,
-                        type: "month",
-                    },
-                },
-            ];
-        },
     },
 };
 
