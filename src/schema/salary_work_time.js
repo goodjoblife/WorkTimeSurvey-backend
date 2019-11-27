@@ -1,5 +1,6 @@
 const { gql, UserInputError } = require("apollo-server-express");
 const R = require("ramda");
+const countBy = require("lodash/countBy");
 const WorkingModel = require("../models/working_model");
 const {
     requiredNumberInRange,
@@ -234,14 +235,27 @@ const resolvers = {
                 unknown: counts["don't know"] || 0,
             };
         },
-        // TODO
-        overtime_frequency_count: () => {
-            return {
-                seldom: 0,
-                sometimes: 10,
-                usually: 4,
-                almost_everyday: 0,
-            };
+        overtime_frequency_count: salary_work_times => {
+            // 把 DB 中 overtime_frequency 的 0 ~ 3 mapping 到有語意的字串
+            const mapping = [
+                "seldom",
+                "sometimes",
+                "usually",
+                "almost_everyday",
+            ];
+            const count = countBy(
+                salary_work_times,
+                salary_work_time => mapping[salary_work_time.overtime_frequency]
+            );
+            return Object.assign(
+                {
+                    seldom: 0,
+                    sometimes: 0,
+                    usually: 0,
+                    almost_everyday: 0,
+                },
+                count
+            );
         },
         // TODO
         job_average_salaries: () => {
