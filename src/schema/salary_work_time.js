@@ -32,7 +32,6 @@ const Type = gql`
         has_compensatory_dayoff_count: YesNoOrUnknownCount
         has_overtime_salary_count: YesNoOrUnknownCount
         is_overtime_salary_legal_count: YesNoOrUnknownCount
-        overtime_frequency_count: [OvertimeFrequencyCount!]!
 
         "不同職業的平均薪資"
         job_average_salaries: [JobAverageSalary!]!
@@ -42,12 +41,6 @@ const Type = gql`
         job_title: JobTitle!
         average_salary: Salary!
         data_count: Int!
-    }
-
-    "加班頻率的次數"
-    type OvertimeFrequencyCount {
-        overtime_frequency: Int!
-        count: Int!
     }
 
     "薪資分布"
@@ -228,27 +221,6 @@ const resolvers = {
                 no: counts["no"] || 0,
                 unknown: counts["don't know"] || 0,
             };
-        },
-        // TODO
-        overtime_frequency_count: () => {
-            return [
-                {
-                    overtime_frequency: 0,
-                    count: 5,
-                },
-                {
-                    overtime_frequency: 1,
-                    count: 10,
-                },
-                {
-                    overtime_frequency: 2,
-                    count: 20,
-                },
-                {
-                    overtime_frequency: 0,
-                    count: 30,
-                },
-            ];
         },
         // TODO
         job_average_salaries: () => {
