@@ -196,6 +196,20 @@ enum Order {
   ASCENDING
 }
 
+type OvertimeFrequencyCount {
+  """對應到表單的「幾乎不」"""
+  seldom: Int!
+
+  """對應到表單的「偶爾」"""
+  sometimes: Int!
+
+  """對應到表單的「經常」"""
+  usually: Int!
+
+  """對應到表單的「幾乎每天」"""
+  almost_everyday: Int!
+}
+
 """發布狀態"""
 enum PublishStatus {
   published
@@ -307,6 +321,7 @@ type SalaryWorkTimeStatistics {
   has_compensatory_dayoff_count: YesNoOrUnknownCount
   has_overtime_salary_count: YesNoOrUnknownCount
   is_overtime_salary_legal_count: YesNoOrUnknownCount
+  overtime_frequency_count: OvertimeFrequencyCount
 
   """不同職業的平均薪資"""
   job_average_salaries: [JobAverageSalary!]!

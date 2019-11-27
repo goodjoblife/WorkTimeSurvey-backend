@@ -32,6 +32,7 @@ const Type = gql`
         has_compensatory_dayoff_count: YesNoOrUnknownCount
         has_overtime_salary_count: YesNoOrUnknownCount
         is_overtime_salary_legal_count: YesNoOrUnknownCount
+        overtime_frequency_count: OvertimeFrequencyCount
 
         "不同職業的平均薪資"
         job_average_salaries: [JobAverageSalary!]!
@@ -74,6 +75,17 @@ const Type = gql`
         yes: Int!
         no: Int!
         unknown: Int!
+    }
+
+    type OvertimeFrequencyCount {
+        "對應到表單的「幾乎不」"
+        seldom: Int!
+        "對應到表單的「偶爾」"
+        sometimes: Int!
+        "對應到表單的「經常」"
+        usually: Int!
+        "對應到表單的「幾乎每天」"
+        almost_everyday: Int!
     }
 
     enum Gender {
@@ -220,6 +232,15 @@ const resolvers = {
                 yes: counts["yes"] || 0,
                 no: counts["no"] || 0,
                 unknown: counts["don't know"] || 0,
+            };
+        },
+        // TODO
+        overtime_frequency_count: () => {
+            return {
+                seldom: 0,
+                sometimes: 10,
+                usually: 4,
+                almost_everyday: 0,
             };
         },
         // TODO
