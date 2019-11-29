@@ -1,7 +1,7 @@
 const { assert } = require("chai");
 const { ObjectId } = require("mongodb");
 const { connectMongo } = require("../../models/connect");
-const migration = require("./migration-2019-10-10-move-workings-email-to-subscribe-email");
+const migration = require("./migration-2019-11-28-update-user-name");
 
 describe("Migrate user.facebook.name or user.google.name to user.name", function() {
     let db;

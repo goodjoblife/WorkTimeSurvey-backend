@@ -9,7 +9,7 @@ module.exports = async db => {
                 {
                     $or: [
                         { "facebook.name": { $exists: true } },
-                        { "google.name": { exists: true } },
+                        { "google.name": { $exists: true } },
                     ],
                 },
             ],
