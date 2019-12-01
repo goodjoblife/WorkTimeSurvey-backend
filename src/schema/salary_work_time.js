@@ -249,7 +249,9 @@ const resolvers = {
                 almost_everyday: 0,
             };
             salary_work_times.forEach(salary_work_time => {
-                counter[mapping[salary_work_time.overtime_frequency]] += 1;
+                if (salary_work_time.overtime_frequency !== undefined) {
+                    counter[mapping[salary_work_time.overtime_frequency]] += 1;
+                }
             });
             return counter;
         },
