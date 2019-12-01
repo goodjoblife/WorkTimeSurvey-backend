@@ -1,6 +1,5 @@
 const { gql, UserInputError } = require("apollo-server-express");
 const R = require("ramda");
-const countBy = require("lodash/countBy");
 const WorkingModel = require("../models/working_model");
 const {
     requiredNumberInRange,
@@ -243,19 +242,16 @@ const resolvers = {
                 "usually",
                 "almost_everyday",
             ];
-            const count = countBy(
-                salary_work_times,
-                salary_work_time => mapping[salary_work_time.overtime_frequency]
-            );
-            return Object.assign(
-                {
-                    seldom: 0,
-                    sometimes: 0,
-                    usually: 0,
-                    almost_everyday: 0,
-                },
-                count
-            );
+            const counter = {
+                seldom: 0,
+                sometimes: 0,
+                usually: 0,
+                almost_everyday: 0,
+            };
+            salary_work_times.forEach(salary_work_time => {
+                counter[mapping[salary_work_time.overtime_frequency]] += 1;
+            });
+            return counter;
         },
         // TODO
         job_average_salaries: () => {
