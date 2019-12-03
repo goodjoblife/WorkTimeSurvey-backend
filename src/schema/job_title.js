@@ -68,11 +68,36 @@ const resolvers = {
                 name: result.job_title,
             };
         },
-        popular_job_titles: async () => [
-            {
-                name: "軟體工程師",
-            },
-        ],
+        popular_job_titles: async (_, { limit }, ctx) => {
+            const collection = ctx.db.collection("workings");
+            const result = await collection
+                .aggregate([
+                    {
+                        $match: {
+                            estimated_monthly_wage: {
+                                $exists: true,
+                                $ne: null,
+                            },
+                        },
+                    },
+                    {
+                        $group: {
+                            _id: { job_title: "$job_title" },
+                            count: { $sum: 1 },
+                        },
+                    },
+                    { $sort: { count: -1 } },
+                    { $limit: limit },
+                    {
+                        $project: {
+                            name: "$_id.job_title",
+                            count: "$count",
+                        },
+                    },
+                ])
+                .toArray();
+            return result;
+        },
     },
     JobTitle: {
         salary_work_times: async (jobTitle, _, { manager }) => {
@@ -99,42 +124,74 @@ const resolvers = {
         work_experience_statistics: () => {},
         interview_experience_statistics: () => {},
 
-        salary_distribution: () => {
+        salary_distribution: async (records, _, ctx) => {
+            const BUCKET_SIZE = 5;
+            const collection = ctx.db.collection("workings");
+            const job_title = records.name || records._id.job_title;
+            let count = records.count;
+            if (typeof count === "undefined") {
+                count = await collection
+                    .find({
+                        estimated_monthly_wage: {
+                            $exists: true,
+                            $ne: null,
+                        },
+                        job_title,
+                    })
+                    .count();
+            }
+            const result = await collection
+                .aggregate([
+                    {
+                        $match: {
+                            estimated_monthly_wage: {
+                                $exists: true,
+                                $ne: null,
+                            },
+                            job_title,
+                        },
+                    },
+                    { $sort: { estimated_monthly_wage: 1 } },
+                    { $skip: Math.floor(count * 0.05) },
+                    { $limit: Math.floor(count * 0.9) },
+                    {
+                        $project: {
+                            wage: "$estimated_monthly_wage",
+                        },
+                    },
+                ])
+                .toArray();
+            console.log(job_title, count);
+            const minValue = result[0].wage;
+            const maxValue = result[result.length - 1].wage;
+            const binSize =
+                1000 * Math.floor((maxValue - minValue) / BUCKET_SIZE / 1000);
+            const bins = new Array(BUCKET_SIZE + 1).fill(0);
+            let binIndex = 0;
+            let i = 0;
+            while (i < result.length) {
+                if (result[i].wage <= binSize * (binIndex + 1)) {
+                    bins[binIndex]++;
+                    i++;
+                } else {
+                    if (++binIndex >= BUCKET_SIZE) {
+                        bins[binIndex] += result.length - i;
+                        break;
+                    }
+                }
+            }
             return {
-                bins: [
-                    {
-                        data_count: 5,
-                        range: {
-                            type: "month",
-                            from: 30000,
-                            to: 40000,
-                        },
+                bins: bins.map((data_count, index) => ({
+                    data_count,
+                    range: {
+                        from: index * binSize,
+                        to:
+                            index === bins.length - 1
+                                ? Math.floor(maxValue)
+                                : (index + 1) * binSize,
+                        type: "month",
                     },
-                    {
-                        data_count: 10,
-                        range: {
-                            type: "month",
-                            from: 40000,
-                            to: 50000,
-                        },
-                    },
-                    {
-                        data_count: 20,
-                        range: {
-                            type: "month",
-                            from: 50000,
-                            to: 60000,
-                        },
-                    },
-                    {
-                        data_count: 10,
-                        range: {
-                            type: "month",
-                            from: 60000,
-                            to: 70000,
-                        },
-                    },
-                ],
+                })),
             };
         },
     },

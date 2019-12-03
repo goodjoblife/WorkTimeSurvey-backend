@@ -222,40 +222,41 @@ const resolvers = {
                 unknown: counts["don't know"] || 0,
             };
         },
-        // TODO
-        job_average_salaries: () => {
-            return [
-                {
-                    job_title: {
-                        name: "軟體工程師",
+        job_average_salaries: async (company, _, ctx) => {
+            const collection = ctx.db.collection("workings");
+            const results = await collection
+                .aggregate([
+                    {
+                        $match: {
+                            estimated_monthly_wage: {
+                                $exists: true,
+                                $ne: null,
+                            },
+                            "company.name": company[0].company.name,
+                        },
                     },
-                    data_count: 5,
-                    average_salary: {
-                        amount: 76000,
-                        type: "month",
+                    {
+                        $group: {
+                            _id: "$job_title",
+                            count: { $sum: 1 },
+                            average_salary: { $avg: "$estimated_monthly_wage" },
+                        },
                     },
+                    {
+                        $sample: { size: 3 },
+                    },
+                ])
+                .toArray();
+            return results.map(r => ({
+                job_title: {
+                    name: r._id,
                 },
-                {
-                    job_title: {
-                        name: "數位IC設計工程師",
-                    },
-                    data_count: 10,
-                    average_salary: {
-                        amount: 100000,
-                        type: "month",
-                    },
+                data_count: r.count,
+                average_salary: {
+                    amount: Math.round(r.average_salary),
+                    type: "month",
                 },
-                {
-                    job_title: {
-                        name: "硬體工程師",
-                    },
-                    data_count: 10,
-                    average_salary: {
-                        amount: 80000,
-                        type: "month",
-                    },
-                },
-            ];
+            }));
         },
     },
     Query: {
