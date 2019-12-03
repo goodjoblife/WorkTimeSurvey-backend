@@ -1,3 +1,4 @@
+const Joi = require("joi");
 /*
  * User {
  *   _id            : ObjectId!
@@ -27,14 +28,34 @@ class UserModel {
         return user;
     }
 
-    async create({ name, facebook_id, facebook, email, google_id, google }) {
+    async create(user) {
+        const userSchema = Joi.object()
+            .keys({
+                name: Joi.string()
+                    .min(1)
+                    .required(),
+                facebook_id: Joi.string(),
+                facebook: Joi.object(),
+                google_id: Joi.string(),
+                google: Joi.object(),
+                email: Joi.string()
+                    .email()
+                    .required(),
+            })
+            // facebook_id & facebook 這兩個欄位必須同時存在
+            .and("facebook_id", "facebook")
+            // google_id & google 這兩個欄位必須同時存在
+            .and("google_id", "google")
+            // facebook_id & google_id 其中一個欄位必須存在
+            .or("facebook_id", "google_id");
+
+        const result = Joi.validate(user, userSchema);
+        if (result.error !== null) {
+            throw Error(result.error);
+        }
+
         const new_user = {
-            name,
-            facebook_id,
-            facebook,
-            google_id,
-            google,
-            email,
+            ...user,
             email_status: "UNVERIFIED",
         };
 
