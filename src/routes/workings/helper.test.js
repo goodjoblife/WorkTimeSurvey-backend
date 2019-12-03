@@ -18,25 +18,22 @@ describe("Workings Helper", () => {
         before("Seeding", () =>
             db.collection("users").insertMany([
                 {
-                    facebook_id: "001",
+                    _id: "AAA",
                     time_and_salary_count: 4,
                 },
                 {
-                    facebook_id: "002",
+                    _id: "BBB",
                     time_and_salary_count: 5,
                 },
             ])
         );
 
         it("fulfilled with queries_count if quota is OK", () =>
-            assert.becomes(
-                helper.checkAndUpdateQuota(db, { id: "001", type: "facebook" }),
-                5
-            ));
+            assert.becomes(helper.checkAndUpdateQuota(db, "AAA"), 5));
 
         it("rejected with HttpError if quota is reached", () =>
             assert.isRejected(
-                helper.checkAndUpdateQuota(db, { id: "001", type: "facebook" }),
+                helper.checkAndUpdateQuota(db, "BBB"),
                 HttpError
             ));
 
