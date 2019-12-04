@@ -31,15 +31,17 @@ describe("Permission Library", () => {
         describe(`correctly authorize user with ${JSON.stringify(
             data
         )}`, () => {
+            let user_id = new ObjectId();
+
             before(async () => {
                 // insert test data into db
                 if (data.counts) {
                     await db.collection("users").insert({
+                        _id: user_id,
                         facebook_id: "peter.shih",
                         time_and_salary_count:
                             data.counts.time_and_salary_count,
                     });
-
                     await db.collection("recommendations").insert({
                         user: {
                             id: "peter.shih",
@@ -47,17 +49,17 @@ describe("Permission Library", () => {
                         },
                         count: data.counts.reference_count,
                     });
+                } else {
+                    await db.collection("users").insert({
+                        _id: user_id,
+                        facebook_id: "peter.shih",
+                    });
                 }
             });
 
             it("search permission for user", () => {
-                const user = {
-                    id: "peter.shih",
-                    type: "facebook",
-                };
-
                 return assert.becomes(
-                    permission.resolveSearchPermission(db, user),
+                    permission.resolveSearchPermission(db, user_id),
                     data.expected
                 );
             });
@@ -70,8 +72,9 @@ describe("Permission Library", () => {
     });
 
     describe("shared experiences", () => {
+        let user_id = new ObjectId();
+
         before(async () => {
-            const user_id = ObjectId();
             await db.collection("users").insertOne({
                 _id: user_id,
                 facebook_id: "power.id",
@@ -82,12 +85,9 @@ describe("Permission Library", () => {
         });
 
         it("search permission for user", async () => {
-            const user = {
-                id: "power.id",
-                type: "facebook",
-            };
-
-            assert.isTrue(await permission.resolveSearchPermission(db, user));
+            assert.isTrue(
+                await permission.resolveSearchPermission(db, user_id)
+            );
         });
 
         after(async () => {
