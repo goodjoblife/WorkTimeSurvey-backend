@@ -269,7 +269,7 @@ router.patch("/:id", [
             throw err;
         }
 
-        if (!working.author_id.equals(user._id)) {
+        if (!working.user_id.equals(user._id)) {
             throw new HttpError("user is unauthorized", 403);
         }
 

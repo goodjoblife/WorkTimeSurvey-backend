@@ -11,7 +11,7 @@ module.exports = async db => {
 
     console.log("expected nModified:", salary_work_times.length);
 
-    // update each salary_work_time.author_id
+    // update each salary_work_time.user_id
     const bulk_ops = db.collection("workings").initializeOrderedBulkOp();
     for (let salary_work_time of salary_work_times) {
         const facebook_id = salary_work_time.author.id;
@@ -19,9 +19,9 @@ module.exports = async db => {
         const user = await db.collection("users").findOne({ facebook_id });
 
         if (user) {
-            const author_id = user._id;
+            const user_id = user._id;
             bulk_ops.find({ _id: salary_work_time._id }).update({
-                $set: { author_id },
+                $set: { user_id },
             });
         }
     }

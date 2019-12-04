@@ -274,11 +274,11 @@ describe("Workings 工時資訊", () => {
         before("Seeding some workings", async () => {
             const user_working = Object.assign(generateWorkingData(), {
                 status: "published",
-                author_id: fake_user._id,
+                user_id: fake_user._id,
             });
             const other_user_working = Object.assign(generateWorkingData(), {
                 status: "published",
-                author_id: fake_other_user._id,
+                user_id: fake_other_user._id,
             });
             const result = await db
                 .collection("workings")

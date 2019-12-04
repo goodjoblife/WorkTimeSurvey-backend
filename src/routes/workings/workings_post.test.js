@@ -182,7 +182,7 @@ describe("POST /workings", () => {
                 .expect(200);
 
             assert.equal(res.body.working.status, "published");
-            assert.notProperty(res.body.working, "author_id");
+            assert.notProperty(res.body.working, "user_id");
             assert.notProperty(res.body.working, "recommended_by");
 
             const working = await db
@@ -190,7 +190,7 @@ describe("POST /workings", () => {
                 .findOne({ _id: ObjectId(res.body.working._id) });
 
             // expected fields in db
-            assert.deepEqual(working.author_id, fake_user._id);
+            assert.deepEqual(working.user_id, fake_user._id);
         });
 
         it("generateSalaryRelatedPayload", async () => {

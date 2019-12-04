@@ -42,7 +42,7 @@ router.get("/", [
     wrap(async (req, res) => {
         const user_id = req.user._id;
         const query = {
-            author_id: user_id,
+            user_id,
         };
 
         const working_model = new WorkingModel(req.db);

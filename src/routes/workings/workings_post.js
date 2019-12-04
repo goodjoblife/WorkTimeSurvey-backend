@@ -25,7 +25,7 @@ function checkBodyField(req, field) {
  */
 function collectData(req, res, next) {
     req.custom.working = {
-        author_id: req.user._id,
+        user_id: req.user._id,
         company: {},
         created_at: new Date(),
     };
@@ -491,17 +491,14 @@ async function main(req, res) {
             working.recommended_by = req.custom.recommendation_string;
         }
 
-        const author_id = working.author_id;
+        const user_id = working.user_id;
 
         working.archive = {
             is_archived: false,
             reason: "",
         };
 
-        const queries_count = await helper.checkAndUpdateQuota(
-            req.db,
-            author_id
-        );
+        const queries_count = await helper.checkAndUpdateQuota(req.db, user_id);
         response_data.queries_count = queries_count;
 
         await collection.insert(working);
@@ -519,7 +516,7 @@ async function main(req, res) {
         });
         // delete some sensitive information before sending response
         delete response_data.working.recommended_by;
-        delete response_data.working.author_id;
+        delete response_data.working.user_id;
 
         res.send(response_data);
     } catch (err) {
