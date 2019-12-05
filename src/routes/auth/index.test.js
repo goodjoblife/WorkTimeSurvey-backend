@@ -29,11 +29,13 @@ describe("Auth", () => {
 
         before(async () => {
             fake_user = await user_model.create({
+                name: "markLin",
                 facebook_id: "-1",
                 facebook: {
                     id: "-1",
                     name: "markLin",
                 },
+                email: userEmail,
             });
         });
 

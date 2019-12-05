@@ -108,10 +108,10 @@ describe("Authorization middleware", () => {
     });
 
     describe("redis cached", () => {
-        const user_ids = [new ObjectId(), new ObjectId()];
+        const user_ids = [new ObjectId(), new ObjectId(), new ObjectId()];
 
         before(done => {
-            redis_client.set("permission_facebook_peter.shih", "1", done);
+            redis_client.set(`permission_${user_ids[2].toString()}`, "1", done);
         });
 
         before(() =>
@@ -132,7 +132,7 @@ describe("Authorization middleware", () => {
         it("success if redis cached", done => {
             const req = {
                 user: {
-                    _id: new ObjectId(),
+                    _id: user_ids[2],
                     facebook_id: "peter.shih",
                 },
                 db,

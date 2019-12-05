@@ -24,24 +24,12 @@ function checkBodyField(req, field) {
  * req.custom.company_query
  */
 function collectData(req, res, next) {
-    req.custom.author = {};
-    const author = req.custom.author;
     req.custom.working = {
-        author,
+        user_id: req.user._id,
         company: {},
         created_at: new Date(),
     };
     const working = req.custom.working;
-
-    if (checkBodyField(req, "email")) {
-        author.email = req.body.email;
-    }
-
-    if (req.user.facebook) {
-        author.id = req.user.facebook.id;
-        author.name = req.user.facebook.name;
-        author.type = "facebook";
-    }
 
     // pick these fields only
     // make sure the field is string
@@ -503,17 +491,14 @@ async function main(req, res) {
             working.recommended_by = req.custom.recommendation_string;
         }
 
-        const author = working.author;
+        const user_id = working.user_id;
 
         working.archive = {
             is_archived: false,
             reason: "",
         };
 
-        const queries_count = await helper.checkAndUpdateQuota(req.db, {
-            id: author.id,
-            type: author.type,
-        });
+        const queries_count = await helper.checkAndUpdateQuota(req.db, user_id);
         response_data.queries_count = queries_count;
 
         await collection.insert(working);
@@ -531,6 +516,7 @@ async function main(req, res) {
         });
         // delete some sensitive information before sending response
         delete response_data.working.recommended_by;
+        delete response_data.working.user_id;
 
         res.send(response_data);
     } catch (err) {

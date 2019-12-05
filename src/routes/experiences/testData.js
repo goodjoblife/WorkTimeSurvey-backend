@@ -101,10 +101,6 @@ function generateWorkExperienceData() {
 
 function generateWorkingData() {
     return {
-        author: {
-            type: "facebook",
-            _id: new ObjectId(),
-        },
         created_at: new Date(),
         company: {
             id: "123456789",

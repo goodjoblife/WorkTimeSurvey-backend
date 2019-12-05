@@ -40,9 +40,9 @@ const WorkingModel = require("../../../models/working_model");
 router.get("/", [
     requireUserAuthetication,
     wrap(async (req, res) => {
-        const user = req.user;
+        const user_id = req.user._id;
         const query = {
-            "author.id": user.facebook_id,
+            user_id,
         };
 
         const working_model = new WorkingModel(req.db);

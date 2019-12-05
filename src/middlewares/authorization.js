@@ -9,13 +9,10 @@ function cachedSearchPermissionAuthorizationMiddleware(req, res, next) {
         next(new HttpError("Forbidden", 403));
     }
 
-    const old_user = {
-        id: req.user.facebook_id,
-        type: "facebook",
-    };
+    const user_id = req.user._id;
 
     authorization
-        .cachedSearchPermissionAuthorization(db, redis_client, old_user)
+        .cachedSearchPermissionAuthorization(db, redis_client, user_id)
         .then(
             hasPermission => {
                 if (hasPermission === true) {

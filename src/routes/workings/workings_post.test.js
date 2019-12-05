@@ -182,9 +182,15 @@ describe("POST /workings", () => {
                 .expect(200);
 
             assert.equal(res.body.working.status, "published");
-            assert.deepPropertyVal(res.body, "working.author.id", "-1");
-            assert.deepPropertyVal(res.body, "working.author.name", "mark");
-            assert.deepPropertyVal(res.body, "working.author.type", "facebook");
+            assert.notProperty(res.body.working, "user_id");
+            assert.notProperty(res.body.working, "recommended_by");
+
+            const working = await db
+                .collection("workings")
+                .findOne({ _id: ObjectId(res.body.working._id) });
+
+            // expected fields in db
+            assert.deepEqual(working.user_id, fake_user._id);
         });
 
         it("generateSalaryRelatedPayload", async () => {
@@ -1405,48 +1411,6 @@ describe("POST /workings", () => {
             assert.equal(res2.body.queries_count, 2);
             assert.equal(res2.body.working.company.id, "00000001");
             assert.equal(res2.body.working.company.name, "GOODJOB");
-        });
-    });
-
-    describe("Checking email field", () => {
-        it("should upload emails fields while uploading worktime related data and email is given", async () => {
-            const test_email = "test12345@gmail.com";
-            const res = await request(app)
-                .post("/workings")
-                .send(
-                    generateWorkingTimeRelatedPayload({
-                        email: test_email,
-                    })
-                )
-                .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200);
-            assert.propertyVal(res.body.working.author, "email", test_email);
-        });
-        it("should upload emails fields while uploading salary related data and email is given", async () => {
-            const test_email = "test12345@gmail.com";
-            const res = await request(app)
-                .post("/workings")
-                .send(
-                    generateSalaryRelatedPayload({
-                        email: test_email,
-                    })
-                )
-                .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200);
-            assert.propertyVal(res.body.working.author, "email", test_email);
-        });
-        it("should upload emails fields while uploading all data and email is given", async () => {
-            const test_email = "test12345@gmail.com";
-            const res = await request(app)
-                .post("/workings")
-                .send(
-                    generateAllPayload({
-                        email: test_email,
-                    })
-                )
-                .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200);
-            assert.propertyVal(res.body.working.author, "email", test_email);
         });
     });
 

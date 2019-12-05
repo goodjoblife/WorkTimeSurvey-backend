@@ -32,6 +32,7 @@ const Type = gql`
         has_compensatory_dayoff_count: YesNoOrUnknownCount
         has_overtime_salary_count: YesNoOrUnknownCount
         is_overtime_salary_legal_count: YesNoOrUnknownCount
+        overtime_frequency_count: OvertimeFrequencyCount
 
         "不同職業的平均薪資"
         job_average_salaries: [JobAverageSalary!]!
@@ -74,6 +75,17 @@ const Type = gql`
         yes: Int!
         no: Int!
         unknown: Int!
+    }
+
+    type OvertimeFrequencyCount {
+        "對應到表單的「幾乎不」"
+        seldom: Int!
+        "對應到表單的「偶爾」"
+        sometimes: Int!
+        "對應到表單的「經常」"
+        usually: Int!
+        "對應到表單的「幾乎每天」"
+        almost_everyday: Int!
     }
 
     enum Gender {
@@ -222,6 +234,28 @@ const resolvers = {
                 unknown: counts["don't know"] || 0,
             };
         },
+        overtime_frequency_count: salary_work_times => {
+            // 把 DB 中 overtime_frequency 的 0 ~ 3 mapping 到有語意的字串
+            const mapping = [
+                "seldom",
+                "sometimes",
+                "usually",
+                "almost_everyday",
+            ];
+            const counter = {
+                seldom: 0,
+                sometimes: 0,
+                usually: 0,
+                almost_everyday: 0,
+            };
+            salary_work_times.forEach(salary_work_time => {
+                if (salary_work_time.overtime_frequency !== undefined) {
+                    counter[mapping[salary_work_time.overtime_frequency]] += 1;
+                }
+            });
+            return counter;
+        },
+        // TODO
         job_average_salaries: async (company, _, ctx) => {
             const collection = ctx.db.collection("workings");
             const results = await collection

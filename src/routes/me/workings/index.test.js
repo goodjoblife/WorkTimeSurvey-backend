@@ -47,17 +47,11 @@ describe("Get /me/workings ", () => {
 
     before("Create Data", async () => {
         const user_working = Object.assign(generateWorkingData(), {
-            author: {
-                type: "facebook",
-                id: fake_user.facebook_id,
-            },
+            user_id: fake_user._id,
         });
 
         const other_user_working = Object.assign(generateWorkingData(), {
-            author: {
-                type: "facebook",
-                id: fake_other_user.facebook_id,
-            },
+            user_id: fake_other_user._id,
         });
 
         const workings = await db

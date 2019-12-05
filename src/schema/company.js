@@ -127,7 +127,6 @@ const resolvers = {
                     { $project: { name: "$_id" } },
                 ])
                 .toArray();
-            console.log(companies);
             return companies;
         },
     },

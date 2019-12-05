@@ -249,6 +249,7 @@ function _isValidStatus(value) {
 router.patch("/:id", [
     requireUserAuthetication,
     wrap(async (req, res) => {
+        // TODO-Work
         const id = req.params.id;
         const status = req.body.status;
         const user = req.user;
@@ -268,7 +269,7 @@ router.patch("/:id", [
             throw err;
         }
 
-        if (!(working.author.id === user.facebook_id)) {
+        if (!working.user_id.equals(user._id)) {
             throw new HttpError("user is unauthorized", 403);
         }
 

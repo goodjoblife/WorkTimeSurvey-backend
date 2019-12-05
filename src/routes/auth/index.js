@@ -99,11 +99,14 @@ router.post(
 
         // Retrieve User from DB
         const google_id = account.sub;
+
         let user = await user_model.findOneByGoogleId(google_id);
         if (!user) {
             user = await user_model.create({
+                name: account.name,
                 google_id,
                 google: account,
+                email: account.email,
             });
         }
 

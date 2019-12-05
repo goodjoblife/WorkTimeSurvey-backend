@@ -118,7 +118,7 @@ const resolvers = {
         },
         async salary_work_times(user, args, { db }) {
             const query = {
-                "author.id": user.facebook_id,
+                user_id: user._id,
             };
 
             const working_model = new WorkingModel(db);
@@ -128,7 +128,7 @@ const resolvers = {
         },
         async salary_work_time_count(user, args, { db }) {
             const query = {
-                "author.id": user.facebook_id,
+                user_id: user._id,
             };
 
             const working_model = new WorkingModel(db);

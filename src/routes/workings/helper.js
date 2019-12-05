@@ -11,14 +11,12 @@ const { shouldIn } = require("../../libs/validation");
  * Fullfilled with newest queries_count
  * Rejected with HttpError
  */
-function checkAndUpdateQuota(db, author) {
+function checkAndUpdateQuota(db, user_id) {
     const collection = db.collection("users");
     const quota = 5;
 
-    const provider = `${author.type}_id`;
-
     const filter = {
-        [provider]: author.id,
+        _id: user_id,
     };
 
     function increment() {

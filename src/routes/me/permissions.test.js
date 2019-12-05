@@ -1,6 +1,7 @@
 const { assert } = require("chai");
 const sinon = require("sinon");
 const request = require("supertest");
+const { ObjectId } = require("mongodb");
 
 const app = require("../../app");
 const { FakeUserFactory } = require("../../utils/test_helper");
@@ -19,14 +20,12 @@ describe("GET /me/permission/search 確認使用者查詢資訊權限", () => {
     });
 
     it("hasSearchPermission is true", async () => {
-        const token = await fake_user_factory.create({ facebook_id: "-1" });
+        const user = { _id: new ObjectId(), facebook_id: "-1" };
+        const token = await fake_user_factory.create(user);
 
         const cachedSearchPermissionAuthorization = sandbox
             .stub(authorization, "cachedSearchPermissionAuthorization")
-            .withArgs(sinon.match.object, sinon.match.object, {
-                id: "-1",
-                type: "facebook",
-            })
+            .withArgs(sinon.match.object, sinon.match.object, user._id)
             .resolves(true);
 
         const res = await request(app)
