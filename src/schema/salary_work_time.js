@@ -255,8 +255,12 @@ const resolvers = {
             });
             return counter;
         },
-        // TODO
         job_average_salaries: async (company, _, ctx) => {
+            if (!Array.isArray(company) || !company.length) {
+                throw Error(
+                    "Company should be an array with at least 1 element"
+                );
+            }
             const collection = ctx.db.collection("workings");
             const results = await collection
                 .aggregate([

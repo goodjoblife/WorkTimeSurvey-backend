@@ -87,7 +87,7 @@ const resolvers = {
                         },
                     },
                     { $sort: { count: -1 } },
-                    { $limit: limit },
+                    { $sample: { size: limit } },
                     {
                         $project: {
                             name: "$_id.job_title",
@@ -125,7 +125,7 @@ const resolvers = {
         interview_experience_statistics: () => {},
 
         salary_distribution: async (records, _, ctx) => {
-            const BUCKET_SIZE = 5;
+            const BUCKET_SIZE = 4;
             const collection = ctx.db.collection("workings");
             const job_title = records.name || records._id.job_title;
             let count = records.count;
@@ -161,12 +161,12 @@ const resolvers = {
                     },
                 ])
                 .toArray();
-            console.log(job_title, count);
+
             const minValue = result[0].wage;
             const maxValue = result[result.length - 1].wage;
             const binSize =
                 1000 * Math.floor((maxValue - minValue) / BUCKET_SIZE / 1000);
-            const bins = new Array(BUCKET_SIZE + 1).fill(0);
+            const bins = new Array(BUCKET_SIZE).fill(0);
             let binIndex = 0;
             let i = 0;
             while (i < result.length) {
@@ -174,7 +174,7 @@ const resolvers = {
                     bins[binIndex]++;
                     i++;
                 } else {
-                    if (++binIndex >= BUCKET_SIZE) {
+                    if (++binIndex >= BUCKET_SIZE - 1) {
                         bins[binIndex] += result.length - i;
                         break;
                     }
