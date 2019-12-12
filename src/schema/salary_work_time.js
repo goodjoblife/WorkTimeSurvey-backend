@@ -255,46 +255,36 @@ const resolvers = {
             });
             return counter;
         },
-        job_average_salaries: async (company, _, ctx) => {
-            if (!Array.isArray(company) || !company.length) {
-                throw Error(
-                    "Company should be an array with at least 1 element"
-                );
-            }
-            const collection = ctx.db.collection("workings");
-            const results = await collection
-                .aggregate([
-                    {
-                        $match: {
-                            estimated_monthly_wage: {
-                                $exists: true,
-                                $ne: null,
-                            },
-                            "company.name": company[0].company.name,
-                        },
+        job_average_salaries: async salaryWorkTimes => {
+            const jobSalaryMap = {};
+            salaryWorkTimes.forEach(r => {
+                if (!r.estimated_monthly_wage) return;
+                if (!jobSalaryMap[r.job_title]) {
+                    jobSalaryMap[r.job_title] = {
+                        wage: r.estimated_monthly_wage,
+                        count: 1,
+                    };
+                } else {
+                    jobSalaryMap[r.job_title].wage += r.estimated_monthly_wage;
+                    jobSalaryMap[r.job_title].count++;
+                }
+            });
+            return new Array(3).fill(null).map(() => {
+                const keys = Object.keys(jobSalaryMap);
+                const index = Math.round(Math.random() * 1000) % keys.length;
+                const pickVal = jobSalaryMap[keys[index]];
+                delete jobSalaryMap[keys[index]];
+                return {
+                    job_title: {
+                        name: keys[index],
                     },
-                    {
-                        $group: {
-                            _id: "$job_title",
-                            count: { $sum: 1 },
-                            average_salary: { $avg: "$estimated_monthly_wage" },
-                        },
+                    data_count: pickVal.count,
+                    average_salary: {
+                        amount: Math.round(pickVal.wage / pickVal.count),
+                        type: "month",
                     },
-                    {
-                        $sample: { size: 3 },
-                    },
-                ])
-                .toArray();
-            return results.map(r => ({
-                job_title: {
-                    name: r._id,
-                },
-                data_count: r.count,
-                average_salary: {
-                    amount: Math.round(r.average_salary),
-                    type: "month",
-                },
-            }));
+                };
+            });
         },
     },
     Query: {

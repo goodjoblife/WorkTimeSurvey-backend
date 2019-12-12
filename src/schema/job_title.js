@@ -86,6 +86,7 @@ const resolvers = {
                             count: { $sum: 1 },
                         },
                     },
+                    { $match: { count: { $gte: 5 } } },
                     { $sort: { count: -1 } },
                     { $sample: { size: limit } },
                     {
@@ -140,6 +141,10 @@ const resolvers = {
                     })
                     .count();
             }
+            // count * 0.9 shout be > 1
+            if (count < 2) {
+                return [];
+            }
             const result = await collection
                 .aggregate([
                     {
@@ -161,7 +166,6 @@ const resolvers = {
                     },
                 ])
                 .toArray();
-
             const minValue = result[0].wage;
             const maxValue = result[result.length - 1].wage;
             const binSize =
@@ -170,7 +174,7 @@ const resolvers = {
             let binIndex = 0;
             let i = 0;
             while (i < result.length) {
-                if (result[i].wage <= binSize * (binIndex + 1)) {
+                if (result[i].wage <= minValue + binSize * (binIndex + 1)) {
                     bins[binIndex]++;
                     i++;
                 } else {
@@ -184,11 +188,11 @@ const resolvers = {
                 bins: bins.map((data_count, index) => ({
                     data_count,
                     range: {
-                        from: index * binSize,
+                        from: Math.floor(minValue + index * binSize),
                         to:
                             index === bins.length - 1
                                 ? Math.floor(maxValue)
-                                : (index + 1) * binSize,
+                                : Math.floor(minValue + (index + 1) * binSize),
                         type: "month",
                     },
                 })),
