@@ -269,7 +269,9 @@ const resolvers = {
                     jobSalaryMap[r.job_title].count++;
                 }
             });
-            return new Array(3).fill(null).map(() => {
+            // Randomly select at most 3 jobs
+            const count = Math.min(Object.keys(jobSalaryMap).length, 3);
+            return new Array(count).fill(null).map(() => {
                 const keys = Object.keys(jobSalaryMap);
                 const index = Math.round(Math.random() * 1000) % keys.length;
                 const pickVal = jobSalaryMap[keys[index]];
