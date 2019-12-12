@@ -256,6 +256,8 @@ const resolvers = {
             return counter;
         },
         job_average_salaries: async salaryWorkTimes => {
+            if (!Array.isArray(salaryWorkTimes) || !salaryWorkTimes.length)
+                return [];
             const jobSalaryMap = {};
             salaryWorkTimes.forEach(r => {
                 if (!r.estimated_monthly_wage) return;
