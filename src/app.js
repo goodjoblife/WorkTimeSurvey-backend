@@ -8,7 +8,6 @@ const expressRedisDb = require("./middlewares/express_redis_db");
 const logger = require("morgan");
 const winston = require("winston");
 const passport = require("passport");
-const passportStrategies = require("./libs/passport-strategies");
 const { jwtStrategy } = require("./utils/passport-strategies");
 
 const ModelManager = require("./models/manager");
@@ -65,7 +64,6 @@ app.use((req, res, next) => {
 });
 
 app.use(passport.initialize());
-passport.use(passportStrategies.legacyFacebookTokenStrategy());
 passport.use(jwtStrategy());
 app.use((req, res, next) => {
     passport.authenticate("jwt", { session: false }, (err, user) => {
