@@ -10,7 +10,8 @@ services:
 
 env:
     global:
-        - MONGODB_URI=mongodb://localhost/goodjob
+        - MONGODB_URI=mongodb://localhost
+        - MONGODB_DBNAME=goodjob
         - REDIS_URL=redis://localhost
         - NODE_ENV=test
         - JWT_SECRET=DontUseMe
