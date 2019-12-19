@@ -421,6 +421,13 @@ async function normalizeData(req, res, next) {
         if (typeof estimated_hourly_wage !== "undefined") {
             working.estimated_hourly_wage = estimated_hourly_wage;
         }
+
+        const estimated_monthly_wage = helper.calculateEstimatedMonthlyWage(
+            working
+        );
+        if (typeof estimated_monthly_wage !== "undefined") {
+            working.estimated_monthly_wage = estimated_monthly_wage;
+        }
     }
     if (working.is_currently_employed === "no") {
         working.data_time = {

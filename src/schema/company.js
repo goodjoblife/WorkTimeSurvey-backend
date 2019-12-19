@@ -117,11 +117,45 @@ const resolvers = {
                 };
             });
         },
-        popular_companies: async () => [
-            {
-                name: "聯發科",
-            },
-        ],
+        popular_companies: async (_, { limit }, ctx) => {
+            const collection = ctx.db.collection("workings");
+            // 符合至少有三種職缺的薪資工時資料，每種職缺至少三筆的公司
+            const companies = await collection
+                .aggregate([
+                    { $match: { estimated_monthly_wage: { $exists: true } } },
+                    {
+                        $project: {
+                            company: "$company.name",
+                            job_title: "$job_title",
+                            monthly_wage: "$estimated_monthly_wage",
+                        },
+                    },
+                    {
+                        $group: {
+                            _id: {
+                                company: "$company",
+                                job_title: "$job_title",
+                            },
+                            count: { $sum: 1 },
+                            avg_salary: { $avg: "$monthly_wage" },
+                        },
+                    },
+                    // 同公司同職稱比數大於3
+                    { $match: { count: { $gte: 3 } } },
+                    {
+                        $group: {
+                            _id: "$_id.company",
+                            count: { $sum: 1 },
+                        },
+                    },
+                    // 同公司比數大於3筆
+                    { $match: { count: { $gte: 3 } } },
+                    { $sample: { size: limit } },
+                    { $project: { name: "$_id" } },
+                ])
+                .toArray();
+            return companies;
+        },
     },
     Company: {
         salary_work_times: async (company, _, { manager }) => {

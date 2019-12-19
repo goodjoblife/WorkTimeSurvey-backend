@@ -255,40 +255,40 @@ const resolvers = {
             });
             return counter;
         },
-        // TODO
-        job_average_salaries: () => {
-            return [
-                {
+        job_average_salaries: async salaryWorkTimes => {
+            if (!Array.isArray(salaryWorkTimes) || !salaryWorkTimes.length)
+                return [];
+            const jobSalaryMap = {};
+            salaryWorkTimes.forEach(r => {
+                if (!r.estimated_monthly_wage) return;
+                if (!jobSalaryMap[r.job_title]) {
+                    jobSalaryMap[r.job_title] = {
+                        wage: r.estimated_monthly_wage,
+                        count: 1,
+                    };
+                } else {
+                    jobSalaryMap[r.job_title].wage += r.estimated_monthly_wage;
+                    jobSalaryMap[r.job_title].count++;
+                }
+            });
+            // Randomly select at most 3 jobs
+            const count = Math.min(Object.keys(jobSalaryMap).length, 3);
+            return new Array(count).fill(null).map(() => {
+                const keys = Object.keys(jobSalaryMap);
+                const index = Math.round(Math.random() * 1000) % keys.length;
+                const pickVal = jobSalaryMap[keys[index]];
+                delete jobSalaryMap[keys[index]];
+                return {
                     job_title: {
-                        name: "軟體工程師",
+                        name: keys[index],
                     },
-                    data_count: 5,
+                    data_count: pickVal.count,
                     average_salary: {
-                        amount: 76000,
+                        amount: Math.round(pickVal.wage / pickVal.count),
                         type: "month",
                     },
-                },
-                {
-                    job_title: {
-                        name: "數位IC設計工程師",
-                    },
-                    data_count: 10,
-                    average_salary: {
-                        amount: 100000,
-                        type: "month",
-                    },
-                },
-                {
-                    job_title: {
-                        name: "硬體工程師",
-                    },
-                    data_count: 10,
-                    average_salary: {
-                        amount: 80000,
-                        type: "month",
-                    },
-                },
-            ];
+                };
+            });
         },
     },
     Query: {
