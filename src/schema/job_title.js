@@ -115,6 +115,7 @@ const resolvers = {
                     },
                     { $match: { count: { $gte: 5 } } },
                     { $sort: { count: -1 } },
+                    { $limit: limit * 5 },
                     { $sample: { size: limit } },
                     {
                         $project: {
