@@ -1,5 +1,6 @@
 const { gql } = require("apollo-server-express");
 const escapeRegExp = require("lodash/escapeRegExp");
+const { union } = require("lodash");
 
 const Type = gql`
     type Company {
@@ -21,6 +22,9 @@ const Query = gql`
     extend type Query {
         search_companies(query: String!): [Company!]!
         company(name: String!): Company
+
+        "列出所有有資料(薪資工時、職場經驗)的公司"
+        companies_having_data: [Company!]!
 
         "目前用途：取得薪資資料前 topN 多的公司，且至少有三種職稱各至少有三筆資料"
         popular_companies(limit: Int = 5): [Company!]!
@@ -89,6 +93,29 @@ const resolvers = {
             } else {
                 return null;
             }
+        },
+        companies_having_data: async (_, __, ctx) => {
+            const companiesFromSalaryWorkTime = await ctx.db
+                .collection("workings")
+                .distinct("company.name", {
+                    status: "published",
+                    "archive.is_archived": false,
+                });
+            const companiesFromExperiences = await ctx.db
+                .collection("experiences")
+                .distinct("company.name", {
+                    status: "published",
+                    "archive.is_archived": false,
+                });
+
+            return union(
+                companiesFromSalaryWorkTime,
+                companiesFromExperiences
+            ).map(name => {
+                return {
+                    name,
+                };
+            });
         },
         popular_companies: async (_, { limit }, ctx) => {
             const collection = ctx.db.collection("workings");

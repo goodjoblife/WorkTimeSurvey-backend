@@ -1,5 +1,6 @@
 const { gql } = require("apollo-server-express");
 const escapeRegExp = require("lodash/escapeRegExp");
+const { union } = require("lodash");
 
 const Type = gql`
     type JobTitle {
@@ -24,6 +25,9 @@ const Query = gql`
     extend type Query {
         search_job_titles(query: String!): [JobTitle!]!
         job_title(name: String!): JobTitle
+
+        "列出所有有資料(薪資工時、職場經驗)的職稱"
+        job_titles_having_data: [JobTitle!]!
 
         "目前用途：取得薪資資料前 topN 多的職稱"
         popular_job_titles(limit: Int = 5): [JobTitle!]!
@@ -68,6 +72,29 @@ const resolvers = {
                 name: result.job_title,
             };
         },
+        job_titles_having_data: async (_, __, ctx) => {
+            const companiesFromSalaryWorkTime = await ctx.db
+                .collection("workings")
+                .distinct("job_title", {
+                    status: "published",
+                    "archive.is_archived": false,
+                });
+            const companiesFromExperiences = await ctx.db
+                .collection("experiences")
+                .distinct("job_title", {
+                    status: "published",
+                    "archive.is_archived": false,
+                });
+
+            return union(
+                companiesFromSalaryWorkTime,
+                companiesFromExperiences
+            ).map(name => {
+                return {
+                    name,
+                };
+            });
+        },
         popular_job_titles: async (_, { limit }, ctx) => {
             const collection = ctx.db.collection("workings");
             const result = await collection
@@ -88,6 +115,7 @@ const resolvers = {
                     },
                     { $match: { count: { $gte: 5 } } },
                     { $sort: { count: -1 } },
+                    { $limit: limit * 5 },
                     { $sample: { size: limit } },
                     {
                         $project: {
