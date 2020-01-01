@@ -10,7 +10,10 @@ const Type = gql`
         report_count: Int!
         floor: Int!
         created_at: Date!
+        "發布狀態"
         status: PublishStatus!
+        "封存資訊"
+        archive: Archive!
 
         "相對應的 experience (resolve if published)"
         experience: Experience

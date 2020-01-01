@@ -23,6 +23,10 @@ const Type = gql`
         data_time: YearMonth!
         estimated_hourly_wage: Float
         about_this_job: String
+        "發布狀態"
+        status: PublishStatus!
+        "封存資訊"
+        archive: Archive!
     }
 
     type SalaryWorkTimeStatistics {

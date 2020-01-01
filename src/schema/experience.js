@@ -50,7 +50,9 @@ const Type = gql`
         reply_count: Int!
         report_count: Int!
         like_count: Int!
+        "發布狀態"
         status: PublishStatus!
+        "封存資訊"
         archive: Archive!
 
         "使用者是否按贊 (null 代表未傳入驗證資訊)"
