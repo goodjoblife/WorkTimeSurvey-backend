@@ -1,10 +1,9 @@
 const express = require("express");
+const { makeExecutableSchema } = require("graphql-tools");
+const { graphql } = require("graphql");
 
 const router = express.Router();
-const HttpError = require("../../libs/errors").HttpError;
-const winston = require("winston");
-const ExperienceModel = require("../../models/experience_model");
-const UserModel = require("../../models/user_model");
+const { HttpError } = require("../../libs/errors");
 const helper = require("../company_helper");
 const {
     requiredNonEmptyString,
@@ -18,6 +17,14 @@ const wrap = require("../../libs/wrap");
 const {
     requireUserAuthetication,
 } = require("../../middlewares/authentication");
+
+const resolvers = require("../../schema/resolvers");
+const typeDefs = require("../../schema/typeDefs");
+
+const schema = makeExecutableSchema({
+    typeDefs,
+    resolvers,
+});
 
 function validateCommonInputFields(data) {
     if (!requiredNonEmptyString(data.company_query)) {
@@ -306,6 +313,7 @@ function validationInputFields(data) {
     "臺中市","臺南市","臺北市","臺東縣","桃園市",
     "宜蘭縣","雲林縣" } region 面試地區
  * @apiParam {String} job_title 應徵職稱
+ * @apiParam {String} title 標題
  * @apiParam {Number="整數, 0 <= N <= 50"} [experience_in_year] 相關職務工作經驗
  * @apiParam {String="大學","碩士","博士","高職","五專","二專","二技","高中","國中","國小"} [education] 最高學歷
  * @apiParam {Object} interview_time 面試時間
@@ -338,26 +346,11 @@ router.post("/", [
     wrap(async (req, res) => {
         validationInputFields(req.body);
 
-        const experience = {};
-        Object.assign(experience, {
-            type: "interview",
-            author_id: req.user._id,
-            // company 後面決定
+        const experience = {
             company: {},
-            like_count: 0,
-            reply_count: 0,
-            report_count: 0,
-            // TODO 瀏覽次數？
-            created_at: new Date(),
-            // 封存狀態
-            archive: {
-                is_archived: false,
-                reason: "",
-            },
-        });
+        };
         Object.assign(experience, pickupInterviewExperience(req.body));
 
-        const experience_model = new ExperienceModel(req.db);
         const company_model = req.manager.CompanyModel;
 
         const company = await helper.getCompanyByIdOrQuery(
@@ -367,28 +360,31 @@ router.post("/", [
         );
         experience.company = company;
 
-        // insert data into experiences collection
-        await experience_model.createExperience(experience);
+        const query = /* GraphQL */ `
+            mutation CreateInterviewExperience(
+                $input: CreateInterviewExperienceInput!
+            ) {
+                createInterviewExperience(input: $input) {
+                    success
+                    experience {
+                        id
+                    }
+                }
+            }
+        `;
 
-        // update user email & subscribeEmail, if email field exists
-        if (experience.email) {
-            const user_model = new UserModel(req.manager);
-            await user_model.updateSubscribeEmail(
-                req.user._id,
-                experience.email
-            );
-        }
+        const input = {
+            input: experience,
+        };
 
-        winston.info("interview experiences insert data success", {
-            id: experience._id,
-            ip: req.ip,
-            ips: req.ips,
-        });
+        const {
+            data: { createInterviewExperience },
+        } = await graphql(schema, query, null, req, input);
 
         res.send({
-            success: true,
+            success: createInterviewExperience.success,
             experience: {
-                _id: experience._id,
+                _id: createInterviewExperience.experience.id,
             },
         });
     }),

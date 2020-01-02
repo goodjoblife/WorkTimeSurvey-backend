@@ -1,7 +1,11 @@
 const { gql, UserInputError } = require("apollo-server-express");
-const ObjectId = require("mongodb").ObjectId;
+const { ObjectId } = require("mongodb");
 const R = require("ramda");
+const winston = require("winston");
+
 const { requiredNumberInRange } = require("../libs/validation");
+const ExperienceModel = require("../models/experience_model");
+const UserModel = require("../models/user_model");
 
 const WorkExperienceType = "work";
 const InterviewExperienceType = "interview";
@@ -168,6 +172,61 @@ const Query = gql`
 `;
 
 const Mutation = `
+    input CreateInterviewExperienceInput {
+        "Common"
+        company: CompanyInput!
+        region: String!
+        job_title: String!
+        title: String!
+        sections: [SectionInput!]!
+        experience_in_year: Int
+        education: String
+        status: String = published
+        email: String
+        "interview part"
+        interview_time: InterviewTimeInput!
+        interview_result: String!
+        interview_qas: [InterviewQuestionInput!]
+        interview_sensitive_questions: [String!]
+        salary: SalaryInput
+        overall_rating: Int!
+    }
+
+    input CompanyInput {
+        id: String
+        name: String
+    }
+
+    input InterviewTimeInput {
+        year: Int!
+        month: Int!
+    }
+
+    input SalaryInput {
+        type: String!
+        amount: Float!
+    }
+
+    input SectionInput {
+        subtitle: String
+        content: String!
+    }
+
+    input InterviewQuestionInput {
+        question: String
+        answer: String
+    }
+
+    type CreateInterviewExperiencePayload {
+        success: Boolean!
+        experience: InterviewExperience!
+    }
+
+    extend type Mutation {
+        createInterviewExperience(
+            input: CreateInterviewExperienceInput!
+        ): CreateInterviewExperiencePayload!
+    }
 `;
 
 const ExperienceLikedResolver = async (experience, args, { manager, user }) => {
@@ -310,6 +369,56 @@ const resolvers = {
                 .toArray();
 
             return result;
+        },
+    },
+
+    Mutation: {
+        async createInterviewExperience(
+            root,
+            { input },
+            { db, user, manager, ip, ips }
+        ) {
+            const experience = input;
+
+            Object.assign(experience, {
+                type: "interview",
+                author_id: user._id,
+                like_count: 0,
+                reply_count: 0,
+                report_count: 0,
+                // TODO 瀏覽次數？
+                created_at: new Date(),
+                // 封存狀態
+                archive: {
+                    is_archived: false,
+                    reason: "",
+                },
+            });
+
+            const experience_model = new ExperienceModel(db);
+
+            // insert data into experiences collection
+            await experience_model.createExperience(experience);
+
+            // update user email & subscribeEmail, if email field exists
+            if (experience.email) {
+                const user_model = new UserModel(manager);
+                await user_model.updateSubscribeEmail(
+                    user._id,
+                    experience.email
+                );
+            }
+
+            winston.info("interview experiences insert data success", {
+                id: experience._id,
+                ip,
+                ips,
+            });
+
+            return {
+                success: true,
+                experience,
+            };
         },
     },
 };

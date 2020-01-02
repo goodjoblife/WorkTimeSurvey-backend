@@ -17,6 +17,37 @@ type Company {
   interview_experience_statistics: InterviewExperienceStatistics!
 }
 
+input CompanyInput {
+  id: String
+  name: String
+}
+
+input CreateInterviewExperienceInput {
+  """Common"""
+  company: CompanyInput!
+  region: String!
+  job_title: String!
+  title: String!
+  sections: [SectionInput!]!
+  experience_in_year: Int
+  education: String
+  status: String
+  email: String
+
+  """interview part"""
+  interview_time: InterviewTimeInput!
+  interview_result: String!
+  interview_qas: [InterviewQuestionInput!]
+  interview_sensitive_questions: [String!]
+  salary: SalaryInput
+  overall_rating: Int!
+}
+
+type CreateInterviewExperiencePayload {
+  success: Boolean!
+  experience: InterviewExperience!
+}
+
 scalar Date
 
 enum EmailStatus {
@@ -142,6 +173,16 @@ type InterviewQuestion {
   answer: String
 }
 
+input InterviewQuestionInput {
+  question: String
+  answer: String
+}
+
+input InterviewTimeInput {
+  year: Int!
+  month: Int!
+}
+
 type JobAverageSalary {
   job_title: JobTitle!
   average_salary: Salary!
@@ -181,6 +222,7 @@ type LaborRight {
 
 type Mutation {
   placeholder: Boolean
+  createInterviewExperience(input: CreateInterviewExperienceInput!): CreateInterviewExperiencePayload!
 
   """發送驗證信"""
   sendVerifyEmail(input: SendVerifyEmailInput!): SendVerifyEmailPayload!
@@ -294,6 +336,11 @@ type SalaryDistributionBin {
   range: SalaryRange!
 }
 
+input SalaryInput {
+  type: String!
+  amount: Float!
+}
+
 type SalaryRange {
   type: SalaryType!
   from: Int!
@@ -352,6 +399,11 @@ enum SearchBy {
 type Section {
   subtitle: String
   content: String
+}
+
+input SectionInput {
+  subtitle: String
+  content: String!
 }
 
 input SendVerifyEmailInput {

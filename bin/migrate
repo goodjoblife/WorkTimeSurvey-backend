@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+require('dotenv').config();
+
 const migration = require('../src/database');
 
 migration.main();
