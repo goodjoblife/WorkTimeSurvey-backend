@@ -120,9 +120,19 @@ function validateCommonInputFields(data) {
         }
     }
 
-    if (data.email) {
-        if (!validateEmail(data.email)) {
-            throw new HttpError("E-mail 格式錯誤", 422);
+    if (data.email && !validateEmail(data.email)) {
+        throw new HttpError("E-mail 格式錯誤", 422);
+    }
+
+    if (data.salary) {
+        if (!shouldIn(data.salary.type, ["year", "month", "day", "hour"])) {
+            throw new HttpError("薪資種類需為年薪/月薪/日薪/時薪", 422);
+        }
+        if (!requiredNumber(data.salary.amount)) {
+            throw new HttpError("薪資需為數字", 422);
+        }
+        if (data.salary.amount < 0) {
+            throw new HttpError("薪資不小於0", 422);
         }
     }
 }
@@ -196,24 +206,17 @@ function validateInterviewInputFields(data) {
         });
     }
 
-    if (data.salary) {
-        if (!shouldIn(data.salary.type, ["year", "month", "day", "hour"])) {
-            throw new HttpError("薪資種類需為年薪/月薪/日薪/時薪", 422);
-        }
-        if (!requiredNumber(data.salary.amount)) {
-            throw new HttpError("薪資需為數字", 422);
-        }
-        if (data.salary.amount < 0) {
-            throw new HttpError("薪資不小於0", 422);
-        }
-    }
-
     if (!requiredNumber(data.overall_rating)) {
         throw new HttpError("這次面試你給幾分？", 422);
     }
     if (!shouldIn(data.overall_rating, [1, 2, 3, 4, 5])) {
         throw new HttpError("面試分數有誤", 422);
     }
+}
+
+function validationInputFields(data) {
+    validateCommonInputFields(data);
+    validateInterviewInputFields(data);
 }
 
 function pickupInterviewExperience(input) {
@@ -229,12 +232,12 @@ function pickupInterviewExperience(input) {
         education,
         status,
         email,
+        salary,
         // interview part
         interview_time,
         interview_qas,
         interview_result,
         interview_sensitive_questions,
-        salary,
         overall_rating,
     } = input;
 
@@ -296,11 +299,6 @@ function pickupInterviewExperience(input) {
     return partial;
 }
 
-function validationInputFields(data) {
-    validateCommonInputFields(data);
-    validateInterviewInputFields(data);
-}
-
 /**
  * @api {post} /interview_experiences 上傳面試經驗 API
  * @apiGroup Interview_Experiences
@@ -313,7 +311,7 @@ function validationInputFields(data) {
     "臺中市","臺南市","臺北市","臺東縣","桃園市",
     "宜蘭縣","雲林縣" } region 面試地區
  * @apiParam {String} job_title 應徵職稱
- * @apiParam {String} title 標題
+ * @apiParam {String="0 < length <= 50 "} title 整篇經驗分享的標題
  * @apiParam {Number="整數, 0 <= N <= 50"} [experience_in_year] 相關職務工作經驗
  * @apiParam {String="大學","碩士","博士","高職","五專","二專","二技","高中","國中","國小"} [education] 最高學歷
  * @apiParam {Object} interview_time 面試時間
@@ -324,7 +322,6 @@ function validationInputFields(data) {
  * @apiParam {String="year","month","day","hour"} salary.type 面談薪資種類 (若有上傳面談薪資欄位，本欄必填)
  * @apiParam {Number="整數, >= 0"} salary.amount 面談薪資金額 (若有上傳面談薪資欄位，本欄必填)
  * @apiParam {Number="整數, 1~5"} overall_rating 整體面試滿意度
- * @apiParam {String="0 < length <= 50 "} title 整篇經驗分享的標題
  * @apiParam {Object[]} sections 整篇內容
  * @apiParam {String="0 < length <= 25" || NULL} sections.subtitle 段落標題
  * @apiParam {String="0 < length <= 5000"} sections.content 段落內容

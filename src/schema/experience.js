@@ -222,10 +222,53 @@ const Mutation = `
         experience: InterviewExperience!
     }
 
+    input CreateWorkExperienceInput {
+        "Common"
+        company: CompanyInput!
+        region: String!
+        job_title: String!
+        title: String!
+        sections: [SectionInput!]!
+        experience_in_year: Int
+        education: String
+        status: String = published
+        email: String
+        "work part"
+        salary: SalaryInput
+        week_work_time: Int
+        recommend_to_others: recommendToOthersType
+        is_currently_employed: isCurrentEmployedType!
+        "will have this column if 'is_currently_employed' === no"
+        job_ending_time: jobEndingTimeInput
+    }
+
+    enum isCurrentEmployedType {
+        yes
+        no
+    }
+
+    enum recommendToOthersType {
+        yes
+        no
+    }
+
+    input jobEndingTimeInput {
+        year: Int!
+        month: Int!
+    }
+
+    type CreateWorkExperiencePayload {
+        success: Boolean!
+        experience: WorkExperience!
+    }
+
     extend type Mutation {
         createInterviewExperience(
             input: CreateInterviewExperienceInput!
         ): CreateInterviewExperiencePayload!
+        createWorkExperience(
+            input: CreateWorkExperienceInput!
+        ): CreateWorkExperiencePayload!
     }
 `;
 
@@ -410,6 +453,62 @@ const resolvers = {
             }
 
             winston.info("interview experiences insert data success", {
+                id: experience._id,
+                ip,
+                ips,
+            });
+
+            return {
+                success: true,
+                experience,
+            };
+        },
+        async createWorkExperience(
+            root,
+            { input },
+            { db, user, manager, ip, ips }
+        ) {
+            const experience = input;
+
+            Object.assign(experience, {
+                type: "work",
+                author_id: user._id,
+                like_count: 0,
+                reply_count: 0,
+                report_count: 0,
+                // TODO 瀏覽次數？
+                created_at: new Date(),
+                // 封存狀態
+                archive: {
+                    is_archived: false,
+                    reason: "",
+                },
+            });
+
+            if (experience.is_currently_employed === "yes") {
+                const now = new Date();
+                const data_time = {
+                    year: now.getFullYear(),
+                    month: now.getMonth() + 1,
+                };
+
+                experience.data_time = data_time;
+            } else {
+                experience.data_time = experience.job_ending_time;
+            }
+
+            const experience_model = new ExperienceModel(db);
+
+            await experience_model.createExperience(experience);
+            if (experience.email) {
+                const user_model = new UserModel(manager);
+                await user_model.updateSubscribeEmail(
+                    user._id,
+                    experience.email
+                );
+            }
+
+            winston.info("work experiences insert data success", {
                 id: experience._id,
                 ip,
                 ips,

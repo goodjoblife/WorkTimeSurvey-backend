@@ -1,10 +1,9 @@
 const express = require("express");
+const { makeExecutableSchema } = require("graphql-tools");
+const { graphql } = require("graphql");
 
 const router = express.Router();
-const HttpError = require("../../libs/errors").HttpError;
-const winston = require("winston");
-const UserModel = require("../../models/user_model");
-const ExperienceModel = require("../../models/experience_model");
+const { HttpError } = require("../../libs/errors");
 const helper = require("../company_helper");
 const {
     requiredNonEmptyString,
@@ -18,6 +17,14 @@ const wrap = require("../../libs/wrap");
 const {
     requireUserAuthetication,
 } = require("../../middlewares/authentication");
+
+const resolvers = require("../../schema/resolvers");
+const typeDefs = require("../../schema/typeDefs");
+
+const schema = makeExecutableSchema({
+    typeDefs,
+    resolvers,
+});
 
 function validateCommonInputFields(data) {
     if (!requiredNonEmptyString(data.company_query)) {
@@ -54,10 +61,6 @@ function validateCommonInputFields(data) {
         ])
     ) {
         throw new HttpError(`地區不允許 ${data.region}！`, 422);
-    }
-
-    if (data.email && !validateEmail(data.email)) {
-        throw new HttpError("E-mail 格式錯誤", 422);
     }
 
     if (!requiredNonEmptyString(data.job_title)) {
@@ -116,6 +119,22 @@ function validateCommonInputFields(data) {
             throw new HttpError("最高學歷範圍錯誤", 422);
         }
     }
+
+    if (data.email && !validateEmail(data.email)) {
+        throw new HttpError("E-mail 格式錯誤", 422);
+    }
+
+    if (data.salary) {
+        if (!shouldIn(data.salary.type, ["year", "month", "day", "hour"])) {
+            throw new HttpError("薪資種類需為年薪/月薪/日薪/時薪", 422);
+        }
+        if (!requiredNumber(data.salary.amount)) {
+            throw new HttpError("薪資需為數字", 422);
+        }
+        if (data.salary.amount < 0) {
+            throw new HttpError("薪資不小於0", 422);
+        }
+    }
 }
 
 function validateWorkInputFields(data) {
@@ -149,18 +168,6 @@ function validateWorkInputFields(data) {
             data.job_ending_time.year > now.getFullYear()
         ) {
             throw new HttpError("離職月份不可能比現在時間晚", 422);
-        }
-    }
-
-    if (data.salary) {
-        if (!shouldIn(data.salary.type, ["year", "month", "day", "hour"])) {
-            throw new HttpError("薪資種類需為年薪/月薪/日薪/時薪", 422);
-        }
-        if (!requiredNumber(data.salary.amount)) {
-            throw new HttpError("薪資需為數字", 422);
-        }
-        if (data.salary.amount < 0) {
-            throw new HttpError("薪資不小於0", 422);
         }
     }
 
@@ -198,10 +205,10 @@ function pickupWorkExperience(input) {
         education,
         status,
         email,
+        salary,
         // work part
         is_currently_employed,
         job_ending_time,
-        salary,
         week_work_time,
         recommend_to_others,
     } = input;
@@ -220,17 +227,6 @@ function pickupWorkExperience(input) {
         // recommend_to_others optional
     });
 
-    if (is_currently_employed === "yes") {
-        const now = new Date();
-        const data_time = {
-            year: now.getFullYear(),
-            month: now.getMonth() + 1,
-        };
-
-        partial.data_time = data_time;
-    } else {
-        partial.data_time = job_ending_time;
-    }
     if (experience_in_year) {
         partial.experience_in_year = experience_in_year;
     }
@@ -246,14 +242,15 @@ function pickupWorkExperience(input) {
     if (recommend_to_others) {
         partial.recommend_to_others = recommend_to_others;
     }
-    if (email) {
-        partial.email = email;
-    }
 
     if (status) {
         partial.status = status;
     } else {
         partial.status = "published";
+    }
+
+    if (email) {
+        partial.email = email;
     }
 
     return partial;
@@ -271,6 +268,7 @@ function pickupWorkExperience(input) {
     "臺中市","臺南市","臺北市","臺東縣","桃園市",
     "宜蘭縣","雲林縣" } region 面試地區
  * @apiParam {String} job_title 工作職稱
+ * @apiParam {String="0 < length <= 50 "} title 整篇經驗分享的標題
  * @apiParam {Number="整數, 0 <= N <= 50"} [experience_in_year] 相關職務工作經驗
  * @apiParam {String="大學","碩士","博士","高職","五專","二專","二技","高中","國中","國小" } [education] 最高學歷
  * @apiParam {String="yes","no"} is_currently_employed 現在是否在職
@@ -282,7 +280,6 @@ function pickupWorkExperience(input) {
  * @apiParam {Number="整數, >= 0"} salary.amount 薪資金額 (若有上傳薪資欄位，本欄必填)
  * @apiParam {Number="整數或浮點數。 168>=N>=0。"} [week_work_time] 一週工時
  * @apiParam {String="yes","no"} [recommend_to_others] 是否推薦此工作
- * @apiParam {String="0 < length <= 50 "} title 整篇經驗分享的標題
  * @apiParam {Object[]} sections 整篇內容
  * @apiParam {String="0 < length <= 25" || NULL} sections.subtitle 段落標題
  * @apiParam {String="0 < length <= 5000"} sections.content 段落內容
@@ -290,33 +287,18 @@ function pickupWorkExperience(input) {
  * @apiParam {String} email 電子郵件
  * @apiSuccess {Boolean} success 是否上傳成功
  * @apiSuccess {Object} experience 經驗分享物件
- * @apiSuccess {String} experience._id  經驗分享id
+ * @apiSuccess {String} experience._id 經驗分享id
  */
 router.post("/", [
     requireUserAuthetication,
     wrap(async (req, res) => {
         validationInputFields(req.body);
 
-        const experience = {};
-        Object.assign(experience, {
-            type: "work",
-            author_id: req.user._id,
-            // company 後面決定
+        const experience = {
             company: {},
-            like_count: 0,
-            reply_count: 0,
-            report_count: 0,
-            // TODO 瀏覽次數？
-            created_at: new Date(),
-            // 封存狀態
-            archive: {
-                is_archived: false,
-                reason: "",
-            },
-        });
+        };
         Object.assign(experience, pickupWorkExperience(req.body));
 
-        const experience_model = new ExperienceModel(req.db);
         const company_model = req.manager.CompanyModel;
 
         const company = await helper.getCompanyByIdOrQuery(
@@ -326,25 +308,29 @@ router.post("/", [
         );
         experience.company = company;
 
-        await experience_model.createExperience(experience);
-        if (experience.email) {
-            const user_model = new UserModel(req.manager);
-            await user_model.updateSubscribeEmail(
-                req.user._id,
-                experience.email
-            );
-        }
+        const query = /* GraphQL */ `
+            mutation CreateWorkExperience($input: CreateWorkExperienceInput!) {
+                createWorkExperience(input: $input) {
+                    success
+                    experience {
+                        id
+                    }
+                }
+            }
+        `;
 
-        winston.info("work experiences insert data success", {
-            id: experience._id,
-            ip: req.ip,
-            ips: req.ips,
-        });
+        const input = {
+            input: experience,
+        };
+
+        const {
+            data: { createWorkExperience },
+        } = await graphql(schema, query, null, req, input);
 
         res.send({
-            success: true,
+            success: createWorkExperience.success,
             experience: {
-                _id: experience._id,
+                _id: createWorkExperience.experience.id,
             },
         });
     }),

@@ -48,6 +48,33 @@ type CreateInterviewExperiencePayload {
   experience: InterviewExperience!
 }
 
+input CreateWorkExperienceInput {
+  """Common"""
+  company: CompanyInput!
+  region: String!
+  job_title: String!
+  title: String!
+  sections: [SectionInput!]!
+  experience_in_year: Int
+  education: String
+  status: String
+  email: String
+
+  """work part"""
+  salary: SalaryInput
+  week_work_time: Int
+  recommend_to_others: recommendToOthersType
+  is_currently_employed: isCurrentEmployedType!
+
+  """will have this column if 'is_currently_employed' === no"""
+  job_ending_time: jobEndingTimeInput
+}
+
+type CreateWorkExperiencePayload {
+  success: Boolean!
+  experience: WorkExperience!
+}
+
 scalar Date
 
 enum EmailStatus {
@@ -183,10 +210,20 @@ input InterviewTimeInput {
   month: Int!
 }
 
+enum isCurrentEmployedType {
+  yes
+  no
+}
+
 type JobAverageSalary {
   job_title: JobTitle!
   average_salary: Salary!
   data_count: Int!
+}
+
+input jobEndingTimeInput {
+  year: Int!
+  month: Int!
 }
 
 type JobTitle {
@@ -223,6 +260,7 @@ type LaborRight {
 type Mutation {
   placeholder: Boolean
   createInterviewExperience(input: CreateInterviewExperienceInput!): CreateInterviewExperiencePayload!
+  createWorkExperience(input: CreateWorkExperienceInput!): CreateWorkExperiencePayload!
 
   """發送驗證信"""
   sendVerifyEmail(input: SendVerifyEmailInput!): SendVerifyEmailPayload!
@@ -297,6 +335,11 @@ type Query {
 
   """薪資工時總數"""
   salary_work_time_count: Int!
+}
+
+enum recommendToOthersType {
+  yes
+  no
 }
 
 type Reply {
