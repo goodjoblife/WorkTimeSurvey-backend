@@ -1,0 +1,44 @@
+name: Github Actions CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [10, 12]
+    services:
+      mongo:
+        image: mongo:3.6
+        ports:
+          - 27017:27017
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+    env:
+      MONGODB_URI: mongodb://localhost
+      MONGODB_DBNAME: goodjob
+      REDIS_URL: redis://localhost
+      NODE_ENV: test
+      JWT_SECRET: DontUseMe
+      VERIFY_EMAIL_JWT_SECRET: DontUseMe
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install dependencies
+        run: yarn install
+      - name: Migrate
+        run: npm run migrate
+      - name: Unit test and API test
+        run: npm run test -- --timeout 30s
+      - name: Lint
+        run: npm run lint
