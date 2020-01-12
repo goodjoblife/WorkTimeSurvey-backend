@@ -436,6 +436,7 @@ const resolvers = {
                     is_archived: false,
                     reason: "",
                 },
+                status: "published",
             });
 
             const experience_model = new ExperienceModel(db);
@@ -483,6 +484,7 @@ const resolvers = {
                     is_archived: false,
                     reason: "",
                 },
+                status: "published",
             });
 
             if (experience.is_currently_employed === "yes") {
