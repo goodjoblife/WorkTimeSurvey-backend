@@ -38,6 +38,17 @@ const sendSurveyLetter = async userList => {
     }
 };
 
+/**
+ * Sample of userData.json format:
+ *
+ * [
+ *  {
+ *      "_id":"59074fbed17b740987654321",
+ *      "name":"古嘉博",
+ *      "email":"findyourgoodjob@gmail.com"
+ *  }
+ * ]
+ */
 (async () => {
     if (process.argv.length !== 3) {
         console.log("Usage: node sendSurveyLetter.js userData.json");
