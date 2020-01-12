@@ -30,7 +30,7 @@
     "cors": "^2.7.1",
     "dataloader": "^1.4.0",
     "dotenv": "^7.0.0",
-    "email-template": "https://github.com/goodjoblife/email-template.git#v1.3.1",
+    "email-template": "https://github.com/goodjoblife/email-template.git#v1.4.0",
     "express": "^4.13.4",
     "google-auth-library": "^4.2.5",
     "graphql": "^14.1.1",
