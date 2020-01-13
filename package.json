@@ -22,6 +22,7 @@
     "url": "https://github.com/goodjoblife/WorkTimeSurvey-backend/issues"
   },
   "dependencies": {
+    "@hapi/joi": "^16.1.8",
     "apollo-server-express": "^2.4.0",
     "aws-sdk": "^2.387.0",
     "body-parser": "^1.15.1",
@@ -35,7 +36,6 @@
     "google-auth-library": "^4.2.5",
     "graphql": "^14.1.1",
     "graphql-resolvers": "^0.3.2",
-    "joi": "^14.3.1",
     "jsonwebtoken": "^8.4.0",
     "lodash": "^4.17.13",
     "lru-cache": "^5.1.1",
