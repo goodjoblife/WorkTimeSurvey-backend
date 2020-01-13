@@ -30,6 +30,8 @@ module.exports = async db => {
         }
     }
     const bulk_write_result = await bulk_ops.execute();
+    // eslint-disable-next-line no-console
     console.log("ok:", bulk_write_result.ok);
+    // eslint-disable-next-line no-console
     console.log("nModified:", bulk_write_result.nModified);
 };

@@ -28,8 +28,10 @@ async function migrate(db, name) {
         await migration(db);
         await recordMigration(db, name);
 
+        // eslint-disable-next-line no-console
         console.log(`${name} is migrating, done`);
     } else {
+        // eslint-disable-next-line no-console
         console.log(`${name} is migrated, skipped`);
     }
 }
@@ -42,12 +44,14 @@ const main = async function() {
             await migrate(db, name); // eslint-disable-line no-await-in-loop
         }
     } catch (err) {
+        // eslint-disable-next-line no-console
         console.log(err);
     }
 
     try {
         await client.close();
     } catch (err) {
+        // eslint-disable-next-line no-console
         console.log(err);
     }
 };

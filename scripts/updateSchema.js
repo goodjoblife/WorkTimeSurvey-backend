@@ -12,6 +12,7 @@ const schema = require("../src/schema");
 (async () => {
     const result = await graphql(schema, introspectionQuery);
     if (result.errors) {
+        // eslint-disable-next-line no-console
         console.error(
             "ERROR introspecting schema: ",
             JSON.stringify(result.errors, null, 2)

@@ -1,4 +1,5 @@
 module.exports = async db => {
+    // eslint-disable-next-line no-console
     console.log(await db.collection("workings").count());
 
     const salary_work_times = await db
@@ -9,6 +10,7 @@ module.exports = async db => {
         })
         .toArray();
 
+    // eslint-disable-next-line no-console
     console.log("expected nModified:", salary_work_times.length);
 
     // update each salary_work_time.user_id
@@ -29,6 +31,8 @@ module.exports = async db => {
         }
     }
     const bulk_write_result = await bulk_ops.execute();
+    // eslint-disable-next-line no-console
     console.log("ok:", bulk_write_result.ok);
+    // eslint-disable-next-line no-console
     console.log("nModified:", bulk_write_result.nModified);
 };

@@ -28,12 +28,15 @@ const sendSurveyLetter = async userList => {
                     template,
                     variables
                 );
+                // eslint-disable-next-line no-console
                 console.log(user._id, user.name, email, new Date());
                 sendCount += 1;
             }
         }
+        // eslint-disable-next-line no-console
         console.log(`Sent/Total: ${sendCount}/${userList.length}`);
     } catch (err) {
+        // eslint-disable-next-line no-console
         console.error(err);
     }
 };
@@ -51,6 +54,7 @@ const sendSurveyLetter = async userList => {
  */
 (async () => {
     if (process.argv.length !== 3) {
+        // eslint-disable-next-line no-console
         console.log("Usage: node sendSurveyLetter.js userData.json");
         process.exit(0);
     } else {
