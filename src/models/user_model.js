@@ -1,4 +1,4 @@
-const Joi = require("joi");
+const Joi = require("@hapi/joi");
 /*
  * User {
  *   _id            : ObjectId!
@@ -49,8 +49,8 @@ class UserModel {
             // facebook_id & google_id 其中一個欄位必須存在
             .or("facebook_id", "google_id");
 
-        const result = Joi.validate(user, userSchema);
-        if (result.error !== null) {
+        const result = userSchema.validate(user);
+        if (result.error) {
             throw Error(result.error);
         }
 
