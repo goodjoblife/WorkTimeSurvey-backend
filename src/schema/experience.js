@@ -633,12 +633,12 @@ const resolvers = {
                 },
             });
 
-            const _experience = omitBy(experience, isNil);
+            const nonNilExperience = omitBy(experience, isNil);
 
             const experience_model = new ExperienceModel(db);
 
             // insert data into experiences collection
-            await experience_model.createExperience(_experience);
+            await experience_model.createExperience(nonNilExperience);
 
             // update user email & subscribeEmail, if email field exists
             if (experience.email) {
@@ -651,7 +651,7 @@ const resolvers = {
 
             return {
                 success: true,
-                experience,
+                experience: nonNilExperience,
             };
         },
         async createWorkExperience(root, { input }, { db, user, manager }) {
@@ -697,11 +697,11 @@ const resolvers = {
                 },
             });
 
-            const _experience = omitBy(experience, isNil);
+            const nonNilExperience = omitBy(experience, isNil);
 
             const experience_model = new ExperienceModel(db);
 
-            await experience_model.createExperience(_experience);
+            await experience_model.createExperience(nonNilExperience);
             if (experience.email) {
                 const user_model = new UserModel(manager);
                 await user_model.updateSubscribeEmail(
@@ -712,7 +712,7 @@ const resolvers = {
 
             return {
                 success: true,
-                experience,
+                experience: nonNilExperience,
             };
         },
     },

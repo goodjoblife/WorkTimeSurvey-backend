@@ -28,7 +28,6 @@ function pickupInterviewExperience(input) {
         sections,
         experience_in_year,
         education,
-        status,
         email,
         salary,
         // interview part
@@ -50,7 +49,6 @@ function pickupInterviewExperience(input) {
         sections,
         experience_in_year,
         education,
-        status,
         email,
         interview_time,
         interview_qas,
