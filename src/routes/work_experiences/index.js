@@ -28,7 +28,6 @@ function pickupWorkExperience(input) {
         sections,
         experience_in_year,
         education,
-        status,
         email,
         salary,
         // work part
@@ -49,7 +48,6 @@ function pickupWorkExperience(input) {
         sections,
         experience_in_year,
         education,
-        status,
         email,
         is_currently_employed,
         job_ending_time,

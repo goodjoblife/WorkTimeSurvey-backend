@@ -1,6 +1,7 @@
 const { gql, UserInputError } = require("apollo-server-express");
 const { ObjectId } = require("mongodb");
 const R = require("ramda");
+const { omitBy, isNil } = require("lodash");
 
 const { HttpError } = require("../libs/errors");
 const {
@@ -354,7 +355,6 @@ const Mutation = gql`
         sections: [SectionInput!]!
         experience_in_year: Int
         education: String
-        status: String = "published"
         email: String
         "interview part"
         interview_time: InterviewTimeInput!
@@ -404,7 +404,6 @@ const Mutation = gql`
         sections: [SectionInput!]!
         experience_in_year: Int
         education: String
-        status: String = "published"
         email: String
         "work part"
         salary: SalaryInput
@@ -624,6 +623,7 @@ const resolvers = {
                 like_count: 0,
                 reply_count: 0,
                 report_count: 0,
+                status: "published",
                 // TODO 瀏覽次數？
                 created_at: new Date(),
                 // 封存狀態
@@ -633,10 +633,12 @@ const resolvers = {
                 },
             });
 
+            const _experience = omitBy(experience, isNil);
+
             const experience_model = new ExperienceModel(db);
 
             // insert data into experiences collection
-            await experience_model.createExperience(experience);
+            await experience_model.createExperience(_experience);
 
             // update user email & subscribeEmail, if email field exists
             if (experience.email) {
@@ -667,21 +669,6 @@ const resolvers = {
             experience.company = company;
             experience.job_title = experience.job_title.toUpperCase();
 
-            Object.assign(experience, {
-                type: "work",
-                author_id: user._id,
-                like_count: 0,
-                reply_count: 0,
-                report_count: 0,
-                // TODO 瀏覽次數？
-                created_at: new Date(),
-                // 封存狀態
-                archive: {
-                    is_archived: false,
-                    reason: "",
-                },
-            });
-
             if (experience.is_currently_employed === "yes") {
                 const now = new Date();
                 const data_time = {
@@ -694,9 +681,27 @@ const resolvers = {
                 experience.data_time = experience.job_ending_time;
             }
 
+            Object.assign(experience, {
+                type: "work",
+                author_id: user._id,
+                like_count: 0,
+                reply_count: 0,
+                report_count: 0,
+                status: "published",
+                // TODO 瀏覽次數？
+                created_at: new Date(),
+                // 封存狀態
+                archive: {
+                    is_archived: false,
+                    reason: "",
+                },
+            });
+
+            const _experience = omitBy(experience, isNil);
+
             const experience_model = new ExperienceModel(db);
 
-            await experience_model.createExperience(experience);
+            await experience_model.createExperience(_experience);
             if (experience.email) {
                 const user_model = new UserModel(manager);
                 await user_model.updateSubscribeEmail(

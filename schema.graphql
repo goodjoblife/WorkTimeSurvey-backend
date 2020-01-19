@@ -31,7 +31,6 @@ input CreateInterviewExperienceInput {
   sections: [SectionInput!]!
   experience_in_year: Int
   education: String
-  status: String = "published"
   email: String
 
   """interview part"""
@@ -57,7 +56,6 @@ input CreateWorkExperienceInput {
   sections: [SectionInput!]!
   experience_in_year: Int
   education: String
-  status: String = "published"
   email: String
 
   """work part"""
