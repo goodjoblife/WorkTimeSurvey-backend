@@ -4,15 +4,6 @@ const { graphql } = require("graphql");
 
 const router = express.Router();
 const { HttpError } = require("../../libs/errors");
-const helper = require("../company_helper");
-const {
-    requiredNonEmptyString,
-    requiredNumber,
-    optionalNumber,
-    shouldIn,
-    stringRequireLength,
-    validateEmail,
-} = require("../../libs/validation");
 const wrap = require("../../libs/wrap");
 const {
     requireUserAuthetication,
@@ -26,211 +17,17 @@ const schema = makeExecutableSchema({
     resolvers,
 });
 
-function validateCommonInputFields(data) {
-    if (!requiredNonEmptyString(data.company_query)) {
-        throw new HttpError("公司/單位名稱要填喔！", 422);
-    }
-
-    if (!requiredNonEmptyString(data.region)) {
-        throw new HttpError("地區要填喔！", 422);
-    }
-    if (
-        !shouldIn(data.region, [
-            "彰化縣",
-            "嘉義市",
-            "嘉義縣",
-            "新竹市",
-            "新竹縣",
-            "花蓮縣",
-            "高雄市",
-            "基隆市",
-            "金門縣",
-            "連江縣",
-            "苗栗縣",
-            "南投縣",
-            "新北市",
-            "澎湖縣",
-            "屏東縣",
-            "臺中市",
-            "臺南市",
-            "臺北市",
-            "臺東縣",
-            "桃園市",
-            "宜蘭縣",
-            "雲林縣",
-        ])
-    ) {
-        throw new HttpError(`地區不允許 ${data.region}！`, 422);
-    }
-
-    if (!requiredNonEmptyString(data.job_title)) {
-        throw new HttpError("職稱要填喔！", 422);
-    }
-
-    if (!requiredNonEmptyString(data.title)) {
-        throw new HttpError("標題要寫喔！", 422);
-    }
-    if (!stringRequireLength(data.title, 1, 50)) {
-        throw new HttpError("標題僅限 1~50 字！", 422);
-    }
-
-    if (!data.sections || !(data.sections instanceof Array)) {
-        throw new HttpError("內容要寫喔！", 422);
-    }
-    data.sections.forEach(section => {
-        if (!requiredNonEmptyString(section.content)) {
-            throw new HttpError("內容要寫喔！", 422);
-        }
-        if (
-            section.subtitle !== null &&
-            !stringRequireLength(section.subtitle, 1, 25)
-        ) {
-            throw new HttpError("內容標題僅限 1~25 字！", 422);
-        }
-        if (!stringRequireLength(section.content, 1, 5000)) {
-            throw new HttpError("內容標題僅限 1~5000 字！", 422);
-        }
-    });
-
-    if (!optionalNumber(data.experience_in_year)) {
-        throw new HttpError("相關職務工作經驗是數字！", 422);
-    }
-    if (data.experience_in_year) {
-        if (data.experience_in_year < 0 || data.experience_in_year > 50) {
-            throw new HttpError("相關職務工作經驗需大於等於0，小於等於50", 422);
-        }
-    }
-
-    if (data.education) {
-        if (
-            !shouldIn(data.education, [
-                "大學",
-                "碩士",
-                "博士",
-                "高職",
-                "五專",
-                "二專",
-                "二技",
-                "高中",
-                "國中",
-                "國小",
-            ])
-        ) {
-            throw new HttpError("最高學歷範圍錯誤", 422);
-        }
-    }
-
-    if (data.email && !validateEmail(data.email)) {
-        throw new HttpError("E-mail 格式錯誤", 422);
-    }
-
-    if (data.salary) {
-        if (!shouldIn(data.salary.type, ["year", "month", "day", "hour"])) {
-            throw new HttpError("薪資種類需為年薪/月薪/日薪/時薪", 422);
-        }
-        if (!requiredNumber(data.salary.amount)) {
-            throw new HttpError("薪資需為數字", 422);
-        }
-        if (data.salary.amount < 0) {
-            throw new HttpError("薪資不小於0", 422);
-        }
-    }
-}
-
-function validateInterviewInputFields(data) {
-    if (!data.interview_time) {
-        throw new HttpError("面試時間要填喔！", 422);
-    }
-    if (!requiredNumber(data.interview_time.year)) {
-        throw new HttpError("面試年份要填喔！", 422);
-    }
-    if (!requiredNumber(data.interview_time.month)) {
-        throw new HttpError("面試月份要填喔！", 422);
-    }
-    const now = new Date();
-    if (data.interview_time.year <= now.getFullYear() - 10) {
-        throw new HttpError("面試年份需在10年內", 422);
-    }
-    if (data.interview_time.month < 1 || data.interview_time.month > 12) {
-        throw new HttpError("面試月份需在1~12月", 422);
-    }
-    if (
-        (data.interview_time.year === now.getFullYear() &&
-            data.interview_time.month > now.getMonth() + 1) ||
-        data.interview_time.year > now.getFullYear()
-    ) {
-        throw new HttpError("面試月份不可能比現在時間晚", 422);
-    }
-
-    if (data.interview_qas) {
-        if (!(data.interview_qas instanceof Array)) {
-            throw new HttpError("面試題目列表要是一個陣列", 422);
-        }
-        data.interview_qas.forEach(qa => {
-            if (!requiredNonEmptyString(qa.question)) {
-                throw new HttpError("面試題目內容要寫喔！", 422);
-            }
-            if (!stringRequireLength(qa.question, 1, 250)) {
-                throw new HttpError("面試題目標題僅限 1~250 字！", 422);
-            }
-            if (requiredNonEmptyString(qa.answer)) {
-                if (!stringRequireLength(qa.answer, 1, 5000)) {
-                    throw new HttpError("面試題目標題僅限 1~5000 字！", 422);
-                }
-            }
-        });
-        if (data.interview_qas.length > 30) {
-            throw new HttpError("面試題目列表超過 30 題！", 422);
-        }
-    }
-
-    if (!requiredNonEmptyString(data.interview_result)) {
-        throw new HttpError("面試結果要填喔！", 422);
-    }
-    if (!stringRequireLength(data.interview_result, 1, 100)) {
-        throw new HttpError("面試結果僅限 1~100 字！", 422);
-    }
-
-    // interview_sensitive_questions
-    if (data.interview_sensitive_questions) {
-        if (!(data.interview_sensitive_questions instanceof Array)) {
-            throw new HttpError("面試中提及的特別問題要是一個陣列", 422);
-        }
-        data.interview_sensitive_questions.forEach(question => {
-            if (!requiredNonEmptyString(question)) {
-                throw new HttpError("面試中提及的特別問題要是 string！", 422);
-            }
-            if (!stringRequireLength(question, 1, 20)) {
-                throw new HttpError("面試中提及的特別問題僅限 1~20 字！", 422);
-            }
-        });
-    }
-
-    if (!requiredNumber(data.overall_rating)) {
-        throw new HttpError("這次面試你給幾分？", 422);
-    }
-    if (!shouldIn(data.overall_rating, [1, 2, 3, 4, 5])) {
-        throw new HttpError("面試分數有誤", 422);
-    }
-}
-
-function validationInputFields(data) {
-    validateCommonInputFields(data);
-    validateInterviewInputFields(data);
-}
-
 function pickupInterviewExperience(input) {
-    const partial = {};
-
     const {
         // common
+        company_id,
+        company_query,
         region,
         job_title,
         title,
         sections,
         experience_in_year,
         education,
-        status,
         email,
         salary,
         // interview part
@@ -241,62 +38,25 @@ function pickupInterviewExperience(input) {
         overall_rating,
     } = input;
 
-    Object.assign(partial, {
+    return {
+        company: {
+            id: company_id,
+            query: company_query,
+        },
         region,
-        job_title: job_title.toUpperCase(),
+        job_title,
         title,
         sections,
-        // experience_in_year optional
-        // education optional
-        // email optional
+        experience_in_year,
+        education,
+        email,
         interview_time,
-        // interview_qas optional
+        interview_qas,
         interview_result,
-        // interview_sensitive_questions optional
-        // salary optional
+        interview_sensitive_questions,
+        salary,
         overall_rating,
-    });
-
-    if (experience_in_year) {
-        partial.experience_in_year = experience_in_year;
-    }
-    if (education) {
-        partial.education = education;
-    }
-    if (interview_qas) {
-        partial.interview_qas = interview_qas.map(qas => {
-            const result = {
-                question: qas.question,
-            };
-            if (typeof qas.answer === "undefined" || qas.answer == null) {
-                return result;
-            }
-            result.answer = qas.answer;
-            return result;
-        });
-    } else {
-        partial.interview_qas = [];
-    }
-    if (interview_sensitive_questions) {
-        partial.interview_sensitive_questions = interview_sensitive_questions;
-    } else {
-        partial.interview_sensitive_questions = [];
-    }
-    if (salary) {
-        partial.salary = salary;
-    }
-
-    if (status) {
-        partial.status = status;
-    } else {
-        partial.status = "published";
-    }
-
-    if (email) {
-        partial.email = email;
-    }
-
-    return partial;
+    };
 }
 
 /**
@@ -341,21 +101,7 @@ function pickupInterviewExperience(input) {
 router.post("/", [
     requireUserAuthetication,
     wrap(async (req, res) => {
-        validationInputFields(req.body);
-
-        const experience = {
-            company: {},
-        };
-        Object.assign(experience, pickupInterviewExperience(req.body));
-
-        const company_model = req.manager.CompanyModel;
-
-        const company = await helper.getCompanyByIdOrQuery(
-            company_model,
-            req.body.company_id,
-            req.body.company_query
-        );
-        experience.company = company;
+        const experience = pickupInterviewExperience(req.body);
 
         const query = /* GraphQL */ `
             mutation CreateInterviewExperience(
@@ -374,9 +120,14 @@ router.post("/", [
             input: experience,
         };
 
-        const {
-            data: { createInterviewExperience },
-        } = await graphql(schema, query, null, req, input);
+        const { data, errors } = await graphql(schema, query, null, req, input);
+
+        if (errors) {
+            // FIXME: the reason of why all throw errors 422 is doesn't want to break frontend API
+            throw new HttpError(errors, 422);
+        }
+
+        const { createInterviewExperience } = data;
 
         res.send({
             success: createInterviewExperience.success,
