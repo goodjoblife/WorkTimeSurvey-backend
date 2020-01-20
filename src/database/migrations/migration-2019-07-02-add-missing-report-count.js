@@ -6,6 +6,8 @@ module.exports = async db => {
             { $set: { report_count: 0 } }
         );
 
+    // eslint-disable-next-line no-console
     console.log("ok:", result.result.ok);
+    // eslint-disable-next-line no-console
     console.log("nModified:", result.result.nModified);
 };

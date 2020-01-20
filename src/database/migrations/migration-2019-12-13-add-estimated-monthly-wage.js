@@ -25,6 +25,8 @@ module.exports = async db => {
         });
     }
     const workingOpsResult = await workingsOps.execute();
+    // eslint-disable-next-line no-console
     console.log("Update ok:", workingOpsResult.ok);
+    // eslint-disable-next-line no-console
     console.log("nModified:", workingOpsResult.nModified);
 };

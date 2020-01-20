@@ -15,6 +15,7 @@ module.exports = async db => {
             const user = await db.collection("users").findOne({ facebook_id });
 
             if (!user) {
+                // eslint-disable-next-line no-console
                 console.log(
                     "working author not found in users collection",
                     working
@@ -39,5 +40,6 @@ module.exports = async db => {
             }
         }
     }
+    // eslint-disable-next-line no-console
     console.log("total", workings.length, "migratted", migratted_count);
 };

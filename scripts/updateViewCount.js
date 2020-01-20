@@ -125,6 +125,7 @@ const ModelManager = require("../src/models/manager");
             }
         } while (!hasFinishedAll);
     } catch (err) {
+        // eslint-disable-next-line no-console
         console.error(err);
     } finally {
         await client.close();
