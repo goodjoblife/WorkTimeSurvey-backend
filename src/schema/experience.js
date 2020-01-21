@@ -97,10 +97,6 @@ function validateCommonInputFields(data) {
     if (data.email && !validateEmail(data.email)) {
         throw new HttpError("E-mail 格式錯誤", 422);
     }
-
-    if (data.salary && data.salary.amount < 0) {
-        throw new HttpError("薪資不小於0", 422);
-    }
 }
 
 function validateWorkInputFields(data) {
