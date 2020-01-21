@@ -39,9 +39,18 @@ class EmailTemplateVariablesError extends Error {
      */
 }
 
-module.exports.HttpError = HttpError;
-module.exports.ObjectIdError = ObjectIdError;
-module.exports.DuplicateKeyError = DuplicateKeyError;
-module.exports.ObjectNotExistError = ObjectNotExistError;
-module.exports.EmailTemplateTypeError = EmailTemplateTypeError;
-module.exports.EmailTemplateVariablesError = EmailTemplateVariablesError;
+class ValidationError extends Error {
+    /*
+     * @param  message  any
+     */
+}
+
+module.exports = {
+    HttpError,
+    ObjectIdError,
+    DuplicateKeyError,
+    ObjectNotExistError,
+    EmailTemplateTypeError,
+    EmailTemplateVariablesError,
+    ValidationError,
+};
