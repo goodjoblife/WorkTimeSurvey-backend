@@ -39,12 +39,6 @@ class EmailTemplateVariablesError extends Error {
      */
 }
 
-class ValidationError extends Error {
-    /*
-     * @param  message  any
-     */
-}
-
 module.exports = {
     HttpError,
     ObjectIdError,
@@ -52,5 +46,4 @@ module.exports = {
     ObjectNotExistError,
     EmailTemplateTypeError,
     EmailTemplateVariablesError,
-    ValidationError,
 };

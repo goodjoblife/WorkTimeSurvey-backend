@@ -1,5 +1,5 @@
 const mongo = require("mongodb");
-const { ObjectNotExistError, ValidationError } = require("../libs/errors");
+const { ObjectNotExistError } = require("../libs/errors");
 const Joi = require("@hapi/joi");
 
 const salarySchema = Joi.object({
@@ -7,6 +7,7 @@ const salarySchema = Joi.object({
     amount: Joi.when("type", {
         is: "hour",
         then: Joi.number()
+            .integer()
             .min(10)
             .max(10000)
             .messages({
@@ -19,6 +20,7 @@ const salarySchema = Joi.object({
         .when("type", {
             is: "day",
             then: Joi.number()
+                .integer()
                 .min(100)
                 .max(120000)
                 .messages({
@@ -31,6 +33,7 @@ const salarySchema = Joi.object({
         .when("type", {
             is: "month",
             then: Joi.number()
+                .integer()
                 .min(1000)
                 .max(1000000)
                 .messages({
@@ -43,6 +46,7 @@ const salarySchema = Joi.object({
         .when("type", {
             is: "year",
             then: Joi.number()
+                .integer()
                 .min(10000)
                 .max(12000000)
                 .messages({
@@ -167,8 +171,9 @@ class ExperienceModel {
     createExperience(experience) {
         if (experience && experience.salary) {
             const result = salarySchema.validate(experience.salary);
+
             if (result.error) {
-                throw new ValidationError(result.error);
+                throw result.error;
             }
         }
         return this.collection.insertOne(experience);
