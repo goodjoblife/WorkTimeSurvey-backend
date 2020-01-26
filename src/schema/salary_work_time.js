@@ -44,8 +44,13 @@ const Type = gql`
 
     type JobAverageSalary {
         job_title: JobTitle!
-        average_salary: Salary!
+        average_salary: AverageSalary!
         data_count: Int!
+    }
+
+    type AverageSalary {
+        type: SalaryType!
+        amount: Float!
     }
 
     "薪資分布"
@@ -71,8 +76,8 @@ const Type = gql`
     }
 
     type Salary {
-        type: SalaryType
-        amount: Int
+        type: SalaryType!
+        amount: Int!
     }
 
     type YesNoOrUnknownCount {
