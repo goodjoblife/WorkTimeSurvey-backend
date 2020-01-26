@@ -4,6 +4,9 @@ const { union } = require("lodash");
 
 const Type = gql`
     type JobTitle {
+        id: ID!
+        " FIXME: should use 'id' after remove /jobs/search API"
+        _id: ID
         name: String!
 
         "取得資料本身"
@@ -25,6 +28,7 @@ const Query = gql`
     extend type Query {
         search_job_titles(query: String!): [JobTitle!]!
         job_title(name: String!): JobTitle
+        job_titles(query: String, page: Int): [JobTitle!]!
 
         "列出所有有資料(薪資工時、職場經驗)的職稱"
         job_titles_having_data: [JobTitle!]!
@@ -72,6 +76,33 @@ const resolvers = {
                 name: result.job_title,
             };
         },
+
+        job_titles: async (_, { query, page }, ctx) => {
+            query = query || "";
+            page = page || 0;
+
+            let q;
+
+            if (query === "") {
+                q = { isFinal: true };
+            } else {
+                q = {
+                    des: new RegExp(escapeRegExp(query.toUpperCase())),
+                    isFinal: true,
+                };
+            }
+
+            const collection = ctx.db.collection("job_titles");
+
+            const results = await collection
+                .find(q, { isFinal: 0 })
+                .skip(25 * page)
+                .limit(25)
+                .toArray();
+
+            return results;
+        },
+
         job_titles_having_data: async (_, __, ctx) => {
             const companiesFromSalaryWorkTime = await ctx.db
                 .collection("workings")
@@ -129,6 +160,10 @@ const resolvers = {
         },
     },
     JobTitle: {
+        id: jobTitle => jobTitle._id,
+        name: jobTitle => {
+            return jobTitle.name || jobTitle.des;
+        },
         salary_work_times: async (jobTitle, _, { manager }) => {
             return await manager.SalaryWorkTimeModel.byJobTitleLoader.load(
                 jobTitle.name
