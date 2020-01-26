@@ -66,7 +66,11 @@ describe("Query company_keywords", () => {
             .expect(200);
 
         assert.property(res.body, "errors");
-        assert.property(res.body.errors[0].extensions.code, "BAD_USER_INPUT");
+        assert.deepPropertyVal(
+            res.body,
+            "errors.0.extensions.code",
+            "BAD_USER_INPUT"
+        );
     });
 
     after(async () => {
