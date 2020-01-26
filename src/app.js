@@ -2,6 +2,7 @@ const bodyParser = require("body-parser");
 const compression = require("compression");
 const cors = require("cors");
 const express = require("express");
+const Joi = require("@hapi/joi");
 const { HttpError, ObjectNotExistError } = require("./libs/errors");
 const expressMongoDb = require("./middlewares/express_mongo_db");
 const expressRedisDb = require("./middlewares/express_redis_db");
@@ -87,6 +88,12 @@ setupGraphql(app, {
             message: err.message,
             error: err,
         });
+
+        // If Joi.ValidationError, overwrite code to be the same as UserInputError
+        if (err.originalError instanceof Joi.ValidationError) {
+            err.extensions.code = "BAD_USER_INPUT";
+        }
+
         return err;
     },
 });
