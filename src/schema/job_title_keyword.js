@@ -1,7 +1,6 @@
 const R = require("ramda");
 const { gql } = require("apollo-server-express");
-const { HttpError } = require("../libs/errors");
-const { requiredNumberInRange } = require("../libs/validation");
+const Joi = require("@hapi/joi");
 
 const Type = `
 `;
@@ -18,9 +17,12 @@ const Mutation = `
 const resolvers = {
     Query: {
         async job_title_keywords(obj, { limit }, ctx) {
-            if (!requiredNumberInRange(limit, 1, 20)) {
-                throw new HttpError("limit should be 1~20", 422);
-            }
+            const schema = Joi.number()
+                .integer()
+                .min(1)
+                .max(20);
+
+            Joi.assert(limit, schema);
 
             const jobTitleKeywordModel = ctx.manager.JobTitleKeywordModel;
             const results = await jobTitleKeywordModel.aggregate({ limit });

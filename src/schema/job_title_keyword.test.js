@@ -31,9 +31,11 @@ describe("Query job_title_keywords", () => {
 
     it("will return keywords in order", async () => {
         const payload = {
-            query: `{
+            query: /* GraphQL */ `
+                {
                     job_title_keywords
-                }`,
+                }
+            `,
             variables: null,
         };
         const res = await request(app)
@@ -47,6 +49,28 @@ describe("Query job_title_keywords", () => {
         assert.lengthOf(job_title_keywords, 5);
         assert.equal(job_title_keywords[0], "GoodJob");
         assert.equal(job_title_keywords[1], "GoodJob2");
+    });
+
+    it("throw error if input invalid", async () => {
+        const payload = {
+            query: /* GraphQL */ `
+                {
+                    job_title_keywords(limit: 0)
+                }
+            `,
+            variables: null,
+        };
+        const res = await request(app)
+            .post("/graphql")
+            .send(payload)
+            .expect(200);
+
+        assert.property(res.body, "errors");
+        assert.deepPropertyVal(
+            res.body,
+            "errors.0.extensions.code",
+            "BAD_USER_INPUT"
+        );
     });
 
     after(async () => {
