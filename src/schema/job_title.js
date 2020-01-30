@@ -7,6 +7,8 @@ const Type = gql`
         id: ID!
         " FIXME: should use 'id' after remove /jobs/search API"
         _id: ID
+        " FIXME: should use 'name' after migrate"
+        des: String
         name: String!
 
         "取得資料本身"
@@ -161,9 +163,6 @@ const resolvers = {
     },
     JobTitle: {
         id: jobTitle => jobTitle._id,
-        name: jobTitle => {
-            return jobTitle.name || jobTitle.des;
-        },
         salary_work_times: async (jobTitle, _, { manager }) => {
             return await manager.SalaryWorkTimeModel.byJobTitleLoader.load(
                 jobTitle.name

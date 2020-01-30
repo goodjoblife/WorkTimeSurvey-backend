@@ -35,7 +35,7 @@ router.get(
             query JobTitles($query: String, $page: Int) {
                 job_titles(query: $query, page: $page) {
                     _id
-                    name
+                    des
                 }
             }
         `;
