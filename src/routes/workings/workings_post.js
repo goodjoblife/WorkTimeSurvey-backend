@@ -498,15 +498,10 @@ async function main(req, res) {
             working.recommended_by = req.custom.recommendation_string;
         }
 
-        const user_id = working.user_id;
-
         working.archive = {
             is_archived: false,
             reason: "",
         };
-
-        const queries_count = await helper.checkAndUpdateQuota(req.db, user_id);
-        response_data.queries_count = queries_count;
 
         await collection.insert(working);
 
