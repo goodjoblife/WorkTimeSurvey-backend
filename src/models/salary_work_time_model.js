@@ -1,6 +1,6 @@
 const R = require("ramda");
 const DataLoader = require("dataloader");
-
+const { salarySchema } = require("./common_schemas");
 class SalaryWorkTimeModel {
     constructor(manager) {
         this.manager = manager;
@@ -55,6 +55,16 @@ class SalaryWorkTimeModel {
             })
             .sort({ created_at: -1 })
             .toArray();
+    }
+
+    async createSalaryWorkTime(salaryWorkTime) {
+        if (salaryWorkTime && salaryWorkTime.salary) {
+            const result = salarySchema.validate(salaryWorkTime.salary);
+            if (result.error) {
+                throw result.error;
+            }
+        }
+        return await this.collection.insertOne(salaryWorkTime);
     }
 }
 
