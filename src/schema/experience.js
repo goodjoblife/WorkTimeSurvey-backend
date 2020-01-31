@@ -2,7 +2,9 @@ const { gql, UserInputError } = require("apollo-server-express");
 const { ObjectId } = require("mongodb");
 const R = require("ramda");
 const { omitBy, isNil } = require("lodash");
+const { combineResolvers } = require("graphql-resolvers");
 
+const { isAuthenticated } = require("../utils/resolvers");
 const { HttpError } = require("../libs/errors");
 const {
     shouldIn,
@@ -584,133 +586,138 @@ const resolvers = {
     },
 
     Mutation: {
-        async createInterviewExperience(
-            root,
-            { input },
-            { db, user, manager }
-        ) {
-            const experience = input;
+        createInterviewExperience: combineResolvers(
+            isAuthenticated,
+            async (_, { input }, { db, user, manager }) => {
+                const experience = input;
 
-            validationInterviewInputFields(experience);
+                validationInterviewInputFields(experience);
 
-            const company_model = manager.CompanyModel;
+                const company_model = manager.CompanyModel;
 
-            const company = await helper.getCompanyByIdOrQuery(
-                company_model,
-                input.company.id,
-                input.company.query
-            );
-            experience.company = company;
-            experience.job_title = experience.job_title.toUpperCase();
-            experience.interview_qas = experience.interview_qas.map(qas => {
-                const result = {
-                    question: qas.question,
-                };
-                if (typeof qas.answer === "undefined" || qas.answer == null) {
+                const company = await helper.getCompanyByIdOrQuery(
+                    company_model,
+                    input.company.id,
+                    input.company.query
+                );
+                experience.company = company;
+                experience.job_title = experience.job_title.toUpperCase();
+                experience.interview_qas = experience.interview_qas.map(qas => {
+                    const result = {
+                        question: qas.question,
+                    };
+                    if (
+                        typeof qas.answer === "undefined" ||
+                        qas.answer == null
+                    ) {
+                        return result;
+                    }
+                    result.answer = qas.answer;
                     return result;
+                });
+
+                Object.assign(experience, {
+                    type: "interview",
+                    author_id: user._id,
+                    like_count: 0,
+                    reply_count: 0,
+                    report_count: 0,
+                    status: "published",
+                    // TODO 瀏覽次數？
+                    created_at: new Date(),
+                    // 封存狀態
+                    archive: {
+                        is_archived: false,
+                        reason: "",
+                    },
+                });
+
+                const nonNilExperience = omitBy(experience, isNil);
+
+                const experience_model = new ExperienceModel(db);
+
+                // insert data into experiences collection
+                await experience_model.createExperience(nonNilExperience);
+
+                // update user email & subscribeEmail, if email field exists
+                if (experience.email) {
+                    const user_model = new UserModel(manager);
+                    await user_model.updateSubscribeEmail(
+                        user._id,
+                        experience.email
+                    );
                 }
-                result.answer = qas.answer;
-                return result;
-            });
 
-            Object.assign(experience, {
-                type: "interview",
-                author_id: user._id,
-                like_count: 0,
-                reply_count: 0,
-                report_count: 0,
-                status: "published",
-                // TODO 瀏覽次數？
-                created_at: new Date(),
-                // 封存狀態
-                archive: {
-                    is_archived: false,
-                    reason: "",
-                },
-            });
-
-            const nonNilExperience = omitBy(experience, isNil);
-
-            const experience_model = new ExperienceModel(db);
-
-            // insert data into experiences collection
-            await experience_model.createExperience(nonNilExperience);
-
-            // update user email & subscribeEmail, if email field exists
-            if (experience.email) {
-                const user_model = new UserModel(manager);
-                await user_model.updateSubscribeEmail(
-                    user._id,
-                    experience.email
-                );
-            }
-
-            return {
-                success: true,
-                experience: nonNilExperience,
-            };
-        },
-        async createWorkExperience(root, { input }, { db, user, manager }) {
-            const experience = input;
-
-            validationWorkInputFields(experience);
-
-            const company_model = manager.CompanyModel;
-
-            const company = await helper.getCompanyByIdOrQuery(
-                company_model,
-                input.company.id,
-                input.company.query
-            );
-            experience.company = company;
-            experience.job_title = experience.job_title.toUpperCase();
-
-            if (experience.is_currently_employed === "yes") {
-                const now = new Date();
-                const data_time = {
-                    year: now.getFullYear(),
-                    month: now.getMonth() + 1,
+                return {
+                    success: true,
+                    experience: nonNilExperience,
                 };
-
-                experience.data_time = data_time;
-            } else {
-                experience.data_time = experience.job_ending_time;
             }
+        ),
+        createWorkExperience: combineResolvers(
+            isAuthenticated,
+            async (_, { input }, { db, user, manager }) => {
+                const experience = input;
 
-            Object.assign(experience, {
-                type: "work",
-                author_id: user._id,
-                like_count: 0,
-                reply_count: 0,
-                report_count: 0,
-                status: "published",
-                // TODO 瀏覽次數？
-                created_at: new Date(),
-                // 封存狀態
-                archive: {
-                    is_archived: false,
-                    reason: "",
-                },
-            });
+                validationWorkInputFields(experience);
 
-            const nonNilExperience = omitBy(experience, isNil);
+                const company_model = manager.CompanyModel;
 
-            const experience_model = new ExperienceModel(db);
-
-            await experience_model.createExperience(nonNilExperience);
-            if (experience.email) {
-                const user_model = new UserModel(manager);
-                await user_model.updateSubscribeEmail(
-                    user._id,
-                    experience.email
+                const company = await helper.getCompanyByIdOrQuery(
+                    company_model,
+                    input.company.id,
+                    input.company.query
                 );
-            }
+                experience.company = company;
+                experience.job_title = experience.job_title.toUpperCase();
 
-            return {
-                success: true,
-                experience: nonNilExperience,
-            };
-        },
+                if (experience.is_currently_employed === "yes") {
+                    const now = new Date();
+                    const data_time = {
+                        year: now.getFullYear(),
+                        month: now.getMonth() + 1,
+                    };
+
+                    experience.data_time = data_time;
+                } else {
+                    experience.data_time = experience.job_ending_time;
+                }
+
+                Object.assign(experience, {
+                    type: "work",
+                    author_id: user._id,
+                    like_count: 0,
+                    reply_count: 0,
+                    report_count: 0,
+                    status: "published",
+                    // TODO 瀏覽次數？
+                    created_at: new Date(),
+                    // 封存狀態
+                    archive: {
+                        is_archived: false,
+                        reason: "",
+                    },
+                });
+
+                const nonNilExperience = omitBy(experience, isNil);
+
+                const experience_model = new ExperienceModel(db);
+
+                await experience_model.createExperience(nonNilExperience);
+                if (experience.email) {
+                    const user_model = new UserModel(manager);
+                    await user_model.updateSubscribeEmail(
+                        user._id,
+                        experience.email
+                    );
+                }
+
+                return {
+                    success: true,
+                    experience: nonNilExperience,
+                };
+            }
+        ),
     },
 };
 
