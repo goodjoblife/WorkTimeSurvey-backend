@@ -1364,7 +1364,7 @@ describe("POST /workings", () => {
         });
     });
 
-    describe.only("after POST /workings successfully", () => {
+    describe("after POST /workings successfully", () => {
         it("increase user.time_and_salary_count by 1", async () => {
             await request(app)
                 .post("/workings")
