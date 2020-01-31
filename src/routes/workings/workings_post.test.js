@@ -1364,6 +1364,20 @@ describe("POST /workings", () => {
         });
     });
 
+    describe.only("after POST /workings successfully", () => {
+        it("increase user.time_and_salary_count by 1", async () => {
+            await request(app)
+                .post("/workings")
+                .send(generateWorkingTimeRelatedPayload())
+                .set("Authorization", `Bearer ${fake_user_token}`)
+                .expect(200);
+            const user = await db
+                .collection("users")
+                .findOne({ _id: fake_user._id });
+            assert.propertyVal(user, "time_and_salary_count", 1);
+        });
+    });
+
     after(async () => {
         await db.collection("workings").deleteMany({});
         await db.collection("companies").deleteMany({});
