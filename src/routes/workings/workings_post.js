@@ -503,6 +503,10 @@ async function main(req, res) {
         };
 
         await req.manager.SalaryWorkTimeModel.createSalaryWorkTime(working);
+        const r = await req.manager.UserModel.increaseSalaryWorkTimeCount(
+            req.user._id
+        );
+        console.log(JSON.stringify(r, null, 4));
 
         // update user email & subscribeEmail, if email field exists
         if (working.email) {
