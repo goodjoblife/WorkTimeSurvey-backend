@@ -3,6 +3,11 @@ type Archive {
   reason: String!
 }
 
+type AverageSalary {
+  type: SalaryType!
+  amount: Float!
+}
+
 type Company {
   name: String!
 
@@ -215,7 +220,7 @@ enum IsCurrentEmployedType {
 
 type JobAverageSalary {
   job_title: JobTitle!
-  average_salary: Salary!
+  average_salary: AverageSalary!
   data_count: Int!
 }
 
@@ -362,8 +367,8 @@ type Reply {
 }
 
 type Salary {
-  type: SalaryType
-  amount: Int
+  type: SalaryType!
+  amount: Int!
 }
 
 """薪資分布"""
@@ -379,7 +384,7 @@ type SalaryDistributionBin {
 
 input SalaryInput {
   type: SalaryType!
-  amount: Float!
+  amount: Int!
 }
 
 type SalaryRange {
