@@ -1,6 +1,5 @@
 const winston = require("winston");
 const UserModel = require("../../models/user_model");
-const ModelManager = require("../../models/manager");
 const helper = require("./helper");
 const companyHelper = require("../company_helper");
 const recommendation = require("../../libs/recommendation");
@@ -508,8 +507,7 @@ async function main(req, res) {
         const queries_count = await helper.checkAndUpdateQuota(req.db, user_id);
         response_data.queries_count = queries_count;
 
-        const { SalaryWorkTimeModel } = new ModelManager(req.db);
-        await SalaryWorkTimeModel.createSalaryWorkTime(working);
+        await req.manager.SalaryWorkTimeModel.createSalaryWorkTime(working);
 
         // update user email & subscribeEmail, if email field exists
         if (working.email) {
