@@ -8,6 +8,15 @@ type AverageSalary {
   amount: Float!
 }
 
+input ChangeSalaryWorkTimeStatusInput {
+  id: ID!
+  status: PublishStatus!
+}
+
+type ChangeSalaryWorkTimeStatusPayload {
+  salary_work_time: SalaryWorkTime!
+}
+
 type Company {
   name: String!
 
@@ -264,6 +273,7 @@ type Mutation {
   placeholder: Boolean
   createInterviewExperience(input: CreateInterviewExperienceInput!): CreateInterviewExperiencePayload!
   createWorkExperience(input: CreateWorkExperienceInput!): CreateWorkExperiencePayload!
+  changeSalaryWorkTimeStatus(input: ChangeSalaryWorkTimeStatusInput!): ChangeSalaryWorkTimeStatusPayload!
 
   """發送驗證信"""
   sendVerifyEmail(input: SendVerifyEmailInput!): SendVerifyEmailPayload!

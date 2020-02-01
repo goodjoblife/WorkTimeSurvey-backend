@@ -1,7 +1,6 @@
 const express = require("express");
 const post_helper = require("./workings_post");
 const middleware = require("./middleware");
-const WorkingModel = require("../../models/working_model");
 const wrap = require("../../libs/wrap");
 const { HttpError, ObjectNotExistError } = require("../../libs/errors");
 const companiesSearchHandler = require("./companiesSearchHandler");
@@ -10,6 +9,17 @@ const { validSortQuery, pickupSortQuery } = require("./helper");
 const {
     requireUserAuthetication,
 } = require("../../middlewares/authentication");
+
+const { makeExecutableSchema } = require("graphql-tools");
+const { graphql } = require("graphql");
+
+const resolvers = require("../../schema/resolvers");
+const typeDefs = require("../../schema/typeDefs");
+
+const schema = makeExecutableSchema({
+    typeDefs,
+    resolvers,
+});
 
 const router = express.Router();
 
@@ -249,34 +259,54 @@ function _isValidStatus(value) {
 router.patch("/:id", [
     requireUserAuthetication,
     wrap(async (req, res) => {
-        // TODO-Work
         const id = req.params.id;
         const status = req.body.status;
-        const user = req.user;
 
         if (!_isValidStatus(status)) {
             throw new HttpError("status is invalid", 422);
         }
 
-        const working_model = new WorkingModel(req.db);
-        let working;
-        try {
-            working = await working_model.getWorkingsById(id, { author: 1 });
-        } catch (err) {
-            if (err instanceof ObjectNotExistError) {
-                throw new HttpError(err.message, 404);
+        const query = /* GraphQL */ `
+            mutation ChangeSalaryWorkTimeStatus(
+                $input: ChangeSalaryWorkTimeStatusInput!
+            ) {
+                changeSalaryWorkTimeStatus(input: $input) {
+                    salary_work_time {
+                        id
+                        status
+                    }
+                }
             }
-            throw err;
+        `;
+
+        const input = {
+            input: {
+                id,
+                status,
+            },
+        };
+
+        const { data, errors } = await graphql(schema, query, null, req, input);
+
+        if (errors) {
+            const message = errors[0].message;
+
+            if (message === "Unauthorized") {
+                throw new HttpError(errors, 401);
+            } else if (message === "user is unauthorized") {
+                throw new HttpError(errors, 403);
+            } else if (message === "該筆資訊不存在") {
+                throw new ObjectNotExistError(errors, 404);
+            }
+
+            throw new HttpError(errors, 500);
         }
 
-        if (!working.user_id.equals(user._id)) {
-            throw new HttpError("user is unauthorized", 403);
-        }
+        const { changeSalaryWorkTimeStatus } = data;
 
-        const result = await working_model.updateStatus(id, status);
         res.send({
             success: true,
-            status: result.value.status,
+            status: changeSalaryWorkTimeStatus.salary_work_time.status,
         });
     }),
 ]);
