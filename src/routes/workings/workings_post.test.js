@@ -1106,7 +1106,6 @@ describe("POST /workings", () => {
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
-            assert.equal(res.body.queries_count, 1);
             assert.equal(res.body.working.company.id, "00000001");
             assert.equal(res.body.working.company.name, "GOODJOB");
         });
@@ -1134,7 +1133,6 @@ describe("POST /workings", () => {
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
-            assert.equal(res.body.queries_count, 1);
             assert.equal(res.body.working.company.id, "00000001");
             assert.equal(res.body.working.company.name, "GOODJOB");
         });
@@ -1150,7 +1148,6 @@ describe("POST /workings", () => {
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
-            assert.equal(res.body.queries_count, 1);
             assert.equal(res.body.working.company.id, "00000001");
             assert.equal(res.body.working.company.name, "GOODJOB");
         });
@@ -1166,7 +1163,6 @@ describe("POST /workings", () => {
                 )
                 .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
-            assert.equal(res.body.queries_count, 1);
             assert.isUndefined(res.body.working.company.id);
             assert.equal(res.body.working.company.name, "GOODJOBGREAT");
         });
@@ -1357,63 +1353,6 @@ describe("POST /workings", () => {
         });
     });
 
-    describe("Quota Check Part", () => {
-        it("只能新增 5 筆資料", async () => {
-            const count = 5;
-            for (let i = 0; i < count; i += 1) {
-                const res = await request(app)
-                    .post("/workings")
-                    .send(
-                        generateWorkingTimeRelatedPayload({
-                            company_id: "00000001",
-                        })
-                    )
-                    .set("Authorization", `Bearer ${fake_user_token}`)
-                    .expect(200);
-                assert.equal(res.body.working.company.id, "00000001");
-                assert.equal(res.body.working.company.name, "GOODJOB");
-            }
-
-            await request(app)
-                .post("/workings")
-                .send(
-                    generateWorkingTimeRelatedPayload({
-                        company_id: "00000001",
-                    })
-                )
-                .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(429);
-        });
-
-        it("新增 2 筆資料，quries_count 會顯示 2", async () => {
-            const res = await request(app)
-                .post("/workings")
-                .send(
-                    generateWorkingTimeRelatedPayload({
-                        company_id: "00000001",
-                    })
-                )
-                .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200);
-            assert.equal(res.body.queries_count, 1);
-            assert.equal(res.body.working.company.id, "00000001");
-            assert.equal(res.body.working.company.name, "GOODJOB");
-
-            const res2 = await request(app)
-                .post("/workings")
-                .send(
-                    generateWorkingTimeRelatedPayload({
-                        company_id: "00000001",
-                    })
-                )
-                .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200);
-            assert.equal(res2.body.queries_count, 2);
-            assert.equal(res2.body.working.company.id, "00000001");
-            assert.equal(res2.body.working.company.name, "GOODJOB");
-        });
-    });
-
     describe("status part", () => {
         it("status can be `hidden`", async () => {
             const res = await request(app)
@@ -1422,6 +1361,20 @@ describe("POST /workings", () => {
                 .set("Authorization", `Bearer ${fake_user_token}`)
                 .expect(200);
             assert.equal(res.body.working.status, "hidden");
+        });
+    });
+
+    describe("after POST /workings successfully", () => {
+        it("increase user.time_and_salary_count by 1", async () => {
+            await request(app)
+                .post("/workings")
+                .send(generateWorkingTimeRelatedPayload())
+                .set("Authorization", `Bearer ${fake_user_token}`)
+                .expect(200);
+            const user = await db
+                .collection("users")
+                .findOne({ _id: fake_user._id });
+            assert.propertyVal(user, "time_and_salary_count", 1);
         });
     });
 

@@ -1,5 +1,12 @@
-const { gql, UserInputError } = require("apollo-server-express");
+const {
+    gql,
+    UserInputError,
+    AuthenticationError,
+} = require("apollo-server-express");
 const R = require("ramda");
+const { combineResolvers } = require("graphql-resolvers");
+
+const { isAuthenticated } = require("../utils/resolvers");
 const WorkingModel = require("../models/working_model");
 const {
     requiredNumberInRange,
@@ -152,7 +159,21 @@ const Query = gql`
     }
 `;
 
-const Mutation = `
+const Mutation = gql`
+    input ChangeSalaryWorkTimeStatusInput {
+        id: ID!
+        status: PublishStatus!
+    }
+
+    type ChangeSalaryWorkTimeStatusPayload {
+        salary_work_time: SalaryWorkTime!
+    }
+
+    extend type Mutation {
+        changeSalaryWorkTimeStatus(
+            input: ChangeSalaryWorkTimeStatusInput!
+        ): ChangeSalaryWorkTimeStatusPayload!
+    }
 `;
 
 const resolvers = {
@@ -340,6 +361,29 @@ const resolvers = {
             );
             return count;
         },
+    },
+
+    Mutation: {
+        changeSalaryWorkTimeStatus: combineResolvers(
+            isAuthenticated,
+            async (_, { input }, { db, user }) => {
+                const { id, status } = input;
+
+                const working_model = new WorkingModel(db);
+
+                const working = await working_model.getWorkingsById(id, {
+                    author: 1,
+                });
+
+                if (!working.user_id.equals(user._id)) {
+                    throw new AuthenticationError("user is unauthorized");
+                }
+
+                const result = await working_model.updateStatus(id, status);
+
+                return { salary_work_time: result.value };
+            }
+        ),
     },
 };
 
