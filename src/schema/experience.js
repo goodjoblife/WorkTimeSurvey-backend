@@ -373,7 +373,7 @@ const Mutation = gql`
 
     input SalaryInput {
         type: SalaryType!
-        amount: Float!
+        amount: Int!
     }
 
     input SectionInput {
