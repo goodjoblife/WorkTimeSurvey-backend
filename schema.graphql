@@ -61,6 +61,14 @@ type CreateInterviewExperiencePayload {
   experience: InterviewExperience!
 }
 
+input CreateReplyLikeInput {
+  reply_id: ID!
+}
+
+type CreateReplyLikePayload {
+  replyLike: ReplyLike!
+}
+
 input CreateWorkExperienceInput {
   """Common"""
   company: CompanyInput!
@@ -88,6 +96,14 @@ type CreateWorkExperiencePayload {
 }
 
 scalar Date
+
+input DeleteReplyLikeInput {
+  id: ID!
+}
+
+type DeleteReplyLikePayload {
+  deletedReplyLikeId: ID!
+}
 
 enum EmailStatus {
   UNVERIFIED
@@ -273,6 +289,8 @@ type Mutation {
   placeholder: Boolean
   createInterviewExperience(input: CreateInterviewExperienceInput!): CreateInterviewExperiencePayload!
   createWorkExperience(input: CreateWorkExperienceInput!): CreateWorkExperiencePayload!
+  createReplyLike(input: CreateReplyLikeInput!): CreateReplyLikePayload!
+  deleteReplyLike(input: DeleteReplyLikeInput!): DeleteReplyLikePayload!
   changeSalaryWorkTimeStatus(input: ChangeSalaryWorkTimeStatusInput!): ChangeSalaryWorkTimeStatusPayload!
 
   """發送驗證信"""
@@ -374,6 +392,14 @@ type Reply {
 
   """使用者是否按贊 (null 代表未傳入驗證資訊)"""
   liked: Boolean
+}
+
+type ReplyLike {
+  id: ID!
+  reply: Reply!
+  reply_time: Date!
+  experience: Experience
+  created_at: Date!
 }
 
 type Salary {

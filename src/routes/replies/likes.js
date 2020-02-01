@@ -1,12 +1,20 @@
 const express = require("express");
+const { makeExecutableSchema } = require("graphql-tools");
+const { graphql } = require("graphql");
+
 const HttpError = require("../../libs/errors").HttpError;
-const DuplicateKeyError = require("../../libs/errors").DuplicateKeyError;
-const ReplyLikeModel = require("../../models/reply_like_model");
-const ReplyModel = require("../../models/reply_model");
 const wrap = require("../../libs/wrap");
 const {
     requireUserAuthetication,
 } = require("../../middlewares/authentication");
+
+const resolvers = require("../../schema/resolvers");
+const typeDefs = require("../../schema/typeDefs");
+
+const schema = makeExecutableSchema({
+    typeDefs,
+    resolvers,
+});
 
 const router = express.Router();
 
@@ -20,21 +28,37 @@ router.post("/:reply_id/likes", [
     wrap(async (req, res) => {
         const reply_id = req.params.reply_id;
         if (typeof reply_id === "undefined") {
-            throw new HttpError("id error", 422);
+            throw new HttpError("id error", 404);
         }
 
-        const user = req.user;
-        const reply_like_model = new ReplyLikeModel(req.db);
-        const reply_model = new ReplyModel(req.db);
-
-        try {
-            await reply_like_model.createLike(reply_id, user);
-            await reply_model.incrementLikeCount(reply_id);
-        } catch (err) {
-            if (err instanceof DuplicateKeyError) {
-                throw new HttpError(err.message, 403);
+        const query = /* GraphQL */ `
+            mutation CreateReplyLike($input: CreateReplyLikeInput!) {
+                createReplyLike(input: $input) {
+                    replyLike {
+                        id
+                    }
+                }
             }
-            throw err;
+        `;
+
+        const input = {
+            input: { reply_id },
+        };
+
+        const { errors } = await graphql(schema, query, null, req, input);
+
+        if (errors) {
+            const message = errors[0].message;
+
+            if (message === "Unauthorized") {
+                throw new HttpError(errors, 401);
+            } else if (message === "該留言已經被按讚") {
+                throw new HttpError(errors, 403);
+            } else if (message === "這篇留言不存在") {
+                throw new HttpError(errors, 404);
+            }
+
+            throw new HttpError(errors, 500);
         }
 
         res.send({ success: true });
@@ -54,19 +78,32 @@ router.delete("/:reply_id/likes", [
             throw new HttpError("Not Found", 404);
         }
 
-        const user = req.user;
-        const reply_like_model = new ReplyLikeModel(req.db);
-        const reply_model = new ReplyModel(req.db);
-
-        try {
-            await reply_like_model.deleteLike(reply_id, user);
-            await reply_model.decrementLikeCount(reply_id);
-        } catch (err) {
-            if (err instanceof DuplicateKeyError) {
-                throw new HttpError(err.message, 403);
+        const query = /* GraphQL */ `
+            mutation DeleteReplyLike($input: DeleteReplyLikeInput!) {
+                deleteReplyLike(input: $input) {
+                    deletedReplyLikeId
+                }
             }
-            throw err;
+        `;
+
+        const input = {
+            input: { id: reply_id },
+        };
+
+        const { errors } = await graphql(schema, query, null, req, input);
+
+        if (errors) {
+            const message = errors[0].message;
+
+            if (message === "Unauthorized") {
+                throw new HttpError(errors, 401);
+            } else if (message === "讚不存在" || message === "這篇留言不存在") {
+                throw new HttpError(errors, 404);
+            }
+
+            throw new HttpError(errors, 500);
         }
+
         res.send({ success: true });
     }),
 ]);
