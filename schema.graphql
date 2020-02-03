@@ -3,6 +3,20 @@ type Archive {
   reason: String!
 }
 
+type AverageSalary {
+  type: SalaryType!
+  amount: Float!
+}
+
+input ChangeSalaryWorkTimeStatusInput {
+  id: ID!
+  status: PublishStatus!
+}
+
+type ChangeSalaryWorkTimeStatusPayload {
+  salary_work_time: SalaryWorkTime!
+}
+
 type Company {
   name: String!
 
@@ -121,10 +135,18 @@ enum ExperienceType {
   intern
 }
 
+input FacebookLoginInput {
+  accessToken: String!
+}
+
 enum Gender {
   female
   male
   other
+}
+
+input GoogleLoginInput {
+  idToken: String!
 }
 
 type InternExperience implements Experience {
@@ -215,7 +237,7 @@ enum IsCurrentEmployedType {
 
 type JobAverageSalary {
   job_title: JobTitle!
-  average_salary: Salary!
+  average_salary: AverageSalary!
   data_count: Int!
 }
 
@@ -255,10 +277,22 @@ type LaborRight {
   descriptionInPermissionBlock: String
 }
 
+type LoginPayload {
+  user: User!
+  token: String!
+}
+
 type Mutation {
   placeholder: Boolean
   createInterviewExperience(input: CreateInterviewExperienceInput!): CreateInterviewExperiencePayload!
   createWorkExperience(input: CreateWorkExperienceInput!): CreateWorkExperiencePayload!
+  changeSalaryWorkTimeStatus(input: ChangeSalaryWorkTimeStatusInput!): ChangeSalaryWorkTimeStatusPayload!
+
+  """Login via facebook client side auth"""
+  facebookLogin(input: FacebookLoginInput!): LoginPayload!
+
+  """Login via google client side auth"""
+  googleLogin(input: GoogleLoginInput!): LoginPayload!
 
   """發送驗證信"""
   sendVerifyEmail(input: SendVerifyEmailInput!): SendVerifyEmailPayload!
@@ -362,8 +396,8 @@ type Reply {
 }
 
 type Salary {
-  type: SalaryType
-  amount: Int
+  type: SalaryType!
+  amount: Int!
 }
 
 """薪資分布"""
@@ -379,7 +413,7 @@ type SalaryDistributionBin {
 
 input SalaryInput {
   type: SalaryType!
-  amount: Float!
+  amount: Int!
 }
 
 type SalaryRange {
@@ -469,6 +503,7 @@ type User {
   _id: ID!
   name: String!
   facebook_id: String
+  google_id: String
   email: String
   email_status: EmailStatus
   created_at: Date!

@@ -19,6 +19,7 @@ const { User } = require("../../models");
  * @apiSuccess {String} token Token
  */
 /* eslint-enable */
+// TODO: deprecated
 router.post(
     "/facebook",
     wrap(async (req, res) => {
@@ -76,6 +77,7 @@ router.post(
 );
 
 // TODO: maybe rewrite into graphql
+// TODO: deprecated
 router.post(
     "/google",
     wrap(async (req, res) => {
