@@ -203,7 +203,7 @@ const resolvers = {
             }
 
             if (!user.email && account.email) {
-                user.name = account.email;
+                user.email = account.email;
                 await user.save();
             }
 
@@ -249,7 +249,7 @@ const resolvers = {
             }
 
             if (!user.email && account.email) {
-                user.name = account.email;
+                user.email = account.email;
                 await user.save();
             }
 
