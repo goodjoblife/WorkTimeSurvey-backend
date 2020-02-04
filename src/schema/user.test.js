@@ -13,6 +13,7 @@ const resolvers = require("../schema/resolvers");
 const facebook = require("../libs/facebook");
 const google = require("../libs/google");
 const jwt = require("../utils/jwt");
+const { User } = require("../models");
 
 const userExperiencesResolver = resolvers.User.experiences;
 const userExperiencesCountResolver = resolvers.User.experience_count;
@@ -188,9 +189,7 @@ describe("Mutation.facebookLogin", () => {
         assert.propertyVal(decoded, "user_id", fake_user._id.toString());
 
         // In DB
-        const user = await fake_user_factory.user_model.findOneById(
-            fake_user._id
-        );
+        const user = await User.findById(fake_user._id);
         assert.propertyVal(
             user,
             "name",
@@ -251,9 +250,7 @@ describe("Mutation.facebookLogin", () => {
         await jwt.verify(token);
 
         // In DB
-        const user = await fake_user_factory.user_model.findOneByFacebookId(
-            "2"
-        );
+        const user = await User.findOneByFacebookId("2");
         assert.propertyVal(user, "name", "古嘉伯");
         assert.propertyVal(user, "email", "ci@goodjob.life");
     });
@@ -365,9 +362,7 @@ describe("Mutation.googleLogin", () => {
         assert.propertyVal(decoded, "user_id", fake_user._id.toString());
 
         // In DB
-        const user = await fake_user_factory.user_model.findOneById(
-            fake_user._id
-        );
+        const user = await User.findById(fake_user._id);
         assert.propertyVal(
             user,
             "name",
@@ -428,7 +423,7 @@ describe("Mutation.googleLogin", () => {
         await jwt.verify(token);
 
         // In DB
-        const user = await fake_user_factory.user_model.findOneByGoogleId("2");
+        const user = await User.findOneByGoogleId("2");
         assert.propertyVal(user, "name", "古嘉伯");
         assert.propertyVal(user, "email", "ci@goodjob.life");
     });

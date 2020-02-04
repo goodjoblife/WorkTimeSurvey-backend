@@ -1,5 +1,5 @@
 const { Schema } = require("mongoose");
-const UserModel = require("../user_model");
+const EMAIL_STATUS = require("../email_status");
 
 const userSchema = new Schema({
     name: {
@@ -12,7 +12,8 @@ const userSchema = new Schema({
     },
     email_status: {
         type: String,
-        default: UserModel.UNVERIFIED,
+        enum: Object.values(EMAIL_STATUS),
+        default: EMAIL_STATUS.UNVERIFIED,
     },
     facebook_id: {
         type: String,

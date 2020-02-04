@@ -46,7 +46,6 @@ router.post(
                 facebook_id,
                 facebook: account,
                 email: account.email,
-                email_status: "UNVERIFIED",
             });
             await user.save();
         }
@@ -104,7 +103,6 @@ router.post(
                 google_id,
                 google: account,
                 email: account.email,
-                email_status: "UNVERIFIED",
             });
             await user.save();
         }

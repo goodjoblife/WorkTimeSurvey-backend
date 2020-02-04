@@ -14,6 +14,7 @@ const {
 const jwt = require("../utils/jwt");
 const facebook = require("../libs/facebook");
 const google = require("../libs/google");
+const { User } = require("../models");
 
 const Type = gql`
     type User {
@@ -186,28 +187,25 @@ const resolvers = {
 
             // Retrieve User from DB
             const facebook_id = account.id;
-            let user = await user_model.findOneByFacebookId(facebook_id);
+            let user = await User.findOneByFacebookId(facebook_id);
             if (!user) {
-                user = await user_model.create({
+                user = new User({
                     name: account.name,
                     facebook_id,
                     facebook: account,
                     email: account.email,
                 });
+                await user.save();
             }
 
             if (!user.name && account.name) {
-                await user_model.collection.updateOne(
-                    { _id: user._id },
-                    { $set: { name: account.name } }
-                );
+                user.name = account.name;
+                await user.save();
             }
 
             if (!user.email && account.email) {
-                await user_model.collection.updateOne(
-                    { _id: user._id },
-                    { $set: { email: account.email } }
-                );
+                user.name = account.email;
+                await user.save();
             }
 
             // Sign token
@@ -236,28 +234,25 @@ const resolvers = {
             // Retrieve User from DB
             const google_id = account.sub;
 
-            let user = await user_model.findOneByGoogleId(google_id);
+            let user = await User.findOneByGoogleId(google_id);
             if (!user) {
-                user = await user_model.create({
+                user = new User({
                     name: account.name,
                     google_id,
                     google: account,
                     email: account.email,
                 });
+                await user.save();
             }
 
             if (!user.name && account.name) {
-                await user_model.collection.updateOne(
-                    { _id: user._id },
-                    { $set: { name: account.name } }
-                );
+                user.name = account.name;
+                await user.save();
             }
 
             if (!user.email && account.email) {
-                await user_model.collection.updateOne(
-                    { _id: user._id },
-                    { $set: { email: account.email } }
-                );
+                user.name = account.email;
+                await user.save();
             }
 
             // Sign token

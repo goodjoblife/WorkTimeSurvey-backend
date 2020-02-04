@@ -1,6 +1,7 @@
 const Joi = require("@hapi/joi");
 const { ObjectId } = require("mongodb");
 const { ObjectNotExistError } = require("../libs/errors");
+const EMAIL_STATUS = require("./email_status");
 
 /*
  * User {
@@ -59,7 +60,7 @@ class UserModel {
 
         const new_user = {
             ...user,
-            email_status: "UNVERIFIED",
+            email_status: EMAIL_STATUS.UNVERIFIED,
         };
 
         await this.collection.insertOne(new_user);
@@ -112,6 +113,6 @@ class UserModel {
 }
 
 module.exports = UserModel;
-module.exports.UNVERIFIED = "UNVERIFIED";
-module.exports.SENT_VERIFICATION_LINK = "SENT_VERIFICATION_LINK";
-module.exports.VERIFIED = "VERIFIED";
+module.exports.UNVERIFIED = EMAIL_STATUS.UNVERIFIED;
+module.exports.SENT_VERIFICATION_LINK = EMAIL_STATUS.SENT_VERIFICATION_LINK;
+module.exports.VERIFIED = EMAIL_STATUS.VERIFIED;
