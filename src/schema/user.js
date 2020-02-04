@@ -167,7 +167,7 @@ const resolvers = {
         },
     },
     Mutation: {
-        async facebookLogin(_, { input }, { manager }) {
+        async facebookLogin(_, { input }) {
             const schema = Joi.object({
                 accessToken: Joi.string().min(1),
             });
@@ -175,7 +175,6 @@ const resolvers = {
             Joi.assert(input, schema);
 
             const { accessToken } = input;
-            const user_model = manager.UserModel;
 
             // Check access_token with FB server
             let account = null;
@@ -211,9 +210,9 @@ const resolvers = {
             // Sign token
             const token = await jwt.signUser(user);
 
-            return { user: await user_model.findOneById(user._id), token };
+            return { user: await User.findById(user._id), token };
         },
-        async googleLogin(_, { input }, { manager }) {
+        async googleLogin(_, { input }) {
             const schema = Joi.object({
                 idToken: Joi.string().min(1),
             });
@@ -221,7 +220,6 @@ const resolvers = {
             Joi.assert(input, schema);
 
             const { idToken } = input;
-            const user_model = manager.UserModel;
 
             // Check access_token with google server
             let account = null;
@@ -258,7 +256,7 @@ const resolvers = {
             // Sign token
             const token = await jwt.signUser(user);
 
-            return { user: await user_model.findOneById(user._id), token };
+            return { user: await User.findById(user._id), token };
         },
     },
 };
