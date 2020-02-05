@@ -1,6 +1,17 @@
 const express = require("express");
-const escapeRegExp = require("lodash/escapeRegExp");
+const { makeExecutableSchema } = require("graphql-tools");
+const { graphql } = require("graphql");
+
 const wrap = require("../../libs/wrap");
+const { HttpError } = require("../../libs/errors");
+
+const resolvers = require("../../schema/resolvers");
+const typeDefs = require("../../schema/typeDefs");
+
+const schema = makeExecutableSchema({
+    typeDefs,
+    resolvers,
+});
 
 const router = express.Router();
 
@@ -17,28 +28,37 @@ const router = express.Router();
 router.get(
     "/search",
     wrap(async (req, res) => {
-        const search = req.query.key || "";
-        const page = req.query.page || 0;
-        let q;
+        const key = req.query.key;
+        const page = req.query.page;
 
-        if (search === "") {
-            q = { isFinal: true };
-        } else {
-            q = {
-                des: new RegExp(escapeRegExp(search.toUpperCase())),
-                isFinal: true,
-            };
+        const query = /* GraphQL */ `
+            query JobTitles($query: String, $page: Int) {
+                job_titles(query: $query, page: $page) {
+                    id
+                    name
+                }
+            }
+        `;
+
+        const input = {
+            query: key,
+            page,
+        };
+
+        const { data, errors } = await graphql(schema, query, null, req, input);
+
+        if (errors) {
+            throw new HttpError(errors, 500);
         }
 
-        const collection = req.db.collection("job_titles");
+        const { job_titles } = data;
 
-        const results = await collection
-            .find(q, { isFinal: 0 })
-            .skip(25 * page)
-            .limit(25)
-            .toArray();
+        const _job_titles = job_titles.map(job_title => ({
+            _id: job_title.id,
+            des: job_title.name,
+        }));
 
-        res.send(results);
+        res.send(_job_titles);
     })
 );
 

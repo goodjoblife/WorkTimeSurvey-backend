@@ -247,6 +247,8 @@ input JobEndingTimeInput {
 }
 
 type JobTitle {
+  """ FIXME: should add ! after migrate job_titles collection"""
+  id: ID
   name: String!
 
   """取得資料本身"""
@@ -352,6 +354,7 @@ type Query {
   job_title_keywords(limit: Int = 5): [String!]!
   search_job_titles(query: String!): [JobTitle!]!
   job_title(name: String!): JobTitle
+  job_titles(query: String, page: Int): [JobTitle!]!
 
   """列出所有有資料(薪資工時、職場經驗)的職稱"""
   job_titles_having_data: [JobTitle!]!

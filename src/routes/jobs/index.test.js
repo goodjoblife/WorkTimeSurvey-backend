@@ -36,6 +36,7 @@ describe("jobs", () => {
                 .expect(res => {
                     assert.isArray(res.body);
                     assert.deepProperty(res.body, "0._id");
+                    assert.deepEqual(res.body[0].des, "GOOGL");
                 }));
 
         it("will return jobs with keyword `g`", () =>
