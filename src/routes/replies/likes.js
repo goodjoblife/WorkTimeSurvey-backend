@@ -81,13 +81,13 @@ router.delete("/:reply_id/likes", [
         const query = /* GraphQL */ `
             mutation DeleteReplyLike($input: DeleteReplyLikeInput!) {
                 deleteReplyLike(input: $input) {
-                    deletedReplyLikeId
+                    deletedReplyId
                 }
             }
         `;
 
         const input = {
-            input: { id: reply_id },
+            input: { reply_id },
         };
 
         const { errors } = await graphql(schema, query, null, req, input);

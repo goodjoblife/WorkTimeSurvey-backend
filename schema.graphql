@@ -98,11 +98,11 @@ type CreateWorkExperiencePayload {
 scalar Date
 
 input DeleteReplyLikeInput {
-  id: ID!
+  reply_id: ID!
 }
 
 type DeleteReplyLikePayload {
-  deletedReplyLikeId: ID!
+  deletedReplyId: ID!
 }
 
 enum EmailStatus {
@@ -397,8 +397,6 @@ type Reply {
 type ReplyLike {
   id: ID!
   reply: Reply!
-  reply_time: Date!
-  experience: Experience
   created_at: Date!
 }
 

@@ -4,14 +4,11 @@ const { combineResolvers } = require("graphql-resolvers");
 const { isAuthenticated } = require("../utils/resolvers");
 const ReplyLikeModel = require("../models/reply_like_model");
 const ReplyModel = require("../models/reply_model");
-const ExperienceModel = require("../models/experience_model");
 
 const Type = gql`
     type ReplyLike {
         id: ID!
         reply: Reply!
-        reply_time: Date!
-        experience: Experience
         created_at: Date!
     }
 `;
@@ -28,11 +25,11 @@ const Mutation = gql`
     }
 
     input DeleteReplyLikeInput {
-        id: ID!
+        reply_id: ID!
     }
 
     type DeleteReplyLikePayload {
-        deletedReplyLikeId: ID!
+        deletedReplyId: ID!
     }
 
     extend type Mutation {
@@ -44,20 +41,11 @@ const Mutation = gql`
 const resolvers = {
     ReplyLike: {
         id: replyLike => replyLike._id,
-        async experience(replyLike, _, { db }) {
-            const experience_model = new ExperienceModel(db);
-            const experience_id = replyLike.experience_id;
-            const experience = await experience_model.findOneOrFail(
-                experience_id
-            );
-            if (experience.status === "published") {
-                return experience;
-            }
-            return null;
-        },
         async reply(replyLike, _, { db }) {
             const reply_model = new ReplyModel(db);
-            const reply = await reply_model.getReplyById(replyLike.reply_id);
+            const reply = await reply_model.getPublishedReplyById(
+                replyLike.reply_id
+            );
 
             return reply;
         },
@@ -86,15 +74,15 @@ const resolvers = {
         deleteReplyLike: combineResolvers(
             isAuthenticated,
             async (_, { input }, { user, db }) => {
-                const { id } = input;
+                const { reply_id } = input;
 
                 const reply_like_model = new ReplyLikeModel(db);
                 const reply_model = new ReplyModel(db);
 
-                await reply_like_model.deleteLike(id, user);
-                await reply_model.decrementLikeCount(id);
+                await reply_like_model.deleteLike(reply_id, user);
+                await reply_model.decrementLikeCount(reply_id);
 
-                return { deletedReplyLikeId: id };
+                return { deletedReplyId: reply_id };
             }
         ),
     },
