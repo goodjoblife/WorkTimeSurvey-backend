@@ -34,8 +34,8 @@ router.get(
         const query = /* GraphQL */ `
             query JobTitles($query: String, $page: Int) {
                 job_titles(query: $query, page: $page) {
-                    _id
-                    des
+                    id
+                    name
                 }
             }
         `;
@@ -53,7 +53,12 @@ router.get(
 
         const { job_titles } = data;
 
-        res.send(job_titles);
+        const _job_titles = job_titles.map(job_title => ({
+            _id: job_title.id,
+            des: job_title.name,
+        }));
+
+        res.send(_job_titles);
     })
 );
 

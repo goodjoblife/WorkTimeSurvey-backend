@@ -4,11 +4,8 @@ const { union } = require("lodash");
 
 const Type = gql`
     type JobTitle {
-        id: ID!
-        " FIXME: should use 'id' after remove /jobs/search API"
-        _id: ID
-        " FIXME: should use 'name' after migrate"
-        des: String
+        " FIXME: should add ! after migrate job_titles collection"
+        id: ID
         name: String!
 
         "取得資料本身"
@@ -102,7 +99,10 @@ const resolvers = {
                 .limit(25)
                 .toArray();
 
-            return results;
+            return results.map(result => ({
+                ...result,
+                name: result.des,
+            }));
         },
 
         job_titles_having_data: async (_, __, ctx) => {

@@ -230,13 +230,8 @@ input JobEndingTimeInput {
 }
 
 type JobTitle {
-  id: ID!
-
-  """ FIXME: should use 'id' after remove /jobs/search API"""
-  _id: ID
-
-  """ FIXME: should use 'name' after migrate"""
-  des: String
+  """ FIXME: should add ! after migrate job_titles collection"""
+  id: ID
   name: String!
 
   """取得資料本身"""
