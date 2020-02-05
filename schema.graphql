@@ -151,10 +151,18 @@ enum ExperienceType {
   intern
 }
 
+input FacebookLoginInput {
+  accessToken: String!
+}
+
 enum Gender {
   female
   male
   other
+}
+
+input GoogleLoginInput {
+  idToken: String!
 }
 
 type InternExperience implements Experience {
@@ -255,6 +263,8 @@ input JobEndingTimeInput {
 }
 
 type JobTitle {
+  """ FIXME: should add ! after migrate job_titles collection"""
+  id: ID
   name: String!
 
   """取得資料本身"""
@@ -285,6 +295,11 @@ type LaborRight {
   descriptionInPermissionBlock: String
 }
 
+type LoginPayload {
+  user: User!
+  token: String!
+}
+
 type Mutation {
   placeholder: Boolean
   createInterviewExperience(input: CreateInterviewExperienceInput!): CreateInterviewExperiencePayload!
@@ -292,6 +307,12 @@ type Mutation {
   createReplyLike(input: CreateReplyLikeInput!): CreateReplyLikePayload!
   deleteReplyLike(input: DeleteReplyLikeInput!): DeleteReplyLikePayload!
   changeSalaryWorkTimeStatus(input: ChangeSalaryWorkTimeStatusInput!): ChangeSalaryWorkTimeStatusPayload!
+
+  """Login via facebook client side auth"""
+  facebookLogin(input: FacebookLoginInput!): LoginPayload!
+
+  """Login via google client side auth"""
+  googleLogin(input: GoogleLoginInput!): LoginPayload!
 
   """發送驗證信"""
   sendVerifyEmail(input: SendVerifyEmailInput!): SendVerifyEmailPayload!
@@ -351,6 +372,7 @@ type Query {
   job_title_keywords(limit: Int = 5): [String!]!
   search_job_titles(query: String!): [JobTitle!]!
   job_title(name: String!): JobTitle
+  job_titles(query: String, page: Int): [JobTitle!]!
 
   """列出所有有資料(薪資工時、職場經驗)的職稱"""
   job_titles_having_data: [JobTitle!]!
@@ -508,6 +530,7 @@ type User {
   _id: ID!
   name: String!
   facebook_id: String
+  google_id: String
   email: String
   email_status: EmailStatus
   created_at: Date!
