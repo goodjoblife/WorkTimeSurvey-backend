@@ -1,4 +1,9 @@
-const { gql, UserInputError } = require("apollo-server-express");
+const {
+    gql,
+    UserInputError,
+    AuthenticationError,
+} = require("apollo-server-express");
+const Joi = require("@hapi/joi");
 const ExperienceModel = require("../models/experience_model");
 const ReplyModel = require("../models/reply_model");
 const WorkingModel = require("../models/working_model");
@@ -6,12 +11,16 @@ const {
     requiredNumberInRange,
     requiredNumberGreaterThanOrEqualTo,
 } = require("../libs/validation");
+const jwt = require("../utils/jwt");
+const facebook = require("../libs/facebook");
+const google = require("../libs/google");
 
 const Type = gql`
     type User {
         _id: ID!
         name: String!
         facebook_id: String
+        google_id: String
         email: String
         email_status: EmailStatus
         created_at: Date!
@@ -39,7 +48,26 @@ const Type = gql`
 const Query = `
 `;
 
-const Mutation = `
+const Mutation = gql`
+    input FacebookLoginInput {
+        accessToken: String!
+    }
+
+    input GoogleLoginInput {
+        idToken: String!
+    }
+
+    type LoginPayload {
+        user: User!
+        token: String!
+    }
+
+    extend type Mutation {
+        "Login via facebook client side auth"
+        facebookLogin(input: FacebookLoginInput!): LoginPayload!
+        "Login via google client side auth"
+        googleLogin(input: GoogleLoginInput!): LoginPayload!
+    }
 `;
 
 const resolvers = {
@@ -135,6 +163,107 @@ const resolvers = {
             const count = await working_model.getWorkingsCountByQuery(query);
 
             return count;
+        },
+    },
+    Mutation: {
+        async facebookLogin(_, { input }, { manager }) {
+            const schema = Joi.object({
+                accessToken: Joi.string().min(1),
+            });
+
+            Joi.assert(input, schema);
+
+            const { accessToken } = input;
+            const user_model = manager.UserModel;
+
+            // Check access_token with FB server
+            let account = null;
+            try {
+                account = await facebook.accessTokenAuth(accessToken);
+            } catch (e) {
+                throw new AuthenticationError("Unauthorized");
+            }
+
+            // Retrieve User from DB
+            const facebook_id = account.id;
+            let user = await user_model.findOneByFacebookId(facebook_id);
+            if (!user) {
+                user = await user_model.create({
+                    name: account.name,
+                    facebook_id,
+                    facebook: account,
+                    email: account.email,
+                });
+            }
+
+            if (!user.name && account.name) {
+                await user_model.collection.updateOne(
+                    { _id: user._id },
+                    { $set: { name: account.name } }
+                );
+            }
+
+            if (!user.email && account.email) {
+                await user_model.collection.updateOne(
+                    { _id: user._id },
+                    { $set: { email: account.email } }
+                );
+            }
+
+            // Sign token
+            const token = await jwt.signUser(user);
+
+            return { user: await user_model.findOneById(user._id), token };
+        },
+        async googleLogin(_, { input }, { manager }) {
+            const schema = Joi.object({
+                idToken: Joi.string().min(1),
+            });
+
+            Joi.assert(input, schema);
+
+            const { idToken } = input;
+            const user_model = manager.UserModel;
+
+            // Check access_token with google server
+            let account = null;
+            try {
+                account = await google.verifyIdToken(idToken);
+            } catch (e) {
+                throw new AuthenticationError("Unauthorized");
+            }
+
+            // Retrieve User from DB
+            const google_id = account.sub;
+
+            let user = await user_model.findOneByGoogleId(google_id);
+            if (!user) {
+                user = await user_model.create({
+                    name: account.name,
+                    google_id,
+                    google: account,
+                    email: account.email,
+                });
+            }
+
+            if (!user.name && account.name) {
+                await user_model.collection.updateOne(
+                    { _id: user._id },
+                    { $set: { name: account.name } }
+                );
+            }
+
+            if (!user.email && account.email) {
+                await user_model.collection.updateOne(
+                    { _id: user._id },
+                    { $set: { email: account.email } }
+                );
+            }
+
+            // Sign token
+            const token = await jwt.signUser(user);
+
+            return { user: await user_model.findOneById(user._id), token };
         },
     },
 };
