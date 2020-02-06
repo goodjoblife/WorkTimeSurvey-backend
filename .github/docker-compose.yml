@@ -1,0 +1,7 @@
+version: "2"
+services:
+  node:
+    image: goodjoblife/api-server:latest
+    build:
+      context: ..
+      dockerfile: Dockerfile
