@@ -6,6 +6,7 @@ module.exports = merge([
     require("./company_keyword").resolvers,
     require("./company").resolvers,
     require("./experience").resolvers,
+    require("./experience_like").resolvers,
     require("./job_title_keyword").resolvers,
     require("./job_title").resolvers,
     require("./labor_right").resolvers,

@@ -25,6 +25,7 @@ const router = express.Router();
  * @apiSuccess {String} ._id 代號
  * @apiSuccess {String} .des 職稱名
  */
+// TODO: deprecated
 router.get(
     "/search",
     wrap(async (req, res) => {

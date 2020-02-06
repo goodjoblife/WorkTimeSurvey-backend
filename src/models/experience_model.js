@@ -1,4 +1,5 @@
 const mongo = require("mongodb");
+const { ObjectId } = require("mongodb");
 const { ObjectNotExistError } = require("../libs/errors");
 const { salarySchema } = require("./common_schemas");
 
@@ -75,12 +76,23 @@ class ExperienceModel {
         if (experience) {
             return experience;
         }
-        throw new ObjectNotExistError("該文章不存在");
+        throw new ObjectNotExistError("該篇文章不存在");
     }
 
     // eslint-disable-next-line class-methods-use-this
     _isValidId(id) {
         return id && mongo.ObjectId.isValid(id);
+    }
+
+    getPublishedExperienceById(id) {
+        if (!this._isValidId(id)) {
+            return Promise.reject(new ObjectNotExistError("該篇文章不存在"));
+        }
+
+        return this.collection.findOne({
+            status: "published",
+            _id: new ObjectId(id),
+        });
     }
 
     /**

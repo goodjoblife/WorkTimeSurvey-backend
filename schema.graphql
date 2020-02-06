@@ -36,6 +36,14 @@ input CompanyInput {
   query: String!
 }
 
+input CreateExperienceLikeInput {
+  experience_id: ID!
+}
+
+type CreateExperienceLikePayload {
+  experienceLike: ExperienceLike!
+}
+
 input CreateInterviewExperienceInput {
   """Common"""
   company: CompanyInput!
@@ -89,6 +97,14 @@ type CreateWorkExperiencePayload {
 
 scalar Date
 
+input DeleteExperienceLikeInput {
+  experience_id: ID!
+}
+
+type DeleteExperienceLikePayload {
+  deletedExperienceId: ID!
+}
+
 enum EmailStatus {
   UNVERIFIED
   SENT_VERIFICATION_LINK
@@ -127,6 +143,12 @@ interface Experience {
 
   """preview，通常是列表時可以用來簡單預覽內容"""
   preview: String
+}
+
+type ExperienceLike {
+  id: ID!
+  experience: Experience!
+  created_at: Date!
 }
 
 enum ExperienceType {
@@ -288,6 +310,8 @@ type Mutation {
   placeholder: Boolean
   createInterviewExperience(input: CreateInterviewExperienceInput!): CreateInterviewExperiencePayload!
   createWorkExperience(input: CreateWorkExperienceInput!): CreateWorkExperiencePayload!
+  createExperienceLike(input: CreateExperienceLikeInput!): CreateExperienceLikePayload!
+  deleteExperienceLike(input: DeleteExperienceLikeInput!): DeleteExperienceLikePayload!
   changeSalaryWorkTimeStatus(input: ChangeSalaryWorkTimeStatusInput!): ChangeSalaryWorkTimeStatusPayload!
 
   """Login via facebook client side auth"""
