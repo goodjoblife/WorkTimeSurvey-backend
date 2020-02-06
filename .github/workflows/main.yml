@@ -42,3 +42,41 @@ jobs:
         run: npm run test -- --timeout 30s
       - name: Lint
         run: npm run lint
+  docker:
+    name: Deploy docker image
+    if: github.repository == 'goodjoblife/WorkTimeSurvey-backend' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    needs:
+      - test
+    env:
+      REGISTRY: docker.pkg.github.com
+      REPO: goodjoblife/worktimesurvey-backend/api-server
+      IMAGE: goodjoblife/api-server:latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login
+        run: docker login ${REGISTRY} -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+      - name: Build the docker image
+        run: docker-compose -f .github/docker-compose.yml build
+      - name: Push production image
+        if: github.ref == 'refs/heads/master'
+        run: |
+          docker tag ${IMAGE} ${REGISTRY}/${REPO}:${GITHUB_SHA}
+          docker push ${REGISTRY}/${REPO}:${GITHUB_SHA}
+      - name: Push dev image
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          docker tag ${IMAGE} ${REGISTRY}/${REPO}:dev
+          docker push ${REGISTRY}/${REPO}:dev
+  deploy:
+    if: github.repository == 'goodjoblife/WorkTimeSurvey-backend' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    needs:
+      - docker
+    steps:
+      - name: Deploy dev
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          curl --user "${{ secrets.CIRCLE_API_TOKEN_FOR_DEPLOY }}:" \
+            --data build_parameters[CIRCLE_JOB]=build \
+            https://circleci.com/api/v1.1/project/github/mark86092/goodjob-deploy-ci/tree/api-dev
