@@ -66,8 +66,8 @@ jobs:
       - name: Push dev image
         if: github.ref == 'refs/heads/dev'
         run: |
-          docker tag ${IMAGE} ${REGISTRY}/${REPO}:dev
-          docker push ${REGISTRY}/${REPO}:dev
+          docker tag ${IMAGE} ${REGISTRY}/${REPO}-dev:dev
+          docker push ${REGISTRY}/${REPO}-dev:dev
   deploy:
     if: github.repository == 'goodjoblife/WorkTimeSurvey-backend' && github.event_name == 'push'
     runs-on: ubuntu-latest
