@@ -91,6 +91,7 @@ class ExperienceModel {
 
         return this.collection.findOne({
             status: "published",
+            "archive.is_archived": false,
             _id: new ObjectId(id),
         });
     }
