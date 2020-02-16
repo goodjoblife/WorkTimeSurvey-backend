@@ -37,6 +37,7 @@ module.exports = [
     ...require("./company_keyword").types,
     ...require("./company").types,
     ...require("./experience").types,
+    ...require("./experience_like").types,
     ...require("./job_title_keyword").types,
     ...require("./job_title").types,
     ...require("./labor_right").types,

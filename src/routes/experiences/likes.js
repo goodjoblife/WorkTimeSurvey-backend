@@ -1,19 +1,21 @@
 const express = require("express");
 const winston = require("winston");
+const { makeExecutableSchema } = require("graphql-tools");
+const { graphql } = require("graphql");
 
 const {
     requireUserAuthetication,
 } = require("../../middlewares/authentication");
-const ExperienceLikeModel = require("../../models/experience_like_model");
-const ExperienceModel = require("../../models/experience_model");
-const PopularExperienceLogsModel = require("../../models/popular_experience_logs_model");
-const { ensureToObjectId } = require("../../models");
-const {
-    ObjectNotExistError,
-    HttpError,
-    DuplicateKeyError,
-} = require("../../libs/errors");
+const { HttpError } = require("../../libs/errors");
 const wrap = require("../../libs/wrap");
+
+const resolvers = require("../../schema/resolvers");
+const typeDefs = require("../../schema/typeDefs");
+
+const schema = makeExecutableSchema({
+    typeDefs,
+    resolvers,
+});
 
 const router = express.Router();
 
@@ -22,45 +24,53 @@ const router = express.Router();
  * @apiGroup Experiences Likes
  * @apiSuccess {Boolean} success 是否成功點讚
  */
+// TODO: deprecated
 router.post("/:id/likes", [
     requireUserAuthetication,
-    wrap(async (req, res, next) => {
-        const user = req.user;
-        const experience_id = ensureToObjectId(req.params.id);
+    wrap(async (req, res) => {
+        const experience_id = req.params.id;
 
-        const experience_like_model = new ExperienceLikeModel(req.db);
-        const experience_model = new ExperienceModel(req.db);
-        const popular_experience_logs_model = new PopularExperienceLogsModel(
-            req.db
-        );
+        const query = /* GraphQL */ `
+            mutation CreateExperienceLike($input: CreateExperienceLikeInput!) {
+                createExperienceLike(input: $input) {
+                    experienceLike {
+                        id
+                    }
+                }
+            }
+        `;
 
-        try {
-            await experience_model.findOneOrFail(experience_id, { _id: 1 });
-            await experience_like_model.createLike(experience_id, user);
-            await experience_model.incrementLikeCount(experience_id);
-            await popular_experience_logs_model.insertLog({
-                experience_id,
-                user_id: user._id,
-                action_type: "like",
-            });
+        const input = {
+            input: { experience_id },
+        };
 
-            res.send({ success: true });
-        } catch (err) {
+        const { errors } = await graphql(schema, query, null, req, input);
+
+        if (errors) {
+            const message = errors[0].message;
+
             winston.info(req.originalUrl, {
                 id: experience_id,
                 ip: req.ip,
                 ips: req.ips,
-                err: err.message,
+                err: message,
             });
 
-            if (err instanceof DuplicateKeyError) {
-                next(new HttpError(err.message, 403));
-            } else if (err instanceof ObjectNotExistError) {
-                next(new HttpError(err.message, 404));
-            } else {
-                next(new HttpError("Internal Server Error", 500));
+            if (message === "Unauthorized") {
+                throw new HttpError(errors, 401);
+            } else if (message === "該篇文章已經被按讚") {
+                throw new HttpError(errors, 403);
+            } else if (
+                message === "id_string 不是合法的 ObjectId" ||
+                message === "該篇文章不存在"
+            ) {
+                throw new HttpError(errors, 404);
             }
+
+            throw new HttpError(errors, 500);
         }
+
+        res.send({ success: true });
     }),
 ]);
 
@@ -69,37 +79,50 @@ router.post("/:id/likes", [
  * @apiGroup Experiences Likes
  * @apiSuccess {Boolean} success 是否成功取消讚
  */
+// TODO: deprecated
 router.delete("/:id/likes", [
     requireUserAuthetication,
-    wrap(async (req, res, next) => {
-        const user = req.user;
-        const experience_id = ensureToObjectId(req.params.id);
+    wrap(async (req, res) => {
+        const experience_id = req.params.id;
 
-        const experience_like_model = new ExperienceLikeModel(req.db);
-        const experience_model = new ExperienceModel(req.db);
+        const query = /* GraphQL */ `
+            mutation DeleteExperienceLike($input: DeleteExperienceLikeInput!) {
+                deleteExperienceLike(input: $input) {
+                    deletedExperienceId
+                }
+            }
+        `;
 
-        try {
-            await experience_model.findOneOrFail(experience_id, { _id: 1 });
-            await experience_like_model.deleteLike(experience_id, user);
-            await experience_model.decrementLikeCount(experience_id);
+        const input = {
+            input: { experience_id },
+        };
 
-            res.send({ success: true });
-        } catch (err) {
+        const { errors } = await graphql(schema, query, null, req, input);
+
+        if (errors) {
+            const message = errors[0].message;
+
             winston.info(req.originalUrl, {
                 id: experience_id,
                 ip: req.ip,
                 ips: req.ips,
-                err: err.message,
+                err: message,
             });
 
-            if (err instanceof DuplicateKeyError) {
-                next(new HttpError(err.message, 403));
-            } else if (err instanceof ObjectNotExistError) {
-                next(new HttpError(err.message, 404));
-            } else {
-                next(new HttpError("Internal Server Error", 500));
+            if (message === "Unauthorized") {
+                throw new HttpError(errors, 401);
+            } else if (
+                message === "id_string 不是合法的 ObjectId" ||
+                message === "該篇文章不存在" ||
+                message === "此讚不存在"
+            ) {
+                throw new HttpError(errors, 404);
             }
+
+            throw new HttpError(errors, 500);
         }
+
+        res.send({ success: true });
     }),
 ]);
 

@@ -33,7 +33,7 @@ class ExperienceLikeModel {
                 };
                 return this.collection.insertOne(data);
             })
-            .then(result => result.insertedId)
+            .then(result => result.ops[0])
             .catch(err => {
                 if (err.code === 11000) {
                     // E11000 duplicate key error

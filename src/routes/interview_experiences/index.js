@@ -98,6 +98,7 @@ function pickupInterviewExperience(input) {
  * @apiSuccess {Object} experience 經驗分享物件
  * @apiSuccess {String} experience._id 經驗分享id
  */
+// TODO: deprecated
 router.post("/", [
     requireUserAuthetication,
     wrap(async (req, res) => {
