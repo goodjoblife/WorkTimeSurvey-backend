@@ -12,6 +12,7 @@ module.exports = merge([
     require("./labor_right").resolvers,
     require("./me").resolvers,
     require("./reply").resolvers,
+    require("./reply_like").resolvers,
     require("./salary_work_time").resolvers,
     require("./user").resolvers,
     require("./verify_email").resolvers,

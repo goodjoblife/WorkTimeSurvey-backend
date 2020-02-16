@@ -43,6 +43,7 @@ module.exports = [
     ...require("./labor_right").types,
     ...require("./me").types,
     ...require("./reply").types,
+    ...require("./reply_like").types,
     ...require("./salary_work_time").types,
     ...require("./user").types,
     ...require("./verify_email").types,

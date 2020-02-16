@@ -39,7 +39,7 @@ class ReplyLikeModel {
 
                 return this.collection.insertOne(data);
             })
-            .then(value => value.insertedId)
+            .then(value => value.ops[0])
             .catch(err => {
                 if (err.code === 11000) {
                     // E11000 duplicate key error

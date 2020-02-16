@@ -69,6 +69,14 @@ type CreateInterviewExperiencePayload {
   experience: InterviewExperience!
 }
 
+input CreateReplyLikeInput {
+  reply_id: ID!
+}
+
+type CreateReplyLikePayload {
+  replyLike: ReplyLike!
+}
+
 input CreateWorkExperienceInput {
   """Common"""
   company: CompanyInput!
@@ -103,6 +111,14 @@ input DeleteExperienceLikeInput {
 
 type DeleteExperienceLikePayload {
   deletedExperienceId: ID!
+}
+
+input DeleteReplyLikeInput {
+  reply_id: ID!
+}
+
+type DeleteReplyLikePayload {
+  deletedReplyId: ID!
 }
 
 enum EmailStatus {
@@ -312,6 +328,8 @@ type Mutation {
   createWorkExperience(input: CreateWorkExperienceInput!): CreateWorkExperiencePayload!
   createExperienceLike(input: CreateExperienceLikeInput!): CreateExperienceLikePayload!
   deleteExperienceLike(input: DeleteExperienceLikeInput!): DeleteExperienceLikePayload!
+  createReplyLike(input: CreateReplyLikeInput!): CreateReplyLikePayload!
+  deleteReplyLike(input: DeleteReplyLikeInput!): DeleteReplyLikePayload!
   changeSalaryWorkTimeStatus(input: ChangeSalaryWorkTimeStatusInput!): ChangeSalaryWorkTimeStatusPayload!
 
   """Login via facebook client side auth"""
@@ -420,6 +438,12 @@ type Reply {
 
   """使用者是否按贊 (null 代表未傳入驗證資訊)"""
   liked: Boolean
+}
+
+type ReplyLike {
+  id: ID!
+  reply: Reply!
+  created_at: Date!
 }
 
 type Salary {
