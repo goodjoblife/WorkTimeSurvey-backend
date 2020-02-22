@@ -33,6 +33,12 @@ const userSchema = new Schema({
     google: {
         type: Schema.Types.Mixed,
     },
+    permissionExpiresAt: {
+        type: Date,
+    },
+    points: {
+        type: Number,
+    },
 });
 
 userSchema.index(

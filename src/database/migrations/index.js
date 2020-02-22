@@ -29,4 +29,5 @@ module.exports = [
     "migration-2019-12-04-normalize-working-author",
     "migration-2019-12-13-add-estimated-monthly-wage",
     "migration-2020-01-13-drop-index-users-collection",
+    "migration-2020-02-23-permission",
 ];
