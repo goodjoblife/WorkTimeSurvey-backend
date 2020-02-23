@@ -8,6 +8,5 @@ router.use("/experiences", require("./experiences"));
 router.use("/me", require("./me"));
 router.use("/replies", require("./replies"));
 router.use("/workings", require("./workings"));
-router.use("/work_experiences", require("./work_experiences"));
 
 module.exports = router;
