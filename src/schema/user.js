@@ -279,15 +279,15 @@ const resolvers = {
         async checkoutReward(_, { input }) {
             const { item, points, userId } = input;
             if (item !== PERMISSION) {
-                return { result: false };
+                throw Error("Invalid item");
             }
             const user = await User.findById(userId);
             if (!user) {
-                return { result: false };
+                throw Error("User not found");
             }
             const userPoints = user.points || 0;
-            if (userPoints < points) {
-                return { result: false };
+            if (points < 0 || userPoints < points) {
+                throw Error("Invalid points");
             }
             user.points -= points;
             const currPermissionExpiresAt = user.permissionExpiresAt || null;
@@ -306,7 +306,7 @@ const resolvers = {
                 points,
                 created_at: new Date(),
                 meta: {
-                    minutes: 100,
+                    minutes: points,
                 },
             }).save();
             await user.save();

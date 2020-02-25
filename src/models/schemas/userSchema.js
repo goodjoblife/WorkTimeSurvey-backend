@@ -35,6 +35,7 @@ const userSchema = new Schema({
     },
     permissionExpiresAt: {
         type: Date,
+        required: true,
     },
     points: {
         type: Number,

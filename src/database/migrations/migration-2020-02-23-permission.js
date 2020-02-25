@@ -9,15 +9,15 @@ module.exports = async db => {
     const experiencesCollection = await db.collection("experiences");
     const workingsCollection = await db.collection("workings");
     let modifiedCount = 0;
-    await userCollection.find().forEach(async (doc, callback) => {
-        const { _id, facebook_id, google_id } = doc;
+    await userCollection.find().forEach(async doc => {
+        const { _id } = doc;
         const experiencesCount = await experiencesCollection.count({
             author_id: _id,
             status: "published",
             "archive.is_archived": false,
         });
         const workingsCount = await workingsCollection.count({
-            "author.id": facebook_id || google_id,
+            user_id: _id,
             status: "published",
             "archive.is_archived": false,
         });
@@ -26,8 +26,7 @@ module.exports = async db => {
             await userCollection.update(
                 { _id },
                 { $set: { permissionExpiresAt } },
-                {},
-                callback
+                {}
             );
         }
     });

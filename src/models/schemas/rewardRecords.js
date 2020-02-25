@@ -4,7 +4,7 @@ const PERMISSION = "permission";
 
 const RewardRecordSchema = new Schema({
     user_id: {
-        type: "ObjectId",
+        type: Schema.Types.ObjectId,
     },
     item: {
         type: String,
@@ -12,12 +12,15 @@ const RewardRecordSchema = new Schema({
     },
     points: {
         type: Number,
+        required: true,
     },
     created_at: {
         type: Date,
+        required: true,
     },
     meta: {
         type: Schema.Types.Mixed,
+        required: true,
     },
 });
 
