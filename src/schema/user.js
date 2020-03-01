@@ -15,8 +15,6 @@ const jwt = require("../utils/jwt");
 const facebook = require("../libs/facebook");
 const google = require("../libs/google");
 const { User } = require("../models");
-const { RewardRecord } = require("../models/schemas/rewardRecords");
-const { PERMISSION } = require("../models/schemas/rewardRecords");
 
 const Type = gql`
     type User {
@@ -27,8 +25,6 @@ const Type = gql`
         email: String
         email_status: EmailStatus
         created_at: Date!
-        permissionExpiresAt: Date
-        points: Int
 
         "The user's experiences"
         experiences(start: Int = 0, limit: Int = 20): [Experience!]!
@@ -62,19 +58,9 @@ const Mutation = gql`
         idToken: String!
     }
 
-    input CheckoutRewardInput {
-        item: String!
-        points: Int!
-        userId: String!
-    }
-
     type LoginPayload {
         user: User!
         token: String!
-    }
-
-    type CheckoutPayload {
-        result: Boolean!
     }
 
     extend type Mutation {
@@ -82,7 +68,6 @@ const Mutation = gql`
         facebookLogin(input: FacebookLoginInput!): LoginPayload!
         "Login via google client side auth"
         googleLogin(input: GoogleLoginInput!): LoginPayload!
-        checkoutReward(input: CheckoutRewardInput!): CheckoutPayload!
     }
 `;
 
@@ -208,6 +193,7 @@ const resolvers = {
                     facebook_id,
                     facebook: account,
                     email: account.email,
+                    permissionExpiresAt: new Date(),
                 });
                 await user.save();
             }
@@ -254,6 +240,7 @@ const resolvers = {
                     google_id,
                     google: account,
                     email: account.email,
+                    permissionExpiresAt: new Date(),
                 });
                 await user.save();
             }
@@ -272,45 +259,6 @@ const resolvers = {
             const token = await jwt.signUser(user);
 
             return { user: await User.findById(user._id), token };
-        },
-        // item: 目前只有一種獎勵 `permission` ，即全站的觀看權限一段時間。之後才會有別的 item。
-        // points: 欲使用的點數
-        // userId: user id
-        async checkoutReward(_, { input }) {
-            const { item, points, userId } = input;
-            if (item !== PERMISSION) {
-                throw Error("Invalid item");
-            }
-            const user = await User.findById(userId);
-            if (!user) {
-                throw Error("User not found");
-            }
-            const userPoints = user.points || 0;
-            if (points < 0 || userPoints < points) {
-                throw Error("Invalid points");
-            }
-            user.points -= points;
-            const currPermissionExpiresAt = user.permissionExpiresAt || null;
-            if (currPermissionExpiresAt < new Date()) {
-                user.permissionExpiresAt = new Date(
-                    new Date().getTime() + points * 60 * 1000
-                );
-            } else {
-                user.permissionExpiresAt = new Date(
-                    currPermissionExpiresAt.getTime() + points * 60 * 1000
-                );
-            }
-            await new RewardRecord({
-                user_id: userId,
-                item: PERMISSION,
-                points,
-                created_at: new Date(),
-                meta: {
-                    minutes: points,
-                },
-            }).save();
-            await user.save();
-            return { result: true };
         },
     },
 };

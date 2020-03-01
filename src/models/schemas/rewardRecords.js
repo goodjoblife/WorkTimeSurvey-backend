@@ -26,7 +26,11 @@ const RewardRecordSchema = new Schema({
 
 RewardRecordSchema.index({ user_id: 1 }, { created_at: 1 });
 
-const RewardRecord = model("reward_records", RewardRecordSchema);
+const RewardRecord = model(
+    "RewardRecord",
+    RewardRecordSchema,
+    "reward_records"
+);
 
 module.exports = {
     RewardRecord,
