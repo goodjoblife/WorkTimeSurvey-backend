@@ -122,6 +122,7 @@ describe("Mutation.facebookLogin", () => {
     const user_email = "goodjob@gmail.com";
     let fake_user = {
         facebook_id: "1",
+        permissionExpiresAt: new Date(),
     };
 
     before(async () => {
@@ -295,6 +296,7 @@ describe("Mutation.googleLogin", () => {
     const user_email = "goodjob@gmail.com";
     let fake_user = {
         google_id: "1",
+        permissionExpiresAt: new Date(),
     };
 
     before(async () => {
