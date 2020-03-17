@@ -193,6 +193,7 @@ const resolvers = {
                     facebook_id,
                     facebook: account,
                     email: account.email,
+                    permissionExpiresAt: new Date(),
                 });
                 await user.save();
             }
@@ -239,6 +240,7 @@ const resolvers = {
                     google_id,
                     google: account,
                     email: account.email,
+                    permissionExpiresAt: new Date(),
                 });
                 await user.save();
             }

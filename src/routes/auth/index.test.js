@@ -27,6 +27,7 @@ describe("Auth", () => {
                     name: "markLin",
                 },
                 email: userEmail,
+                permissionExpiresAt: new Date(),
             });
             await fake_user.save();
         });

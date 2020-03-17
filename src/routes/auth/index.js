@@ -46,6 +46,7 @@ router.post(
                 facebook_id,
                 facebook: account,
                 email: account.email,
+                permissionExpiresAt: new Date(),
             });
             await user.save();
         }
@@ -103,6 +104,7 @@ router.post(
                 google_id,
                 google: account,
                 email: account.email,
+                permissionExpiresAt: new Date(),
             });
             await user.save();
         }
