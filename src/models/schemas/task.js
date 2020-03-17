@@ -5,7 +5,7 @@ const TaskSchema = new Schema({
         type: String,
         required: true,
     },
-    point: {
+    points: {
         type: Number,
         required: true,
     },
@@ -24,7 +24,7 @@ const TaskSchema = new Schema({
 });
 
 // create index here
-// UserTaskSchema.index({});
+// TaskSchema.index({});
 
 const Task = model("Task", TaskSchema, "tasks");
 

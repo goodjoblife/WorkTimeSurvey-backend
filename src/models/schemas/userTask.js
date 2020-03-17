@@ -20,7 +20,7 @@ const UserTaskSchema = new Schema({
         enum: [IN_PROGRESS, COMPLETED],
         required: true,
     },
-    point: {
+    points: {
         type: Number,
     },
     createdAt: {
