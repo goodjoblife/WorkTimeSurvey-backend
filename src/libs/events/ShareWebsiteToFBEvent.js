@@ -1,7 +1,7 @@
 const Event = require("./Event");
 const { shareWebsiteToFB } = require("./EventType");
 
-class ShareWebsiteToFB extends Event {
+class ShareWebsiteToFBEvent extends Event {
     constructor(userId) {
         super({
             userId,
@@ -10,4 +10,4 @@ class ShareWebsiteToFB extends Event {
     }
 }
 
-module.exports = ShareWebsiteToFB;
+module.exports = ShareWebsiteToFBEvent;

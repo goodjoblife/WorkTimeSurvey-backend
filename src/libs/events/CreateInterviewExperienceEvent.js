@@ -1,12 +1,12 @@
 const Event = require("./Event");
-const { createWorkExperience } = require("./EventType");
+const { createInterviewExperience } = require("./EventType");
 const ExperienceModel = require("../../models/experience_model");
 
-class CreateWorkExperienceEvent extends Event {
+class CreateInterviewExperienceEvent extends Event {
     constructor(userId) {
         super({
             userId,
-            taskName: createWorkExperience,
+            taskName: createInterviewExperience,
         });
     }
 
@@ -29,4 +29,4 @@ class CreateWorkExperienceEvent extends Event {
     }
 }
 
-module.exports = CreateWorkExperienceEvent;
+module.exports = CreateInterviewExperienceEvent;
