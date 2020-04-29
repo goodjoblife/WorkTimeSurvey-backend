@@ -14,6 +14,7 @@ class RegisterEvent extends Event {
      * @typedef {Object} DispatchPayload
      * @property {Object} data - consist of snapshot and eventStatus
      * @property {Object} userId - userId that should be verified
+     * @property {Number} point - task points to be rewarded
      */
     /**
      * Dispatch to queue
@@ -24,7 +25,7 @@ class RegisterEvent extends Event {
         if (!user) {
             throw Error("Validation error.");
         }
-        await super.dispatchToQueue(data);
+        return await super.dispatchToQueue(data);
     }
 }
 

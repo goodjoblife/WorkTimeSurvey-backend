@@ -15,6 +15,7 @@ class CreateInterviewExperienceEvent extends Event {
      * @property {Object} db - database object
      * @property {Object} data - consist of snapshot and eventStatus
      * @property {Object} experienceId - experienceId that should be verified
+     * @property {Number} point - task points to be rewarded
      */
     /**
      * Dispatch to queue
@@ -25,7 +26,7 @@ class CreateInterviewExperienceEvent extends Event {
         if (!(await experience_model.isExist(experienceId))) {
             throw Error("Validation failed");
         }
-        await super.dispatchToQueue(data);
+        return await super.dispatchToQueue(data);
     }
 }
 
