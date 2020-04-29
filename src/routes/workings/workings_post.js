@@ -5,6 +5,7 @@ const companyHelper = require("../company_helper");
 const recommendation = require("../../libs/recommendation");
 const { HttpError, ObjectIdError } = require("../../libs/errors");
 const { validateEmail } = require("../../libs/validation");
+const CreateSalaryEvent = require("../../libs/events/CreateSalaryEvent");
 
 function checkBodyField(req, field) {
     if (
@@ -502,7 +503,9 @@ async function main(req, res) {
             reason: "",
         };
 
-        await req.manager.SalaryWorkTimeModel.createSalaryWorkTime(working);
+        const {
+            insertedId: workingId,
+        } = await req.manager.SalaryWorkTimeModel.createSalaryWorkTime(working);
         await req.manager.UserModel.increaseSalaryWorkTimeCount(req.user._id);
 
         // update user email & subscribeEmail, if email field exists
@@ -519,6 +522,16 @@ async function main(req, res) {
         // delete some sensitive information before sending response
         delete response_data.working.recommended_by;
         delete response_data.working.user_id;
+
+        try {
+            await new CreateSalaryEvent(req.user._id).dispatchToQueue({
+                db: req.db,
+                snapshot: { workingId },
+                workingId,
+            });
+        } catch (err) {
+            winston.warn("User doesn't fill salary data");
+        }
 
         res.send(response_data);
     } catch (err) {
