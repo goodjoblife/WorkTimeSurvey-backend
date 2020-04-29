@@ -412,6 +412,11 @@ type Query {
 
   """薪資工時總數"""
   salary_work_time_count: Int!
+
+  """取得所有任務"""
+  tasks: [Task]!
+  """取得所有可以兌換的獎勵"""
+  rewards: [Reward]!
 }
 
 enum RecommendToOthersType {
@@ -570,6 +575,15 @@ type User {
   """The user's salary_work_time"""
   salary_work_times: [SalaryWorkTime!]!
   salary_work_time_count: Int!
+
+  """取得已經解鎖的職場經驗列表"""
+  unlocked_experiences: [Experience!]
+  """取得已經解鎖的薪資工時列表"""
+  unlocked_salary_work_times: [SalaryWorkTime!]
+  """目前擁有的積分"""
+  points: Int!
+  """取得該使用者的點數事件（完成任務或兌換獎勵）"""
+  pointEvents: [UserPointEvent!]
 }
 
 input VerifyEmailInput {
@@ -656,4 +670,27 @@ type YesNoOrUnknownCount {
   yes: Int!
   no: Int!
   unknown: Int!
+}
+
+type Task {
+  id: ID!
+  title: String!
+  description: String
+  maxRunCount: Int!
+  points: Int!
+}
+
+type Reward {
+  id: ID!
+  title: String!
+  description: String!
+}
+
+type UserPointEvent {
+  id: ID!
+  user: User!
+  status: String!
+  points: Int!
+  createdAt: Date!
+  completedAt: Date!
 }

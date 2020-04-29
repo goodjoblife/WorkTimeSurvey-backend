@@ -524,7 +524,7 @@ async function main(req, res) {
         delete response_data.working.user_id;
 
         try {
-            await new CreateSalaryEvent(req.user._id).dispatchToQueue({
+            await new CreateSalaryEvent(req.user._id).exec({
                 db: req.db,
                 snapshot: { workingId },
                 workingId,

@@ -15,7 +15,6 @@ const jwt = require("../utils/jwt");
 const facebook = require("../libs/facebook");
 const google = require("../libs/google");
 const { User } = require("../models");
-const RegisterEvent = require("../libs/events/RegisterEvent");
 
 const Type = gql`
     type User {
@@ -194,15 +193,8 @@ const resolvers = {
                     facebook_id,
                     facebook: account,
                     email: account.email,
-                    permissionExpiresAt: new Date(),
                 });
                 user = await user.save();
-                await new RegisterEvent(user._id).dispatchToQueue({
-                    snapshot: {
-                        userId: user._id,
-                    },
-                    userId: user._id,
-                });
             }
 
             if (!user.name && account.name) {
@@ -247,15 +239,8 @@ const resolvers = {
                     google_id,
                     google: account,
                     email: account.email,
-                    permissionExpiresAt: new Date(),
                 });
                 user = await user.save();
-                await new RegisterEvent(user._id).dispatchToQueue({
-                    snapshot: {
-                        userId: user._id,
-                    },
-                    userId: user._id,
-                });
             }
 
             if (!user.name && account.name) {

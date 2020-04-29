@@ -17,6 +17,7 @@ const UserModel = require("../models/user_model");
 const helper = require("../routes/company_helper");
 const CreateWorkExperienceEvent = require("../libs/events/CreateWorkExperienceEvent");
 const CreateInterviewExperienceEvent = require("../libs/events/CreateInterviewExperienceEvent");
+const winston = require("winston");
 
 const WorkExperienceType = "work";
 const InterviewExperienceType = "interview";
@@ -652,13 +653,15 @@ const resolvers = {
                     );
                 }
 
-                await new CreateInterviewExperienceEvent(
-                    user._id
-                ).dispatchToQueue({
-                    db,
-                    snapshot: { experienceId },
-                    experienceId,
-                });
+                try {
+                    await new CreateInterviewExperienceEvent(user._id).exec({
+                        db,
+                        snapshot: { experienceId },
+                        experienceId,
+                    });
+                } catch (err) {
+                    winston.warn(err);
+                }
 
                 return {
                     success: true,
@@ -667,7 +670,7 @@ const resolvers = {
             }
         ),
         createWorkExperience: combineResolvers(
-            // isAuthenticated,
+            isAuthenticated,
             async (_, { input }, { db, user, manager }) => {
                 const experience = input;
 
@@ -726,11 +729,15 @@ const resolvers = {
                     );
                 }
 
-                await new CreateWorkExperienceEvent(user._id).dispatchToQueue({
-                    db,
-                    snapshot: { experienceId },
-                    experienceId,
-                });
+                try {
+                    await new CreateWorkExperienceEvent(user._id).exec({
+                        db,
+                        snapshot: { experienceId },
+                        experienceId,
+                    });
+                } catch (err) {
+                    winston.warn(err);
+                }
 
                 return {
                     success: true,

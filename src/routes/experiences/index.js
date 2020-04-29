@@ -1,5 +1,16 @@
 const express = require("express");
 const R = require("ramda");
+const { graphql } = require("graphql");
+const { makeExecutableSchema } = require("graphql-tools");
+const winston = require('winston')
+
+const resolvers = require("../../schema/resolvers");
+const typeDefs = require("../../schema/typeDefs");
+
+const schema = makeExecutableSchema({
+    typeDefs,
+    resolvers,
+});
 
 const router = express.Router();
 const HttpError = require("../../libs/errors").HttpError;
@@ -200,6 +211,40 @@ function _isLegalStatus(value) {
     const legal_status = ["published", "hidden"];
     return legal_status.indexOf(value) > -1;
 }
+
+/**
+ * @api {get} /experiences/:id 檢查該篇職場經驗是否有權限
+ * @apiGroup Experiences
+ * @apiSuccess {Boolean} success 是否成功點讚
+ * @apiSuccess {String} status 更新後狀態
+ */
+router.get("/:id", [
+    requireUserAuthetication,
+    wrap(async (req, res) => {
+        const id = req.params.id;
+
+        const query = /* GraphQL */ `
+            query {
+                unlocked_experiences {
+                    id
+                }
+            }
+        `;
+        const { data, errors } = await graphql(schema, query, null, req, null);
+        if (errors) {
+            const message = errors[0].message;
+            winston.info(req.originalUrl, {
+                id,
+                ip: req.ip,
+                ips: req.ips,
+                err: message,
+            });
+            throw new HttpError(errors, 500);
+        }
+        console.log(data);
+        res.send({ success: true });
+    }),
+]);
 
 /**
  * @api {patch} /experiences/:id 更新自已建立的經驗狀態 API

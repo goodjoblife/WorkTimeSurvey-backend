@@ -1,46 +1,43 @@
 const { User } = require("../models");
-const { RewardRecord } = require("../models/schemas/rewardRecords");
-const { PERMISSION } = require("../models/schemas/rewardRecords");
+const { UserPointEvent, COMPLETED } = require("../models/schemas/userPointEvent");
+const taskConfigMap = require("../task-config");
 
 /**
  * 在指定 API 發生時（例如：填寫面試經驗 mutation createInterviewExperience），直接觸發兌換獎勵
- * @param {String} item 目前只有一種獎勵 `permission` ，即全站的觀看權限一段時間。之後才會有別的 item。
- * @param {Number} points 欲使用的點數
  * @param {String} userId user id
+ * @param {String} eventName 任務名稱
+ * @param {ObjectId} docId 要解鎖的collection之對應的document id
  */
-const checkoutReward = async (item, points, userId) => {
-    if (item !== PERMISSION) {
-        throw Error("Invalid item");
-    }
+const checkoutReward = async (userId, eventName, docId) => {
     const user = await User.findById(userId);
     if (!user) {
         throw Error("User not found");
     }
+    const requirePoints = taskConfigMap[eventName].points;
     const userPoints = user.points || 0;
-    if (points < 0 || userPoints < points) {
-        throw Error("Invalid points");
+    if (userPoints < requirePoints) {
+        throw Error("No enough points left");
     }
-    user.points -= points;
-    const currPermissionExpiresAt = user.permissionExpiresAt || null;
-    if (currPermissionExpiresAt < new Date()) {
-        user.permissionExpiresAt = new Date(
-            new Date().getTime() + points * 60 * 1000
-        );
-    } else {
-        user.permissionExpiresAt = new Date(
-            currPermissionExpiresAt.getTime() + points * 60 * 1000
-        );
+    const rewardRecord = await UserPointEvent.find({
+        user_id: user._id,
+        event_name: eventName,
+        doc_id: docId,
+    });
+    if (rewardRecord) {
+        throw Error("User has already had permission.");
     }
-    await new RewardRecord({
-        user_id: userId,
-        item: PERMISSION,
-        points,
-        created_at: new Date(),
-        meta: {
-            minutes: points,
-        },
-    }).save();
+    user.points -= requirePoints;
     await user.save();
+
+    await new UserPointEvent({
+        user_id: userId,
+        event_name: eventName,
+        doc_id: docId,
+        status: COMPLETED,
+        points: requirePoints,
+        created_at: new Date(),
+        completed_at: new Date(),
+    }).save();
 };
 
 module.exports = {

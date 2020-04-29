@@ -1,8 +1,5 @@
-// 註冊 Register 任務完成 handler
-const register = "Register";
-
 // 分享薪資工時 CreateSalaryWorkTime 任務完成 handler
-const createSalary = "CreateSalary";
+const createSalaryWorkTime = "CreateSalaryWorkTime";
 
 // 分享面試經驗 CreateInterviewExperience 任務完成 handler
 const createInterviewExperience = "CreateInterviewExperience";
@@ -10,13 +7,24 @@ const createInterviewExperience = "CreateInterviewExperience";
 // 分享工作心得 CreateWorkExperience 任務完成 handler
 const createWorkExperience = "CreateWorkExperience";
 
-// 分享網站到 facebook ShareWebsiteToFB 任務完成 handler
-const shareWebsiteToFB = "ShareWebsiteToFB";
+// 分享網站到 shareWebsite 任務完成 handler
+const shareWebsite = "ShareWebsite";
+
+const unlockExperience = "UnlockExperience";
+
+const unlockSalaryWorkTime = "UnlockSalaryWorkTime";
+
+const createInterviewExperienceBonus = "CreateInterviewExperienceBonus";
+
+const createWorkExperienceBonus = "CreateWorkExperienceBonus";
 
 module.exports = {
-    register,
-    createSalary,
+    createSalaryWorkTime,
     createInterviewExperience,
     createWorkExperience,
-    shareWebsiteToFB,
+    shareWebsite,
+    unlockExperience,
+    unlockSalaryWorkTime,
+    createInterviewExperienceBonus,
+    createWorkExperienceBonus,
 };
