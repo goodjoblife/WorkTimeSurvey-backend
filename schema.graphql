@@ -333,7 +333,7 @@ type Mutation {
   unlock_experience(input: ID!): Experience!
 
   """解鎖某一筆薪資工時"""
-  unlock_salary_work_times(input: ID!): SalaryWorkTime!
+  unlock_salary_work_time(input: ID!): SalaryWorkTime!
   createReplyLike(input: CreateReplyLikeInput!): CreateReplyLikePayload!
   deleteReplyLike(input: DeleteReplyLikeInput!): DeleteReplyLikePayload!
   changeSalaryWorkTimeStatus(input: ChangeSalaryWorkTimeStatusInput!): ChangeSalaryWorkTimeStatusPayload!

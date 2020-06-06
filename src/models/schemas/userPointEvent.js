@@ -31,9 +31,12 @@ const UserPointSchema = new Schema({
             createWorkExperienceBonus,
         ],
     },
-    doc_id: {
-        type: String,
-        required: true,
+    // doc_id: {
+    //     type: String,
+    //     required: true,
+    // },
+    snapshot: {
+        type: Schema.Types.Mixed,
     },
     status: {
         type: String,
@@ -47,9 +50,8 @@ const UserPointSchema = new Schema({
         type: Date,
         required: true,
     },
-    completed_at: {
+    updated_at: {
         type: Date,
-        required: true,
     },
 });
 
