@@ -94,13 +94,10 @@ const resolvers = {
         ),
     },
     Mutation: {
-        unlock_experience: combineResolvers(
-            isAuthenticated,
-            async (_, { input }) => {}
-        ),
+        unlock_experience: combineResolvers(isAuthenticated, async () => {}),
         unlock_salary_work_times: combineResolvers(
             isAuthenticated,
-            async (_, { input }) => {}
+            async () => {}
         ),
     },
 };

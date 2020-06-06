@@ -1,5 +1,8 @@
 const { User } = require("../models");
-const { UserPointEvent, COMPLETED } = require("../models/schemas/userPointEvent");
+const {
+    UserPointEvent,
+    COMPLETED,
+} = require("../models/schemas/userPointEvent");
 const taskConfigMap = require("../task-config");
 
 /**

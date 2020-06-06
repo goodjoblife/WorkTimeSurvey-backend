@@ -2,7 +2,7 @@ const express = require("express");
 const R = require("ramda");
 const { graphql } = require("graphql");
 const { makeExecutableSchema } = require("graphql-tools");
-const winston = require('winston')
+const winston = require("winston");
 
 const resolvers = require("../../schema/resolvers");
 const typeDefs = require("../../schema/typeDefs");
@@ -230,7 +230,7 @@ router.get("/:id", [
                 }
             }
         `;
-        const { data, errors } = await graphql(schema, query, null, req, null);
+        const { errors } = await graphql(schema, query, null, req, null);
         if (errors) {
             const message = errors[0].message;
             winston.info(req.originalUrl, {
@@ -241,7 +241,6 @@ router.get("/:id", [
             });
             throw new HttpError(errors, 500);
         }
-        console.log(data);
         res.send({ success: true });
     }),
 ]);
