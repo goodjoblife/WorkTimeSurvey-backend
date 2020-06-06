@@ -15,6 +15,9 @@ const {
 const ExperienceModel = require("../models/experience_model");
 const UserModel = require("../models/user_model");
 const helper = require("../routes/company_helper");
+const CreateWorkExperienceEvent = require("../libs/events/CreateWorkExperienceEvent");
+const CreateInterviewExperienceEvent = require("../libs/events/CreateInterviewExperienceEvent");
+const winston = require("winston");
 
 const WorkExperienceType = "work";
 const InterviewExperienceType = "interview";
@@ -637,7 +640,9 @@ const resolvers = {
                 const experience_model = new ExperienceModel(db);
 
                 // insert data into experiences collection
-                await experience_model.createExperience(nonNilExperience);
+                const {
+                    insertedId: experienceId,
+                } = await experience_model.createExperience(nonNilExperience);
 
                 // update user email & subscribeEmail, if email field exists
                 if (experience.email) {
@@ -646,6 +651,16 @@ const resolvers = {
                         user._id,
                         experience.email
                     );
+                }
+
+                try {
+                    await new CreateInterviewExperienceEvent(user._id).exec({
+                        db,
+                        snapshot: { experienceId },
+                        experienceId,
+                    });
+                } catch (err) {
+                    winston.warn(err);
                 }
 
                 return {
@@ -703,13 +718,25 @@ const resolvers = {
 
                 const experience_model = new ExperienceModel(db);
 
-                await experience_model.createExperience(nonNilExperience);
+                const {
+                    insertedId: experienceId,
+                } = await experience_model.createExperience(nonNilExperience);
                 if (experience.email) {
                     const user_model = new UserModel(manager);
                     await user_model.updateSubscribeEmail(
                         user._id,
                         experience.email
                     );
+                }
+
+                try {
+                    await new CreateWorkExperienceEvent(user._id).exec({
+                        db,
+                        snapshot: { experienceId },
+                        experienceId,
+                    });
+                } catch (err) {
+                    winston.warn(err);
                 }
 
                 return {

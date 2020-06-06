@@ -71,6 +71,7 @@ describe("experiences 面試和工作經驗資訊", () => {
             id: "-1",
             name: "markLin",
         },
+        name: "test",
     };
 
     before(async () => {

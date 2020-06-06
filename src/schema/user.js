@@ -193,9 +193,8 @@ const resolvers = {
                     facebook_id,
                     facebook: account,
                     email: account.email,
-                    permissionExpiresAt: new Date(),
                 });
-                await user.save();
+                user = await user.save();
             }
 
             if (!user.name && account.name) {
@@ -240,9 +239,8 @@ const resolvers = {
                     google_id,
                     google: account,
                     email: account.email,
-                    permissionExpiresAt: new Date(),
                 });
-                await user.save();
+                user = await user.save();
             }
 
             if (!user.name && account.name) {

@@ -125,7 +125,7 @@ class ExperienceModel {
             });
     }
 
-    createExperience(experience) {
+    async createExperience(experience) {
         if (experience && experience.salary) {
             const result = salarySchema.validate(experience.salary);
 

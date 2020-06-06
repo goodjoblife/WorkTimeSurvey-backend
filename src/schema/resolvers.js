@@ -14,6 +14,7 @@ module.exports = merge([
     require("./reply").resolvers,
     require("./reply_like").resolvers,
     require("./salary_work_time").resolvers,
+    require("./task").resolvers,
     require("./user").resolvers,
     require("./verify_email").resolvers,
     require("./view_log").resolvers,
