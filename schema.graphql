@@ -328,6 +328,12 @@ type Mutation {
   createWorkExperience(input: CreateWorkExperienceInput!): CreateWorkExperiencePayload!
   createExperienceLike(input: CreateExperienceLikeInput!): CreateExperienceLikePayload!
   deleteExperienceLike(input: DeleteExperienceLikeInput!): DeleteExperienceLikePayload!
+
+  """解鎖某一篇職場經驗"""
+  unlock_experience(input: ID!): Experience!
+
+  """解鎖某一筆薪資工時"""
+  unlock_salary_work_times(input: ID!): SalaryWorkTime!
   createReplyLike(input: CreateReplyLikeInput!): CreateReplyLikePayload!
   deleteReplyLike(input: DeleteReplyLikeInput!): DeleteReplyLikePayload!
   changeSalaryWorkTimeStatus(input: ChangeSalaryWorkTimeStatusInput!): ChangeSalaryWorkTimeStatusPayload!
@@ -407,6 +413,18 @@ type Query {
   labor_right(id: ID!): LaborRight
   me: User!
 
+  """取得已經解鎖的職場經驗列表"""
+  unlocked_experiences: [Experience!]
+
+  """取得已經解鎖的薪資工時列表"""
+  unlocked_salary_work_times: [SalaryWorkTime!]
+
+  """目前擁有的積分"""
+  points: Int!
+
+  """取得該使用者的點數事件（完成任務或兌換獎勵）"""
+  pointEvents: [UserPointEvent!]
+
   """取得薪資工時列表 （未下關鍵字搜尋的情況），只有從最新排到最舊"""
   salary_work_times(start: Int!, limit: Int!): [SalaryWorkTime!]!
 
@@ -415,6 +433,7 @@ type Query {
 
   """取得所有任務"""
   tasks: [Task]!
+
   """取得所有可以兌換的獎勵"""
   rewards: [Reward]!
 }
@@ -449,6 +468,12 @@ type ReplyLike {
   id: ID!
   reply: Reply!
   created_at: Date!
+}
+
+type Reward {
+  id: ID!
+  title: String!
+  description: String!
 }
 
 type Salary {
@@ -555,6 +580,14 @@ enum SortBy {
   ESTIMATED_HOURLY_WAGE
 }
 
+type Task {
+  id: ID!
+  title: String!
+  description: String!
+  maxRunCount: Int!
+  points: Int!
+}
+
 type User {
   _id: ID!
   name: String!
@@ -575,15 +608,15 @@ type User {
   """The user's salary_work_time"""
   salary_work_times: [SalaryWorkTime!]!
   salary_work_time_count: Int!
+}
 
-  """取得已經解鎖的職場經驗列表"""
-  unlocked_experiences: [Experience!]
-  """取得已經解鎖的薪資工時列表"""
-  unlocked_salary_work_times: [SalaryWorkTime!]
-  """目前擁有的積分"""
+type UserPointEvent {
+  id: ID!
+  user: User!
+  status: String!
   points: Int!
-  """取得該使用者的點數事件（完成任務或兌換獎勵）"""
-  pointEvents: [UserPointEvent!]
+  createdAt: Date!
+  completedAt: Date!
 }
 
 input VerifyEmailInput {
@@ -670,27 +703,4 @@ type YesNoOrUnknownCount {
   yes: Int!
   no: Int!
   unknown: Int!
-}
-
-type Task {
-  id: ID!
-  title: String!
-  description: String
-  maxRunCount: Int!
-  points: Int!
-}
-
-type Reward {
-  id: ID!
-  title: String!
-  description: String!
-}
-
-type UserPointEvent {
-  id: ID!
-  user: User!
-  status: String!
-  points: Int!
-  createdAt: Date!
-  completedAt: Date!
 }
