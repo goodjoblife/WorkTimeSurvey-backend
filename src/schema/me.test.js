@@ -4,6 +4,8 @@ const { ObjectId } = require("mongodb");
 const app = require("../app");
 const { connectMongo } = require("../models/connect");
 const { FakeUserFactory } = require("../utils/test_helper");
+const taskConfig = require("../task-config");
+const { unlockExperience } = require("../libs/events/EventType");
 
 describe("Query me", () => {
     const fake_user_factory = new FakeUserFactory();
@@ -53,6 +55,7 @@ describe("Query me", () => {
 
 describe("Mutation unlockExperience", () => {
     const fake_user_factory = new FakeUserFactory();
+    const INITIAL_POINTS = 1000;
     let db;
     let userId;
     let token;
@@ -69,7 +72,7 @@ describe("Mutation unlockExperience", () => {
             _id: userId,
             name: "mark",
             facebook_id: "facebook_id",
-            points: 100,
+            points: INITIAL_POINTS,
             unlocked_experiences: [],
         });
 
@@ -109,7 +112,6 @@ describe("Mutation unlockExperience", () => {
             },
         };
 
-        // API 200
         await request(app)
             .post("/graphql")
             .send(payload)
@@ -120,6 +122,10 @@ describe("Mutation unlockExperience", () => {
         const me = await db.collection("users").findOne({ _id: userId });
         assert.lengthOf(me.unlocked_experiences, 1);
         assert.equal(`${me.unlocked_experiences[0]._id}`, `${experienceId}`);
+        assert.equal(
+            me.points,
+            INITIAL_POINTS - taskConfig[unlockExperience].points
+        );
 
         // 檢查 userPointEvent
         const userPointEvents = await db
@@ -147,14 +153,13 @@ describe("Mutation unlockExperience", () => {
             },
         };
 
-        // API 200
         await request(app)
             .post("/graphql")
             .send(payload)
             .set("Authorization", `Bearer ${token}`)
             .expect(200);
 
-        // call payload twice, second time will be error
+        // call API twice, second time will be error
         const res = await request(app)
             .post("/graphql")
             .send(payload)
@@ -164,7 +169,6 @@ describe("Mutation unlockExperience", () => {
     });
 
     it("cannot unlock experience that not exists", async () => {
-        // prepare payload
         const payload = {
             query: /* GraphQL */ `
                 mutation UnlockExperience($input: ID!) {
@@ -174,10 +178,9 @@ describe("Mutation unlockExperience", () => {
                 }
             `,
             variables: {
-                input: `${ObjectId()}`,
+                input: `${ObjectId()}`, // random id
             },
         };
-        // call api with arbitrary id
         const res = await request(app)
             .post("/graphql")
             .send(payload)
