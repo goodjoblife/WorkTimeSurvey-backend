@@ -17,7 +17,7 @@ class FakeUserFactory {
     }
 
     async tearDown() {
-        await this.user_model.collection.deleteMany({});
+        await this.user_model.collection.drop();
         await this.client.close();
     }
 }

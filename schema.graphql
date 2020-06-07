@@ -330,10 +330,10 @@ type Mutation {
   deleteExperienceLike(input: DeleteExperienceLikeInput!): DeleteExperienceLikePayload!
 
   """解鎖某一篇職場經驗"""
-  unlock_experience(input: ID!): Experience!
+  unlockExperience(input: ID!): Experience!
 
   """解鎖某一筆薪資工時"""
-  unlock_salary_work_time(input: ID!): SalaryWorkTime!
+  unlockSalaryWorkTime(input: ID!): SalaryWorkTime!
   createReplyLike(input: CreateReplyLikeInput!): CreateReplyLikePayload!
   deleteReplyLike(input: DeleteReplyLikeInput!): DeleteReplyLikePayload!
   changeSalaryWorkTimeStatus(input: ChangeSalaryWorkTimeStatusInput!): ChangeSalaryWorkTimeStatusPayload!

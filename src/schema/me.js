@@ -34,9 +34,9 @@ const Query = gql`
 const Mutation = gql`
     extend type Mutation {
         "解鎖某一篇職場經驗"
-        unlock_experience(input: ID!): Experience!
+        unlockExperience(input: ID!): Experience!
         "解鎖某一筆薪資工時"
-        unlock_salary_work_time(input: ID!): SalaryWorkTime!
+        unlockSalaryWorkTime(input: ID!): SalaryWorkTime!
     }
 `;
 
@@ -97,7 +97,7 @@ const resolvers = {
         ),
     },
     Mutation: {
-        unlock_experience: combineResolvers(
+        unlockExperience: combineResolvers(
             isAuthenticated,
             async (root, { input }, context) => {
                 const user = context.user;
@@ -148,7 +148,7 @@ const resolvers = {
                 return experience;
             }
         ),
-        unlock_salary_work_time: combineResolvers(
+        unlockSalaryWorkTime: combineResolvers(
             isAuthenticated,
             async (root, { input }, context) => {
                 const user = context.user;
