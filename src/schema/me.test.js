@@ -194,7 +194,7 @@ describe("Mutation unlockExperience", () => {
     });
 });
 
-describe.only("Mutation unlockSalaryWorkTime", () => {
+describe("Mutation unlockSalaryWorkTime", () => {
     const fake_user_factory = new FakeUserFactory();
     const INITIAL_POINTS = 1000;
     let db;
