@@ -1,6 +1,7 @@
 const R = require("ramda");
 const DataLoader = require("dataloader");
 const { salarySchema } = require("./common_schemas");
+const { ObjectNotExistError } = require("../libs/errors");
 class SalaryWorkTimeModel {
     constructor(manager) {
         this.manager = manager;
@@ -31,6 +32,22 @@ class SalaryWorkTimeModel {
 
             return results;
         });
+    }
+
+    /**
+     * 透過 _id 來取得單筆資料
+     * @param {ObjectId} _id - salary work time id
+     * @param {object} opt - mongodb find field filter
+     * @returns {Promise}
+     *  - resolved : SalaryWorkTime object
+     *  - reject : ObjectNotExistError/Default Error
+     */
+    async findOneOrFail(_id, opt = {}) {
+        const salaryWorkTime = await this.collection.findOne({ _id }, opt);
+        if (salaryWorkTime) {
+            return salaryWorkTime;
+        }
+        throw new ObjectNotExistError("該筆薪資工時不存在");
     }
 
     async findByCompanyNames(names) {

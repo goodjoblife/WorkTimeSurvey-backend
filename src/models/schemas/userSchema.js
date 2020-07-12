@@ -1,6 +1,17 @@
 const { Schema } = require("mongoose");
 const EMAIL_STATUS = require("../email_status");
 
+const unlockedDataSchema = new Schema({
+    _id: {
+        type: Schema.Types.ObjectId,
+        required: true,
+    },
+    createdAt: {
+        type: Schema.Types.Date,
+        required: true,
+    },
+});
+
 const userSchema = new Schema({
     name: {
         type: String,
@@ -37,6 +48,8 @@ const userSchema = new Schema({
         type: Number,
         default: 0,
     },
+    unlocked_experiences: [unlockedDataSchema],
+    unlocked_salary_work_times: [unlockedDataSchema],
 });
 
 userSchema.index(
