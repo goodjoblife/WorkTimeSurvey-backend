@@ -46,8 +46,6 @@ const Type = gql`
         unlocked_salary_work_times: [SalaryWorkTime!]
         "目前擁有的積分"
         points: Int!
-        "取得該使用者的點數事件（完成任務或兌換獎勵）"
-        pointEvents: [UserPointEvent!]
     }
 
     enum EmailStatus {

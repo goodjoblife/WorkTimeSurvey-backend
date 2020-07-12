@@ -605,19 +605,6 @@ type User {
 
   """目前擁有的積分"""
   points: Int!
-
-  """取得該使用者的點數事件（完成任務或兌換獎勵）"""
-  pointEvents: [UserPointEvent!]
-}
-
-type UserPointEvent {
-  id: ID!
-  user: User!
-  eventName: String!
-  status: String!
-  points: Int!
-  createdAt: Date!
-  completedAt: Date!
 }
 
 input VerifyEmailInput {
