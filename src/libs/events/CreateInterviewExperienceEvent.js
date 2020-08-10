@@ -1,7 +1,7 @@
 const Event = require("./Event");
 const { createInterviewExperience } = require("./EventType");
 const ExperienceModel = require("../../models/experience_model");
-const taskConfigMap = require("../../task-config");
+const taskConfigMap = require("./task_config");
 
 class CreateInterviewExperienceEvent extends Event {
     constructor(userId) {

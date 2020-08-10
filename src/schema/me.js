@@ -11,7 +11,7 @@ const {
     unlockExperience,
     unlockSalaryWorkTime,
 } = require("../libs/events/EventType");
-const taskConfig = require("../task-config");
+const taskConfig = require("../libs/events/task_config");
 
 const Type = `
 `;

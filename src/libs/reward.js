@@ -3,7 +3,7 @@ const {
     UserPointEvent,
     COMPLETED,
 } = require("../models/schemas/userPointEvent");
-const taskConfigMap = require("../task-config");
+const taskConfigMap = require("../libs/events/task_config");
 
 /**
  * 在指定 API 發生時（例如：填寫面試經驗 mutation createInterviewExperience），直接觸發兌換獎勵

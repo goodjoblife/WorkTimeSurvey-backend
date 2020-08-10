@@ -14,10 +14,6 @@ const unlockExperience = "UnlockExperience";
 
 const unlockSalaryWorkTime = "UnlockSalaryWorkTime";
 
-const createInterviewExperienceBonus = "CreateInterviewExperienceBonus";
-
-const createWorkExperienceBonus = "CreateWorkExperienceBonus";
-
 module.exports = {
     createSalaryWorkTime,
     createInterviewExperience,
@@ -25,6 +21,4 @@ module.exports = {
     shareWebsite,
     unlockExperience,
     unlockSalaryWorkTime,
-    createInterviewExperienceBonus,
-    createWorkExperienceBonus,
 };
