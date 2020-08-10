@@ -3,6 +3,7 @@ const {
     UserInputError,
     AuthenticationError,
 } = require("apollo-server-express");
+const { combineResolvers } = require("graphql-resolvers");
 const Joi = require("@hapi/joi");
 const ExperienceModel = require("../models/experience_model");
 const ReplyModel = require("../models/reply_model");
@@ -14,6 +15,7 @@ const {
 const jwt = require("../utils/jwt");
 const facebook = require("../libs/facebook");
 const google = require("../libs/google");
+const { isAuthenticated, isMe } = require("../utils/resolvers");
 const { User } = require("../models");
 
 const Type = gql`
@@ -37,6 +39,13 @@ const Type = gql`
         "The user's salary_work_time"
         salary_work_times: [SalaryWorkTime!]!
         salary_work_time_count: Int!
+
+        "取得已經解鎖的職場經驗列表"
+        unlocked_experiences: [Experience!]
+        "取得已經解鎖的薪資工時列表"
+        unlocked_salary_work_times: [SalaryWorkTime!]
+        "目前擁有的積分"
+        points: Int!
     }
 
     enum EmailStatus {
@@ -165,6 +174,35 @@ const resolvers = {
 
             return count;
         },
+        unlocked_experiences: combineResolvers(
+            isAuthenticated,
+            isMe,
+            async (root, args, context) => {
+                const user = context.user;
+                const records = user.unlocked_experiences || [];
+                return (await context.db.collection("experiences").find({
+                    _id: { $in: records.map(r => r._id) },
+                })).toArray();
+            }
+        ),
+        unlocked_salary_work_times: combineResolvers(
+            isAuthenticated,
+            isMe,
+            async (root, args, context) => {
+                const user = context.user;
+                const records = user.unlocked_salary_work_times || [];
+                return (await context.db.collection("workings").find({
+                    _id: { $in: records.map(r => r._id) },
+                })).toArray();
+            }
+        ),
+        points: combineResolvers(
+            isAuthenticated,
+            isMe,
+            async (root, args, context) => {
+                return (await User.findById(context.user._id)).points;
+            }
+        ),
     },
     Mutation: {
         async facebookLogin(_, { input }) {

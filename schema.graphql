@@ -413,18 +413,6 @@ type Query {
   labor_right(id: ID!): LaborRight
   me: User!
 
-  """取得已經解鎖的職場經驗列表"""
-  unlocked_experiences: [Experience!]
-
-  """取得已經解鎖的薪資工時列表"""
-  unlocked_salary_work_times: [SalaryWorkTime!]
-
-  """目前擁有的積分"""
-  points: Int!
-
-  """取得該使用者的點數事件（完成任務或兌換獎勵）"""
-  pointEvents: [UserPointEvent!]
-
   """取得薪資工時列表 （未下關鍵字搜尋的情況），只有從最新排到最舊"""
   salary_work_times(start: Int!, limit: Int!): [SalaryWorkTime!]!
 
@@ -608,15 +596,15 @@ type User {
   """The user's salary_work_time"""
   salary_work_times: [SalaryWorkTime!]!
   salary_work_time_count: Int!
-}
 
-type UserPointEvent {
-  id: ID!
-  user: User!
-  status: String!
+  """取得已經解鎖的職場經驗列表"""
+  unlocked_experiences: [Experience!]
+
+  """取得已經解鎖的薪資工時列表"""
+  unlocked_salary_work_times: [SalaryWorkTime!]
+
+  """目前擁有的積分"""
   points: Int!
-  createdAt: Date!
-  completedAt: Date!
 }
 
 input VerifyEmailInput {

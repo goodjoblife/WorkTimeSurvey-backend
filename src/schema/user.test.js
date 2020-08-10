@@ -7,6 +7,7 @@ const { connectMongo } = require("../models/connect");
 const {
     generateInterviewExperienceData,
     generateWorkExperienceData,
+    generateWorkingData,
 } = require("../routes/experiences/testData");
 const { FakeUserFactory } = require("../utils/test_helper");
 const resolvers = require("../schema/resolvers");
@@ -14,6 +15,7 @@ const facebook = require("../libs/facebook");
 const google = require("../libs/google");
 const jwt = require("../utils/jwt");
 const { User } = require("../models");
+const { ObjectId } = require("mongodb");
 
 const userExperiencesResolver = resolvers.User.experiences;
 const userExperiencesCountResolver = resolvers.User.experience_count;
@@ -459,5 +461,153 @@ describe("Mutation.googleLogin", () => {
 
         assert.property(res.body, "errors");
         sinon.assert.calledOnce(verifyIdToken);
+    });
+});
+
+describe("User 解鎖資料、點數相關", () => {
+    const fakeUserFactory = new FakeUserFactory();
+    // the user who wants to retrieve unlocked data
+    const fakeUser1Id = ObjectId();
+    // the user leave experience and salary work time data
+    const fakeUser2Id = ObjectId();
+    const experienceTitle = "test experience";
+    const userPoints = 100;
+    let db;
+    let user1Token;
+    let experienceId;
+    let salaryWorkTimeId;
+
+    before(async () => {
+        ({ db } = await connectMongo());
+        await fakeUserFactory.setUp();
+    });
+
+    before("Create experience and salary work time data", async () => {
+        const experience = {
+            ...generateWorkExperienceData(),
+            title: experienceTitle,
+            status: "published",
+            author_id: fakeUser2Id,
+        };
+        const salaryWorkTime = {
+            ...generateWorkingData(),
+            status: "published",
+            user_id: fakeUser2Id,
+        };
+        let result = await db.collection("experiences").insertOne(experience);
+        experienceId = result.insertedId;
+        result = await db.collection("workings").insertOne(salaryWorkTime);
+        salaryWorkTimeId = result.insertedId;
+    });
+
+    before(
+        "Create the user who created experience and salary work time",
+        async () => {
+            user1Token = await fakeUserFactory.create({
+                _id: fakeUser1Id,
+                points: userPoints,
+                unlocked_experiences: [
+                    {
+                        _id: experienceId,
+                        created_at: new Date(),
+                    },
+                ],
+                unlocked_salary_work_times: [
+                    {
+                        _id: salaryWorkTimeId,
+                        created_at: new Date(),
+                    },
+                ],
+            });
+            await fakeUserFactory.create({
+                _id: fakeUser2Id,
+            });
+        }
+    );
+
+    after(async () => {
+        await db.collection("experiences").deleteMany({});
+        await fakeUserFactory.tearDown();
+    });
+
+    it("me.unlocked_experiences", async () => {
+        const payload = {
+            query: /* GraphQL */ `
+                {
+                    me {
+                        unlocked_experiences {
+                            id
+                            title
+                        }
+                    }
+                }
+            `,
+            variables: null,
+        };
+
+        const res = await request(app)
+            .post("/graphql")
+            .send(payload)
+            .set("Authorization", `Bearer ${user1Token}`)
+            .expect(200);
+
+        assert.deepPropertyVal(
+            res.body.data,
+            "me.unlocked_experiences[0].id",
+            `${experienceId}`
+        );
+        assert.deepPropertyVal(
+            res.body.data,
+            "me.unlocked_experiences[0].title",
+            experienceTitle
+        );
+    });
+
+    it("me.unlocked_salary_work_times", async () => {
+        const payload = {
+            query: /* GraphQL */ `
+                {
+                    me {
+                        unlocked_salary_work_times {
+                            id
+                        }
+                    }
+                }
+            `,
+            variables: null,
+        };
+
+        const res = await request(app)
+            .post("/graphql")
+            .send(payload)
+            .set("Authorization", `Bearer ${user1Token}`)
+            .expect(200);
+
+        assert.deepPropertyVal(
+            res.body.data,
+            "me.unlocked_salary_work_times[0].id",
+            `${salaryWorkTimeId}`
+        );
+    });
+
+    it("me.points", async () => {
+        const payload = {
+            query: /* GraphQL */ `
+                {
+                    me {
+                        points
+                    }
+                }
+            `,
+            variables: null,
+        };
+
+        const res = await request(app)
+            .post("/graphql")
+            .send(payload)
+            .set("Authorization", `Bearer ${user1Token}`)
+            .expect(200);
+
+        assert.deepPropertyVal(res.body.data, "me.points", userPoints);
     });
 });
