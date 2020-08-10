@@ -1,6 +1,6 @@
 const { unlockExperience, unlockSalaryWorkTime } = require("./EventType");
 
-const taskConfigMap = {
+const rewardConfigMap = {
     [unlockExperience]: {
         title: "解鎖面試、工作心得",
         description: "每篇 100 積分",
@@ -13,4 +13,4 @@ const taskConfigMap = {
     },
 };
 
-module.exports = taskConfigMap;
+module.exports = rewardConfigMap;

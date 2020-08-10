@@ -4,7 +4,7 @@ const { ObjectId } = require("mongodb");
 const app = require("../app");
 const { connectMongo } = require("../models/connect");
 const { FakeUserFactory } = require("../utils/test_helper");
-const taskConfig = require("../libs/events/task_config");
+const rewardConfig = require("../libs/events/reward_config");
 const {
     unlockExperience,
     unlockSalaryWorkTime,
@@ -128,7 +128,7 @@ describe("Mutation unlockExperience", () => {
         assert.equal(`${me.unlocked_experiences[0]._id}`, `${experienceId}`);
         assert.equal(
             me.points,
-            INITIAL_POINTS - taskConfig[unlockExperience].points
+            INITIAL_POINTS - rewardConfig[unlockExperience].points
         );
 
         // 檢查 userPointEvent
@@ -266,7 +266,7 @@ describe("Mutation unlockSalaryWorkTime", () => {
         );
         assert.equal(
             me.points,
-            INITIAL_POINTS - taskConfig[unlockSalaryWorkTime].points
+            INITIAL_POINTS - rewardConfig[unlockSalaryWorkTime].points
         );
 
         // 檢查 userPointEvent

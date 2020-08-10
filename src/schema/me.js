@@ -11,7 +11,7 @@ const {
     unlockExperience,
     unlockSalaryWorkTime,
 } = require("../libs/events/EventType");
-const taskConfig = require("../libs/events/task_config");
+const rewardConfig = require("../libs/events/reward_config");
 
 const Type = `
 `;
@@ -50,7 +50,7 @@ const resolvers = {
                 const experienceId = ObjectId(input);
 
                 // 確認需要多少點數
-                const requiredPoints = taskConfig[unlockExperience].points;
+                const requiredPoints = rewardConfig[unlockExperience].points;
 
                 // 確認使用者是否有足夠點數
                 if (user.points < requiredPoints) {
@@ -101,7 +101,8 @@ const resolvers = {
                 const salaryWorkTimeId = ObjectId(input);
 
                 // 確認需要多少點數
-                const requiredPoints = taskConfig[unlockSalaryWorkTime].points;
+                const requiredPoints =
+                    rewardConfig[unlockSalaryWorkTime].points;
 
                 // 確認使用者是否有足夠點數
                 if (user.points < requiredPoints) {

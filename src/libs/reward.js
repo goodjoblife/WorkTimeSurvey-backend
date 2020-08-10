@@ -3,7 +3,7 @@ const {
     UserPointEvent,
     COMPLETED,
 } = require("../models/schemas/userPointEvent");
-const taskConfigMap = require("../libs/events/task_config");
+const rewardConfigMap = require("../libs/events/reward_config");
 
 /**
  * 在指定 API 發生時（例如：填寫面試經驗 mutation createInterviewExperience），直接觸發兌換獎勵
@@ -16,7 +16,7 @@ const checkoutReward = async (userId, eventName, docId) => {
     if (!user) {
         throw Error("User not found");
     }
-    const requirePoints = taskConfigMap[eventName].points;
+    const requirePoints = rewardConfigMap[eventName].points;
     const userPoints = user.points || 0;
     if (userPoints < requirePoints) {
         throw Error("No enough points left");
