@@ -114,6 +114,8 @@ describe("experiences 面試和工作經驗資訊", () => {
 
         afterEach(async () => {
             await fake_user_factory.tearDown();
+            await db.collection("experiences").deleteMany({});
+            await db.collection("user_point_events").deleteMany({});
         });
 
         it("should success", async () => {
@@ -723,6 +725,7 @@ describe("experiences 面試和工作經驗資訊", () => {
         after(async () => {
             await db.collection("experiences").deleteMany({});
             await db.collection("companies").deleteMany({});
+            await db.collection("user_point_events").deleteMany({});
         });
     });
 });

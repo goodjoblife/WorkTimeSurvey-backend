@@ -117,7 +117,7 @@ function generateAllPayload(options) {
     return payload;
 }
 
-describe("POST /workings", () => {
+describe.only("POST /workings", () => {
     let db;
     const INIT_POINTS = 100;
     const user_id = ObjectId();
@@ -148,6 +148,8 @@ describe("POST /workings", () => {
 
     afterEach(async () => {
         await fake_user_factory.tearDown();
+        await db.collection("workings").deleteMany({});
+        await db.collection("user_point_events").deleteMany({});
     });
 
     const path = "/workings";
@@ -1425,5 +1427,6 @@ describe("POST /workings", () => {
         await db.collection("workings").deleteMany({});
         await db.collection("companies").deleteMany({});
         await db.collection("recommendations").deleteMany({});
+        await db.collection("user_point_events").deleteMany({});
     });
 });
