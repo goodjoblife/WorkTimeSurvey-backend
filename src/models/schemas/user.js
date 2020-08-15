@@ -1,4 +1,4 @@
-const { Schema } = require("mongoose");
+const { Schema, model } = require("mongoose");
 const EMAIL_STATUS = require("../email_status");
 
 const unlockedDataSchema = new Schema({
@@ -6,7 +6,7 @@ const unlockedDataSchema = new Schema({
         type: Schema.Types.ObjectId,
         required: true,
     },
-    createdAt: {
+    created_at: {
         type: Schema.Types.Date,
         required: true,
     },
@@ -76,4 +76,6 @@ userSchema.statics.findOneByGoogleId = function(google_id) {
     return this.findOne({ google_id });
 };
 
-module.exports = userSchema;
+const User = model("User", userSchema);
+
+module.exports = User;

@@ -57,14 +57,14 @@ const UserPointSchema = new Schema({
 
 // create index here
 UserPointSchema.index({
-    userId: -1,
-    eventName: -1,
+    user_id: -1,
+    event_name: -1,
     doc_id: -1,
 });
 
 UserPointSchema.index({
-    userId: -1,
-    eventName: -1,
+    user_id: -1,
+    event_name: -1,
     status: -1,
 });
 

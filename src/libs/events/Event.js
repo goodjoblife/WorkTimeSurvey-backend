@@ -1,4 +1,4 @@
-const User = require("../../models/schemas/userModel");
+const User = require("../../models/schemas/user");
 const {
     COMPLETED,
     UserPointEvent,
@@ -41,8 +41,7 @@ class Event {
             doc_id: docId,
             status: COMPLETED,
             points: this.points,
-            createdAt: new Date(),
-            completedAt: new Date(),
+            created_at: new Date(),
         });
     }
 }
