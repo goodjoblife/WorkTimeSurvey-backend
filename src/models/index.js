@@ -1,6 +1,6 @@
 const { ObjectId } = require("mongodb");
 const { ObjectNotExistError } = require("../libs/errors");
-const User = require("./schemas/userModel");
+const User = require("./schemas/user");
 
 const ensureToObjectId = function(id_string) {
     if (id_string instanceof ObjectId) {

@@ -72,7 +72,7 @@ const resolvers = {
                 // 進行解鎖
                 user.unlocked_experiences.splice(0, 0, {
                     _id: experienceId,
-                    createdAt: new Date(),
+                    created_at: new Date(),
                 });
                 user.points -= requiredPoints;
                 await user.save();
@@ -128,7 +128,7 @@ const resolvers = {
                 // 進行解鎖
                 user.unlocked_salary_work_times.splice(0, 0, {
                     _id: salaryWorkTimeId,
-                    createdAt: new Date(),
+                    created_at: new Date(),
                 });
                 user.points -= requiredPoints;
                 await user.save();
