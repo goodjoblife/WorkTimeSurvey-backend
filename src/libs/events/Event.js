@@ -12,33 +12,32 @@ class Event {
         this.maxRunCount = maxRunCount;
     }
 
-    async exec(docId) {
-        const userTaskCount =
+    async exec(snapshot) {
+        // 取得該使用者該事件的執行次數
+        const eventCount =
             (await UserPointEvent.countDocuments({
-                userId: this.userId,
-                eventName: this.eventName,
+                user_id: this.userId,
+                event_name: this.eventName,
             })) || 0;
 
-        // 執行次數達上限，無法給獎勵，throw error
-        if (userTaskCount >= this.maxRunCount) {
+        // 次數達上限，無法執行該事件。（若 maxRunCount = 0 代表無限制次數）
+        if (this.maxRunCount !== 0 && eventCount >= this.maxRunCount) {
             throw Error(
-                `${this.eventName} can only be executed by at most ${
-                    this.maxRunCount
-                } times.`
+                `${this.eventName} 只能被執行最多 ${this.maxRunCount} 次`
             );
         }
 
-        // 給予獎勵
+        // 增加或減少積分
         const user = await User.findByIdAndUpdate(this.userId, {
             $inc: { points: this.points },
         });
         await user.save();
 
-        // 建立event
+        // 建立 user point event
         await UserPointEvent.create({
             user_id: this.userId,
             event_name: this.eventName,
-            doc_id: docId,
+            snapshot,
             status: COMPLETED,
             points: this.points,
             created_at: new Date(),

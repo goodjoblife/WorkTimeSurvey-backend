@@ -526,11 +526,10 @@ async function main(req, res) {
         try {
             await new CreateSalaryEvent(req.user._id).exec({
                 db: req.db,
-                snapshot: { workingId },
-                workingId,
+                salaryWorkTimeId: workingId,
             });
         } catch (err) {
-            winston.warn("User doesn't fill salary data");
+            throw Error("獲得薪資積分失敗");
         }
 
         res.send(response_data);

@@ -31,10 +31,6 @@ const UserPointSchema = new Schema({
             createWorkExperienceBonus,
         ],
     },
-    // doc_id: {
-    //     type: String,
-    //     required: true,
-    // },
     snapshot: {
         type: Schema.Types.Mixed,
     },
