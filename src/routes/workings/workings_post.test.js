@@ -1,11 +1,18 @@
 const chai = require("chai");
+const ObjectId = require("mongodb").ObjectId;
+const request = require("supertest");
 
 const assert = chai.assert;
-const request = require("supertest");
 const app = require("../../app");
 const { connectMongo } = require("../../models/connect");
-const ObjectId = require("mongodb").ObjectId;
+
 const { FakeUserFactory } = require("../../utils/test_helper");
+const taskConfig = require("../../libs/events/task_config");
+const { createSalaryWorkTime } = require("../../libs/events/EventType");
+const {
+    UserPointEvent,
+    COMPLETED,
+} = require("../../models/schemas/userPointEvent");
 
 function generateWorkingTimeRelatedPayload(options) {
     const opt = options || {};
@@ -112,14 +119,18 @@ function generateAllPayload(options) {
 
 describe("POST /workings", () => {
     let db;
+    const INIT_POINTS = 100;
+    const user_id = ObjectId();
     const fake_user_factory = new FakeUserFactory();
     const fake_user = {
-        _id: new ObjectId(),
+        _id: user_id,
         facebook_id: "-1",
         facebook: {
             id: "-1",
             name: "mark",
         },
+        name: "mark",
+        points: INIT_POINTS,
     };
     let fake_user_token;
 
@@ -1375,6 +1386,38 @@ describe("POST /workings", () => {
                 .collection("users")
                 .findOne({ _id: fake_user._id });
             assert.propertyVal(user, "time_and_salary_count", 1);
+        });
+    });
+
+    describe("userPointEvent and user.points Part", () => {
+        it("should create userPointEvent and update user.points", async () => {
+            await request(app)
+                .post(path)
+                .send(generateSalaryRelatedPayload())
+                .set("Authorization", `Bearer ${fake_user_token}`)
+                .expect(200);
+
+            const user = await db
+                .collection("users")
+                .findOne({ _id: fake_user._id });
+            assert.equal(
+                user.points,
+                INIT_POINTS + taskConfig[createSalaryWorkTime].points
+            );
+
+            const events = await UserPointEvent.find({
+                user_id: user_id,
+                event_name: createSalaryWorkTime,
+                //TO FIX: doc_id: docId,
+            });
+            assert.isNotNull(events);
+            assert.lengthOf(events, 1);
+            assert.propertyVal(events[0], "status", COMPLETED);
+            assert.propertyVal(
+                events[0],
+                "points",
+                taskConfig[createSalaryWorkTime].points
+            );
         });
     });
 

@@ -20,9 +20,7 @@ class CreateSalaryEvent extends Event {
      */
     async exec({ db, salaryWorkTimeId }) {
         const working_model = new WorkingModel(db);
-        const { salary } = await working_model.getWorkingsById(
-            salaryWorkTimeId
-        );
+        const salary = await working_model.getWorkingsById(salaryWorkTimeId);
         if (!salary) {
             throw Error("該筆薪資工時不存在");
         }
