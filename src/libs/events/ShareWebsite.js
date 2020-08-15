@@ -1,6 +1,6 @@
 const Event = require("./Event");
 const { shareWebsite } = require("./EventType");
-const taskConfigMap = require("../../task-config");
+const taskConfigMap = require("./task_config");
 
 class ShareWebsite extends Event {
     constructor(userId) {

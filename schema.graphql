@@ -413,6 +413,9 @@ type Query {
   labor_right(id: ID!): LaborRight
   me: User!
 
+  """取得所有可以兌換的獎勵"""
+  rewards: [Reward]!
+
   """取得薪資工時列表 （未下關鍵字搜尋的情況），只有從最新排到最舊"""
   salary_work_times(start: Int!, limit: Int!): [SalaryWorkTime!]!
 
@@ -421,9 +424,6 @@ type Query {
 
   """取得所有任務"""
   tasks: [Task]!
-
-  """取得所有可以兌換的獎勵"""
-  rewards: [Reward]!
 }
 
 enum RecommendToOthersType {

@@ -13,6 +13,7 @@ module.exports = merge([
     require("./me").resolvers,
     require("./reply").resolvers,
     require("./reply_like").resolvers,
+    require("./reward").resolvers,
     require("./salary_work_time").resolvers,
     require("./task").resolvers,
     require("./user").resolvers,

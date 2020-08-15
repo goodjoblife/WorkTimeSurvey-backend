@@ -1,7 +1,7 @@
 const Event = require("./Event");
 const { createSalary } = require("./EventType");
 const WorkingModel = require("../../models/working_model");
-const taskConfigMap = require("../../task-config");
+const taskConfigMap = require("./task_config");
 
 class CreateSalaryEvent extends Event {
     constructor(userId) {

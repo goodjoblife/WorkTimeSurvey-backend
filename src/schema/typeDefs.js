@@ -44,6 +44,7 @@ module.exports = [
     ...require("./me").types,
     ...require("./reply").types,
     ...require("./reply_like").types,
+    ...require("./reward").types,
     ...require("./salary_work_time").types,
     ...require("./task").types,
     ...require("./user").types,
