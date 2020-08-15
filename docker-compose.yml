@@ -10,13 +10,11 @@ services:
     command: npm run dev
     environment:
       - MONGODB_URI=mongodb://mongo
-      - MONGODB_DBNAME=goodjob-test
+      - MONGODB_DBNAME=goodjob
       - REDIS_URL=redis://redis
       - NODE_ENV=development
     # other variables, use .env
   mongo:
     image: mongo:3.6
-    ports:
-      - '27017:27017'
   redis:
     image: redis
