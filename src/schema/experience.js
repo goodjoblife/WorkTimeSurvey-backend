@@ -17,7 +17,6 @@ const UserModel = require("../models/user_model");
 const helper = require("../routes/company_helper");
 const CreateWorkExperienceEvent = require("../libs/events/CreateWorkExperienceEvent");
 const CreateInterviewExperienceEvent = require("../libs/events/CreateInterviewExperienceEvent");
-const winston = require("winston");
 
 const WorkExperienceType = "work";
 const InterviewExperienceType = "interview";
@@ -656,11 +655,10 @@ const resolvers = {
                 try {
                     await new CreateInterviewExperienceEvent(user._id).exec({
                         db,
-                        snapshot: { experienceId },
                         experienceId,
                     });
                 } catch (err) {
-                    winston.warn(err);
+                    throw Error("獲得面試心得積分失敗");
                 }
 
                 return {
@@ -732,11 +730,10 @@ const resolvers = {
                 try {
                     await new CreateWorkExperienceEvent(user._id).exec({
                         db,
-                        snapshot: { experienceId },
                         experienceId,
                     });
                 } catch (err) {
-                    winston.warn(err);
+                    throw Error("獲得工作心得積分失敗");
                 }
 
                 return {

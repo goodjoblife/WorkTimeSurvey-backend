@@ -1,5 +1,5 @@
 const Event = require("./Event");
-const { createSalary } = require("./EventType");
+const { createSalaryWorkTime } = require("./EventType");
 const WorkingModel = require("../../models/working_model");
 const taskConfigMap = require("./task_config");
 
@@ -7,28 +7,24 @@ class CreateSalaryEvent extends Event {
     constructor(userId) {
         super({
             userId,
-            taskName: createSalary,
-            points: taskConfigMap[createSalary].points,
-            maxRunCount: taskConfigMap[createSalary].maxRunCount,
+            eventName: createSalaryWorkTime,
+            points: taskConfigMap[createSalaryWorkTime].points,
+            maxRunCount: taskConfigMap[createSalaryWorkTime].maxRunCount,
         });
     }
 
     /**
-     * @typedef {Object} DispatchPayload
+     * 執行這個事件
      * @property {Object} db - database object
-     * @property {Object} workingId - workingId that should be verified
+     * @property {Object} experienceId - experienceId that should be verified
      */
-    /**
-     * Dispatch to queue
-     * @param {DispatchPayload} obj - dispatch payload
-     */
-    async exec({ db, workingId }) {
+    async exec({ db, salaryWorkTimeId }) {
         const working_model = new WorkingModel(db);
-        const { salary } = await working_model.getWorkingsById(workingId);
+        const salary = await working_model.getWorkingsById(salaryWorkTimeId);
         if (!salary) {
-            throw Error("Validation failed");
+            throw Error("該筆薪資工時不存在");
         }
-        await super.exec(workingId);
+        await super.exec({ salaryWorkTimeId });
     }
 }
 

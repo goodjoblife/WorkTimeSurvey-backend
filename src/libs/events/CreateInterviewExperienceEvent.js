@@ -7,27 +7,23 @@ class CreateInterviewExperienceEvent extends Event {
     constructor(userId) {
         super({
             userId,
-            taskName: createInterviewExperience,
+            eventName: createInterviewExperience,
             points: taskConfigMap[createInterviewExperience].points,
             maxRunCount: taskConfigMap[createInterviewExperience].maxRunCount,
         });
     }
 
     /**
-     * @typedef {Object} DispatchPayload
+     * 執行這個事件
      * @property {Object} db - database object
      * @property {Object} experienceId - experienceId that should be verified
-     */
-    /**
-     * Dispatch to queue
-     * @param {DispatchPayload} obj - dispatch payload
      */
     async exec({ db, experienceId }) {
         const experience_model = new ExperienceModel(db);
         if (!(await experience_model.isExist(experienceId))) {
-            throw Error("Validation failed");
+            throw Error("該篇面試心得不存在");
         }
-        return await super.exec(experienceId);
+        return await super.exec({ experienceId });
     }
 }
 
