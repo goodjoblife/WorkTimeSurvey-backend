@@ -178,36 +178,6 @@ describe("experiences 面試和工作經驗資訊", () => {
             assert.deepProperty(res.body, "experience._id");
         });
 
-        it("should create userPointEvent and update user.points", async () => {
-            await request(app)
-                .post("/work_experiences")
-                .send(generateWorkExperiencePayload())
-                .set("Authorization", `Bearer ${fake_user_token}`)
-                .expect(200);
-
-            const user = await db
-                .collection("users")
-                .findOne({ _id: fake_user._id });
-            assert.equal(
-                user.points,
-                INIT_POINTS + taskConfig[createWorkExperience].points
-            );
-
-            const events = await UserPointEvent.find({
-                user_id: user_id,
-                event_name: createWorkExperience,
-                //TO FIX: doc_id: docId,
-            });
-            assert.isNotNull(events);
-            assert.lengthOf(events, 1);
-            assert.propertyVal(events[0], "status", COMPLETED);
-            assert.propertyVal(
-                events[0],
-                "points",
-                taskConfig[createWorkExperience].points
-            );
-        });
-
         describe("Common Data Validation Part", () => {
             it("company_query or company_id is required", () =>
                 request(app)
@@ -715,6 +685,38 @@ describe("experiences 面試和工作經驗資訊", () => {
                     .post("/work_experiences")
                     .send(sendData)
                     .expect(401);
+            });
+        });
+
+        describe("userPointEvent and user.points Part", () => {
+            it("should create userPointEvent and update user.points", async () => {
+                await request(app)
+                    .post("/work_experiences")
+                    .send(generateWorkExperiencePayload())
+                    .set("Authorization", `Bearer ${fake_user_token}`)
+                    .expect(200);
+
+                const user = await db
+                    .collection("users")
+                    .findOne({ _id: fake_user._id });
+                assert.equal(
+                    user.points,
+                    INIT_POINTS + taskConfig[createWorkExperience].points
+                );
+
+                const events = await UserPointEvent.find({
+                    user_id: user_id,
+                    event_name: createWorkExperience,
+                    //TO FIX: doc_id: docId,
+                });
+                assert.isNotNull(events);
+                assert.lengthOf(events, 1);
+                assert.propertyVal(events[0], "status", COMPLETED);
+                assert.propertyVal(
+                    events[0],
+                    "points",
+                    taskConfig[createWorkExperience].points
+                );
             });
         });
 
