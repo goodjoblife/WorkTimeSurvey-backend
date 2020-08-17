@@ -7,8 +7,8 @@ const app = require("../../app");
 const { connectMongo } = require("../../models/connect");
 
 const { FakeUserFactory } = require("../../utils/test_helper");
-const taskConfig = require("../../libs/events/task_config");
-const { createSalaryWorkTime } = require("../../libs/events/EventType");
+const taskConfig = require("../../libs/events/tasks/config");
+const { createSalaryWorkTime } = require("../../libs/events/tasks/EventType");
 const {
     UserPointEvent,
     COMPLETED,
@@ -117,7 +117,7 @@ function generateAllPayload(options) {
     return payload;
 }
 
-describe.only("POST /workings", () => {
+describe("POST /workings", () => {
     let db;
     const INIT_POINTS = 100;
     const user_id = ObjectId();

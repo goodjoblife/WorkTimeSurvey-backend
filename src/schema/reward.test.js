@@ -2,7 +2,7 @@ const { assert } = require("chai");
 const request = require("supertest");
 const app = require("../app");
 
-const rewardConfigMap = require("../libs/events/reward_config");
+const rewardConfigMap = require("../libs/events/rewards/config");
 
 describe("取得獎勵列表", () => {
     it("rewards", async () => {

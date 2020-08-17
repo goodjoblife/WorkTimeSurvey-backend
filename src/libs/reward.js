@@ -3,7 +3,7 @@ const {
     UserPointEvent,
     COMPLETED,
 } = require("../models/schemas/userPointEvent");
-const rewardConfigMap = require("../libs/events/reward_config");
+const rewardConfigMap = require("../libs/events/rewards/config");
 
 /**
  * 在指定 API 發生時（例如：填寫面試經驗 mutation createInterviewExperience），直接觸發兌換獎勵

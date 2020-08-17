@@ -4,11 +4,12 @@ const {
     createInterviewExperience,
     createWorkExperience,
     shareWebsite,
+} = require("../../libs/events/tasks/EventType");
+
+const {
     unlockExperience,
     unlockSalaryWorkTime,
-    createInterviewExperienceBonus,
-    createWorkExperienceBonus,
-} = require("../../libs/events/EventType");
+} = require("../../libs/events/rewards/EventType");
 
 const COMPLETED = "completed";
 const ADMIN_CANCELED = "admin_canceled";
@@ -27,8 +28,6 @@ const UserPointSchema = new Schema({
             shareWebsite,
             unlockExperience,
             unlockSalaryWorkTime,
-            createInterviewExperienceBonus,
-            createWorkExperienceBonus,
         ],
     },
     snapshot: {

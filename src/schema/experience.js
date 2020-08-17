@@ -15,8 +15,8 @@ const {
 const ExperienceModel = require("../models/experience_model");
 const UserModel = require("../models/user_model");
 const helper = require("../routes/company_helper");
-const CreateWorkExperienceEvent = require("../libs/events/CreateWorkExperienceEvent");
-const CreateInterviewExperienceEvent = require("../libs/events/CreateInterviewExperienceEvent");
+const CreateWorkExperienceEvent = require("../libs/events/tasks/CreateWorkExperienceEvent");
+const CreateInterviewExperienceEvent = require("../libs/events/tasks/CreateInterviewExperienceEvent");
 
 const WorkExperienceType = "work";
 const InterviewExperienceType = "interview";

@@ -1,5 +1,5 @@
 const { gql } = require("apollo-server-express");
-const rewardConfigMap = require("../libs/events/reward_config");
+const rewardConfigMap = require("../libs/events/rewards/config");
 
 const Type = gql`
     type Reward {

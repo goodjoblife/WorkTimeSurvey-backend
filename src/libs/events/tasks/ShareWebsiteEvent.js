@@ -1,8 +1,8 @@
-const Event = require("./Event");
+const TaskEvent = require("./TaskEvent");
 const { shareWebsite } = require("./EventType");
-const taskConfigMap = require("./task_config");
+const taskConfigMap = require("./config");
 
-class ShareWebsite extends Event {
+class ShareWebsiteEvent extends TaskEvent {
     constructor(userId) {
         super({
             userId,
@@ -13,4 +13,4 @@ class ShareWebsite extends Event {
     }
 }
 
-module.exports = ShareWebsite;
+module.exports = ShareWebsiteEvent;

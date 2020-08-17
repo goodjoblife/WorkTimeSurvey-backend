@@ -1,5 +1,5 @@
 const { gql } = require("apollo-server-express");
-const taskConfigMap = require("../libs/events/task_config");
+const taskConfigMap = require("../libs/events/tasks/config");
 
 const Type = gql`
     type Task {

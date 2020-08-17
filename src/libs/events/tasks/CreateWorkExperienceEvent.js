@@ -1,9 +1,9 @@
-const Event = require("./Event");
+const TaskEvent = require("./TaskEvent");
 const { createWorkExperience } = require("./EventType");
-const ExperienceModel = require("../../models/experience_model");
-const taskConfigMap = require("./task_config");
+const ExperienceModel = require("../../../models/experience_model");
+const taskConfigMap = require("./config");
 
-class CreateWorkExperienceEvent extends Event {
+class CreateWorkExperienceEvent extends TaskEvent {
     constructor(userId) {
         super({
             userId,

@@ -5,7 +5,7 @@ const companyHelper = require("../company_helper");
 const recommendation = require("../../libs/recommendation");
 const { HttpError, ObjectIdError } = require("../../libs/errors");
 const { validateEmail } = require("../../libs/validation");
-const CreateSalaryEvent = require("../../libs/events/CreateSalaryEvent");
+const CreateSalaryEvent = require("../../libs/events/tasks/CreateSalaryEvent");
 
 function checkBodyField(req, field) {
     if (
