@@ -9,7 +9,9 @@ const {
     UserPointEvent,
     COMPLETED,
 } = require("../../models/schemas/userPointEvent");
-const { createInterviewExperience } = require("../../libs/events/EventType");
+const {
+    createInterviewExperience,
+} = require("../../libs/events/tasks/EventType");
 const taskConfig = require("../../libs/events/tasks/config");
 
 const app = require("../../app");

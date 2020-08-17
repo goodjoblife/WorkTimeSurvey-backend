@@ -9,7 +9,7 @@ const {
     UserPointEvent,
     COMPLETED,
 } = require("../../models/schemas/userPointEvent");
-const { createWorkExperience } = require("../../libs/events/EventType");
+const { createWorkExperience } = require("../../libs/events/tasks/EventType");
 const taskConfig = require("../../libs/events/tasks/config");
 
 chai.use(chaiAsPromised);

@@ -8,7 +8,7 @@ const rewardConfig = require("../libs/events/rewards/config");
 const {
     unlockExperience,
     unlockSalaryWorkTime,
-} = require("../libs/events/EventType");
+} = require("../libs/events/rewards/EventType");
 
 describe("Query me", () => {
     const fake_user_factory = new FakeUserFactory();

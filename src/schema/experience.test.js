@@ -11,7 +11,7 @@ const {
 const {
     createInterviewExperience,
     createWorkExperience,
-} = require("../libs/events/EventType");
+} = require("../libs/events/tasks/EventType");
 const taskConfig = require("../libs/events/tasks/config");
 
 chai.use(require("chai-subset"));
