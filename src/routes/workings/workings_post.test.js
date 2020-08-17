@@ -117,7 +117,7 @@ function generateAllPayload(options) {
     return payload;
 }
 
-describe.only("POST /workings", () => {
+describe("POST /workings", () => {
     let db;
     const INIT_POINTS = 100;
     const user_id = ObjectId();
