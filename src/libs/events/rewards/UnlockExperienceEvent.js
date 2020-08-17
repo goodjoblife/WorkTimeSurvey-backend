@@ -1,6 +1,6 @@
 const ObjectId = require("mongodb").ObjectId;
 const RewardEvent = require("./RewardEvent");
-const { unlockExperience } = require("../EventType");
+const { unlockExperience } = require("./EventType");
 const User = require("../../../models/schemas/user");
 const ExperienceModel = require("../../../models/experience_model");
 const rewardConfig = require("./config");

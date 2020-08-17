@@ -1,6 +1,6 @@
 const ObjectId = require("mongodb").ObjectId;
 const RewardEvent = require("./RewardEvent");
-const { unlockSalaryWorkTime } = require("../EventType");
+const { unlockSalaryWorkTime } = require("./EventType");
 const User = require("../../../models/schemas/user");
 const SalaryWorkTimeModel = require("../../../models/working_model");
 const rewardConfig = require("./config");

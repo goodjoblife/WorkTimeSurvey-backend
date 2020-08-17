@@ -1,4 +1,4 @@
-const { unlockExperience, unlockSalaryWorkTime } = require("../EventType");
+const { unlockExperience, unlockSalaryWorkTime } = require("./EventType");
 
 const rewardConfigMap = {
     [unlockExperience]: {

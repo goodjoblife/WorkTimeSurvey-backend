@@ -7,7 +7,7 @@ const app = require("../../app");
 const { connectMongo } = require("../../models/connect");
 
 const { FakeUserFactory } = require("../../utils/test_helper");
-const taskConfig = require("../../libs/events/task_config");
+const taskConfig = require("../../libs/events/tasks/config");
 const { createSalaryWorkTime } = require("../../libs/events/EventType");
 const {
     UserPointEvent,

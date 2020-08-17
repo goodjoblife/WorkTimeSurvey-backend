@@ -10,7 +10,7 @@ const {
     COMPLETED,
 } = require("../../models/schemas/userPointEvent");
 const { createWorkExperience } = require("../../libs/events/EventType");
-const taskConfig = require("../../libs/events/task_config");
+const taskConfig = require("../../libs/events/tasks/config");
 
 chai.use(chaiAsPromised);
 const assert = chai.assert;

@@ -1,10 +1,10 @@
-const User = require("../../models/schemas/user");
+const User = require("../../../models/schemas/user");
 const {
     COMPLETED,
     UserPointEvent,
-} = require("../../models/schemas/userPointEvent");
+} = require("../../../models/schemas/userPointEvent");
 
-class Event {
+class TaskEvent {
     constructor({ userId, eventName, points, maxRunCount }) {
         this.userId = userId;
         this.eventName = eventName;
@@ -45,4 +45,4 @@ class Event {
     }
 }
 
-module.exports = Event;
+module.exports = TaskEvent;

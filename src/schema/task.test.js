@@ -2,7 +2,7 @@ const { assert } = require("chai");
 const request = require("supertest");
 const app = require("../app");
 
-const taskConfigMap = require("../libs/events/task_config");
+const taskConfigMap = require("../libs/events/tasks/config");
 
 describe("取得任務列表", () => {
     it("tasks", async () => {
