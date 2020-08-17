@@ -4,7 +4,7 @@ const { ObjectId } = require("mongodb");
 const app = require("../app");
 const { connectMongo } = require("../models/connect");
 const { FakeUserFactory } = require("../utils/test_helper");
-const rewardConfig = require("../libs/events/reward_config");
+const rewardConfig = require("../libs/events/rewards/config");
 const {
     unlockExperience,
     unlockSalaryWorkTime,

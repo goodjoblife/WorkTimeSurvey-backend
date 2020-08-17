@@ -3,7 +3,7 @@ const RewardEvent = require("./RewardEvent");
 const { unlockSalaryWorkTime } = require("../EventType");
 const User = require("../../../models/schemas/user");
 const SalaryWorkTimeModel = require("../../../models/working_model");
-const rewardConfig = require("../reward_config");
+const rewardConfig = require("./config");
 
 // 解鎖一筆薪資工時
 class UnlockSalaryWorkTimeEvent extends RewardEvent {
