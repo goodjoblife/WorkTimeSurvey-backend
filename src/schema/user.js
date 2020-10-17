@@ -5,6 +5,7 @@ const {
 } = require("apollo-server-express");
 const { combineResolvers } = require("graphql-resolvers");
 const Joi = require("@hapi/joi");
+const keyBy = require("lodash/keyBy");
 const ExperienceModel = require("../models/experience_model");
 const ReplyModel = require("../models/reply_model");
 const WorkingModel = require("../models/working_model");
@@ -40,12 +41,22 @@ const Type = gql`
         salary_work_times: [SalaryWorkTime!]!
         salary_work_time_count: Int!
 
-        "取得已經解鎖的職場經驗列表"
-        unlocked_experiences: [Experience!]
-        "取得已經解鎖的薪資工時列表"
-        unlocked_salary_work_times: [SalaryWorkTime!]
+        "取得已經解鎖的職場經驗記錄列表"
+        unlocked_experience_records: [ExperienceRecord!]
+        "取得已經解鎖的薪資工時紀錄列表"
+        unlocked_salary_work_time_records: [SalaryWorkTimeRecord!]
         "目前擁有的積分"
         points: Int!
+    }
+
+    type ExperienceRecord {
+        unlocked_time: Date!
+        data: Experience!
+    }
+
+    type SalaryWorkTimeRecord {
+        unlocked_time: Date!
+        data: SalaryWorkTime!
     }
 
     enum EmailStatus {
@@ -174,26 +185,42 @@ const resolvers = {
 
             return count;
         },
-        unlocked_experiences: combineResolvers(
+        unlocked_experience_records: combineResolvers(
             isAuthenticated,
             isMe,
             async (root, args, context) => {
                 const user = context.user;
                 const records = user.unlocked_experiences || [];
-                return (await context.db.collection("experiences").find({
-                    _id: { $in: records.map(r => r._id) },
-                })).toArray();
+                let experiences = await context.db
+                    .collection("experiences")
+                    .find({
+                        _id: { $in: records.map(r => r._id) },
+                    })
+                    .toArray();
+                experiences = keyBy(experiences, e => e._id);
+                return records.map(r => ({
+                    unlocked_time: r.created_at,
+                    data: experiences[r._id],
+                }));
             }
         ),
-        unlocked_salary_work_times: combineResolvers(
+        unlocked_salary_work_time_records: combineResolvers(
             isAuthenticated,
             isMe,
             async (root, args, context) => {
                 const user = context.user;
                 const records = user.unlocked_salary_work_times || [];
-                return (await context.db.collection("workings").find({
-                    _id: { $in: records.map(r => r._id) },
-                })).toArray();
+                let salaryWorkTimes = await context.db
+                    .collection("workings")
+                    .find({
+                        _id: { $in: records.map(r => r._id) },
+                    })
+                    .toArray();
+                salaryWorkTimes = keyBy(salaryWorkTimes, s => s._id);
+                return records.map(r => ({
+                    unlocked_time: r.created_at,
+                    data: salaryWorkTimes[r._id],
+                }));
             }
         ),
         points: combineResolvers(
