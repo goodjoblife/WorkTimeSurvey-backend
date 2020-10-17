@@ -476,6 +476,8 @@ describe("User 解鎖資料、點數相關", () => {
     let user1Token;
     let experienceId;
     let salaryWorkTimeId;
+    const experienceUnlockedTime = new Date();
+    const salaryUnlockedTime = new Date();
 
     before(async () => {
         ({ db } = await connectMongo());
@@ -509,13 +511,13 @@ describe("User 解鎖資料、點數相關", () => {
                 unlocked_experiences: [
                     {
                         _id: experienceId,
-                        created_at: new Date(),
+                        created_at: experienceUnlockedTime,
                     },
                 ],
                 unlocked_salary_work_times: [
                     {
                         _id: salaryWorkTimeId,
-                        created_at: new Date(),
+                        created_at: salaryUnlockedTime,
                     },
                 ],
             });
@@ -530,14 +532,17 @@ describe("User 解鎖資料、點數相關", () => {
         await fakeUserFactory.tearDown();
     });
 
-    it("me.unlocked_experiences", async () => {
+    it("me.unlocked_experience_records", async () => {
         const payload = {
             query: /* GraphQL */ `
                 {
                     me {
-                        unlocked_experiences {
-                            id
-                            title
+                        unlocked_experience_records {
+                            unlocked_time
+                            data {
+                                id
+                                title
+                            }
                         }
                     }
                 }
@@ -553,23 +558,31 @@ describe("User 解鎖資料、點數相關", () => {
 
         assert.deepPropertyVal(
             res.body.data,
-            "me.unlocked_experiences[0].id",
+            "me.unlocked_experience_records[0].data.id",
             `${experienceId}`
         );
         assert.deepPropertyVal(
             res.body.data,
-            "me.unlocked_experiences[0].title",
+            "me.unlocked_experience_records[0].data.title",
             experienceTitle
+        );
+        assert.deepPropertyVal(
+            res.body.data,
+            "me.unlocked_experience_records[0].unlocked_time",
+            experienceUnlockedTime.toISOString()
         );
     });
 
-    it("me.unlocked_salary_work_times", async () => {
+    it("me.unlocked_salary_work_time_records", async () => {
         const payload = {
             query: /* GraphQL */ `
                 {
                     me {
-                        unlocked_salary_work_times {
-                            id
+                        unlocked_salary_work_time_records {
+                            unlocked_time
+                            data {
+                                id
+                            }
                         }
                     }
                 }
@@ -585,8 +598,13 @@ describe("User 解鎖資料、點數相關", () => {
 
         assert.deepPropertyVal(
             res.body.data,
-            "me.unlocked_salary_work_times[0].id",
+            "me.unlocked_salary_work_time_records[0].data.id",
             `${salaryWorkTimeId}`
+        );
+        assert.deepPropertyVal(
+            res.body.data,
+            "me.unlocked_salary_work_time_records[0].unlocked_time",
+            salaryUnlockedTime.toISOString()
         );
     });
 

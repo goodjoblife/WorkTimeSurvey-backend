@@ -167,6 +167,11 @@ type ExperienceLike {
   created_at: Date!
 }
 
+type ExperienceRecord {
+  unlocked_time: Date!
+  data: Experience!
+}
+
 enum ExperienceType {
   work
   interview
@@ -522,6 +527,11 @@ type SalaryWorkTime {
   archive: Archive!
 }
 
+type SalaryWorkTimeRecord {
+  unlocked_time: Date!
+  data: SalaryWorkTime!
+}
+
 type SalaryWorkTimeStatistics {
   count: Int!
   average_week_work_time: Float
@@ -597,11 +607,11 @@ type User {
   salary_work_times: [SalaryWorkTime!]!
   salary_work_time_count: Int!
 
-  """取得已經解鎖的職場經驗列表"""
-  unlocked_experiences: [Experience!]
+  """取得已經解鎖的職場經驗記錄列表"""
+  unlocked_experience_records: [ExperienceRecord!]
 
-  """取得已經解鎖的薪資工時列表"""
-  unlocked_salary_work_times: [SalaryWorkTime!]
+  """取得已經解鎖的薪資工時紀錄列表"""
+  unlocked_salary_work_time_records: [SalaryWorkTimeRecord!]
 
   """目前擁有的積分"""
   points: Int!
