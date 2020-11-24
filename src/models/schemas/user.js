@@ -1,5 +1,16 @@
-const { Schema } = require("mongoose");
+const { Schema, model } = require("mongoose");
 const EMAIL_STATUS = require("../email_status");
+
+const unlockedDataSchema = new Schema({
+    _id: {
+        type: Schema.Types.ObjectId,
+        required: true,
+    },
+    created_at: {
+        type: Schema.Types.Date,
+        required: true,
+    },
+});
 
 const userSchema = new Schema({
     name: {
@@ -33,6 +44,12 @@ const userSchema = new Schema({
     google: {
         type: Schema.Types.Mixed,
     },
+    points: {
+        type: Number,
+        default: 0,
+    },
+    unlocked_experiences: [unlockedDataSchema],
+    unlocked_salary_work_times: [unlockedDataSchema],
 });
 
 userSchema.index(
@@ -59,4 +76,6 @@ userSchema.statics.findOneByGoogleId = function(google_id) {
     return this.findOne({ google_id });
 };
 
-module.exports = userSchema;
+const User = model("User", userSchema);
+
+module.exports = User;

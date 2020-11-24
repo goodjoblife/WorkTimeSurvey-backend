@@ -1,13 +1,20 @@
 const chai = require("chai");
 const chaiAsPromised = require("chai-as-promised");
+const request = require("supertest");
+const ObjectId = require("mongodb").ObjectId;
+
+const { connectMongo } = require("../../models/connect");
+const { FakeUserFactory } = require("../../utils/test_helper");
+const {
+    UserPointEvent,
+    COMPLETED,
+} = require("../../models/schemas/userPointEvent");
+const { createWorkExperience } = require("../../libs/events/tasks/EventType");
+const taskConfig = require("../../libs/events/tasks/config");
 
 chai.use(chaiAsPromised);
 const assert = chai.assert;
-const request = require("supertest");
 const app = require("../../app");
-const { connectMongo } = require("../../models/connect");
-const ObjectId = require("mongodb").ObjectId;
-const { FakeUserFactory } = require("../../utils/test_helper");
 
 function generateWorkExperiencePayload(options) {
     const opt = options || {};
@@ -59,14 +66,18 @@ function generateWorkExperiencePayload(options) {
 
 describe("experiences 面試和工作經驗資訊", () => {
     let db;
+    const INIT_POINTS = 0;
+    const user_id = ObjectId();
     const fake_user_factory = new FakeUserFactory();
     const fake_user = {
-        _id: new ObjectId(),
+        _id: user_id,
         facebook_id: "-1",
         facebook: {
             id: "-1",
             name: "markLin",
         },
+        name: "test",
+        points: INIT_POINTS,
     };
 
     before(async () => {
@@ -103,6 +114,8 @@ describe("experiences 面試和工作經驗資訊", () => {
 
         afterEach(async () => {
             await fake_user_factory.tearDown();
+            await db.collection("experiences").deleteMany({});
+            await db.collection("user_point_events").deleteMany({});
         });
 
         it("should success", async () => {
@@ -677,9 +690,42 @@ describe("experiences 面試和工作經驗資訊", () => {
             });
         });
 
+        describe("userPointEvent and user.points Part", () => {
+            it("should create userPointEvent and update user.points", async () => {
+                await request(app)
+                    .post("/work_experiences")
+                    .send(generateWorkExperiencePayload())
+                    .set("Authorization", `Bearer ${fake_user_token}`)
+                    .expect(200);
+
+                const user = await db
+                    .collection("users")
+                    .findOne({ _id: fake_user._id });
+                assert.equal(
+                    user.points,
+                    INIT_POINTS + taskConfig[createWorkExperience].points
+                );
+
+                const events = await UserPointEvent.find({
+                    user_id: user_id,
+                    event_name: createWorkExperience,
+                    //TO FIX: doc_id: docId,
+                });
+                assert.isNotNull(events);
+                assert.lengthOf(events, 1);
+                assert.propertyVal(events[0], "status", COMPLETED);
+                assert.propertyVal(
+                    events[0],
+                    "points",
+                    taskConfig[createWorkExperience].points
+                );
+            });
+        });
+
         after(async () => {
             await db.collection("experiences").deleteMany({});
             await db.collection("companies").deleteMany({});
+            await db.collection("user_point_events").deleteMany({});
         });
     });
 });
