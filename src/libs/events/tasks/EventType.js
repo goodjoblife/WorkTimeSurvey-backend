@@ -10,9 +10,13 @@ const createWorkExperience = "CreateWorkExperience";
 // 分享網站到 shareWebsite
 const shareWebsite = "ShareWebsite";
 
+// 早期用戶貢獻資料的獎勵
+const oldUserContribute = "OldUserContribute";
+
 module.exports = {
     createSalaryWorkTime,
     createInterviewExperience,
     createWorkExperience,
     shareWebsite,
+    oldUserContribute,
 };

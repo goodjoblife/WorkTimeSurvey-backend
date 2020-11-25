@@ -1,9 +1,11 @@
 const { Schema, model } = require("mongoose");
+const { CollectionNames } = require("./constants");
 const {
     createSalaryWorkTime,
     createInterviewExperience,
     createWorkExperience,
     shareWebsite,
+    oldUserContribute,
 } = require("../../libs/events/tasks/EventType");
 
 const {
@@ -28,6 +30,7 @@ const UserPointSchema = new Schema({
             shareWebsite,
             unlockExperience,
             unlockSalaryWorkTime,
+            oldUserContribute,
         ],
     },
     snapshot: {
@@ -66,7 +69,7 @@ UserPointSchema.index({
 const UserPointEvent = model(
     "UserPointEvent",
     UserPointSchema,
-    "user_point_events"
+    CollectionNames.UserPointEvent
 );
 
 module.exports = {
