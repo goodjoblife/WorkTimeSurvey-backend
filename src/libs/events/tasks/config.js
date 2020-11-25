@@ -3,6 +3,7 @@ const {
     createInterviewExperience,
     createWorkExperience,
     shareWebsite,
+    oldUserContribute,
 } = require("./EventType");
 
 const taskConfigMap = {
@@ -29,6 +30,10 @@ const taskConfigMap = {
         description: "+ 100 積分",
         points: 100,
         maxRunCount: 1,
+    },
+    [oldUserContribute]: {
+        maxRunCount: 1,
+        hidden: true,
     },
 };
 
