@@ -20,7 +20,7 @@ jobs:
     build-node-lts:
         <<: *defaults
         docker:
-            - image: node:10
+            - image: node:14
               environment:
                   MONGODB_URI: mongodb://localhost
                   MONGODB_DBNAME: goodjob
@@ -33,7 +33,7 @@ jobs:
     build-node-current:
         <<: *defaults
         docker:
-            - image: node:12
+            - image: node:15
               environment:
                   MONGODB_URI: mongodb://localhost
                   MONGODB_DBNAME: goodjob
