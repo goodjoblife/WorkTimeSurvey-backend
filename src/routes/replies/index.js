@@ -53,7 +53,6 @@ router.patch("/:reply_id", [
     }),
 ]);
 
-router.use("/", require("./likes"));
 router.use("/", require("./reports"));
 
 module.exports = router;
